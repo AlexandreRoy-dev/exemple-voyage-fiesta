@@ -53,10 +53,10 @@
                 </div>
             </div>
             <nav class="hidden md:flex gap-6 font-medium text-brand-blue">
-                <a href="#" class="hover:text-brand-orange transition-colors">Accueil</a>
-                <a href="#" class="hover:text-brand-orange transition-colors">Sud</a>
-                <a href="#" class="hover:text-brand-orange transition-colors">Europe</a>
-                <a href="#" class="hover:text-brand-orange transition-colors">Top Chrono</a>
+                <a href="index.html" class="hover:text-brand-orange transition-colors">Accueil</a>
+                <a href="index.html" class="hover:text-brand-orange transition-colors">Sud</a>
+                <a href="index.html" class="hover:text-brand-orange transition-colors">Europe</a>
+                <a href="index.html" class="hover:text-brand-orange transition-colors">Top Chrono</a>
             </nav>
         </div>
     </header>
@@ -187,6 +187,7 @@
         const products = [
             {
                 id: "TC-AZKhf6e",
+                slug: "Majestic-Elegance-Punta-Cana",
                 name: "Majestic Elegance Punta Cana",
                 destTag: "SUD",
                 subDest: "Punta Cana",
@@ -205,6 +206,7 @@
             },
             {
                 id: "TC-BXLhf7f",
+                slug: "Riu-Palace-Peninsula",
                 name: "Riu Palace Peninsula",
                 destTag: "SUD",
                 subDest: "Cancun",
@@ -223,6 +225,7 @@
             },
             {
                 id: "TC-CYMhg8g",
+                slug: "Margaritaville-Island-Reserve",
                 name: "Margaritaville Island Reserve",
                 destTag: "SUD",
                 subDest: "Riviera Maya",
@@ -241,6 +244,7 @@
             },
             {
                 id: "TC-DZNih9h",
+                slug: "Hotel-Riu-Plaza-Espana",
                 name: "Hotel Riu Plaza España",
                 destTag: "EUROPE",
                 subDest: "Madrid",
@@ -297,17 +301,19 @@
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col transition-transform hover:-translate-y-1 ${isSoldOut ? 'opacity-75 grayscale-[0.5]' : ''}`;
                 
+                const productUrl = `${p.slug}.html`;
+
                 card.innerHTML = `
-                    <div class="relative h-56">
+                    <a href="${productUrl}" class="relative h-56 block group">
                         ${inventoryBadge}
-                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover">
+                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
-                            <h3 class="text-white text-xl font-bold leading-tight">${p.name}</h3>
+                            <h3 class="text-white text-xl font-bold leading-tight group-hover:text-brand-orange transition-colors">${p.name}</h3>
                             <div class="flex items-center gap-2 mt-1">
                                 ${renderStars(p.stars)}
                             </div>
                         </div>
-                    </div>
+                    </a>
                     
                     <div class="p-5 flex-grow flex flex-col">
                         <div class="flex items-center justify-between mb-3 text-sm text-gray-500">
@@ -329,14 +335,19 @@
                                 </div>
                             </div>
                             
-                            <div class="flex items-end justify-between">
+                            <div class="flex items-end justify-between gap-3">
                                 <div>
                                     <p class="text-xs text-gray-500 mb-1">Occupation Double</p>
                                     <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
                                 </div>
-                                <button class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors ${isSoldOut ? 'cursor-not-allowed bg-gray-400 hover:bg-gray-400' : ''}" ${isSoldOut ? 'disabled' : ''}>
-                                    ${isSoldOut ? 'Complet' : 'Réserver'}
-                                </button>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
+                                        <i class="fa-solid fa-circle-info mr-1"></i> Détail
+                                    </a>
+                                    <a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm ${isSoldOut ? 'bg-gray-400 hover:bg-gray-400 pointer-events-none' : ''}">
+                                        ${isSoldOut ? 'Complet' : 'Réserver'}
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
