@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotions - Voyage Fiesta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#025091',
+                            orange: '#F26522',
+                            dark: '#1F2937',
+                            light: '#F9FAFB'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for filters */
+        .filter-scroll::-webkit-scrollbar { width: 6px; }
+        .filter-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .filter-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .filter-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .timer-box { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body class="bg-brand-light text-gray-800 font-sans flex flex-col min-h-screen">
+
+    <!-- Top Banner -->
+    <div class="bg-brand-orange text-white text-center py-2 text-sm font-semibold tracking-wide">
+        🔥 OFFRES TOP CHRONO - TEMPS LIMITÉ ! 🔥
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <!-- Logo Placeholder -->
+                <div class="w-48 h-12 bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-xl rounded">
+                    [LOGO VOYAGE FIESTA]
+                </div>
+            </div>
+            <nav class="hidden md:flex gap-6 font-medium text-brand-blue">
+                <a href="#" class="hover:text-brand-orange transition-colors">Accueil</a>
+                <a href="#" class="hover:text-brand-orange transition-colors">Sud</a>
+                <a href="#" class="hover:text-brand-orange transition-colors">Europe</a>
+                <a href="#" class="hover:text-brand-orange transition-colors">Top Chrono</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative bg-brand-dark text-white">
+        <img src="https://placehold.co/1920x400/1F2937/FFFFFF?text=Image+de+Couverture+Destinations" alt="Hero" class="w-full h-64 object-cover opacity-60">
+        <div class="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 shadow-sm">Découvrez nos Offres Exclusives</h1>
+            <p class="text-lg md:text-xl font-light max-w-2xl">Réservez dès maintenant et profitez de nos forfaits tout-inclus avant la fin du décompte.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 flex-grow">
+        
+        <!-- Sidebar Filters -->
+        <aside class="w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-6 h-fit sticky top-24">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-brand-blue"><i class="fa-solid fa-filter mr-2"></i>Filtres</h2>
+                <button id="reset-filters" class="text-sm text-gray-500 hover:text-brand-orange underline">Réinitialiser</button>
+            </div>
+
+            <!-- Destinations -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3 text-gray-700">Destinations</h3>
+                <select id="filter-dest" class="w-full p-2 border border-gray-300 rounded focus:ring-brand-orange focus:border-brand-orange">
+                    <option value="all">Toutes les destinations</option>
+                    <option value="SUD">Sud</option>
+                    <option value="EUROPE">Europe</option>
+                    <option value="CROISIÈRE">Croisière</option>
+                    <option value="CIRCUIT">Circuit</option>
+                    <option value="CANADA">Canada</option>
+                    <option value="USA">États-Unis</option>
+                </select>
+            </div>
+
+            <!-- Fournisseurs -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3 text-gray-700">Fournisseurs</h3>
+                <div class="space-y-2 filter-scroll max-h-32 overflow-y-auto">
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Vacances Sunwing" class="filter-supplier rounded text-brand-orange focus:ring-brand-orange"> Vacances Sunwing</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Vacances Air Canada" class="filter-supplier rounded text-brand-orange focus:ring-brand-orange"> Vacances Air Canada</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Vacances WestJet Québec" class="filter-supplier rounded text-brand-orange focus:ring-brand-orange"> Vacances WestJet Québec</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Vacances Transat" class="filter-supplier rounded text-brand-orange focus:ring-brand-orange"> Vacances Transat</label>
+                </div>
+            </div>
+
+            <!-- Classement -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3 text-gray-700">Classement Hôtelier</h3>
+                <div class="flex gap-2">
+                    <button class="filter-star flex-1 py-1 border rounded hover:bg-brand-blue hover:text-white transition" data-star="3">3 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button class="filter-star flex-1 py-1 border rounded hover:bg-brand-blue hover:text-white transition" data-star="4">4 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button class="filter-star flex-1 py-1 border rounded hover:bg-brand-blue hover:text-white transition" data-star="5">5 <i class="fa-solid fa-star text-xs"></i></button>
+                </div>
+            </div>
+
+            <!-- Durée -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3 text-gray-700">Durée</h3>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="duration" value="all" checked class="text-brand-orange focus:ring-brand-orange"> Toutes</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="duration" value="7" class="text-brand-orange focus:ring-brand-orange"> 7 nuits / 8 jours</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="duration" value="14" class="text-brand-orange focus:ring-brand-orange"> 14 nuits / 15 jours</label>
+                </div>
+            </div>
+
+            <!-- Critères (Tags) -->
+            <div class="mb-6">
+                <h3 class="font-semibold mb-3 text-gray-700">Critères</h3>
+                <div class="space-y-2 filter-scroll max-h-40 overflow-y-auto">
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Vue mer" class="filter-criteria rounded text-brand-orange"> Vue mer</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Familial" class="filter-criteria rounded text-brand-orange"> Familial</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Adultes seulement" class="filter-criteria rounded text-brand-orange"> Adultes seulement</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Swim Out" class="filter-criteria rounded text-brand-orange"> Swim Out</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Glissades d'eau" class="filter-criteria rounded text-brand-orange"> Glissades d'eau</label>
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" value="Golf" class="filter-criteria rounded text-brand-orange"> Golf</label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Product Grid -->
+        <section class="w-full lg:w-3/4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800"><span id="result-count">0</span> Forfaits trouvés</h2>
+                <select class="border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
+                    <option>Trier par : Prix (Bas vers Haut)</option>
+                    <option>Trier par : Prix (Haut vers Bas)</option>
+                    <option>Trier par : Date de départ</option>
+                </select>
+            </div>
+            
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Products injected via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer with Legal Mentions -->
+    <footer class="bg-brand-dark text-gray-300 py-10 mt-12">
+        <div class="container mx-auto px-4 text-xs space-y-6">
+            <div class="text-center mb-6">
+                <div class="w-48 h-12 bg-gray-700 mx-auto flex items-center justify-center text-gray-400 font-bold text-xl rounded mb-4">
+                    [LOGO BLANC]
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-6 flex flex-col md:flex-row gap-8">
+                <div class="md:w-1/2 text-justify">
+                    <p class="font-bold text-white mb-2">Mentions légales (Français)</p>
+                    <p>L'information apparaissant dans ce message électronique est de nature légalement privilégiée et confidentielle. Si ce message vous est parvenu par erreur et que vous n'êtes pas le destinataire visé, vous êtes par les présentes avisé que tout usage, copie ou distribution de ce message est strictement interdit. Vous êtes donc priés de nous informer immédiatement de cette erreur et de détruire ce message.</p>
+                </div>
+                <div class="md:w-1/2 text-justify">
+                    <p class="font-bold text-white mb-2">Legal Disclaimer (English)</p>
+                    <p>The information in this message is legally privileged and confidential. In the event of a transmission error and if you are not the individual or entity mentioned above, you are hereby advised that any use, copying or reproduction of this document is strictly forbidden. Please advise us of this error and destroy this message.</p>
+                </div>
+            </div>
+            <div class="text-center text-gray-500 mt-8">
+                &copy; 2026 Voyage Fiesta. Tous droits réservés.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Script Application -->
+    <script>
+        // --- DATA STRUCTURE ---
+        const products = [
+            {
+                id: "TC-AZKhf6e",
+                name: "Majestic Elegance Punta Cana",
+                destTag: "SUD",
+                subDest: "Punta Cana",
+                country: "République Dominicaine",
+                stars: 5,
+                supplier: "Vacances Sunwing",
+                carrier: "Sunwing Airlines",
+                durationNights: 7,
+                roomCategory: "Suite Junior Vue Mer",
+                criteria: ["Vue mer", "Familial", "Casino"],
+                inventory: 3,
+                price: 1459,
+                packageType: "Forfait Tout-Inclus",
+                endDate: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000 + 4500000), // +2 days
+                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Majestic+Elegance"
+            },
+            {
+                id: "TC-BXLhf7f",
+                name: "Riu Palace Peninsula",
+                destTag: "SUD",
+                subDest: "Cancun",
+                country: "Mexique",
+                stars: 5,
+                supplier: "Vacances Air Canada",
+                carrier: "Air Canada Rouge",
+                durationNights: 7,
+                roomCategory: "Suite Standard",
+                criteria: ["Familial", "Glissades d'eau"],
+                inventory: 0, // COMPLET
+                price: 1689,
+                packageType: "Forfait Tout-Inclus",
+                endDate: new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000 + 3600000), // +1 day
+                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Riu+Palace"
+            },
+            {
+                id: "TC-CYMhg8g",
+                name: "Margaritaville Island Reserve",
+                destTag: "SUD",
+                subDest: "Riviera Maya",
+                country: "Mexique",
+                stars: 4,
+                supplier: "Vacances Transat",
+                carrier: "Air Transat",
+                durationNights: 14,
+                roomCategory: "Suite Swim Out",
+                criteria: ["Swim Out", "Adultes seulement", "Ambiance"],
+                inventory: 2,
+                price: 2890,
+                packageType: "Forfait Tout-Inclus",
+                endDate: new Date(new Date().getTime() + 5 * 24 * 60 * 60 * 1000), 
+                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Margaritaville"
+            },
+            {
+                id: "TC-DZNih9h",
+                name: "Hotel Riu Plaza España",
+                destTag: "EUROPE",
+                subDest: "Madrid",
+                country: "Espagne",
+                stars: 4,
+                supplier: "Vacances Air Canada",
+                carrier: "Air Canada",
+                durationNights: 7,
+                roomCategory: "Chambre Standard",
+                criteria: ["En ville"],
+                inventory: 5,
+                price: 1850,
+                packageType: "Forfait Plan Européen",
+                endDate: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000), 
+                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Riu+Plaza"
+            }
+        ];
+
+        let activeStars = [];
+
+        // --- RENDER LOGIC ---
+        function renderStars(count) {
+            let starsHtml = '';
+            for(let i=0; i<5; i++) {
+                starsHtml += `<i class="fa-solid fa-star ${i < count ? 'text-yellow-400' : 'text-gray-300'} text-sm"></i>`;
+            }
+            return starsHtml;
+        }
+
+        function formatTime(ms) {
+            if (ms <= 0) return "Expiré";
+            const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+            return `${days}j ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+        }
+
+        function renderProducts(filteredData) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            document.getElementById('result-count').innerText = filteredData.length;
+
+            filteredData.forEach(p => {
+                const isSoldOut = p.inventory === 0;
+                let inventoryBadge = '';
+                
+                if (isSoldOut) {
+                    inventoryBadge = `<div class="absolute top-4 left-4 bg-red-600 text-white font-bold px-3 py-1 rounded shadow-lg z-10 text-sm">COMPLET</div>`;
+                } else if (p.inventory <= 3) {
+                    inventoryBadge = `<div class="absolute top-4 left-4 bg-brand-orange text-white font-bold px-3 py-1 rounded shadow-lg z-10 text-sm">Reste ${p.inventory} chambre(s) à ce prix !</div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col transition-transform hover:-translate-y-1 ${isSoldOut ? 'opacity-75 grayscale-[0.5]' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="relative h-56">
+                        ${inventoryBadge}
+                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                            <h3 class="text-white text-xl font-bold leading-tight">${p.name}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                ${renderStars(p.stars)}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-5 flex-grow flex flex-col">
+                        <div class="flex items-center justify-between mb-3 text-sm text-gray-500">
+                            <span class="font-medium text-brand-blue"><i class="fa-solid fa-location-dot mr-1"></i> ${p.subDest}, ${p.country}</span>
+                            <span>${p.durationNights} nuits</span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 mb-1"><i class="fa-solid fa-plane mr-1"></i> ${p.supplier}</span>
+                            <span class="inline-block bg-brand-light text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1"><i class="fa-solid fa-bed mr-1"></i> ${p.roomCategory}</span>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <!-- Countdown -->
+                            <div class="bg-red-50 border border-red-100 rounded-lg p-2 mb-4 text-center">
+                                <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Top Chrono se termine dans :</span>
+                                <div class="text-lg font-bold text-red-600 timer-box" data-end="${p.endDate.getTime()}">
+                                    Calcul...
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-end justify-between">
+                                <div>
+                                    <p class="text-xs text-gray-500 mb-1">Occupation Double</p>
+                                    <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
+                                </div>
+                                <button class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors ${isSoldOut ? 'cursor-not-allowed bg-gray-400 hover:bg-gray-400' : ''}" ${isSoldOut ? 'disabled' : ''}>
+                                    ${isSoldOut ? 'Complet' : 'Réserver'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            updateTimers();
+        }
+
+        // --- FILTER LOGIC ---
+        function applyFilters() {
+            const destValue = document.getElementById('filter-dest').value;
+            const selectedSuppliers = Array.from(document.querySelectorAll('.filter-supplier:checked')).map(cb => cb.value);
+            const durationValue = document.querySelector('input[name="duration"]:checked').value;
+            const selectedCriteria = Array.from(document.querySelectorAll('.filter-criteria:checked')).map(cb => cb.value);
+
+            const filtered = products.filter(p => {
+                // Destination
+                if (destValue !== 'all' && p.destTag !== destValue) return false;
+                
+                // Suppliers
+                if (selectedSuppliers.length > 0 && !selectedSuppliers.includes(p.supplier)) return false;
+                
+                // Stars
+                if (activeStars.length > 0 && !activeStars.includes(p.stars.toString())) return false;
+                
+                // Duration
+                if (durationValue !== 'all' && p.durationNights.toString() !== durationValue) return false;
+                
+                // Criteria (Must include all selected criteria)
+                if (selectedCriteria.length > 0) {
+                    const hasAllCriteria = selectedCriteria.every(c => p.criteria.includes(c));
+                    if (!hasAllCriteria) return false;
+                }
+
+                return true;
+            });
+
+            renderProducts(filtered);
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('filter-dest').addEventListener('change', applyFilters);
+        document.querySelectorAll('.filter-supplier, .filter-criteria, input[name="duration"]').forEach(el => {
+            el.addEventListener('change', applyFilters);
+        });
+
+        // Star button toggle logic
+        document.querySelectorAll('.filter-star').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget;
+                const starVal = target.getAttribute('data-star');
+                
+                if (activeStars.includes(starVal)) {
+                    activeStars = activeStars.filter(s => s !== starVal);
+                    target.classList.remove('bg-brand-blue', 'text-white');
+                } else {
+                    activeStars.push(starVal);
+                    target.classList.add('bg-brand-blue', 'text-white');
+                }
+                applyFilters();
+            });
+        });
+
+        // Reset
+        document.getElementById('reset-filters').addEventListener('click', () => {
+            document.getElementById('filter-dest').value = 'all';
+            document.querySelectorAll('.filter-supplier, .filter-criteria').forEach(cb => cb.checked = false);
+            document.querySelector('input[name="duration"][value="all"]').checked = true;
+            activeStars = [];
+            document.querySelectorAll('.filter-star').forEach(btn => btn.classList.remove('bg-brand-blue', 'text-white'));
+            applyFilters();
+        });
+
+        // --- TIMER INTERVAL ---
+        function updateTimers() {
+            document.querySelectorAll('.timer-box').forEach(box => {
+                const end = parseInt(box.getAttribute('data-end'));
+                const now = new Date().getTime();
+                box.innerText = formatTime(end - now);
+            });
+        }
+        
+        setInterval(updateTimers, 1000);
+
+        // --- INITIAL RENDER ---
+        renderProducts(products);
+
+    </script>
+</body>
+</html>
