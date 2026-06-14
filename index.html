@@ -182,86 +182,9 @@
     </footer>
 
     <!-- Script Application -->
+    <script src="products.js"></script>
     <script>
-        // --- DATA STRUCTURE ---
-        const products = [
-            {
-                id: "TC-AZKhf6e",
-                slug: "Majestic-Elegance-Punta-Cana",
-                name: "Majestic Elegance Punta Cana",
-                destTag: "SUD",
-                subDest: "Punta Cana",
-                country: "République Dominicaine",
-                stars: 5,
-                supplier: "Vacances Sunwing",
-                carrier: "Sunwing Airlines",
-                durationNights: 7,
-                roomCategory: "Suite Junior Vue Mer",
-                criteria: ["Vue mer", "Familial", "Casino"],
-                inventory: 3,
-                price: 1459,
-                packageType: "Forfait Tout-Inclus",
-                endDate: new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000 + 4500000), // +2 days
-                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Majestic+Elegance"
-            },
-            {
-                id: "TC-BXLhf7f",
-                slug: "Riu-Palace-Peninsula",
-                name: "Riu Palace Peninsula",
-                destTag: "SUD",
-                subDest: "Cancun",
-                country: "Mexique",
-                stars: 5,
-                supplier: "Vacances Air Canada",
-                carrier: "Air Canada Rouge",
-                durationNights: 7,
-                roomCategory: "Suite Standard",
-                criteria: ["Familial", "Glissades d'eau"],
-                inventory: 0, // COMPLET
-                price: 1689,
-                packageType: "Forfait Tout-Inclus",
-                endDate: new Date(new Date().getTime() + 1 * 24 * 60 * 60 * 1000 + 3600000), // +1 day
-                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Riu+Palace"
-            },
-            {
-                id: "TC-CYMhg8g",
-                slug: "Margaritaville-Island-Reserve",
-                name: "Margaritaville Island Reserve",
-                destTag: "SUD",
-                subDest: "Riviera Maya",
-                country: "Mexique",
-                stars: 4,
-                supplier: "Vacances Transat",
-                carrier: "Air Transat",
-                durationNights: 14,
-                roomCategory: "Suite Swim Out",
-                criteria: ["Swim Out", "Adultes seulement", "Ambiance"],
-                inventory: 2,
-                price: 2890,
-                packageType: "Forfait Tout-Inclus",
-                endDate: new Date(new Date().getTime() + 5 * 24 * 60 * 60 * 1000), 
-                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Margaritaville"
-            },
-            {
-                id: "TC-DZNih9h",
-                slug: "Hotel-Riu-Plaza-Espana",
-                name: "Hotel Riu Plaza España",
-                destTag: "EUROPE",
-                subDest: "Madrid",
-                country: "Espagne",
-                stars: 4,
-                supplier: "Vacances Air Canada",
-                carrier: "Air Canada",
-                durationNights: 7,
-                roomCategory: "Chambre Standard",
-                criteria: ["En ville"],
-                inventory: 5,
-                price: 1850,
-                packageType: "Forfait Plan Européen",
-                endDate: new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000), 
-                img: "https://placehold.co/600x400/e2e8f0/64748b?text=Riu+Plaza"
-            }
-        ];
+        // products loaded from products.js
 
         let activeStars = [];
 
@@ -301,10 +224,10 @@
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col transition-transform hover:-translate-y-1 ${isSoldOut ? 'opacity-75 grayscale-[0.5]' : ''}`;
                 
-                const productUrl = `${p.slug}.html`;
+                const productUrl = `product.html?slug=${encodeURIComponent(p.slug)}`;
 
                 card.innerHTML = `
-                    <a href="${productUrl}" class="relative h-56 block group">
+                    <a href="${productUrl}" class="relative block group aspect-square overflow-hidden">
                         ${inventoryBadge}
                         <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">

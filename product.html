@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyage Fiesta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            blue: '#025091',
+                            orange: '#F26522',
+                            dark: '#1F2937',
+                            light: '#F3F7FA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sticky-booking { top: 100px; }
+        .tab-active { border-bottom: 3px solid #F26522; color: #F26522; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-brand-light text-gray-800 font-sans">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html" class="w-40 h-10 bg-gray-200 flex items-center justify-center text-gray-400 font-bold rounded">LOGO</a>
+            <div class="hidden md:flex gap-6 text-brand-blue font-medium">
+                <a href="index.html" class="hover:text-brand-orange">Promotions</a>
+                <a href="index.html" class="hover:text-brand-orange">Top Chrono</a>
+            </div>
+            <a href="tel:1800000000" class="bg-brand-blue text-white px-4 py-2 rounded-full text-sm font-bold">
+                <i class="fa-solid fa-phone mr-2"></i> 1-800-FIESTA
+            </a>
+        </div>
+    </header>
+
+    <div class="bg-red-600 text-white py-2 overflow-hidden">
+        <div class="container mx-auto px-4 flex justify-center items-center gap-4">
+            <span class="font-bold animate-pulse text-sm md:text-base">🔥 OFFRE TOP CHRONO :</span>
+            <div id="countdown" class="font-mono font-bold text-lg tracking-tighter">00j 00h 00m 00s</div>
+        </div>
+    </div>
+
+    <div id="product-content"></div>
+
+    <div id="not-found" class="hidden container mx-auto px-4 py-24 text-center">
+        <h1 class="text-2xl font-bold text-brand-blue mb-4">Forfait introuvable</h1>
+        <p class="text-gray-600 mb-6">Ce produit n'existe pas ou n'est plus disponible.</p>
+        <a href="index.html" class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors">Retour aux promotions</a>
+    </div>
+
+    <footer class="bg-brand-dark text-gray-400 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 text-justify text-[11px] leading-relaxed border-t border-gray-700 pt-8">
+                <div>
+                    <h6 class="text-white font-bold mb-3 uppercase tracking-wider">Français</h6>
+                    <p>L'information apparaissant dans ce message électronique est de nature légalement privilégiée et confidentielle. Si ce message vous est parvenu par erreur et que vous n'êtes pas le destinataire visé, vous êtes par les présentes avisé que tout usage, copie ou distribution de ce message est strictement interdit. Vous êtes donc priés de nous informer immédiatement de cette erreur et de détruire ce message.</p>
+                </div>
+                <div>
+                    <h6 class="text-white font-bold mb-3 uppercase tracking-wider">English</h6>
+                    <p>The information in this message is legally privileged and confidential. In the event of a transmission error and if you are not the individual or entity mentioned above, you are hereby advised that any use, copying or reproduction of this document is strictly forbidden. Please advise us of this error and destroy this message.</p>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-[10px] text-gray-600">
+                &copy; 2026 Voyage Fiesta. Développé pour la promotion exclusive des produits Fiesta.
+            </div>
+        </div>
+    </footer>
+
+    <script src="products.js"></script>
+    <script>
+        const criteriaIcons = {
+            "Vue mer": "fa-water",
+            "Familial": "fa-users",
+            "Adultes seulement": "fa-cocktail",
+            "Swim Out": "fa-water",
+            "Glissades d'eau": "fa-water-ladder",
+            "Golf": "fa-golf-ball-tee",
+            "En ville": "fa-city",
+            "Casino": "fa-dice",
+            "Ambiance": "fa-music"
+        };
+
+        function renderStars(count) {
+            let html = '';
+            for (let i = 0; i < 5; i++) {
+                html += `<i class="fa-solid fa-star${i < count ? '' : ' text-gray-300'}"></i>`;
+            }
+            return html;
+        }
+
+        function getInclusions(p) {
+            const base = [
+                { icon: 'fa-plane', text: 'Vols aller-retour directs ou avec escales' },
+                { icon: 'fa-bus', text: 'Transferts aéroport → hôtel → aéroport' },
+                { icon: 'fa-hotel', text: 'Hébergement pour la durée du séjour' },
+                { icon: 'fa-suitcase', text: '1 bagage enregistré (selon le transporteur)' },
+                { icon: 'fa-shield-halved', text: 'Contribution au Fonds FICAV' }
+            ];
+            if (p.packageType.includes('Tout-Inclus') || p.packageType.includes('Croisière')) {
+                base.splice(3, 0, { icon: 'fa-utensils', text: 'Formule repas et boissons' });
+            } else if (p.packageType.includes('Plan Européen') || p.packageType.includes('Vol + Hôtel')) {
+                base.splice(3, 0, { icon: 'fa-mug-saucer', text: 'Petit-déjeuner quotidien' });
+            } else if (p.packageType.includes('Circuit')) {
+                base.splice(3, 0, { icon: 'fa-map', text: 'Guide francophone et excursions incluses' });
+            }
+            return base;
+        }
+
+        function renderProduct(p) {
+            const isSoldOut = p.inventory === 0;
+            const days = p.durationNights + 1;
+            const simplePrice = Math.round(p.price * 1.3);
+            const triplePrice = Math.round(p.price * 0.96);
+            const childPrice = p.criteria.includes('Adultes seulement') ? null : Math.round(p.price * 0.58);
+            const inclusions = getInclusions(p);
+
+            document.title = `${p.name} - Voyage Fiesta`;
+
+            let inventoryHtml = '';
+            if (isSoldOut) {
+                inventoryHtml = `
+                    <div class="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-center mb-6">
+                        <p class="font-bold text-sm"><i class="fa-solid fa-ban mr-2"></i> Forfait complet</p>
+                        <p class="text-[10px] uppercase font-bold">Aucune chambre disponible à ce prix</p>
+                    </div>`;
+            } else if (p.inventory <= 3) {
+                inventoryHtml = `
+                    <div class="bg-orange-50 text-brand-orange border border-orange-100 rounded-lg p-3 text-center mb-6">
+                        <p class="font-bold text-sm"><i class="fa-solid fa-fire-flame-curved mr-2"></i> Il ne reste que <span class="text-lg">${p.inventory}</span> chambre(s) !</p>
+                        <p class="text-[10px] uppercase font-bold">À ce prix exceptionnel</p>
+                    </div>`;
+            } else {
+                inventoryHtml = `
+                    <div class="bg-orange-50 text-brand-orange border border-orange-100 rounded-lg p-3 text-center mb-6">
+                        <p class="font-bold text-sm"><i class="fa-solid fa-fire-flame-curved mr-2"></i> Il reste <span class="text-lg">${p.inventory}</span> chambres !</p>
+                        <p class="text-[10px] uppercase font-bold">À ce prix exceptionnel</p>
+                    </div>`;
+            }
+
+            const criteriaHtml = p.criteria.map(c => {
+                const icon = criteriaIcons[c] || 'fa-tag';
+                return `<span class="bg-white border px-3 py-1 rounded-full text-xs font-medium"><i class="fa-solid ${icon} mr-1"></i> ${c}</span>`;
+            }).join('');
+
+            const seoHtml = (p.seoTags || []).map(t =>
+                `<span class="bg-brand-light text-brand-blue px-3 py-1 rounded text-[10px] font-bold">${t}</span>`
+            ).join('');
+
+            const childHtml = childPrice === null
+                ? `<div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-gray-500 uppercase">Tarif Enfant</span>
+                            <span class="font-bold text-brand-blue text-sm">N/A</span>
+                        </div>
+                        <p class="text-[9px] text-gray-400 italic leading-tight">Réservé aux adultes seulement (18 ans et plus).</p>
+                   </div>`
+                : `<div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-gray-500 uppercase">Tarif Enfant</span>
+                            <span class="font-bold text-brand-blue text-sm">${childPrice}$</span>
+                        </div>
+                        <p class="text-[9px] text-gray-400 italic leading-tight">Le prix enfant est calculé selon l'âge au retour du voyage. Nécessite obligatoirement 2 adultes.</p>
+                   </div>`;
+
+            document.getElementById('product-content').innerHTML = `
+                <section class="container mx-auto px-4 py-6">
+                    <nav class="text-xs text-gray-500 mb-4 flex gap-2 flex-wrap">
+                        <a href="index.html" class="hover:underline">Accueil</a> <span>/</span>
+                        <a href="index.html" class="hover:underline">${p.destLabel}</a> <span>/</span>
+                        <span class="text-brand-blue font-bold">${p.country}</span>
+                    </nav>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div class="flex flex-wrap justify-between items-start gap-4">
+                                    <div>
+                                        ${isSoldOut ? '<div class="inline-block bg-red-600 text-white font-bold px-3 py-1 rounded text-sm mb-3">COMPLET</div>' : ''}
+                                        <h1 class="text-3xl font-bold text-brand-blue">${p.name}</h1>
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <div class="flex text-yellow-400 text-sm">${renderStars(p.stars)}</div>
+                                            <span class="text-gray-500 text-sm">(${p.stars} étoile${p.stars > 1 ? 's' : ''})</span>
+                                        </div>
+                                        <p class="text-gray-600 mt-2"><i class="fa-solid fa-location-dot text-brand-orange"></i> ${p.location}</p>
+                                    </div>
+                                    <div class="bg-brand-light p-3 rounded-lg border border-blue-100 flex items-center gap-3">
+                                        <div class="text-right">
+                                            <p class="text-xs text-gray-500 font-bold uppercase">Fournisseur</p>
+                                            <p class="text-sm font-bold text-brand-blue">${p.supplier}</p>
+                                        </div>
+                                        <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-[10px] text-gray-400 font-bold">LOGO</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-2 h-96">
+                                <div class="col-span-3 bg-gray-300 rounded-l-xl overflow-hidden relative">
+                                    <img src="${p.img}" class="w-full h-full object-cover" alt="${p.name}">
+                                    <span class="absolute bottom-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-xs">${p.subDest}</span>
+                                </div>
+                                <div class="grid grid-rows-2 gap-2">
+                                    <div class="bg-gray-300 rounded-tr-xl overflow-hidden">
+                                        <img src="https://placehold.co/400x300/cbd5e1/475569?text=Chambre" class="w-full h-full object-cover" alt="Chambre">
+                                    </div>
+                                    <div class="bg-gray-300 rounded-br-xl overflow-hidden relative">
+                                        <img src="https://placehold.co/400x300/94a3b8/1e293b?text=Activites" class="w-full h-full object-cover" alt="Activités">
+                                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                            <span class="text-white font-bold text-sm">+15 photos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div class="flex border-b">
+                                    <button class="px-6 py-4 tab-active">${p.packageType}</button>
+                                    <button class="px-6 py-4 text-gray-500 hover:text-brand-orange transition">Détails de l'hôtel</button>
+                                </div>
+                                <div class="p-6 grid md:grid-cols-2 gap-8">
+                                    <div>
+                                        <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-circle-check text-green-500 mr-2"></i> Inclusions</h3>
+                                        <ul class="space-y-3 text-sm text-gray-600">
+                                            ${inclusions.map(i => `<li class="flex items-start gap-2"><i class="fa-solid ${i.icon} text-xs mt-1"></i> ${i.text}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <h3 class="font-bold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-circle-xmark text-red-400 mr-2"></i> Exclusions</h3>
+                                        <ul class="space-y-3 text-sm text-gray-500">
+                                            <li>Tout ce qui n'est pas inscrit dans la section « Inclusions »</li>
+                                        </ul>
+                                        <div class="mt-6 pt-6 border-t border-gray-200">
+                                            <h4 class="font-bold text-xs uppercase text-gray-400 mb-3 tracking-widest">Caractéristiques</h4>
+                                            <div class="flex flex-wrap gap-2">${criteriaHtml}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="bg-white p-6 rounded-xl border border-gray-100 flex items-center gap-4">
+                                    <div class="bg-brand-light p-3 rounded-full text-brand-blue text-2xl"><i class="fa-solid fa-plane-up"></i></div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-400 uppercase">Transporteur</p>
+                                        <p class="font-bold text-brand-blue">${p.carrier}</p>
+                                    </div>
+                                </div>
+                                <div class="bg-white p-6 rounded-xl border border-gray-100 flex items-center gap-4">
+                                    <div class="bg-brand-light p-3 rounded-full text-brand-blue text-2xl"><i class="fa-solid fa-bed"></i></div>
+                                    <div>
+                                        <p class="text-xs font-bold text-gray-400 uppercase">Type de chambre</p>
+                                        <p class="font-bold text-brand-blue">${p.roomCategory}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-2xl shadow-xl border-2 ${isSoldOut ? 'border-gray-300 opacity-90' : 'border-brand-blue'} p-6 sticky-booking">
+                                ${inventoryHtml}
+
+                                <div class="space-y-4 mb-6 border-b pb-6">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">Départ de :</span>
+                                        <span class="font-bold text-brand-blue">Montréal (YUL)</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">Durée :</span>
+                                        <span class="font-bold text-brand-blue">${p.durationNights} nuits / ${days} jours</span>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4 mb-8">
+                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">Tarifs par occupation</h4>
+                                    <div class="flex items-center justify-between p-3 rounded-xl border-2 ${isSoldOut ? 'border-gray-200 bg-gray-50' : 'border-brand-orange bg-orange-50'}">
+                                        <div class="flex items-center gap-3">
+                                            <input type="radio" name="occ" checked ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-orange">
+                                            <span class="text-sm font-medium ${isSoldOut ? 'text-gray-500' : ''}">Double (2 pers.)</span>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-2xl font-black ${isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue'}">${p.price}$</span>
+                                            <p class="text-[10px] text-gray-500 italic">Prix par personne</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3">
+                                            <input type="radio" name="occ" ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-blue">
+                                            <span class="text-sm font-medium text-gray-600">Simple (1 pers.)</span>
+                                        </div>
+                                        <span class="font-bold ${isSoldOut ? 'text-gray-400' : 'text-gray-800'}">${simplePrice}$</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200">
+                                        <div class="flex items-center gap-3">
+                                            <input type="radio" name="occ" ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-blue">
+                                            <span class="text-sm font-medium text-gray-600">Triple (3 pers.)</span>
+                                        </div>
+                                        <span class="font-bold ${isSoldOut ? 'text-gray-400' : 'text-gray-800'}">${triplePrice}$</span>
+                                    </div>
+                                    ${childHtml}
+                                </div>
+
+                                ${isSoldOut
+                                    ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">COMPLET</button>
+                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
+                                    : `<button class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 text-lg">RÉSERVER MAINTENANT</button>
+                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4">En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>`}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="container mx-auto px-4 py-12">
+                    <div class="bg-white p-6 rounded-xl border border-gray-100">
+                        <h5 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest">Catégories et Tags SEO</h5>
+                        <div class="flex flex-wrap gap-2">${seoHtml}</div>
+                    </div>
+                </section>`;
+
+            startCountdown(p.endDate);
+        }
+
+        function startCountdown(endDate) {
+            const display = document.getElementById('countdown');
+            function tick() {
+                const ms = endDate.getTime() - Date.now();
+                if (ms <= 0) {
+                    display.textContent = 'OFFRE TERMINÉE';
+                    return;
+                }
+                const days = Math.floor(ms / 86400000);
+                const hours = Math.floor((ms % 86400000) / 3600000);
+                const minutes = Math.floor((ms % 3600000) / 60000);
+                const seconds = Math.floor((ms % 60000) / 1000);
+                display.textContent =
+                    `${String(days).padStart(2, '0')}j ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+            }
+            tick();
+            setInterval(tick, 1000);
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('slug');
+        const product = slug ? getProductBySlug(slug) : null;
+
+        if (product) {
+            renderProduct(product);
+        } else {
+            document.getElementById('not-found').classList.remove('hidden');
+            document.querySelector('.bg-red-600').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
