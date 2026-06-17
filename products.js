@@ -2,6 +2,12 @@
     const now = Date.now();
     const day = 86400000;
 
+    function pexels(id, w = 800) {
+        return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=${w}&fit=crop`;
+    }
+
+    window.HERO_IMAGE = pexels(1450360, 1920);
+
     const raw = [
         {
             id: "TC-AZKhf6e",
@@ -22,9 +28,9 @@
             packageType: "Forfait Tout-Inclus",
             endDateIn: 2,
             endDateExtra: 4500000,
-            img: "https://images.unsplash.com/photo-1571008887538-b36bb970ef41?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1582719478250-c89cae659dc6?auto=format&fit=crop&w=400&q=80",
+            img: pexels(261102, 800),
+            imgRoom: pexels(271624, 400),
+            imgExtra: pexels(258154, 400),
             seoTags: ["#SUD", "#PUNTA_CANA", "#REPUBLIQUE_DOMINICAINE", "#TOUT_INCLUS", "#VOYAGE_FAMILLE"]
         },
         {
@@ -46,9 +52,9 @@
             packageType: "Forfait Tout-Inclus",
             endDateIn: 1,
             endDateExtra: 3600000,
-            img: "https://images.unsplash.com/photo-1520250497591-112f87240c4c?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1575429198097-0415ec6d2c7a?auto=format&fit=crop&w=400&q=80",
+            img: pexels(2491287, 800),
+            imgRoom: pexels(271743, 400),
+            imgExtra: pexels(258154, 400),
             seoTags: ["#SUD", "#CANCUN", "#MEXIQUE", "#TOUT_INCLUS", "#VOYAGE_FAMILLE"]
         },
         {
@@ -69,9 +75,9 @@
             price: 2890,
             packageType: "Forfait Tout-Inclus",
             endDateIn: 5,
-            img: "https://images.unsplash.com/photo-1582719508461-905c593771df?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1519046904214-96b7917d43fb?auto=format&fit=crop&w=400&q=80",
+            img: pexels(1450360, 800),
+            imgRoom: pexels(189296, 400),
+            imgExtra: pexels(1134176, 400),
             seoTags: ["#SUD", "#RIVIERA_MAYA", "#MEXIQUE", "#TOUT_INCLUS", "#ADULTES_SEULEMENT"]
         },
         {
@@ -92,9 +98,9 @@
             price: 1850,
             packageType: "Forfait Plan Européen",
             endDateIn: 3,
-            img: "https://images.unsplash.com/photo-1539037116277-4db20889f2d3?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1590490360182-c33abfc8bae0?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1543783207-ec64e4b9532f?auto=format&fit=crop&w=400&q=80",
+            img: pexels(612366, 800),
+            imgRoom: pexels(271624, 400),
+            imgExtra: pexels(1029604, 400),
             seoTags: ["#EUROPE", "#MADRID", "#ESPAGNE", "#PLAN_EUROPEEN", "#EN_VILLE"]
         },
         {
@@ -115,9 +121,9 @@
             price: 2199,
             packageType: "Forfait Croisière",
             endDateIn: 4,
-            img: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=400&q=80",
+            img: pexels(1619569, 800),
+            imgRoom: pexels(271743, 400),
+            imgExtra: pexels(1450360, 400),
             seoTags: ["#CROISIERE", "#MIAMI", "#CARAIBES", "#ADULTES_SEULEMENT"]
         },
         {
@@ -138,9 +144,9 @@
             price: 3290,
             packageType: "Forfait Circuit",
             endDateIn: 6,
-            img: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1523906834659-9d2308569ddb?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1515542622106-78bda4ba0e5b?auto=format&fit=crop&w=400&q=80",
+            img: pexels(1797160, 800),
+            imgRoom: pexels(1174732, 400),
+            imgExtra: pexels(338515, 400),
             seoTags: ["#CIRCUIT", "#ROME", "#FLORENCE", "#ITALIE", "#EN_VILLE"]
         },
         {
@@ -161,9 +167,9 @@
             price: 1250,
             packageType: "Forfait Plan Européen",
             endDateIn: 3,
-            img: "https://images.unsplash.com/photo-1596462502279-4bf4c548ad33?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1535131749006-b7d5837d1d4c?auto=format&fit=crop&w=400&q=80",
+            img: pexels(1543841, 800),
+            imgRoom: pexels(271624, 400),
+            imgExtra: pexels(325061, 400),
             seoTags: ["#CANADA", "#QUEBEC", "#EN_VILLE", "#GOLF"]
         },
         {
@@ -184,9 +190,9 @@
             price: 1599,
             packageType: "Forfait Vol + Hôtel",
             endDateIn: 2,
-            img: "https://images.unsplash.com/photo-1605836567927-852558b87145?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1595576507628-250690bed952?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=400&q=80",
+            img: pexels(1764208, 800),
+            imgRoom: pexels(189296, 400),
+            imgExtra: pexels(1268855, 400),
             seoTags: ["#USA", "#LAS_VEGAS", "#ADULTES_SEULEMENT", "#CASINO"]
         },
         {
@@ -207,9 +213,9 @@
             price: 2499,
             packageType: "Forfait Tout-Inclus",
             endDateIn: 5,
-            img: "https://images.unsplash.com/photo-1580232173708-000d5f6439cb?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80",
+            img: pexels(457881, 800),
+            imgRoom: pexels(271743, 400),
+            imgExtra: pexels(1450351, 400),
             seoTags: ["#SUD", "#SAINTE_LUCIE", "#SWIM_OUT", "#ADULTES_SEULEMENT"]
         },
         {
@@ -230,9 +236,9 @@
             price: 999,
             packageType: "Forfait Tout-Inclus",
             endDateIn: 3,
-            img: "https://images.unsplash.com/photo-1520637838972-4ffeadcc60b3?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1564507592339-c60657eea523?auto=format&fit=crop&w=400&q=80",
+            img: pexels(1450363, 800),
+            imgRoom: pexels(271624, 400),
+            imgExtra: pexels(1268848, 400),
             seoTags: ["#SUD", "#RIVIERA_MAYA", "#MEXIQUE", "#FAMILIAL", "#GLISSADES"]
         },
         {
@@ -253,9 +259,9 @@
             price: 1999,
             packageType: "Forfait Tout-Inclus",
             endDateIn: 7,
-            img: "https://images.unsplash.com/photo-1610641818980-b9f5d9585a24?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1587174486073-9d1c513a1f8c?auto=format&fit=crop&w=400&q=80",
+            img: pexels(261102, 800),
+            imgRoom: pexels(271743, 400),
+            imgExtra: pexels(325061, 400),
             seoTags: ["#SUD", "#PUNTA_CANA", "#GOLF", "#FAMILIAL", "#VUE_MER"]
         },
         {
@@ -276,9 +282,9 @@
             price: 3290,
             packageType: "Forfait Plan Européen",
             endDateIn: 4,
-            img: "https://images.unsplash.com/photo-1549144511-f099e773e34c?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=400&q=80",
+            img: pexels(338515, 800),
+            imgRoom: pexels(189296, 400),
+            imgExtra: pexels(338504, 400),
             seoTags: ["#EUROPE", "#MONACO", "#VUE_MER", "#ADULTES_SEULEMENT"]
         },
         {
@@ -299,9 +305,9 @@
             price: 1299,
             packageType: "Forfait Plan Européen",
             endDateIn: 2,
-            img: "https://images.unsplash.com/photo-1560930950-5cc20e80e392?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1598928506311-c55ded939a5c?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1561283689-b62dbb40bc59?auto=format&fit=crop&w=400&q=80",
+            img: pexels(209786, 800),
+            imgRoom: pexels(271624, 400),
+            imgExtra: pexels(1029604, 400),
             seoTags: ["#EUROPE", "#BERLIN", "#ALLEMAGNE", "#EN_VILLE"]
         },
         {
@@ -322,9 +328,9 @@
             price: 2799,
             packageType: "Forfait Croisière",
             endDateIn: 8,
-            img: "https://images.unsplash.com/photo-1599640843490-985aa4ac6ba5?auto=format&fit=crop&w=800&q=80",
-            imgRoom: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=400&q=80",
-            imgExtra: "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=400&q=80",
+            img: pexels(1263287, 800),
+            imgRoom: pexels(271743, 400),
+            imgExtra: pexels(1285625, 400),
             seoTags: ["#CROISIERE", "#BARCELONE", "#MEDITERRANEE", "#FAMILIAL"]
         }
     ];
