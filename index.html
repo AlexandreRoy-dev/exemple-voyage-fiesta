@@ -43,18 +43,16 @@
 </head>
 <body class="bg-brand-light text-gray-800 font-sans flex flex-col min-h-screen">
 
-    <!-- Top Banner -->
     <div class="bg-brand-orange text-white text-center py-2 text-sm font-semibold tracking-wide">
         🔥 OFFRES TOP CHRONO - TEMPS LIMITÉ ! 🔥
     </div>
 
-    <!-- Header -->
     <header class="bg-white shadow-md sticky top-0 z-40">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <!-- Logo Placeholder -->
-                <div class="w-48 h-12 bg-gray-200 flex items-center justify-center text-gray-500 font-bold text-xl rounded">
-                    [LOGO VOYAGE FIESTA]
+                <div class="flex items-center gap-2 text-brand-blue">
+                    <i class="fa-solid fa-umbrella-beach text-3xl"></i>
+                    <span class="font-bold text-2xl tracking-wider uppercase">Voyage Fiesta</span>
                 </div>
             </div>
             <nav class="hidden md:flex gap-6 font-medium text-brand-blue">
@@ -66,26 +64,22 @@
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="relative bg-brand-dark text-white">
-        <img src="https://placehold.co/1920x400/1F2937/FFFFFF?text=Image+de+Couverture+Destinations" alt="Hero" class="w-full h-64 object-cover opacity-60">
+        <img src="https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" alt="Destination de rêve" class="w-full h-64 object-cover opacity-60">
         <div class="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
             <h1 class="text-4xl md:text-5xl font-bold mb-4 shadow-sm">Découvrez nos Offres Exclusives</h1>
             <p class="text-lg md:text-xl font-light max-w-2xl">Réservez dès maintenant et profitez de nos forfaits tout-inclus avant la fin du décompte.</p>
         </div>
     </section>
 
-    <!-- Main Content -->
     <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 flex-grow">
         
-        <!-- Sidebar Filters -->
         <aside class="filters-sidebar w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-6 h-fit lg:sticky lg:z-30 lg:self-start">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-brand-blue"><i class="fa-solid fa-filter mr-2"></i>Filtres</h2>
                 <button id="reset-filters" class="text-sm text-gray-500 hover:text-brand-orange underline">Réinitialiser</button>
             </div>
 
-            <!-- Destinations -->
             <div class="mb-6">
                 <h3 class="font-semibold mb-3 text-gray-700">Destinations</h3>
                 <select id="filter-dest" class="w-full p-2 border border-gray-300 rounded focus:ring-brand-orange focus:border-brand-orange">
@@ -99,7 +93,6 @@
                 </select>
             </div>
 
-            <!-- Fournisseurs -->
             <div class="mb-6">
                 <h3 class="font-semibold mb-3 text-gray-700">Fournisseurs</h3>
                 <div class="space-y-2 filter-scroll max-h-32 overflow-y-auto">
@@ -110,7 +103,6 @@
                 </div>
             </div>
 
-            <!-- Classement -->
             <div class="mb-6">
                 <h3 class="font-semibold mb-3 text-gray-700">Classement Hôtelier</h3>
                 <div class="flex gap-2">
@@ -120,7 +112,6 @@
                 </div>
             </div>
 
-            <!-- Durée -->
             <div class="mb-6">
                 <h3 class="font-semibold mb-3 text-gray-700">Durée</h3>
                 <div class="space-y-2">
@@ -130,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- Critères (Tags) -->
             <div class="mb-6">
                 <h3 class="font-semibold mb-3 text-gray-700">Critères</h3>
                 <div class="space-y-2 filter-scroll max-h-40 overflow-y-auto">
@@ -144,7 +134,6 @@
             </div>
         </aside>
 
-        <!-- Product Grid -->
         <section class="w-full lg:w-3/4 relative z-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800"><span id="result-count">0</span> Forfaits trouvés</h2>
@@ -156,18 +145,17 @@
             </div>
             
             <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Products injected via JS -->
-            </div>
+                </div>
         </section>
 
     </main>
 
-    <!-- Footer with Legal Mentions -->
     <footer class="bg-brand-dark text-gray-300 py-10 mt-12">
         <div class="container mx-auto px-4 text-xs space-y-6">
             <div class="text-center mb-6">
-                <div class="w-48 h-12 bg-gray-700 mx-auto flex items-center justify-center text-gray-400 font-bold text-xl rounded mb-4">
-                    [LOGO BLANC]
+                <div class="flex items-center justify-center gap-2 text-white mb-4">
+                    <i class="fa-solid fa-umbrella-beach text-3xl"></i>
+                    <span class="font-bold text-2xl tracking-wider uppercase">Voyage Fiesta</span>
                 </div>
             </div>
             <div class="border-t border-gray-700 pt-6 flex flex-col md:flex-row gap-8">
@@ -186,7 +174,6 @@
         </div>
     </footer>
 
-    <!-- Script Application -->
     <script src="products.js"></script>
     <script>
         // products loaded from products.js
@@ -255,7 +242,6 @@
                         </div>
                         
                         <div class="mt-auto">
-                            <!-- Countdown -->
                             <div class="bg-red-50 border border-red-100 rounded-lg p-2 mb-4 text-center">
                                 <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Top Chrono se termine dans :</span>
                                 <div class="text-lg font-bold text-red-600 timer-box" data-end="${p.endDate.getTime()}">
