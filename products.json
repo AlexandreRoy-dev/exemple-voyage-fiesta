@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-19T22:00:00.000Z",
+  "updatedAt": "2026-06-19T21:45:10.326Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -12,8 +12,8 @@
       "active": "actif",
       "destTag": "sud",
       "subDest": "Montego Bay",
-      "destination1": "Jamaïque",
-      "destination": "Jamaïque",
+      "destination1": "jamaque",
+      "destination": "jamaque",
       "country": "Jamaïque",
       "location": "Runaway Bay, Montego Bay, Jamaïque",
       "stars": 5,
@@ -21,18 +21,25 @@
       "carrier": "WestJet",
       "durationNights": 7,
       "roomCategory": "Chambre avec vue cour",
-      "criteria": ["tout_inclus_allinclusive"],
+      "criteria": [
+        "tout_inclus_allinclusive"
+      ],
       "inventory": 15,
       "price": 1518,
       "priceOccSimple": 2208,
+      "priceOccTriple": null,
+      "priceOccDouble1Child": null,
       "priceOriginal": 2165,
       "discountAmount": 647,
+      "financingMonthly": null,
       "taxesAmount": 390,
       "depositAmount": 200,
       "finalPaymentDate": "2026-12-11T00:00:00.000Z",
       "returnDate": "2027-03-04T00:00:00.000Z",
       "priceChild212": 1148,
+      "priceChild1317": null,
       "packageType": "Forfait Tout-Inclus",
+      "hotelDescription": "Forfait tout-inclus au Gran Muthu Runaway Bay à Montego Bay, Jamaïque. Séjour de 7 nuits / 8 jours. Vols avec WestJet via Sunwing depuis Montréal (YUL). Occupation triple non disponible à ce tarif. Horaires et numéros de vol à venir.",
       "endDate": "2026-12-11T00:00:00.000Z",
       "departureDate": "2027-02-25T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
@@ -60,7 +67,16 @@
       "img": "assets/forfaits/Gran-Muthu-Runaway-Bay-Montego-Bay-img.jpg",
       "imgRoom": "assets/forfaits/Gran-Muthu-Runaway-Bay-Montego-Bay-room.jpg",
       "imgExtra": "assets/forfaits/Gran-Muthu-Runaway-Bay-Montego-Bay-extra.jpg",
-      "seoTags": ["#SUD", "#JAMAIQUE", "#MONTEGO_BAY"]
+      "images": [
+        "assets/forfaits/Gran-Muthu-Runaway-Bay-Montego-Bay-img.jpg",
+        "assets/forfaits/Gran-Muthu-Runaway-Bay-Montego-Bay-room.jpg",
+        "assets/forfaits/Gran-Muthu-Runaway-Bay-Montego-Bay-extra.jpg"
+      ],
+      "seoTags": [
+        "#SUD",
+        "#JAMAIQUE",
+        "#MONTEGO_BAY"
+      ]
     },
     {
       "id": "6a35adb70ab1013d3542fa97",
@@ -70,8 +86,8 @@
       "active": "actif",
       "destTag": "sud",
       "subDest": "Freeport",
-      "destination1": "Bahamas",
-      "destination": "Bahamas",
+      "destination1": "bahamas",
+      "destination": "bahamas",
       "country": "Bahamas",
       "location": "Freeport, Bahamas",
       "stars": 5,
@@ -79,13 +95,18 @@
       "carrier": "WestJet",
       "durationNights": 7,
       "roomCategory": "Chambre Supérieur",
-      "criteria": ["tout_inclus_allinclusive", "directement_sur_la_plage"],
+      "criteria": [
+        "tout_inclus_allinclusive",
+        "directement_sur_la_plage"
+      ],
       "inventory": 8,
       "price": 1809,
       "priceOccSimple": 2378,
-      "priceOccTriple": 1709,
+      "priceOccTriple": null,
+      "priceOccDouble1Child": null,
       "priceOriginal": 2815,
       "discountAmount": 1006,
+      "financingMonthly": null,
       "taxesAmount": 240,
       "depositAmount": 200,
       "finalPaymentDate": "2027-01-11T00:00:00.000Z",
@@ -93,6 +114,7 @@
       "priceChild212": 668,
       "priceChild1317": 958,
       "packageType": "Forfait Tout-Inclus",
+      "hotelDescription": "Forfait tout-inclus au Viva Fortuna Beach by Wyndham à Freeport, Bahamas. Séjour de 7 nuits / 8 jours au cœur des Bahamas. Vols avec WestJet via Sunwing depuis Montréal (YUL). Horaires et numéros de vol à venir.",
       "endDate": "2027-01-11T00:00:00.000Z",
       "departureDate": "2027-03-27T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
@@ -120,7 +142,16 @@
       "img": "assets/forfaits/Viva-Fortuna-Beach-Freeport-img.jpg",
       "imgRoom": "assets/forfaits/Viva-Fortuna-Beach-Freeport-room.jpg",
       "imgExtra": "assets/forfaits/Viva-Fortuna-Beach-Freeport-extra.jpg",
-      "seoTags": ["#SUD", "#BAHAMAS", "#FREEPORT"]
+      "images": [
+        "assets/forfaits/Viva-Fortuna-Beach-Freeport-img.jpg",
+        "assets/forfaits/Viva-Fortuna-Beach-Freeport-room.jpg",
+        "assets/forfaits/Viva-Fortuna-Beach-Freeport-extra.jpg"
+      ],
+      "seoTags": [
+        "#SUD",
+        "#BAHAMAS",
+        "#FREEPORT"
+      ]
     }
   ]
 }
