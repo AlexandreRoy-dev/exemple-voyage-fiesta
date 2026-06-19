@@ -105,7 +105,7 @@
             active: state,
             state,
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
-            destination: p.destination || p.subDest,
+            destination: p.destination1 || p.destination || p.subDest,
             departureAirport: p.departureAirport || 'Montréal (YUL)',
             criteria: Array.isArray(p.criteria) ? p.criteria : [],
             endDate,

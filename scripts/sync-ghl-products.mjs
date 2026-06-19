@@ -216,7 +216,7 @@ async function mapRecord(record, apiKey, manifest) {
   const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
   const slug = pick(props, 'slug') || slugify(name);
   const subDest = pick(props, 'sub_dest', 'subDest', 'sub_destination', 'city') || '';
-  const destination = pick(props, 'destination', 'dest_destination') || subDest;
+  const destination1 = pick(props, 'destination1', 'destination', 'dest_destination') || subDest;
 
   const criteria = toStringArray(pick(props, 'criteria', 'criteres', 'tags'));
   const seoTags = toStringArray(pick(props, 'seo_tags', 'seoTags', 'seo'));
@@ -266,7 +266,8 @@ async function mapRecord(record, apiKey, manifest) {
     active,
     destTag: pick(props, 'dest_tag', 'destTag', 'region') || '',
     subDest,
-    destination,
+    destination1,
+    destination: destination1,
     country: pick(props, 'country', 'pays') || '',
     location: pick(props, 'location', 'address', 'adresse') || '',
     stars: toNumber(pick(props, 'stars', 'star_rating'), 0),

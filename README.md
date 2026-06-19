@@ -70,7 +70,7 @@ node scripts/sync-ghl-products.mjs
 |-----------|----------|---------|
 | name | `name` | Majestic Elegance Punta Cana |
 | slug | `slug` | Majestic-Elegance-Punta-Cana |
-| destination | `destination` | Punta Cana |
+| destination1 | `destination1` / `destination` | Punta Cana |
 | dest_tag | `destTag` | SUD |
 | sub_dest | `subDest` | Punta Cana |
 | country | `country` | République Dominicaine |
