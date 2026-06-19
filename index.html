@@ -35,6 +35,37 @@
         
         .timer-box { font-variant-numeric: tabular-nums; }
 
+        .filter-dropdown { position: relative; }
+        .filter-dropdown-panel {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 50;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+        }
+        .filter-dropdown.open .filter-dropdown-panel { display: block; }
+        .filter-dropdown.open .filter-dropdown-trigger i { transform: rotate(180deg); }
+        .filter-dropdown-option.hidden-by-search { display: none; }
+        .filter-select {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            background: white;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: #F26522;
+            box-shadow: 0 0 0 2px rgba(242, 101, 34, 0.2);
+        }
+
         /* Prevent product cards from stacking over sticky sidebar on scroll */
         @media (min-width: 1024px) {
             .filters-sidebar { top: 6.5rem; }
@@ -80,43 +111,31 @@
                 <button id="reset-filters" class="text-sm text-gray-500 hover:text-brand-orange underline">Réinitialiser</button>
             </div>
 
-            <div class="mb-6">
-                <h3 class="font-semibold mb-3 text-gray-700">Destinations</h3>
-                <div id="filter-destinations" class="space-y-2 filter-scroll max-h-40 overflow-y-auto"></div>
-            </div>
+            <div class="mb-4" id="filter-destinations-wrap"></div>
 
-            <div class="mb-6">
-                <h3 class="font-semibold mb-3 text-gray-700">Fournisseurs</h3>
-                <div id="filter-suppliers" class="space-y-2 filter-scroll max-h-32 overflow-y-auto"></div>
-            </div>
+            <div class="mb-4" id="filter-suppliers-wrap"></div>
 
-            <div class="mb-6">
-                <h3 class="font-semibold mb-3 text-gray-700">Classement Hôtelier</h3>
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2 text-gray-700 text-sm">Classement Hôtelier</h3>
                 <div class="flex gap-2">
-                    <button class="filter-star flex-1 py-1 border rounded hover:bg-brand-blue hover:text-white transition" data-star="3">3 <i class="fa-solid fa-star text-xs"></i></button>
-                    <button class="filter-star flex-1 py-1 border rounded hover:bg-brand-blue hover:text-white transition" data-star="4">4 <i class="fa-solid fa-star text-xs"></i></button>
-                    <button class="filter-star flex-1 py-1 border rounded hover:bg-brand-blue hover:text-white transition" data-star="5">5 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button type="button" class="filter-star flex-1 py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="3">3 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button type="button" class="filter-star flex-1 py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="4">4 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button type="button" class="filter-star flex-1 py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="5">5 <i class="fa-solid fa-star text-xs"></i></button>
                 </div>
             </div>
 
-            <div class="mb-6">
-                <h3 class="font-semibold mb-3 text-gray-700">Durée</h3>
-                <div class="space-y-2">
-                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="duration" value="all" checked class="text-brand-orange focus:ring-brand-orange"> Toutes</label>
-                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="duration" value="7" class="text-brand-orange focus:ring-brand-orange"> 7 nuits / 8 jours</label>
-                    <label class="flex items-center gap-2 text-sm"><input type="radio" name="duration" value="14" class="text-brand-orange focus:ring-brand-orange"> 14 nuits / 15 jours</label>
-                </div>
+            <div class="mb-4">
+                <label for="filter-duration" class="font-semibold mb-2 text-gray-700 text-sm block">Durée</label>
+                <select id="filter-duration" class="filter-select">
+                    <option value="all">Toutes les durées</option>
+                    <option value="7">7 nuits / 8 jours</option>
+                    <option value="14">14 nuits / 15 jours</option>
+                </select>
             </div>
 
-            <div class="mb-6">
-                <h3 class="font-semibold mb-3 text-gray-700">Critères</h3>
-                <div id="filter-criteria" class="space-y-2 filter-scroll max-h-40 overflow-y-auto"></div>
-            </div>
+            <div class="mb-4" id="filter-criteria-wrap"></div>
 
-            <div class="mb-6">
-                <h3 class="font-semibold mb-3 text-gray-700">Aéroport de départ</h3>
-                <div id="filter-airports" class="space-y-2 filter-scroll max-h-40 overflow-y-auto"></div>
-            </div>
+            <div class="mb-2" id="filter-airports-wrap"></div>
         </aside>
 
         <section class="w-full lg:w-3/4 relative z-0">
@@ -177,30 +196,132 @@
     <script>
         let products = [];
         let activeStars = [];
+        let openDropdown = null;
 
-        function buildCheckboxFilters(containerId, values, className) {
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function updateDropdownLabel(dropdown) {
+            const labelEl = dropdown.querySelector('.filter-dropdown-label');
+            const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]:checked');
+            const defaultLabel = dropdown.dataset.defaultLabel || 'Toutes';
+            if (!checkboxes.length) {
+                labelEl.textContent = defaultLabel;
+                return;
+            }
+            if (checkboxes.length === 1) {
+                labelEl.textContent = checkboxes[0].value;
+                return;
+            }
+            labelEl.textContent = `${checkboxes.length} sélectionné(s)`;
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.filter-dropdown.open').forEach(el => el.classList.remove('open'));
+            openDropdown = null;
+        }
+
+        function buildSearchableMultiSelect({ containerId, label, options, inputClass, defaultLabel }) {
             const container = document.getElementById(containerId);
-            container.innerHTML = values.map(v => `
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" value="${v.replace(/"/g, '&quot;')}" class="${className} rounded text-brand-orange focus:ring-brand-orange"> ${v}
-                </label>
-            `).join('');
+            const safeDefault = defaultLabel || 'Toutes';
+
+            container.innerHTML = `
+                <div class="filter-dropdown" data-default-label="${escapeHtml(safeDefault)}">
+                    <label class="font-semibold mb-2 text-gray-700 text-sm block">${escapeHtml(label)}</label>
+                    <button type="button" class="filter-dropdown-trigger w-full flex items-center justify-between gap-2 border border-gray-300 rounded-lg px-3 py-2 text-sm text-left bg-white hover:border-brand-orange transition-colors">
+                        <span class="filter-dropdown-label truncate">${escapeHtml(safeDefault)}</span>
+                        <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform shrink-0"></i>
+                    </button>
+                    <div class="filter-dropdown-panel">
+                        <input type="search" class="filter-dropdown-search w-full border border-gray-200 rounded-md px-3 py-2 text-sm mb-2 focus:outline-none focus:border-brand-orange" placeholder="Rechercher..." autocomplete="off">
+                        <div class="filter-dropdown-options filter-scroll max-h-44 overflow-y-auto space-y-1">
+                            ${options.map(v => `
+                                <label class="filter-dropdown-option flex items-center gap-2 text-sm px-2 py-1.5 rounded hover:bg-brand-light cursor-pointer">
+                                    <input type="checkbox" value="${escapeHtml(v)}" class="${inputClass} rounded text-brand-orange focus:ring-brand-orange shrink-0">
+                                    <span class="truncate">${escapeHtml(v)}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`;
+
+            const dropdown = container.querySelector('.filter-dropdown');
+            const trigger = dropdown.querySelector('.filter-dropdown-trigger');
+            const searchInput = dropdown.querySelector('.filter-dropdown-search');
+            const optionLabels = dropdown.querySelectorAll('.filter-dropdown-option');
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = dropdown.classList.contains('open');
+                closeAllDropdowns();
+                if (!isOpen) {
+                    dropdown.classList.add('open');
+                    openDropdown = dropdown;
+                    searchInput.value = '';
+                    optionLabels.forEach(opt => opt.classList.remove('hidden-by-search'));
+                    setTimeout(() => searchInput.focus(), 0);
+                }
+            });
+
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.trim().toLowerCase();
+                optionLabels.forEach(opt => {
+                    const text = opt.textContent.trim().toLowerCase();
+                    opt.classList.toggle('hidden-by-search', q && !text.includes(q));
+                });
+            });
+
+            searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+            dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    updateDropdownLabel(dropdown);
+                    applyFilters();
+                });
+            });
         }
 
         function buildFilterUI() {
-            buildCheckboxFilters('filter-destinations', FILTER_DESTINATIONS, 'filter-destination');
-            buildCheckboxFilters('filter-criteria', FILTER_CRITERIA, 'filter-criteria');
-            buildCheckboxFilters('filter-airports', FILTER_AIRPORTS, 'filter-airport');
+            buildSearchableMultiSelect({
+                containerId: 'filter-destinations-wrap',
+                label: 'Destinations',
+                options: FILTER_DESTINATIONS,
+                inputClass: 'filter-destination',
+                defaultLabel: 'Toutes les destinations'
+            });
+            buildSearchableMultiSelect({
+                containerId: 'filter-suppliers-wrap',
+                label: 'Fournisseurs',
+                options: [...KNOWN_SUPPLIERS, 'Autres'],
+                inputClass: 'filter-supplier',
+                defaultLabel: 'Tous les fournisseurs'
+            });
+            buildSearchableMultiSelect({
+                containerId: 'filter-criteria-wrap',
+                label: 'Critères',
+                options: FILTER_CRITERIA,
+                inputClass: 'filter-criteria',
+                defaultLabel: 'Tous les critères'
+            });
+            buildSearchableMultiSelect({
+                containerId: 'filter-airports-wrap',
+                label: 'Aéroport de départ',
+                options: FILTER_AIRPORTS,
+                inputClass: 'filter-airport',
+                defaultLabel: 'Tous les aéroports'
+            });
 
-            const supplierContainer = document.getElementById('filter-suppliers');
-            supplierContainer.innerHTML = [...KNOWN_SUPPLIERS, 'Autres'].map(v => `
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" value="${v}" class="filter-supplier rounded text-brand-orange focus:ring-brand-orange"> ${v}
-                </label>
-            `).join('');
+            document.getElementById('filter-duration').addEventListener('change', applyFilters);
 
-            document.querySelectorAll('.filter-supplier, .filter-criteria, .filter-destination, .filter-airport, input[name="duration"]').forEach(el => {
-                el.addEventListener('change', applyFilters);
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.filter-dropdown')) {
+                    closeAllDropdowns();
+                }
             });
         }
 
@@ -300,7 +421,7 @@
             const selectedDestinations = Array.from(document.querySelectorAll('.filter-destination:checked')).map(cb => cb.value);
             const selectedSuppliers = Array.from(document.querySelectorAll('.filter-supplier:checked')).map(cb => cb.value);
             const selectedAirports = Array.from(document.querySelectorAll('.filter-airport:checked')).map(cb => cb.value);
-            const durationValue = document.querySelector('input[name="duration"]:checked').value;
+            const durationValue = document.getElementById('filter-duration').value;
             const selectedCriteria = Array.from(document.querySelectorAll('.filter-criteria:checked')).map(cb => cb.value);
 
             const filtered = products.filter(p => {
@@ -332,10 +453,14 @@
         });
 
         document.getElementById('reset-filters').addEventListener('click', () => {
-            document.querySelectorAll('.filter-supplier, .filter-criteria, .filter-destination, .filter-airport').forEach(cb => cb.checked = false);
-            document.querySelector('input[name="duration"][value="all"]').checked = true;
+            document.querySelectorAll('.filter-supplier, .filter-criteria, .filter-destination, .filter-airport').forEach(cb => {
+                cb.checked = false;
+            });
+            document.querySelectorAll('.filter-dropdown').forEach(updateDropdownLabel);
+            document.getElementById('filter-duration').value = 'all';
             activeStars = [];
             document.querySelectorAll('.filter-star').forEach(btn => btn.classList.remove('bg-brand-blue', 'text-white'));
+            closeAllDropdowns();
             applyFilters();
         });
 
