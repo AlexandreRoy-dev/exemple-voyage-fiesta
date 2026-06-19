@@ -1,35 +1,7 @@
 {
-  "updatedAt": "2026-06-19T17:17:34.812Z",
+  "updatedAt": "2026-06-19T18:11:00.444Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
-  "products": [
-    {
-      "id": "6a35702a10100de597a5ef3a",
-      "slug": "Majestic-Elegance-Punta-Cana",
-      "name": "Majestic Elegance Punta Cana",
-      "state": "complet_sold_out",
-      "active": "complet_sold_out",
-      "destTag": "sud",
-      "subDest": "Punta Cana",
-      "destination1": "Punta Cana",
-      "destination": "Punta Cana",
-      "country": "République Dominicaine",
-      "location": "Bavaro Beach, Punta Cana - République Dominicaine",
-      "stars": 0,
-      "supplier": "sunwing",
-      "carrier": "Sunwing Airlines",
-      "durationNights": 7,
-      "roomCategory": "",
-      "criteria": [],
-      "inventory": 0,
-      "price": 1459,
-      "packageType": "Forfait Tout-Inclus",
-      "departureAirport": "Montréal (YUL)",
-      "img": "assets/forfaits/Majestic-Elegance-Punta-Cana-img.jpg",
-      "imgRoom": "assets/forfaits/Majestic-Elegance-Punta-Cana-img.jpg",
-      "imgExtra": "assets/forfaits/Majestic-Elegance-Punta-Cana-img.jpg",
-      "seoTags": []
-    }
-  ]
+  "products": []
 }
