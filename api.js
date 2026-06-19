@@ -83,50 +83,24 @@
     async function fetchProducts() {
         try {
             const all = await loadProductsJson();
-            const listing = all.filter(isActifPackage);
-            if (!listing.length) {
-                throw new Error(all.length
-                    ? 'No actif packages in products.json'
-                    : 'products.json is empty');
-            }
-            return listing;
+            return all.filter(isActifPackage);
         } catch (err) {
             const message = err.name === 'AbortError'
                 ? 'Request timed out after ' + FETCH_TIMEOUT_MS + 'ms'
                 : err.message;
-            console.error('[api] products.json fetch failed:', message);
-            return loadFallbackProducts(true);
+            console.error('[api] products.json unavailable:', message);
+            return [];
         }
     }
 
     async function fetchProductBySlug(slug) {
         try {
             const all = await loadProductsJson();
-            const product = all.find(p => p.slug === slug && isDetailVisible(p));
-            if (product) return product;
-            throw new Error('Product not found in products.json');
+            return all.find(p => p.slug === slug && isDetailVisible(p)) || null;
         } catch (err) {
-            console.warn('[api] Detail fetch fallback for slug:', slug, err.message);
-            return loadFallbackProductBySlug(slug);
+            console.error('[api] products.json unavailable for slug:', slug, err.message);
+            return null;
         }
-    }
-
-    function loadFallbackProducts(actifOnly) {
-        if (!window.products || !window.products.length) {
-            console.error('[api] No fallback products available');
-            return [];
-        }
-        console.warn('[api] Using local fallback products (products.js)');
-        const list = window.products.map(normalizeProduct);
-        return actifOnly ? list.filter(isActifPackage) : list.filter(isDetailVisible);
-    }
-
-    function loadFallbackProductBySlug(slug) {
-        if (!window.products) return null;
-        const product = window.products
-            .map(normalizeProduct)
-            .find(p => p.slug === slug && isDetailVisible(p));
-        return product || null;
     }
 
     function getProductBySlug(products, slug) {

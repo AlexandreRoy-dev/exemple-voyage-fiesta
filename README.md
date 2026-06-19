@@ -11,7 +11,7 @@ Configuré dans `config.js` → `PRODUCTS_JSON_URL` (défaut : `products.json`).
 - **Liste boutique** (`index.html`) : seuls les forfaits avec **`active === "actif"`** sont affichés.
 - **Fiche produit** (`product.html`) : `actif` et **`complet_sold_out`** restent accessibles (SEO + badge COMPLET).
 
-En cas d'échec du chargement JSON (404, timeout, fichier vide), le site bascule sur `products.js` (données de démo).
+Si `products.json` est vide, le site affiche « Aucun forfait disponible ».
 
 ## Flux de données
 
@@ -57,9 +57,8 @@ node scripts/sync-ghl-products.mjs
 | Fichier | Rôle |
 |---------|------|
 | `config.js` | URL JSON + listes de filtres + URL formulaire GHL |
-| `api.js` | Fetch `products.json`, filtres, fallback `products.js` |
+| `api.js` | Fetch `products.json`, filtres |
 | `products.json` | Données live (généré par GitHub Actions) |
-| `products.js` | Fallback démo si JSON indisponible |
 | `scripts/sync-ghl-products.mjs` | Script de sync GHL → JSON |
 | `.github/workflows/sync-products.yml` | Workflow planifié |
 | `index.html` | Liste + filtres boutique |
@@ -132,7 +131,7 @@ Pour une sync quasi instantanée à l'avenir : webhook GHL → `repository_dispa
 4. Vérifier que `products.json` contient les forfaits GHL
 5. Ouvrir `promofiesta.roymarketing.ca` — les cartes correspondent à GHL
 6. Modifier un forfait dans GHL → attendre ≤ 15 min → rafraîchir le site
-7. (Test) Supprimer temporairement `products.json` → confirmer le fallback `products.js`
+7. (Test) Sans forfaits GHL → le site affiche « Aucun forfait disponible »
 
 Format `products.json` :
 

@@ -135,6 +135,11 @@
                 <i class="fa-solid fa-spinner fa-spin text-3xl text-brand-blue mb-4"></i>
                 <p>Chargement des forfaits...</p>
             </div>
+            <div id="empty-state" class="hidden col-span-full text-center py-16 text-gray-500">
+                <i class="fa-solid fa-suitcase-rolling text-4xl mb-4 text-gray-300"></i>
+                <p class="text-brand-blue font-semibold mb-2">Aucun forfait disponible pour le moment.</p>
+                <p class="text-sm max-w-md mx-auto">Les forfaits publiés dans GoHighLevel (état <strong>actif</strong>) apparaîtront ici après la synchronisation — jusqu'à 15 minutes.</p>
+            </div>
             <div id="error-state" class="hidden col-span-full text-center py-16 text-gray-500">
                 <p class="text-brand-blue font-semibold mb-2">Impossible de charger les forfaits.</p>
                 <p class="text-sm">Veuillez réessayer plus tard.</p>
@@ -168,8 +173,7 @@
     </footer>
 
     <script src="config.js"></script>
-    <script src="products.js"></script>
-    <script src="api.js"></script>
+    <script src="api.js?v=2"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -347,10 +351,17 @@
         async function init() {
             buildFilterUI();
             document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('error-state').classList.add('hidden');
             try {
                 products = await VoyageFiestaAPI.fetchProducts();
-                document.getElementById('error-state').classList.add('hidden');
-                applyFilters();
+                if (!products.length) {
+                    document.getElementById('empty-state').classList.remove('hidden');
+                    document.getElementById('result-count').innerText = '0';
+                    document.getElementById('products-container').innerHTML = '';
+                } else {
+                    applyFilters();
+                }
             } catch (err) {
                 document.getElementById('error-state').classList.remove('hidden');
             } finally {
