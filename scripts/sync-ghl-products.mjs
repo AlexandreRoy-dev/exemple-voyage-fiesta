@@ -74,6 +74,23 @@ function normalizeState(raw) {
   return String(raw).toLowerCase().trim();
 }
 
+/** GHL file fields may be a URL string or [{ url: "..." }] */
+function resolveMediaUrl(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const url = resolveMediaUrl(item);
+      if (url) return url;
+    }
+    return '';
+  }
+  if (typeof value === 'object' && typeof value.url === 'string') {
+    return value.url.trim();
+  }
+  return '';
+}
+
 function mapRecord(record) {
   const props = record.properties || record.fields || record;
   const state = normalizeState(pick(props, 'state', 'status'));
@@ -117,9 +134,9 @@ function mapRecord(record) {
     packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
     endDate,
     departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || 'Montréal (YUL)',
-    img: pick(props, 'img', 'image', 'main_image', 'photo') || '',
-    imgRoom: pick(props, 'img_room', 'imgRoom', 'room_image') || '',
-    imgExtra: pick(props, 'img_extra', 'imgExtra', 'extra_image') || '',
+    img: resolveMediaUrl(pick(props, 'img', 'image', 'main_image', 'photo')),
+    imgRoom: resolveMediaUrl(pick(props, 'img_room', 'imgRoom', 'room_image')),
+    imgExtra: resolveMediaUrl(pick(props, 'img_extra', 'imgExtra', 'extra_image')),
     seoTags
   };
 }
