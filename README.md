@@ -86,9 +86,9 @@ node scripts/sync-ghl-products.mjs
 | package_type | `packageType` | Forfait Tout-Inclus |
 | end_date | `endDate` | 2026-06-20T23:59:59.000Z |
 | departure_airport | `departureAirport` | Montréal (YUL) |
-| img | `img` | https://... |
-| img_room | `imgRoom` | https://... |
-| img_extra | `imgExtra` | https://... |
+| img | `img` | GHL file upload → mirrored to `assets/forfaits/` on sync |
+| img_room | `imgRoom` | Same |
+| img_extra | `imgExtra` | Same |
 | seo_tags | `seoTags` | ["#SUD","#PUNTA_CANA"] |
 | state | `state` | `actif` · `brouillon` · `complet_sold_out` · `archiv` |
 | active | `active` | Copie de `state` pour le filtre frontend |
@@ -103,6 +103,16 @@ node scripts/sync-ghl-products.mjs
 | `archiv` | `archiv` | Non (exclu du sync) | Non | Non |
 
 Le script de sync n'écrit que `actif` et `complet_sold_out` dans `products.json`.
+
+### Images (upload GHL)
+
+Les fichiers uploadés dans GHL sont **privés** et ne s'affichent pas directement sur GitHub Pages. Lors de chaque sync, le workflow :
+
+1. Télécharge les images via l'API GHL (champs `img`, `img_room`, `img_extra`)
+2. Les enregistre dans `assets/forfaits/{slug}-img.jpg` (etc.)
+3. Écrit le chemin public dans `products.json`
+
+Le client continue d'uploader normalement dans GHL — aucune URL à copier manuellement.
 
 ## Filtres boutique (config.js)
 

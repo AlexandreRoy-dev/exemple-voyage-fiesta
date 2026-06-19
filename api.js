@@ -28,12 +28,50 @@
         return isActifPackage(p) || normalizeState(p.state, p.active) === 'complet_sold_out';
     }
 
+    const PLACEHOLDER_IMG =
+        'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=800&fit=crop';
+
+    /** GHL file fields: URL string or [{ url: "..." }] */
+    function resolveMediaUrl(value) {
+        if (!value) return '';
+        if (typeof value === 'string') return value.trim();
+        if (Array.isArray(value)) {
+            for (const item of value) {
+                const url = resolveMediaUrl(item);
+                if (url) return url;
+            }
+            return '';
+        }
+        if (typeof value === 'object' && typeof value.url === 'string') {
+            return value.url.trim();
+        }
+        return '';
+    }
+
+    function isPublicImageUrl(url) {
+        if (!url || !/^https?:\/\//i.test(url)) return false;
+        // GHL file uploads are private — not loadable on a public GitHub Pages site
+        if (/msgsndr-private\.storage\.googleapis\.com/i.test(url)) return false;
+        return true;
+    }
+
+    function normalizeImageSrc(value) {
+        const url = resolveMediaUrl(value);
+        if (!url) return PLACEHOLDER_IMG;
+        if (url.startsWith('assets/')) return url;
+        if (isPublicImageUrl(url)) return url;
+        return PLACEHOLDER_IMG;
+    }
+
     function normalizeProduct(p) {
         const endDate = p.endDate
             ? new Date(p.endDate)
             : new Date(Date.now() + (p.endDateIn || 3) * 86400000 + (p.endDateExtra || 0));
 
         const state = normalizeState(p.state, p.active);
+        const img = normalizeImageSrc(p.img);
+        const imgRoom = normalizeImageSrc(p.imgRoom || p.img);
+        const imgExtra = normalizeImageSrc(p.imgExtra || p.img);
 
         return {
             ...p,
@@ -44,7 +82,10 @@
             departureAirport: p.departureAirport || 'Montréal (YUL)',
             criteria: Array.isArray(p.criteria) ? p.criteria : [],
             endDate,
-            inventory: isSoldOut({ ...p, state }) ? 0 : p.inventory
+            inventory: isSoldOut({ ...p, state }) ? 0 : p.inventory,
+            img,
+            imgRoom,
+            imgExtra
         };
     }
 

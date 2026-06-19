@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Sync GoHighLevel Custom Object records → products.json
+ * Mirrors GHL file uploads to assets/forfaits/ for public GitHub Pages hosting.
  *
  * Required env vars:
  *   GHL_API_KEY
@@ -8,13 +9,16 @@
  *   GHL_OBJECT_SCHEMA_KEY  (e.g. custom_objects.forfaits_voyage)
  */
 
-import { writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const OUTPUT = resolve(ROOT, 'products.json');
+const IMAGES_DIR = resolve(ROOT, 'assets', 'forfaits');
+const MANIFEST_PATH = resolve(IMAGES_DIR, '.manifest.json');
 const API_BASE = 'https://services.leadconnectorhq.com';
 const PAGE_LIMIT = 100;
 
@@ -74,7 +78,6 @@ function normalizeState(raw) {
   return String(raw).toLowerCase().trim();
 }
 
-/** GHL file fields may be a URL string or [{ url: "..." }] */
 function resolveMediaUrl(value) {
   if (!value) return '';
   if (typeof value === 'string') return value.trim();
@@ -91,7 +94,99 @@ function resolveMediaUrl(value) {
   return '';
 }
 
-function mapRecord(record) {
+function extractFileMeta(value) {
+  if (Array.isArray(value) && value[0] && typeof value[0] === 'object') {
+    return value[0].meta || {};
+  }
+  if (value && typeof value === 'object' && value.meta) {
+    return value.meta;
+  }
+  return {};
+}
+
+function isPublicHttpUrl(url) {
+  return Boolean(url && /^https?:\/\//i.test(url));
+}
+
+function isGhlPrivateUrl(url) {
+  return /msgsndr-private\.storage\.googleapis\.com|highlevel-private.*\.storage\.googleapis\.com/i.test(url || '');
+}
+
+function fileExtension(sourceUrl, meta) {
+  const fromMeta = String(meta?.extension || '').replace(/^\./, '').toLowerCase();
+  if (fromMeta && /^[a-z0-9]+$/i.test(fromMeta)) return fromMeta;
+  const fromUrl = (sourceUrl.match(/\.([a-z0-9]{2,5})(?:\?|$)/i) || [])[1];
+  if (fromUrl) return fromUrl.toLowerCase();
+  return 'jpg';
+}
+
+function loadManifest() {
+  if (!existsSync(MANIFEST_PATH)) return {};
+  try {
+    return JSON.parse(readFileSync(MANIFEST_PATH, 'utf8'));
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveManifest(manifest) {
+  mkdirSync(IMAGES_DIR, { recursive: true });
+  writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
+}
+
+async function downloadGhlFile(apiKey, sourceUrl) {
+  const attempts = [
+    { Authorization: `Bearer ${apiKey}`, Accept: '*/*' },
+    { Accept: '*/*' }
+  ];
+
+  let lastError = '';
+  for (const headers of attempts) {
+    const res = await fetch(sourceUrl, { headers, redirect: 'follow' });
+    if (res.ok) {
+      return Buffer.from(await res.arrayBuffer());
+    }
+    lastError = `${res.status} ${res.statusText}`;
+  }
+  throw new Error(`Download failed (${lastError})`);
+}
+
+async function mirrorImageField({ apiKey, slug, field, uploadValue, urlOverride, manifest }) {
+  const override = typeof urlOverride === 'string' ? urlOverride.trim() : '';
+  if (override && isPublicHttpUrl(override) && !isGhlPrivateUrl(override)) {
+    return override;
+  }
+
+  const sourceUrl = resolveMediaUrl(uploadValue);
+  if (!sourceUrl) return '';
+
+  if (isPublicHttpUrl(sourceUrl) && !isGhlPrivateUrl(sourceUrl)) {
+    return sourceUrl;
+  }
+
+  if (!isGhlPrivateUrl(sourceUrl)) {
+    return sourceUrl;
+  }
+
+  const meta = extractFileMeta(uploadValue);
+  const ext = fileExtension(sourceUrl, meta);
+  const relativePath = `assets/forfaits/${slug}-${field}.${ext}`;
+  const absolutePath = resolve(ROOT, relativePath);
+  const sourceHash = createHash('sha256').update(sourceUrl).digest('hex');
+
+  if (manifest[relativePath] === sourceHash && existsSync(absolutePath)) {
+    return relativePath;
+  }
+
+  mkdirSync(IMAGES_DIR, { recursive: true });
+  const bytes = await downloadGhlFile(apiKey, sourceUrl);
+  writeFileSync(absolutePath, bytes);
+  manifest[relativePath] = sourceHash;
+  console.log(`  Mirrored image: ${relativePath}`);
+  return relativePath;
+}
+
+async function mapRecord(record, apiKey, manifest) {
   const props = record.properties || record.fields || record;
   const state = normalizeState(pick(props, 'state', 'status'));
   const active = state;
@@ -111,6 +206,35 @@ function mapRecord(record) {
     const parsed = new Date(endDate);
     endDate = Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
   }
+
+  const imgUpload = pick(props, 'img', 'image', 'main_image', 'photo');
+  const imgRoomUpload = pick(props, 'img_room', 'imgRoom', 'room_image');
+  const imgExtraUpload = pick(props, 'img_extra', 'imgExtra', 'extra_image');
+
+  const img = await mirrorImageField({
+    apiKey,
+    slug,
+    field: 'img',
+    uploadValue: imgUpload,
+    urlOverride: pick(props, 'img_url', 'image_url'),
+    manifest
+  });
+  const imgRoom = await mirrorImageField({
+    apiKey,
+    slug,
+    field: 'room',
+    uploadValue: imgRoomUpload,
+    urlOverride: pick(props, 'img_room_url'),
+    manifest
+  });
+  const imgExtra = await mirrorImageField({
+    apiKey,
+    slug,
+    field: 'extra',
+    uploadValue: imgExtraUpload,
+    urlOverride: pick(props, 'img_extra_url'),
+    manifest
+  });
 
   return {
     id: record.id || pick(props, 'id') || slug,
@@ -134,9 +258,9 @@ function mapRecord(record) {
     packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
     endDate,
     departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || 'Montréal (YUL)',
-    img: resolveMediaUrl(pick(props, 'img', 'image', 'main_image', 'photo')),
-    imgRoom: resolveMediaUrl(pick(props, 'img_room', 'imgRoom', 'room_image')),
-    imgExtra: resolveMediaUrl(pick(props, 'img_extra', 'imgExtra', 'extra_image')),
+    img,
+    imgRoom: imgRoom || img,
+    imgExtra: imgExtra || img,
     seoTags
   };
 }
@@ -187,7 +311,6 @@ async function fetchAllRecords(credentials) {
     page += 1;
 
     if (!searchAfter && records.length === PAGE_LIMIT) {
-      /* paginate by page number when cursor absent */
       continue;
     }
     if (!searchAfter) break;
@@ -205,10 +328,18 @@ async function main() {
   const records = await fetchAllRecords({ apiKey, locationId, schemaKey });
   console.log(`Fetched ${records.length} raw record(s).`);
 
-  const products = records
-    .map(mapRecord)
-    .filter(p => VISIBLE_STATES.has(p.state))
-    .sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  const manifest = loadManifest();
+  const products = [];
+
+  for (const record of records) {
+    const product = await mapRecord(record, apiKey, manifest);
+    if (VISIBLE_STATES.has(product.state)) {
+      products.push(product);
+    }
+  }
+
+  products.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  saveManifest(manifest);
 
   const payload = {
     updatedAt: new Date().toISOString(),
