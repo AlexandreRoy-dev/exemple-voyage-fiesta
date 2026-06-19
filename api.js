@@ -12,11 +12,34 @@
         return state === 'actif' || state === 'complet_sold_out';
     }
 
+    function rawStateValue(state, legacyActive) {
+        const raw = state ?? legacyActive;
+        if (raw === undefined || raw === null || raw === '') return '';
+        if (typeof raw === 'object') {
+            return raw.value ?? raw.key ?? raw.id ?? raw.label ?? raw.name ?? '';
+        }
+        return String(raw);
+    }
+
     function normalizeState(state, legacyActive) {
-        if (state) return String(state).toLowerCase();
-        if (legacyActive === false) return 'archiv';
-        if (legacyActive === 'actif' || legacyActive === 'complet_sold_out') return legacyActive;
-        return 'actif';
+        const s = rawStateValue(state, legacyActive).toLowerCase().trim();
+        if (!s) {
+            if (legacyActive === false) return 'archiv';
+            return 'actif';
+        }
+
+        if (s === 'actif' || s === 'active') return 'actif';
+        if (s === 'brouillon' || s === 'draft') return 'brouillon';
+        if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
+        if (s === 'archiv' || s === 'archive' || s === 'archivé') return 'archiv';
+
+        if (/sold\s*out|complet\s*\(|complet.*sold|épuisé|epuise/.test(s)) return 'complet_sold_out';
+        if (/^complet$|complet\s*-/.test(s)) return 'complet_sold_out';
+        if (/brouillon|draft/.test(s)) return 'brouillon';
+        if (/archiv|archive/.test(s)) return 'archiv';
+        if (/actif|active|publié|publie/.test(s)) return 'actif';
+
+        return s.replace(/[^a-z0-9]+/g, '_');
     }
 
     function isSoldOut(p) {
