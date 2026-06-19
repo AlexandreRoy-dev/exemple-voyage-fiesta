@@ -141,10 +141,10 @@
         <section class="w-full lg:w-3/4 relative z-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800"><span id="result-count">0</span> Forfaits trouvés</h2>
-                <select class="border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
-                    <option>Trier par : Prix (Bas vers Haut)</option>
-                    <option>Trier par : Prix (Haut vers Bas)</option>
-                    <option>Trier par : Date de départ</option>
+                <select id="sort-products" class="border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
+                    <option value="price-asc">Trier par : Prix (Bas vers Haut)</option>
+                    <option value="price-desc">Trier par : Prix (Haut vers Bas)</option>
+                    <option value="departure-asc">Trier par : Date de départ</option>
                 </select>
             </div>
             
@@ -192,7 +192,7 @@
     </footer>
 
     <script src="config.js"></script>
-    <script src="api.js?v=6"></script>
+    <script src="api.js?v=8"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -215,7 +215,8 @@
                 return;
             }
             if (checkboxes.length === 1) {
-                labelEl.textContent = checkboxes[0].value;
+                const optionLabel = checkboxes[0].closest('label')?.querySelector('span')?.textContent?.trim();
+                labelEl.textContent = optionLabel || checkboxes[0].value;
                 return;
             }
             labelEl.textContent = `${checkboxes.length} sélectionné(s)`;
@@ -230,6 +231,10 @@
             const container = document.getElementById(containerId);
             const safeDefault = defaultLabel || 'Toutes';
 
+            const normalizedOptions = options.map(opt =>
+                typeof opt === 'string' ? { label: opt, value: opt } : opt
+            );
+
             container.innerHTML = `
                 <div class="filter-dropdown" data-default-label="${escapeHtml(safeDefault)}">
                     <label class="font-semibold mb-2 text-gray-700 text-sm block">${escapeHtml(label)}</label>
@@ -239,11 +244,11 @@
                     </button>
                     <div class="filter-dropdown-panel">
                         <input type="search" class="filter-dropdown-search w-full border border-gray-200 rounded-md px-3 py-2 text-sm mb-2 focus:outline-none focus:border-brand-orange" placeholder="Rechercher..." autocomplete="off">
-                        <div class="filter-dropdown-options filter-scroll max-h-44 overflow-y-auto space-y-1">
-                            ${options.map(v => `
+                        <div class="filter-dropdown-options filter-scroll max-h-60 overflow-y-auto space-y-1">
+                            ${normalizedOptions.map(({ label: optionLabel, value }) => `
                                 <label class="filter-dropdown-option flex items-center gap-2 text-sm px-2 py-1.5 rounded hover:bg-brand-light cursor-pointer">
-                                    <input type="checkbox" value="${escapeHtml(v)}" class="${inputClass} rounded text-brand-orange focus:ring-brand-orange shrink-0">
-                                    <span class="truncate">${escapeHtml(v)}</span>
+                                    <input type="checkbox" value="${escapeHtml(value)}" class="${inputClass} rounded text-brand-orange focus:ring-brand-orange shrink-0">
+                                    <span class="truncate">${escapeHtml(optionLabel)}</span>
                                 </label>
                             `).join('')}
                         </div>
@@ -304,7 +309,7 @@
             buildSearchableMultiSelect({
                 containerId: 'filter-criteria-wrap',
                 label: 'Critères',
-                options: FILTER_CRITERIA,
+                options: CRITERIA_OPTIONS,
                 inputClass: 'filter-criteria',
                 defaultLabel: 'Tous les critères'
             });
@@ -370,6 +375,10 @@
 
                 const productUrl = `product.html?slug=${encodeURIComponent(p.slug)}`;
                 const endMs = p.endDate instanceof Date ? p.endDate.getTime() : new Date(p.endDate).getTime();
+                const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
+                const departureBadge = departureLabel
+                    ? `<span class="inline-block bg-blue-50 text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-calendar-day mr-1"></i> Départ ${departureLabel}</span>`
+                    : '';
 
                 card.innerHTML = `
                     <a href="${productUrl}" class="relative block group aspect-square overflow-hidden">
@@ -389,6 +398,7 @@
                             <span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 mb-1 mr-1"><i class="fa-solid fa-plane mr-1"></i> ${VoyageFiestaAPI.isOtherSupplier(p.supplier) ? 'Autres' : p.supplier}</span>
                             <span class="inline-block bg-brand-light text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-bed mr-1"></i> ${p.roomCategory}</span>
                             <span class="inline-block bg-orange-50 text-brand-orange text-xs px-2 py-1 rounded border border-orange-100 mb-1"><i class="fa-solid fa-plane-departure mr-1"></i> ${p.departureAirport}</span>
+                            ${departureBadge}
                         </div>
                         <div class="mt-auto">
                             <div class="bg-red-50 border border-red-100 rounded-lg p-2 mb-4 text-center">
@@ -417,6 +427,19 @@
             updateTimers();
         }
 
+        function sortProducts(list) {
+            const mode = document.getElementById('sort-products').value;
+            const sorted = [...list];
+            if (mode === 'price-desc') {
+                sorted.sort((a, b) => b.price - a.price);
+            } else if (mode === 'departure-asc') {
+                sorted.sort((a, b) => VoyageFiestaAPI.departureDateSortKey(a) - VoyageFiestaAPI.departureDateSortKey(b));
+            } else {
+                sorted.sort((a, b) => a.price - b.price);
+            }
+            return sorted;
+        }
+
         function applyFilters() {
             const selectedDestinations = Array.from(document.querySelectorAll('.filter-destination:checked')).map(cb => cb.value);
             const selectedSuppliers = Array.from(document.querySelectorAll('.filter-supplier:checked')).map(cb => cb.value);
@@ -434,8 +457,10 @@
                 return true;
             });
 
-            renderProducts(filtered);
+            renderProducts(sortProducts(filtered));
         }
+
+        document.getElementById('sort-products').addEventListener('change', applyFilters);
 
         document.querySelectorAll('.filter-star').forEach(btn => {
             btn.addEventListener('click', (e) => {

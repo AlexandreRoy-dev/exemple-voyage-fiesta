@@ -46,15 +46,35 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function normalizeDateField(raw) {
+  if (raw === undefined || raw === null || raw === '') return null;
+  if (typeof raw === 'number') {
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? null : d.toISOString();
+  }
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
 function toStringArray(value) {
-  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  if (Array.isArray(value)) {
+    return value
+      .map(item => {
+        if (item === undefined || item === null || item === '') return '';
+        if (typeof item === 'object') {
+          return item.value ?? item.key ?? item.id ?? item.label ?? item.name ?? '';
+        }
+        return String(item);
+      })
+      .filter(Boolean);
+  }
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return [];
     if (trimmed.startsWith('[')) {
       try {
         const parsed = JSON.parse(trimmed);
-        if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
+        if (Array.isArray(parsed)) return toStringArray(parsed);
       } catch (_) {
         /* fall through */
       }
@@ -221,13 +241,10 @@ async function mapRecord(record, apiKey, manifest) {
   const criteria = toStringArray(pick(props, 'criteria', 'criteres', 'tags'));
   const seoTags = toStringArray(pick(props, 'seo_tags', 'seoTags', 'seo'));
 
-  let endDate = pick(props, 'end_date', 'endDate', 'top_chrono_end');
-  if (endDate && typeof endDate === 'number') {
-    endDate = new Date(endDate).toISOString();
-  } else if (endDate) {
-    const parsed = new Date(endDate);
-    endDate = Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
-  }
+  let endDate = normalizeDateField(pick(props, 'end_date', 'endDate', 'top_chrono_end'));
+  const departureDate = normalizeDateField(
+    pick(props, 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
+  );
 
   const imgUpload = pick(props, 'img', 'image', 'main_image', 'photo');
   const imgRoomUpload = pick(props, 'img_room', 'imgRoom', 'room_image');
@@ -280,6 +297,7 @@ async function mapRecord(record, apiKey, manifest) {
     price: toNumber(pick(props, 'price', 'prix'), 0),
     packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
     endDate,
+    departureDate,
     departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || 'Montréal (YUL)',
     img,
     imgRoom: imgRoom || img,

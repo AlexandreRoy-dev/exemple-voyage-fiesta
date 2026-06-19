@@ -95,6 +95,10 @@
             ? new Date(p.endDate)
             : new Date(Date.now() + (p.endDateIn || 3) * 86400000 + (p.endDateExtra || 0));
 
+        const departureDateRaw = p.departureDate ?? p.departure_date ?? p.date_de_depart;
+        const departureDate = departureDateRaw ? new Date(departureDateRaw) : null;
+        const departureDateValid = departureDate && !Number.isNaN(departureDate.getTime()) ? departureDate : null;
+
         const state = normalizeState(p.state, p.active);
         const img = normalizeImageSrc(p.img);
         const imgRoom = normalizeImageSrc(p.imgRoom || p.img);
@@ -107,7 +111,8 @@
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
             destination: p.destination1 || p.destination || p.subDest,
             departureAirport: p.departureAirport || 'Montréal (YUL)',
-            criteria: Array.isArray(p.criteria) ? p.criteria : [],
+            departureDate: departureDateValid,
+            criteria: Array.isArray(p.criteria) ? p.criteria.map(normalizeCriterionValue) : [],
             endDate,
             inventory: isSoldOut({ ...p, state }) ? 0 : p.inventory,
             img,
@@ -197,9 +202,56 @@
         return selectedAirports.includes(product.departureAirport);
     }
 
+    function normalizeCriterionValue(raw) {
+        if (raw === undefined || raw === null || raw === '') return '';
+        let key;
+        if (typeof raw === 'object') {
+            key = String(raw.value ?? raw.key ?? raw.id ?? raw.label ?? raw.name ?? '').trim();
+        } else {
+            key = String(raw).trim();
+        }
+        if (window.CRITERIA_ALIASES && window.CRITERIA_ALIASES[key]) {
+            return window.CRITERIA_ALIASES[key];
+        }
+        return key;
+    }
+
+    function getCriteriaLabel(value) {
+        const key = normalizeCriterionValue(value);
+        if (window.CRITERIA_BY_VALUE && window.CRITERIA_BY_VALUE[key]) {
+            return window.CRITERIA_BY_VALUE[key];
+        }
+        return key;
+    }
+
+    function productHasCriterion(product, slug) {
+        const wanted = normalizeCriterionValue(slug);
+        return (product.criteria || []).some(c => normalizeCriterionValue(c) === wanted);
+    }
+
     function matchesCriteriaFilter(product, selectedCriteria) {
         if (!selectedCriteria.length) return true;
-        return selectedCriteria.every(c => product.criteria.includes(c));
+        return selectedCriteria.every(c => productHasCriterion(product, c));
+    }
+
+    function formatDepartureDate(value) {
+        if (!value) return null;
+        const d = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(d.getTime())) return null;
+        return d.toLocaleDateString('fr-CA', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'UTC'
+        });
+    }
+
+    function departureDateSortKey(product) {
+        if (!product.departureDate) return Number.POSITIVE_INFINITY;
+        const t = product.departureDate instanceof Date
+            ? product.departureDate.getTime()
+            : new Date(product.departureDate).getTime();
+        return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
     }
 
     window.VoyageFiestaAPI = {
@@ -210,6 +262,11 @@
         matchesDestinationFilter,
         matchesAirportFilter,
         matchesCriteriaFilter,
+        formatDepartureDate,
+        departureDateSortKey,
+        normalizeCriterionValue,
+        getCriteriaLabel,
+        productHasCriterion,
         isOtherSupplier,
         isSoldOut,
         isVisibleOnSite,

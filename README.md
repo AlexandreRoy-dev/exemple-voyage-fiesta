@@ -80,11 +80,12 @@ node scripts/sync-ghl-products.mjs
 | carrier | `carrier` | Sunwing Airlines |
 | duration_nights | `durationNights` | 7 |
 | room_category | `roomCategory` | Suite Junior Vue Mer |
-| criteria | `criteria` | ["Vue mer","Familial"] |
+| criteria | `criteria` | `["familial","vue_sur_la_mer"]` (GHL multi-select keys) |
 | inventory | `inventory` | 3 |
 | price | `price` | 1459 |
 | package_type | `packageType` | Forfait Tout-Inclus |
 | end_date | `endDate` | 2026-06-20T23:59:59.000Z |
+| departure_date | `departureDate` | 2026-03-15T00:00:00.000Z |
 | departure_airport | `departureAirport` | Montréal (YUL) |
 | img | `img` | GHL file upload → mirrored to `assets/forfaits/` on sync |
 | img_room | `imgRoom` | Same |
@@ -123,7 +124,7 @@ Le client continue d'uploader normalement dans GHL — aucune URL à copier manu
 
 ## Formulaire GHL
 
-1. Créer le formulaire dans GHL avec champs cachés : `forfait_slug`, `forfait_name`, `forfait_price`, `forfait_supplier`, `forfait_departure`
+1. Créer un **formulaire standard** (pas Custom Object) avec un champ caché `forfait_slug` (Query Key = `forfait_slug`) + champs contact (prénom, nom, courriel, téléphone)
 2. Copier l'URL d'intégration iframe
 3. Coller dans `config.js` → `GHL_FORM_EMBED_URL`
 

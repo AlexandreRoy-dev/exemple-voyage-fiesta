@@ -102,18 +102,48 @@
     </footer>
 
     <script src="config.js"></script>
-    <script src="api.js?v=6"></script>
+    <script src="api.js?v=8"></script>
     <script>
         const criteriaIcons = {
-            "Vue mer": "fa-water",
-            "Familial": "fa-users",
-            "Adultes seulement": "fa-cocktail",
-            "Swim Out": "fa-water",
-            "Glissades d'eau": "fa-water-ladder",
-            "Golf": "fa-golf-ball-tee",
-            "En ville": "fa-city",
-            "Casino": "fa-dice",
-            "Ambiance": "fa-music"
+            pour_adultes_18: 'fa-cocktail',
+            familial: 'fa-users',
+            romantique__lune_de_miel: 'fa-heart',
+            tranquille__dtente: 'fa-spa',
+            animation__fte: 'fa-music',
+            pour_celibataires: 'fa-champagne-glasses',
+            adapt_aux_bbs: 'fa-baby',
+            directement_sur_la_plage: 'fa-umbrella-beach',
+            vue_sur_la_mer: 'fa-water',
+            deuxime_ligne_courte_marche: 'fa-person-walking',
+            prs_du_centreville: 'fa-city',
+            isol__en_nature: 'fa-tree',
+            tout_inclus_allinclusive: 'fa-utensils',
+            djeuners_inclus: 'fa-mug-saucer',
+            plan_europen_sans_repas: 'fa-bed',
+            boissons_de_marques_premium_incluses: 'fa-wine-glass',
+            soupers__la_carte_illimits: 'fa-utensils',
+            glissades_deau__parc_aquatique: 'fa-water-ladder',
+            piscine_pour_enfants: 'fa-child-reaching',
+            piscine_rserve_aux_adultes: 'fa-person-swimming',
+            piscine__dbordement_infinity: 'fa-water',
+            prendre_un_verre_dans_la_piscine_swim_up_bar: 'fa-martini-glass-citrus',
+            section_privilge__club_slect: 'fa-star',
+            spa__centre_de_bientre: 'fa-spa',
+            wifi_gratuit_partout: 'fa-wifi',
+            wifi_gratuit_au_lobby_seulement: 'fa-wifi',
+            service_aux_chambres_24h: 'fa-bell-concierge',
+            rcemment_rnov: 'fa-hammer',
+            accessible_en_fauteuil_roulant: 'fa-wheelchair',
+            parcours_de_golf__proximit: 'fa-golf-ball-tee',
+            centre_de_plonge_padi: 'fa-water',
+            tennis: 'fa-table-tennis-paddle-ball',
+            sports_nautiques_non_motoriss_inclus: 'fa-sailboat',
+            gym__centre_de_fitness: 'fa-dumbbell',
+            casino_sur_place: 'fa-dice',
+            vol_direct_sans_escale: 'fa-plane',
+            transferts_aroporthtel_inclus: 'fa-bus',
+            dpart_de_nuit: 'fa-moon',
+            siges_en_classe_conomique_privilge: 'fa-chair'
         };
 
         function renderStars(count) {
@@ -147,7 +177,7 @@
             const days = p.durationNights + 1;
             const simplePrice = Math.round(p.price * 1.3);
             const triplePrice = Math.round(p.price * 0.96);
-            const childPrice = p.criteria.includes('Adultes seulement') ? null : Math.round(p.price * 0.58);
+            const childPrice = VoyageFiestaAPI.productHasCriterion(p, 'pour_adultes_18') ? null : Math.round(p.price * 0.58);
             const inclusions = getInclusions(p);
 
             document.title = `${p.name} - Voyage Fiesta`;
@@ -174,8 +204,10 @@
             }
 
             const criteriaHtml = p.criteria.map(c => {
-                const icon = criteriaIcons[c] || 'fa-tag';
-                return `<span class="bg-white border px-3 py-1 rounded-full text-xs font-medium"><i class="fa-solid ${icon} mr-1"></i> ${c}</span>`;
+                const key = VoyageFiestaAPI.normalizeCriterionValue(c);
+                const label = VoyageFiestaAPI.getCriteriaLabel(key);
+                const icon = criteriaIcons[key] || 'fa-tag';
+                return `<span class="bg-white border px-3 py-1 rounded-full text-xs font-medium"><i class="fa-solid ${icon} mr-1"></i> ${label}</span>`;
             }).join('');
 
             const seoHtml = (p.seoTags || []).map(t =>
@@ -197,6 +229,8 @@
                         </div>
                         <p class="text-[9px] text-gray-400 italic leading-tight">Le prix enfant est calculé selon l'âge au retour du voyage. Nécessite obligatoirement 2 adultes.</p>
                    </div>`;
+
+            const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
 
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">
@@ -296,6 +330,10 @@
 
                                 <div class="space-y-4 mb-6 border-b pb-6">
                                     <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">Date de départ :</span>
+                                        <span class="font-bold text-brand-blue">${departureLabel || 'À confirmer'}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
                                         <span class="text-gray-500">Départ de :</span>
                                         <span class="font-bold text-brand-blue">${p.departureAirport || 'Montréal (YUL)'}</span>
                                     </div>
@@ -363,20 +401,15 @@
             const supplierLabel = VoyageFiestaAPI.isOtherSupplier(p.supplier) ? 'Autres' : p.supplier;
 
             function openModal() {
+                const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
                 document.getElementById('modal-product-name').textContent =
-                    `${p.name} — ${p.price}$/pers · Départ ${p.departureAirport} · ${supplierLabel}`;
+                    `${p.name} — ${p.price}$/pers · ${departureText ? 'Départ ' + departureText + ' · ' : ''}${p.departureAirport} · ${supplierLabel}`;
 
                 const iframe = document.getElementById('ghl-form-iframe');
                 const placeholder = document.getElementById('ghl-form-placeholder');
 
                 if (GHL_FORM_EMBED_URL) {
-                    const params = new URLSearchParams({
-                        forfait_slug: p.slug,
-                        forfait_name: p.name,
-                        forfait_price: String(p.price),
-                        forfait_supplier: supplierLabel,
-                        forfait_departure: p.departureAirport || 'Montréal (YUL)'
-                    });
+                    const params = new URLSearchParams({ forfait_slug: p.slug });
                     const sep = GHL_FORM_EMBED_URL.includes('?') ? '&' : '?';
                     iframe.src = GHL_FORM_EMBED_URL + sep + params.toString();
                     iframe.classList.remove('hidden');
