@@ -66,40 +66,18 @@
             box-shadow: 0 0 0 2px rgba(242, 101, 34, 0.2);
         }
 
-        /* Prevent product cards from stacking over sticky sidebar on scroll */
+        /* Sticky filters — no site header when embedded in iframe */
         @media (min-width: 1024px) {
-            .filters-sidebar { top: 6.5rem; }
+            .filters-sidebar { top: 1rem; }
         }
     </style>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans flex flex-col min-h-screen">
 
-    <div class="bg-brand-orange text-white text-center py-2 px-4 text-sm font-semibold tracking-wide">
-        🔥 Les places s'envolent rapidement ! Réservez aujourd'hui et profitez de nos meilleures aubaines voyage à prix exceptionnels.
-    </div>
-
-    <header class="bg-white shadow-md sticky top-0 z-40">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="flex items-center gap-2 text-brand-blue">
-                    <i class="fa-solid fa-umbrella-beach text-3xl"></i>
-                    <span class="font-bold text-2xl tracking-wider uppercase">Voyage Fiesta</span>
-                </div>
-            </div>
-            <nav class="hidden md:flex gap-6 font-medium text-brand-blue">
-                <a href="index.html" class="hover:text-brand-orange transition-colors">Accueil</a>
-                <a href="index.html" class="hover:text-brand-orange transition-colors">Sud</a>
-                <a href="index.html" class="hover:text-brand-orange transition-colors">Europe</a>
-                <a href="index.html" class="hover:text-brand-orange transition-colors">Top Chrono</a>
-            </nav>
-        </div>
-    </header>
-
-    <section class="relative bg-brand-dark text-white">
-        <img src="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1920&fit=crop" alt="Destination de rêve" class="w-full h-64 object-cover opacity-60">
-        <div class="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4 shadow-sm">Découvrez nos Offres Exclusives</h1>
-            <p class="text-lg md:text-xl font-light max-w-2xl">Réservez dès maintenant et profitez de nos forfaits tout-inclus avant la fin du décompte.</p>
+    <section class="relative bg-brand-dark">
+        <img src="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1920&fit=crop" alt="Destination de rêve" class="w-full h-36 md:h-44 object-cover">
+        <div class="absolute inset-x-0 top-0 bg-brand-orange/95 text-white text-center py-3 px-4 text-sm md:text-base font-semibold tracking-wide shadow-md">
+            🔥 Les places s'envolent rapidement ! Réservez aujourd'hui et profitez de nos meilleures aubaines voyage à prix exceptionnels.
         </div>
     </section>
 
@@ -167,32 +145,8 @@
 
     </main>
 
-    <footer class="bg-brand-dark text-gray-300 py-10 mt-12">
-        <div class="container mx-auto px-4 text-xs space-y-6">
-            <div class="text-center mb-6">
-                <div class="flex items-center justify-center gap-2 text-white mb-4">
-                    <i class="fa-solid fa-umbrella-beach text-3xl"></i>
-                    <span class="font-bold text-2xl tracking-wider uppercase">Voyage Fiesta</span>
-                </div>
-            </div>
-            <div class="border-t border-gray-700 pt-6 flex flex-col md:flex-row gap-8">
-                <div class="md:w-1/2 text-justify">
-                    <p class="font-bold text-white mb-2">Mentions légales (Français)</p>
-                    <p>L'information apparaissant dans ce message électronique est de nature légalement privilégiée et confidentielle. Si ce message vous est parvenu par erreur et que vous n'êtes pas le destinataire visé, vous êtes par les présentes avisé que tout usage, copie ou distribution de ce message est strictement interdit. Vous êtes donc priés de nous informer immédiatement de cette erreur et de détruire ce message.</p>
-                </div>
-                <div class="md:w-1/2 text-justify">
-                    <p class="font-bold text-white mb-2">Legal Disclaimer (English)</p>
-                    <p>The information in this message is legally privileged and confidential. In the event of a transmission error and if you are not the individual or entity mentioned above, you are hereby advised that any use, copying or reproduction of this document is strictly forbidden. Please advise us of this error and destroy this message.</p>
-                </div>
-            </div>
-            <div class="text-center text-gray-500 mt-8">
-                &copy; 2026 Voyage Fiesta. Tous droits réservés.
-            </div>
-        </div>
-    </footer>
-
-    <script src="config.js"></script>
-    <script src="api.js?v=8"></script>
+    <script src="config.js?v=2"></script>
+    <script src="api.js?v=10"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -347,6 +301,28 @@
             return `${days}j ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
         }
 
+        function renderIncentiveBadge(p) {
+            const inc = VoyageFiestaAPI.getIncentive(p);
+            if (!inc) return '';
+
+            const financingHtml = inc.financing
+                ? `<p class="text-[11px] text-white/95 mt-1.5 leading-tight">
+                        ou <span class="underline font-semibold">${VoyageFiestaAPI.formatMoney(inc.financing)}/mois</span>
+                        <i class="fa-solid fa-circle-info text-[9px] opacity-80 ml-0.5" title="Financement sujet à approbation de crédit"></i>
+                   </p>`
+                : '';
+
+            return `
+                <div class="absolute bottom-3 right-3 z-10 bg-[#e85d6a] text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
+                    <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)}</p>
+                    <p class="mt-0.5">
+                        <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoney(inc.strikePrice)}</span>
+                        <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoney(inc.price)}</span>
+                    </p>
+                    ${financingHtml}
+                </div>`;
+        }
+
         function renderProducts(filteredData) {
             const container = document.getElementById('products-container');
             container.innerHTML = '';
@@ -379,12 +355,21 @@
                 const departureBadge = departureLabel
                     ? `<span class="inline-block bg-blue-50 text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-calendar-day mr-1"></i> Départ ${departureLabel}</span>`
                     : '';
+                const incentiveBadge = renderIncentiveBadge(p);
+                const hasIncentive = Boolean(incentiveBadge);
+                const priceFooterHtml = hasIncentive
+                    ? `<p class="text-xs text-gray-500">Occupation double · prix par personne</p>`
+                    : `<div>
+                            <p class="text-xs text-gray-500 mb-1">Occupation Double</p>
+                            <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
+                       </div>`;
 
                 card.innerHTML = `
                     <a href="${productUrl}" class="relative block group aspect-square overflow-hidden">
                         ${inventoryBadge}
+                        ${incentiveBadge}
                         <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 ${hasIncentive ? 'pr-36' : ''}">
                             <h3 class="text-white text-xl font-bold leading-tight group-hover:text-brand-orange transition-colors">${p.name}</h3>
                             <div class="flex items-center gap-2 mt-1">${renderStars(p.stars)}</div>
                         </div>
@@ -402,14 +387,11 @@
                         </div>
                         <div class="mt-auto">
                             <div class="bg-red-50 border border-red-100 rounded-lg p-2 mb-4 text-center">
-                                <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Top Chrono se termine dans :</span>
+                                <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Aubaines Express Voyage se termine dans :</span>
                                 <div class="text-lg font-bold text-red-600 timer-box" data-end="${endMs}">Calcul...</div>
                             </div>
                             <div class="flex items-end justify-between gap-3">
-                                <div>
-                                    <p class="text-xs text-gray-500 mb-1">Occupation Double</p>
-                                    <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
-                                </div>
+                                ${priceFooterHtml}
                                 <div class="flex flex-col sm:flex-row gap-2">
                                     <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
                                         <i class="fa-solid fa-circle-info mr-1"></i> Détail

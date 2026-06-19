@@ -88,6 +88,7 @@
 
     /** Critères (boutique filter) — labels + GHL keys from field `criteria` */
     window.CRITERIA_OPTIONS = [
+        { label: 'Tout inclus', value: 'tout_inclus_allinclusive' },
         { label: 'Pour adultes (18+)', value: 'pour_adultes_18' },
         { label: 'Familial', value: 'familial' },
         { label: 'Romantique / Lune de miel', value: 'romantique__lune_de_miel' },
@@ -100,7 +101,6 @@
         { label: 'Deuxième ligne (courte marche)', value: 'deuxime_ligne_courte_marche' },
         { label: 'Près du centre-ville', value: 'prs_du_centreville' },
         { label: 'Isolé / En nature', value: 'isol__en_nature' },
-        { label: 'Tout inclus (All-Inclusive)', value: 'tout_inclus_allinclusive' },
         { label: 'Déjeuners inclus', value: 'djeuners_inclus' },
         { label: 'Plan européen (sans repas)', value: 'plan_europen_sans_repas' },
         { label: 'Boissons de marques premium incluses', value: 'boissons_de_marques_premium_incluses' },
@@ -154,7 +154,7 @@
     /** Static product feed — synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
 
-    /** GHL reservation form embed URL — replace with client's form iframe src from GHL */
+    /** GHL reservation form — « Réservation de forfait » (prefill: forfait_slug) */
     window.GHL_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/V5DftNAy6QDV4X64bYzV';
 
     window.destLabels = {

@@ -41,6 +41,12 @@ function pick(props, ...keys) {
   return undefined;
 }
 
+function optionalPrice(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+}
+
 function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -228,6 +234,109 @@ async function mirrorImageField({ apiKey, slug, field, uploadValue, urlOverride,
   return relativePath;
 }
 
+function normalizeUploadList(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (_) {
+        /* fall through */
+      }
+    }
+    return trimmed.split(/[,;|]/).map(s => s.trim()).filter(Boolean);
+  }
+  return [value];
+}
+
+async function mirrorGalleryImages({ apiKey, slug, uploadValue, manifest }) {
+  const paths = [];
+  const items = normalizeUploadList(uploadValue);
+  for (let i = 0; i < items.length; i++) {
+    const path = await mirrorImageField({
+      apiKey,
+      slug,
+      field: `gallery-${i + 1}`,
+      uploadValue: items[i],
+      manifest
+    });
+    if (path && !paths.includes(path)) paths.push(path);
+  }
+  return paths;
+}
+
+function uniqueImagePaths(...groups) {
+  const seen = new Set();
+  const list = [];
+  for (const group of groups) {
+    const items = Array.isArray(group) ? group : [group];
+    for (const item of items) {
+      if (item && !seen.has(item)) {
+        seen.add(item);
+        list.push(item);
+      }
+    }
+  }
+  return list;
+}
+
+function pickText(props, ...keys) {
+  const val = pick(props, ...keys);
+  if (val === undefined || val === null) return '';
+  return String(val).trim();
+}
+
+function pickFlightDate(props, ...keys) {
+  const raw = pick(props, ...keys);
+  if (!raw) return '';
+  if (typeof raw === 'number') {
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? '' : d.toISOString();
+  }
+  const parsed = new Date(raw);
+  return Number.isNaN(parsed.getTime()) ? String(raw).trim() : parsed.toISOString();
+}
+
+function mapFlightLeg(props, prefix, aliases = {}) {
+  return {
+    from: pickText(props, `${prefix}_from`, aliases.from) || '',
+    departDate: pickFlightDate(props, `${prefix}_depart_date`, aliases.departDate) || '',
+    departTime: pickText(props, `${prefix}_depart_time`, aliases.departTime) || '',
+    to: pickText(props, `${prefix}_to`, aliases.to) || '',
+    arriveDate: pickFlightDate(props, `${prefix}_arrive_date`, aliases.arriveDate) || '',
+    arriveTime: pickText(props, `${prefix}_arrive_time`, aliases.arriveTime) || '',
+    number: pickText(props, `${prefix}_number`, aliases.number) || ''
+  };
+}
+
+function mapFlights(props) {
+  return {
+    out: mapFlightLeg(props, 'flight_out', {
+      from: 'vol_aller_depart',
+      departDate: 'vol_aller_date_depart',
+      departTime: 'vol_aller_heure_depart',
+      to: 'vol_aller_arrivee',
+      arriveDate: 'vol_aller_date_arrivee',
+      arriveTime: 'vol_aller_heure_arrivee',
+      number: 'vol_aller_numero'
+    }),
+    return: mapFlightLeg(props, 'flight_return', {
+      from: 'vol_retour_depart',
+      departDate: 'vol_retour_date_depart',
+      departTime: 'vol_retour_heure_depart',
+      to: 'vol_retour_arrivee',
+      arriveDate: 'vol_retour_date_arrivee',
+      arriveTime: 'vol_retour_heure_arrivee',
+      number: 'vol_retour_numero'
+    }),
+    airlineLogo: pickText(props, 'flight_airline_logo', 'vol_compagnie_logo') || ''
+  };
+}
+
 async function mapRecord(record, apiKey, manifest) {
   const props = record.properties || record.fields || record;
   const state = normalizeState(pick(props, 'state', 'status'));
@@ -274,6 +383,14 @@ async function mapRecord(record, apiKey, manifest) {
     urlOverride: pick(props, 'img_extra_url'),
     manifest
   });
+  const imgGalleryUpload = pick(props, 'img_gallery', 'gallery', 'photos', 'images');
+  const galleryPaths = await mirrorGalleryImages({
+    apiKey,
+    slug,
+    uploadValue: imgGalleryUpload,
+    manifest
+  });
+  const images = uniqueImagePaths([img], [imgRoom], [imgExtra], galleryPaths);
 
   return {
     id: record.id || pick(props, 'id') || slug,
@@ -294,14 +411,27 @@ async function mapRecord(record, apiKey, manifest) {
     roomCategory: pick(props, 'room_category', 'roomCategory', 'chambre') || '',
     criteria,
     inventory: state === 'complet_sold_out' ? 0 : toNumber(pick(props, 'inventory', 'stock'), 0),
-    price: toNumber(pick(props, 'price', 'prix'), 0),
+    price: toNumber(pick(props, 'price', 'prix', 'price_occ_double'), 0),
+    priceOccSimple: optionalPrice(pick(props, 'price_occ_simple', 'priceOccSimple')),
+    priceOccTriple: optionalPrice(pick(props, 'price_occ_triple', 'priceOccTriple')),
+    priceOccDouble1Child: optionalPrice(
+      pick(props, 'price_occ_double_1_child', 'priceOccDouble1Child', 'price_double_1_child')
+    ),
+    priceOriginal: optionalPrice(pick(props, 'price_original', 'priceOriginal', 'prix_regulier')),
+    discountAmount: optionalPrice(pick(props, 'discount_amount', 'discountAmount', 'rabais')),
+    financingMonthly: optionalPrice(
+      pick(props, 'financement_mensuel', 'financing_monthly', 'financingMonthly')
+    ),
     packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
+    hotelDescription: pickText(props, 'hotel_description', 'hotelDescription', 'description_hotel'),
     endDate,
     departureDate,
     departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || 'Montréal (YUL)',
+    flights: mapFlights(props),
     img,
     imgRoom: imgRoom || img,
     imgExtra: imgExtra || img,
+    images,
     seoTags
   };
 }

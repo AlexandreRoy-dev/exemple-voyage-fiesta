@@ -90,6 +90,144 @@
         return PLACEHOLDER_IMG;
     }
 
+    function isPlaceholderImage(url) {
+        if (!url) return true;
+        return url === PLACEHOLDER_IMG || /pexels\.com\/photos\/1450360/.test(url);
+    }
+
+    function buildProductGallery(p) {
+        const rawList = Array.isArray(p.images) && p.images.length
+            ? p.images
+            : [p.img, p.imgRoom, p.imgExtra];
+
+        const gallery = [];
+        for (const src of rawList) {
+            const url = normalizeImageSrc(src);
+            if (isPlaceholderImage(url) || gallery.includes(url)) continue;
+            gallery.push(url);
+        }
+
+        if (!gallery.length) {
+            const fallback = normalizeImageSrc(p.img);
+            if (!isPlaceholderImage(fallback)) gallery.push(fallback);
+        }
+
+        return gallery;
+    }
+
+    function optionalPrice(value) {
+        if (value === undefined || value === null || value === '') return null;
+        const n = Number(value);
+        return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+    }
+
+    /** Occupation rows for product page — only prices set in GHL are returned */
+    function getOccupationPrices(p) {
+        const rows = [];
+        const double = optionalPrice(p.price ?? p.price_occ_double);
+        if (double !== null) {
+            rows.push({
+                id: 'double',
+                label: 'Occupation double (2 pers.)',
+                price: double,
+                primary: true,
+                hint: 'Prix par personne'
+            });
+        }
+        const simple = optionalPrice(p.priceOccSimple ?? p.price_occ_simple);
+        if (simple !== null) {
+            rows.push({
+                id: 'simple',
+                label: 'Occupation simple (1 pers.)',
+                price: simple,
+                hint: 'Prix par personne'
+            });
+        }
+        const triple = optionalPrice(p.priceOccTriple ?? p.price_occ_triple);
+        if (triple !== null) {
+            rows.push({
+                id: 'triple',
+                label: 'Occupation triple (3 pers.)',
+                price: triple,
+                hint: 'Prix par personne'
+            });
+        }
+        const doubleChild = optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child);
+        if (doubleChild !== null) {
+            rows.push({
+                id: 'double_1_child',
+                label: 'Occupation double avec 1 enfant (- de 12 ans)',
+                price: doubleChild,
+                hint: '2 adultes + 1 enfant de moins de 12 ans au retour'
+            });
+        }
+        return rows;
+    }
+
+    function formatMoney(amount) {
+        const n = Math.round(Number(amount));
+        if (!Number.isFinite(n)) return '';
+        return n.toLocaleString('fr-CA') + '\u00a0$';
+    }
+
+    /** Red card incentive — rabais, prix barré, financement optionnel */
+    function getIncentive(p) {
+        const price = optionalPrice(p.price);
+        if (price === null) return null;
+
+        const original = optionalPrice(p.priceOriginal ?? p.price_original);
+        let discount = optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais);
+
+        if (discount === null && original !== null && original > price) {
+            discount = original - price;
+        }
+
+        const hasPromo = discount !== null && discount > 0;
+        if (!hasPromo) return null;
+
+        const strikePrice = original !== null && original > price ? original : price + discount;
+        const financing = optionalPrice(
+            p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
+        );
+
+        return {
+            price,
+            strikePrice,
+            discount,
+            financing
+        };
+    }
+
+    function formatFlightDate(value) {
+        if (!value) return '';
+        const d = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(d.getTime())) return String(value).trim();
+        return d.toLocaleDateString('fr-CA', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            timeZone: 'UTC'
+        });
+    }
+
+    function formatFlightTime(value) {
+        const s = value === undefined || value === null ? '' : String(value).trim();
+        return s || 'à venir';
+    }
+
+    function flightLegHasData(leg) {
+        if (!leg) return false;
+        return Boolean(
+            leg.from || leg.to || leg.departDate || leg.arriveDate || leg.number ||
+            leg.departTime || leg.arriveTime
+        );
+    }
+
+    function hasFlights(p) {
+        const flights = p.flights || {};
+        return flightLegHasData(flights.out) || flightLegHasData(flights.return);
+    }
+
     function normalizeProduct(p) {
         const endDate = p.endDate
             ? new Date(p.endDate)
@@ -113,11 +251,21 @@
             departureAirport: p.departureAirport || 'Montréal (YUL)',
             departureDate: departureDateValid,
             criteria: Array.isArray(p.criteria) ? p.criteria.map(normalizeCriterionValue) : [],
+            priceOccSimple: optionalPrice(p.priceOccSimple ?? p.price_occ_simple),
+            priceOccTriple: optionalPrice(p.priceOccTriple ?? p.price_occ_triple),
+            priceOccDouble1Child: optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child),
+            priceOriginal: optionalPrice(p.priceOriginal ?? p.price_original),
+            discountAmount: optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais),
+            financingMonthly: optionalPrice(
+                p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
+            ),
+            flights: p.flights || { out: {}, return: {}, airlineLogo: '' },
             endDate,
             inventory: isSoldOut({ ...p, state }) ? 0 : p.inventory,
             img,
             imgRoom,
-            imgExtra
+            imgExtra,
+            images: buildProductGallery({ ...p, img, imgRoom, imgExtra })
         };
     }
 
@@ -267,6 +415,15 @@
         normalizeCriterionValue,
         getCriteriaLabel,
         productHasCriterion,
+        getOccupationPrices,
+        getIncentive,
+        formatMoney,
+        formatFlightDate,
+        formatFlightTime,
+        hasFlights,
+        flightLegHasData,
+        buildProductGallery,
+        optionalPrice,
         isOtherSupplier,
         isSoldOut,
         isVisibleOnSite,

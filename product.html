@@ -25,31 +25,21 @@
         }
     </script>
     <style>
-        .sticky-booking { top: 100px; }
+        .sticky-booking { position: sticky; top: 1rem; }
         .tab-active { border-bottom: 3px solid #F26522; color: #F26522; font-weight: 600; }
+        .product-tab { border-bottom: 3px solid transparent; color: #6b7280; }
+        .product-tab:hover { color: #F26522; }
+        .gallery-tile { cursor: pointer; }
+        .gallery-tile:hover img { transform: scale(1.03); }
+        .gallery-tile img { transition: transform 0.3s ease; }
+        #gallery-lightbox:not(.hidden) { display: flex; }
     </style>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <a href="index.html" class="flex items-center gap-2 text-brand-blue">
-                <i class="fa-solid fa-umbrella-beach text-2xl"></i>
-                <span class="font-bold text-lg tracking-wider uppercase">Voyage Fiesta</span>
-            </a>
-            <div class="hidden md:flex gap-6 text-brand-blue font-medium">
-                <a href="index.html" class="hover:text-brand-orange">Promotions</a>
-                <a href="index.html" class="hover:text-brand-orange">Top Chrono</a>
-            </div>
-            <a href="tel:1800000000" class="bg-brand-blue text-white px-4 py-2 rounded-full text-sm font-bold">
-                <i class="fa-solid fa-phone mr-2"></i> 1-800-FIESTA
-            </a>
-        </div>
-    </header>
-
     <div class="bg-red-600 text-white py-2 overflow-hidden">
         <div class="container mx-auto px-4 flex justify-center items-center gap-4">
-            <span class="font-bold animate-pulse text-sm md:text-base">🔥 OFFRE TOP CHRONO :</span>
+            <span class="font-bold animate-pulse text-sm md:text-base">🔥 OFFRE AUBAINES EXPRESS VOYAGE :</span>
             <div id="countdown" class="font-mono font-bold text-lg tracking-tighter">00j 00h 00m 00s</div>
         </div>
     </div>
@@ -60,6 +50,22 @@
         <h1 class="text-2xl font-bold text-brand-blue mb-4">Forfait introuvable</h1>
         <p class="text-gray-600 mb-6">Ce produit n'existe pas ou n'est plus disponible.</p>
         <a href="index.html" class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors">Retour aux promotions</a>
+    </div>
+
+    <div id="gallery-lightbox" class="hidden fixed inset-0 z-[110] bg-black/95 flex-col" role="dialog" aria-modal="true" aria-label="Galerie photos">
+        <div class="flex justify-between items-center px-4 py-3 text-white shrink-0">
+            <span id="gallery-lightbox-counter" class="text-sm font-medium"></span>
+            <button type="button" id="gallery-lightbox-close" class="text-3xl leading-none text-white/80 hover:text-white" aria-label="Fermer">&times;</button>
+        </div>
+        <div class="relative flex-grow flex items-center justify-center px-4 pb-4 min-h-0">
+            <button type="button" id="gallery-lightbox-prev" class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full" aria-label="Photo précédente">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <img id="gallery-lightbox-image" src="" alt="" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl">
+            <button type="button" id="gallery-lightbox-next" class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full" aria-label="Photo suivante">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
     </div>
 
     <div id="reservation-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -83,26 +89,8 @@
         </div>
     </div>
 
-    <footer class="bg-brand-dark text-gray-400 py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-2 gap-12 text-justify text-[11px] leading-relaxed border-t border-gray-700 pt-8">
-                <div>
-                    <h6 class="text-white font-bold mb-3 uppercase tracking-wider">Français</h6>
-                    <p>L'information apparaissant dans ce message électronique est de nature légalement privilégiée et confidentielle. Si ce message vous est parvenu par erreur et que vous n'êtes pas le destinataire visé, vous êtes par les présentes avisé que tout usage, copie ou distribution de ce message est strictement interdit. Vous êtes donc priés de nous informer immédiatement de cette erreur et de détruire ce message.</p>
-                </div>
-                <div>
-                    <h6 class="text-white font-bold mb-3 uppercase tracking-wider">English</h6>
-                    <p>The information in this message is legally privileged and confidential. In the event of a transmission error and if you are not the individual or entity mentioned above, you are hereby advised that any use, copying or reproduction of this document is strictly forbidden. Please advise us of this error and destroy this message.</p>
-                </div>
-            </div>
-            <div class="mt-8 text-center text-[10px] text-gray-600">
-                &copy; 2026 Voyage Fiesta. Développé pour la promotion exclusive des produits Fiesta.
-            </div>
-        </div>
-    </footer>
-
-    <script src="config.js"></script>
-    <script src="api.js?v=8"></script>
+    <script src="config.js?v=2"></script>
+    <script src="api.js?v=13"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -172,13 +160,323 @@
             return base;
         }
 
+        function galleryOverlayLabel(count) {
+            if (count <= 1) return '';
+            const extra = count - 3;
+            if (extra > 0) return `+${extra} photo${extra > 1 ? 's' : ''}`;
+            return `${count} photo${count > 1 ? 's' : ''}`;
+        }
+
+        function buildProductGalleryHtml(p, gallery) {
+            const count = gallery.length;
+            const main = gallery[0];
+            const thumb1 = gallery[1] || gallery[0];
+            const thumb2 = gallery[2] || gallery[1] || gallery[0];
+            const overlayLabel = galleryOverlayLabel(count);
+            const alt = escapeHtml(p.name);
+
+            const overlayHtml = overlayLabel
+                ? `<button type="button" class="gallery-open absolute inset-0 z-10 bg-black/45 hover:bg-black/55 flex items-center justify-center transition-colors border-0 p-0 cursor-pointer" data-gallery-index="0" aria-label="Ouvrir la galerie (${count} photos)">
+                        <span class="text-white font-bold text-sm drop-shadow">${overlayLabel}</span>
+                   </button>`
+                : '';
+
+            return `
+                <div class="rounded-xl overflow-hidden border border-gray-100 shadow-sm min-w-0" id="product-gallery">
+                    <div class="grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-0.5 sm:gap-2 md:h-96 bg-gray-200 md:bg-transparent">
+                        <button type="button" class="gallery-open gallery-tile relative block w-full min-w-0 min-h-[220px] md:min-h-0 md:h-full bg-gray-300 rounded-t-xl md:rounded-l-xl md:rounded-tr-none overflow-hidden border-0 p-0 text-left aspect-[16/10] md:aspect-auto" data-gallery-index="0" aria-label="Ouvrir la photo principale">
+                            <img src="${main}" class="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="${alt}">
+                            <span class="absolute bottom-4 left-4 z-[1] bg-black/60 text-white px-3 py-1 rounded-full text-xs pointer-events-none">${escapeHtml(p.subDest)}</span>
+                        </button>
+                        <div class="hidden md:grid grid-rows-2 gap-2 h-full min-h-0 min-w-0">
+                            <button type="button" class="gallery-open gallery-tile relative block w-full min-w-0 min-h-0 h-full bg-gray-300 rounded-tr-xl overflow-hidden border-0 p-0" data-gallery-index="${Math.min(1, count - 1)}" aria-label="Ouvrir la galerie">
+                                <img src="${thumb1}" class="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="Chambre — ${alt}">
+                            </button>
+                            <div class="relative min-h-0 h-full min-w-0 rounded-br-xl overflow-hidden bg-gray-300">
+                                <button type="button" class="gallery-open gallery-tile absolute inset-0 z-0 border-0 p-0 w-full h-full" data-gallery-index="${Math.min(2, count - 1)}" aria-label="Ouvrir la galerie">
+                                    <img src="${thumb2}" class="w-full h-full object-cover pointer-events-none" alt="Activités — ${alt}">
+                                </button>
+                                ${overlayHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        let activeGallery = [];
+        let activeGalleryAlt = '';
+        let gallerySlideIndex = 0;
+
+        function bindGalleryViewer(gallery, altText) {
+            activeGallery = gallery;
+            activeGalleryAlt = altText || 'Photo';
+
+            const lightbox = document.getElementById('gallery-lightbox');
+            const imageEl = document.getElementById('gallery-lightbox-image');
+            const counterEl = document.getElementById('gallery-lightbox-counter');
+            const prevBtn = document.getElementById('gallery-lightbox-prev');
+            const nextBtn = document.getElementById('gallery-lightbox-next');
+            const closeBtn = document.getElementById('gallery-lightbox-close');
+
+            function renderSlide() {
+                if (!activeGallery.length) return;
+                imageEl.src = activeGallery[gallerySlideIndex];
+                imageEl.alt = `${activeGalleryAlt} — photo ${gallerySlideIndex + 1}`;
+                counterEl.textContent = `${gallerySlideIndex + 1} / ${activeGallery.length}`;
+                prevBtn.classList.toggle('hidden', activeGallery.length <= 1);
+                nextBtn.classList.toggle('hidden', activeGallery.length <= 1);
+            }
+
+            function openLightbox(index) {
+                if (!activeGallery.length) return;
+                gallerySlideIndex = Math.max(0, Math.min(index, activeGallery.length - 1));
+                renderSlide();
+                lightbox.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightbox.classList.add('hidden');
+                imageEl.src = '';
+                const reservationOpen = !document.getElementById('reservation-modal')?.classList.contains('hidden');
+                if (!reservationOpen) document.body.style.overflow = '';
+            }
+
+            function step(delta) {
+                if (activeGallery.length <= 1) return;
+                gallerySlideIndex = (gallerySlideIndex + delta + activeGallery.length) % activeGallery.length;
+                renderSlide();
+            }
+
+            document.querySelectorAll('.gallery-open').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const index = parseInt(btn.getAttribute('data-gallery-index') || '0', 10);
+                    openLightbox(Number.isNaN(index) ? 0 : index);
+                };
+            });
+
+            closeBtn.onclick = closeLightbox;
+            prevBtn.onclick = () => step(-1);
+            nextBtn.onclick = () => step(1);
+            lightbox.onclick = (e) => {
+                if (e.target === lightbox) closeLightbox();
+            };
+
+            if (!window.__galleryKeysBound) {
+                window.__galleryKeysBound = true;
+                document.addEventListener('keydown', (e) => {
+                    const lb = document.getElementById('gallery-lightbox');
+                    if (!lb || lb.classList.contains('hidden')) return;
+                    if (e.key === 'Escape') window.__galleryClose?.();
+                    if (e.key === 'ArrowLeft') window.__galleryStep?.(-1);
+                    if (e.key === 'ArrowRight') window.__galleryStep?.(1);
+                });
+            }
+
+            window.__galleryStep = step;
+            window.__galleryClose = closeLightbox;
+        }
+
+        function escapeHtml(text) {
+            return String(text ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function formatHotelDescription(text) {
+            const trimmed = String(text ?? '').trim();
+            if (!trimmed) return '';
+            return escapeHtml(trimmed)
+                .split(/\n{2,}/)
+                .map(p => `<p class="mb-3 last:mb-0 leading-relaxed">${p.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+        }
+
+        function buildHotelDetailsHtml(p, criteriaHtml) {
+            const description = formatHotelDescription(p.hotelDescription);
+            const fallbackDescription = `
+                <p class="leading-relaxed text-gray-600 mb-3">
+                    ${escapeHtml(p.name)} est situé à ${escapeHtml(p.location || p.subDest || p.destination)}.
+                    ${p.stars ? `Cet établissement classé ${p.stars} étoile${p.stars > 1 ? 's' : ''} ` : 'Cet établissement '}
+                    vous accueille pour un séjour de ${p.durationNights} nuit${p.durationNights > 1 ? 's' : ''}
+                    ${p.subDest ? ` à ${escapeHtml(p.subDest)}` : ''}${p.country ? `, ${escapeHtml(p.country)}` : ''}.
+                </p>
+                ${p.roomCategory ? `<p class="leading-relaxed text-gray-600">Catégorie de chambre incluse : <strong>${escapeHtml(p.roomCategory)}</strong>.</p>` : ''}`;
+
+            const facts = [
+                { label: 'Classification', value: p.stars ? `${p.stars} étoile${p.stars > 1 ? 's' : ''}` : null },
+                { label: 'Type de chambre', value: p.roomCategory },
+                { label: 'Destination', value: [p.destination, p.country].filter(Boolean).join(', ') },
+                { label: 'Emplacement', value: p.location || p.subDest }
+            ].filter(item => item.value);
+
+            const factsHtml = facts.length
+                ? `<div class="grid sm:grid-cols-2 gap-3 mb-6">
+                        ${facts.map(f => `
+                            <div class="bg-brand-light rounded-lg px-4 py-3 border border-blue-100">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">${escapeHtml(f.label)}</p>
+                                <p class="text-sm font-semibold text-brand-blue">${escapeHtml(f.value)}</p>
+                            </div>`).join('')}
+                   </div>`
+                : '';
+
+            return `
+                <div class="md:flex gap-6">
+                    <div class="md:w-2/5 mb-4 md:mb-0">
+                        <img src="${p.imgRoom || p.img}" alt="Chambre — ${escapeHtml(p.name)}" class="w-full h-56 md:h-full min-h-[14rem] object-cover rounded-xl border border-gray-100">
+                    </div>
+                    <div class="md:w-3/5">
+                        <h3 class="font-bold text-brand-blue text-lg mb-3">${escapeHtml(p.name)}</h3>
+                        <div class="text-sm text-gray-600 mb-5">
+                            ${description || fallbackDescription}
+                        </div>
+                        ${factsHtml}
+                        ${criteriaHtml ? `
+                            <div class="pt-4 border-t border-gray-200">
+                                <h4 class="font-bold text-xs uppercase text-gray-400 mb-3 tracking-widest">Commodités &amp; critères</h4>
+                                <div class="flex flex-wrap gap-2">${criteriaHtml}</div>
+                            </div>` : ''}
+                    </div>
+                </div>`;
+        }
+
+        function bindProductTabs() {
+            const tabs = document.querySelectorAll('[data-product-tab]');
+            const panels = document.querySelectorAll('[data-product-panel]');
+            if (!tabs.length) return;
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-product-tab');
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('product-tab');
+                    });
+                    tab.classList.add('tab-active');
+                    tab.classList.remove('product-tab');
+                    panels.forEach(panel => {
+                        panel.classList.toggle('hidden', panel.getAttribute('data-product-panel') !== target);
+                    });
+                });
+            });
+        }
+
+        function buildFlightLegHtml(label, leg, carrier, airlineLogo) {
+            if (!VoyageFiestaAPI.flightLegHasData(leg)) return '';
+
+            const departDate = VoyageFiestaAPI.formatFlightDate(leg.departDate);
+            const arriveDate = VoyageFiestaAPI.formatFlightDate(leg.arriveDate);
+            const departTime = VoyageFiestaAPI.formatFlightTime(leg.departTime);
+            const arriveTime = VoyageFiestaAPI.formatFlightTime(leg.arriveTime);
+            const airlineHtml = airlineLogo
+                ? `<img src="${airlineLogo}" alt="${carrier}" class="h-6 mx-auto object-contain mb-2">`
+                : `<p class="text-xs font-black tracking-widest text-brand-blue uppercase mb-2">${carrier || 'Compagnie'}</p>`;
+
+            return `
+                <div class="border border-gray-200 rounded-lg overflow-hidden mb-4 last:mb-0">
+                    <div class="bg-brand-blue text-white text-xs font-bold tracking-widest px-4 py-2 uppercase">${label}</div>
+                    <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-center px-4 py-5 bg-white">
+                        <div class="text-left">
+                            <p class="font-bold text-brand-blue text-sm leading-tight">${leg.from || '—'}</p>
+                            ${departDate ? `<p class="text-xs text-gray-600 mt-1">${departDate}</p>` : ''}
+                            <p class="text-sm font-semibold text-gray-800 mt-0.5">${departTime}</p>
+                        </div>
+                        <div class="text-center px-2 min-w-[7rem]">
+                            ${airlineHtml}
+                            <div class="flex items-center gap-1 text-brand-blue">
+                                <span class="flex-1 h-px bg-brand-blue/40"></span>
+                                <i class="fa-solid fa-plane text-sm"></i>
+                                <span class="flex-1 h-px bg-brand-blue/40"></span>
+                            </div>
+                            ${leg.number ? `<p class="text-xs font-bold text-brand-blue mt-2">${leg.number}</p>` : ''}
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-brand-blue text-sm leading-tight">${leg.to || '—'}</p>
+                            ${arriveDate ? `<p class="text-xs text-gray-600 mt-1">${arriveDate}</p>` : ''}
+                            <p class="text-sm font-semibold text-gray-800 mt-0.5">${arriveTime}</p>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function buildFlightsSectionHtml(p) {
+            if (!VoyageFiestaAPI.hasFlights(p)) return '';
+
+            const flights = p.flights || {};
+            const supplierLabel = VoyageFiestaAPI.isOtherSupplier(p.supplier) ? 'Autres' : (p.supplier || 'le fournisseur');
+            const carrier = p.carrier || supplierLabel;
+            const airlineLogo = flights.airlineLogo || '';
+            const outHtml = buildFlightLegHtml('Aller', flights.out, carrier, airlineLogo);
+            const returnHtml = buildFlightLegHtml('Retour', flights.return, carrier, airlineLogo);
+
+            if (!outHtml && !returnHtml) return '';
+
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-bold text-brand-blue mb-1">Vols</h3>
+                    <p class="text-sm text-gray-600 mb-5">Vols directs aller-retour avec ${supplierLabel}&nbsp;:</p>
+                    ${outHtml}
+                    ${returnHtml}
+                    <p class="text-[11px] text-gray-500 leading-relaxed mt-4">
+                        Les horaires de vol sont sujets à changement sans préavis. Veuillez vérifier auprès de la compagnie aérienne pour les bagages autorisés et les frais applicables.
+                    </p>
+                </div>`;
+        }
+
+        function buildOccupationPricesHtml(p, isSoldOut) {
+            const rows = VoyageFiestaAPI.getOccupationPrices(p);
+            if (!rows.length) {
+                return `<p class="text-sm text-gray-500 italic">Tarifs sur demande.</p>`;
+            }
+            return rows.map((row, index) => {
+                const isPrimary = row.primary === true;
+                const border = isPrimary && !isSoldOut
+                    ? 'border-2 border-brand-orange bg-orange-50'
+                    : 'border border-gray-200';
+                const priceSize = isPrimary ? 'text-2xl font-black' : 'font-bold';
+                const priceColor = isSoldOut ? 'text-gray-400 line-through' : (isPrimary ? 'text-brand-blue' : 'text-gray-800');
+                const labelColor = isSoldOut && isPrimary ? 'text-gray-500' : (isPrimary ? '' : 'text-gray-600');
+                const hintHtml = row.hint
+                    ? `<p class="text-[10px] text-gray-500 italic ${isPrimary ? 'text-right' : 'mt-1'}">${row.hint}</p>`
+                    : '';
+                if (isPrimary) {
+                    return `
+                        <div class="flex items-center justify-between p-3 rounded-xl ${border} ${isSoldOut ? 'border-gray-200 bg-gray-50' : ''}">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="occ" value="${row.id}" checked ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-orange">
+                                <span class="text-sm font-medium ${labelColor}">${row.label}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="${priceSize} ${priceColor}">${row.price}$</span>
+                                ${hintHtml}
+                            </div>
+                        </div>`;
+                }
+                return `
+                    <div class="p-3 rounded-xl ${border} ${isSoldOut ? 'bg-gray-50' : ''}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="occ" value="${row.id}" ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-blue">
+                                <span class="text-sm font-medium ${labelColor}">${row.label}</span>
+                            </div>
+                            <span class="${priceSize} ${priceColor}">${row.price}$</span>
+                        </div>
+                        ${hintHtml}
+                    </div>`;
+            }).join('');
+        }
+
         function renderProduct(p) {
             const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
             const days = p.durationNights + 1;
-            const simplePrice = Math.round(p.price * 1.3);
-            const triplePrice = Math.round(p.price * 0.96);
-            const childPrice = VoyageFiestaAPI.productHasCriterion(p, 'pour_adultes_18') ? null : Math.round(p.price * 0.58);
+            const occupationHtml = buildOccupationPricesHtml(p, isSoldOut);
+            const flightsHtml = buildFlightsSectionHtml(p);
             const inclusions = getInclusions(p);
+            const packageTabLabel = p.packageType || 'Forfait';
 
             document.title = `${p.name} - Voyage Fiesta`;
 
@@ -214,22 +512,36 @@
                 `<span class="bg-brand-light text-brand-blue px-3 py-1 rounded text-[10px] font-bold">${t}</span>`
             ).join('');
 
-            const childHtml = childPrice === null
-                ? `<div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-gray-500 uppercase">Tarif Enfant</span>
-                            <span class="font-bold text-brand-blue text-sm">N/A</span>
-                        </div>
-                        <p class="text-[9px] text-gray-400 italic leading-tight">Réservé aux adultes seulement (18 ans et plus).</p>
-                   </div>`
-                : `<div class="bg-gray-50 p-3 rounded-lg border border-dashed border-gray-300">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs font-bold text-gray-500 uppercase">Tarif Enfant</span>
-                            <span class="font-bold text-brand-blue text-sm">${childPrice}$</span>
-                        </div>
-                        <p class="text-[9px] text-gray-400 italic leading-tight">Le prix enfant est calculé selon l'âge au retour du voyage. Nécessite obligatoirement 2 adultes.</p>
-                   </div>`;
+            const metaCards = [
+                { icon: 'fa-plane-up', label: 'Transporteur', value: p.carrier },
+                { icon: 'fa-bed', label: 'Type de chambre', value: p.roomCategory }
+            ].filter(c => String(c.value || '').trim());
 
+            const metaCardsHtml = metaCards.length
+                ? `<div class="grid ${metaCards.length > 1 ? 'md:grid-cols-2' : ''} gap-6">
+                        ${metaCards.map(c => `
+                            <div class="bg-white p-6 rounded-xl border border-gray-100 flex items-center gap-4">
+                                <div class="bg-brand-light p-3 rounded-full text-brand-blue text-2xl shrink-0"><i class="fa-solid ${c.icon}"></i></div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-gray-400 uppercase">${c.label}</p>
+                                    <p class="font-bold text-brand-blue truncate">${escapeHtml(c.value)}</p>
+                                </div>
+                            </div>`).join('')}
+                   </div>`
+                : '';
+
+            const seoSectionHtml = (p.seoTags || []).length
+                ? `<section class="container mx-auto px-4 py-12">
+                        <div class="bg-white p-6 rounded-xl border border-gray-100">
+                            <h5 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest">Catégories et Tags SEO</h5>
+                            <div class="flex flex-wrap gap-2">${seoHtml}</div>
+                        </div>
+                   </section>`
+                : '';
+
+            const hotelDetailsHtml = buildHotelDetailsHtml(p, criteriaHtml);
+            const gallery = VoyageFiestaAPI.buildProductGallery(p);
+            const galleryHtml = buildProductGalleryHtml(p, gallery);
             const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
 
             document.getElementById('product-content').innerHTML = `
@@ -241,7 +553,7 @@
                     </nav>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 space-y-6">
+                        <div class="lg:col-span-2 space-y-6 min-w-0">
                             <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                                 <div class="flex flex-wrap justify-between items-start gap-4">
                                     <div>
@@ -263,65 +575,37 @@
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-4 gap-2 h-96">
-                                <div class="col-span-3 bg-gray-300 rounded-l-xl overflow-hidden relative">
-                                    <img src="${p.img}" class="w-full h-full object-cover" alt="${p.name}">
-                                    <span class="absolute bottom-4 left-4 bg-black/60 text-white px-3 py-1 rounded-full text-xs">${p.subDest}</span>
-                                </div>
-                                <div class="grid grid-rows-2 gap-2">
-                                    <div class="bg-gray-300 rounded-tr-xl overflow-hidden">
-                                        <img src="${p.imgRoom}" class="w-full h-full object-cover" alt="Chambre">
-                                    </div>
-                                    <div class="bg-gray-300 rounded-br-xl overflow-hidden relative">
-                                        <img src="${p.imgExtra}" class="w-full h-full object-cover" alt="Activités">
-                                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                            <span class="text-white font-bold text-sm">+15 photos</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            ${galleryHtml}
 
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            ${flightsHtml}
+
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="product-tabs">
                                 <div class="flex border-b">
-                                    <button class="px-6 py-4 tab-active">${p.packageType}</button>
-                                    <button class="px-6 py-4 text-gray-500 hover:text-brand-orange transition">Détails de l'hôtel</button>
+                                    <button type="button" data-product-tab="package" class="px-6 py-4 tab-active">${escapeHtml(packageTabLabel)}</button>
+                                    <button type="button" data-product-tab="hotel" class="px-6 py-4 product-tab">Détails de l'hôtel</button>
                                 </div>
-                                <div class="p-6 grid md:grid-cols-2 gap-8">
-                                    <div>
-                                        <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-circle-check text-green-500 mr-2"></i> Inclusions</h3>
-                                        <ul class="space-y-3 text-sm text-gray-600">
-                                            ${inclusions.map(i => `<li class="flex items-start gap-2"><i class="fa-solid ${i.icon} text-xs mt-1"></i> ${i.text}</li>`).join('')}
-                                        </ul>
-                                    </div>
-                                    <div class="bg-gray-50 p-4 rounded-lg">
-                                        <h3 class="font-bold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-circle-xmark text-red-400 mr-2"></i> Exclusions</h3>
-                                        <ul class="space-y-3 text-sm text-gray-500">
-                                            <li>Tout ce qui n'est pas inscrit dans la section « Inclusions »</li>
-                                        </ul>
-                                        <div class="mt-6 pt-6 border-t border-gray-200">
-                                            <h4 class="font-bold text-xs uppercase text-gray-400 mb-3 tracking-widest">Caractéristiques</h4>
-                                            <div class="flex flex-wrap gap-2">${criteriaHtml}</div>
+                                <div class="p-6" data-product-panel="package">
+                                    <div class="grid md:grid-cols-2 gap-8">
+                                        <div>
+                                            <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-circle-check text-green-500 mr-2"></i> Inclusions</h3>
+                                            <ul class="space-y-3 text-sm text-gray-600">
+                                                ${inclusions.map(i => `<li class="flex items-start gap-2"><i class="fa-solid ${i.icon} text-xs mt-1"></i> ${i.text}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <h3 class="font-bold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-circle-xmark text-red-400 mr-2"></i> Exclusions</h3>
+                                            <ul class="space-y-3 text-sm text-gray-500">
+                                                <li>Tout ce qui n'est pas inscrit dans la section « Inclusions »</li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="p-6 hidden" data-product-panel="hotel">
+                                    ${hotelDetailsHtml}
+                                </div>
                             </div>
 
-                            <div class="grid md:grid-cols-2 gap-6">
-                                <div class="bg-white p-6 rounded-xl border border-gray-100 flex items-center gap-4">
-                                    <div class="bg-brand-light p-3 rounded-full text-brand-blue text-2xl"><i class="fa-solid fa-plane-up"></i></div>
-                                    <div>
-                                        <p class="text-xs font-bold text-gray-400 uppercase">Transporteur</p>
-                                        <p class="font-bold text-brand-blue">${p.carrier}</p>
-                                    </div>
-                                </div>
-                                <div class="bg-white p-6 rounded-xl border border-gray-100 flex items-center gap-4">
-                                    <div class="bg-brand-light p-3 rounded-full text-brand-blue text-2xl"><i class="fa-solid fa-bed"></i></div>
-                                    <div>
-                                        <p class="text-xs font-bold text-gray-400 uppercase">Type de chambre</p>
-                                        <p class="font-bold text-brand-blue">${p.roomCategory}</p>
-                                    </div>
-                                </div>
-                            </div>
+                            ${metaCardsHtml}
                         </div>
 
                         <div class="lg:col-span-1">
@@ -345,31 +629,7 @@
 
                                 <div class="space-y-4 mb-8">
                                     <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">Tarifs par occupation</h4>
-                                    <div class="flex items-center justify-between p-3 rounded-xl border-2 ${isSoldOut ? 'border-gray-200 bg-gray-50' : 'border-brand-orange bg-orange-50'}">
-                                        <div class="flex items-center gap-3">
-                                            <input type="radio" name="occ" checked ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-orange">
-                                            <span class="text-sm font-medium ${isSoldOut ? 'text-gray-500' : ''}">Double (2 pers.)</span>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="text-2xl font-black ${isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue'}">${p.price}$</span>
-                                            <p class="text-[10px] text-gray-500 italic">Prix par personne</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200">
-                                        <div class="flex items-center gap-3">
-                                            <input type="radio" name="occ" ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-blue">
-                                            <span class="text-sm font-medium text-gray-600">Simple (1 pers.)</span>
-                                        </div>
-                                        <span class="font-bold ${isSoldOut ? 'text-gray-400' : 'text-gray-800'}">${simplePrice}$</span>
-                                    </div>
-                                    <div class="flex items-center justify-between p-3 rounded-xl border border-gray-200">
-                                        <div class="flex items-center gap-3">
-                                            <input type="radio" name="occ" ${isSoldOut ? 'disabled' : ''} class="w-4 h-4 text-brand-blue">
-                                            <span class="text-sm font-medium text-gray-600">Triple (3 pers.)</span>
-                                        </div>
-                                        <span class="font-bold ${isSoldOut ? 'text-gray-400' : 'text-gray-800'}">${triplePrice}$</span>
-                                    </div>
-                                    ${childHtml}
+                                    ${occupationHtml}
                                 </div>
 
                                 ${isSoldOut
@@ -382,14 +642,11 @@
                     </div>
                 </section>
 
-                <section class="container mx-auto px-4 py-12">
-                    <div class="bg-white p-6 rounded-xl border border-gray-100">
-                        <h5 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest">Catégories et Tags SEO</h5>
-                        <div class="flex flex-wrap gap-2">${seoHtml}</div>
-                    </div>
-                </section>`;
+                ${seoSectionHtml}`;
 
             startCountdown(p.endDate);
+            bindProductTabs();
+            bindGalleryViewer(gallery, p.name);
             bindReservationModal(p);
         }
 
