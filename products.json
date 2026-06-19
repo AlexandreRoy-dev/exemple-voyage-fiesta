@@ -1,38 +1,7 @@
 {
-  "updatedAt": "2026-06-19T18:13:41.260Z",
+  "updatedAt": "2026-06-19T18:17:48.189Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
-  "products": [
-    {
-      "id": "6a3585dfe978f91a43466f1d",
-      "slug": "test",
-      "name": "test",
-      "state": "actif",
-      "active": "actif",
-      "destTag": "europe",
-      "subDest": "xxx",
-      "destination1": "capvert",
-      "destination": "capvert",
-      "country": "xxx",
-      "location": "",
-      "stars": 0,
-      "supplier": "caribe_sol",
-      "carrier": "sunwing",
-      "durationNights": 7,
-      "roomCategory": "junior",
-      "criteria": [
-        "pour_clibataires"
-      ],
-      "inventory": 3,
-      "price": 1290,
-      "packageType": "tout inclus",
-      "endDate": "2026-06-24T00:00:00.000Z",
-      "departureAirport": "Montréal (YUL)",
-      "img": "assets/forfaits/test-img.jpg",
-      "imgRoom": "assets/forfaits/test-img.jpg",
-      "imgExtra": "assets/forfaits/test-img.jpg",
-      "seoTags": []
-    }
-  ]
+  "products": []
 }
