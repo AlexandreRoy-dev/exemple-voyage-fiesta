@@ -62,6 +62,27 @@
         <a href="index.html" class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors">Retour aux promotions</a>
     </div>
 
+    <div id="reservation-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60" id="modal-backdrop"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="font-bold text-brand-blue text-lg">Réserver ce forfait</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="p-4 overflow-y-auto flex-grow">
+                <p id="modal-product-name" class="text-sm text-gray-600 mb-4 font-medium"></p>
+                <div id="ghl-form-container" class="min-h-[400px]">
+                    <div id="ghl-form-placeholder" class="text-center py-12 text-gray-400 text-sm border border-dashed rounded-xl">
+                        <i class="fa-solid fa-file-lines text-3xl mb-3"></i>
+                        <p>Formulaire GHL à configurer dans <code class="text-xs bg-gray-100 px-1 rounded">config.js</code></p>
+                        <p class="mt-2 text-xs">Collez l'URL d'intégration du formulaire GoHighLevel.</p>
+                    </div>
+                    <iframe id="ghl-form-iframe" class="hidden w-full min-h-[500px] border-0" title="Formulaire de réservation"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="bg-brand-dark text-gray-400 py-12">
         <div class="container mx-auto px-4">
             <div class="grid md:grid-cols-2 gap-12 text-justify text-[11px] leading-relaxed border-t border-gray-700 pt-8">
@@ -80,7 +101,9 @@
         </div>
     </footer>
 
+    <script src="config.js"></script>
     <script src="products.js"></script>
+    <script src="api.js"></script>
     <script>
         const criteriaIcons = {
             "Vue mer": "fa-water",
@@ -121,7 +144,7 @@
         }
 
         function renderProduct(p) {
-            const isSoldOut = p.inventory === 0;
+            const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
             const days = p.durationNights + 1;
             const simplePrice = Math.round(p.price * 1.3);
             const triplePrice = Math.round(p.price * 0.96);
@@ -200,7 +223,7 @@
                                     <div class="bg-brand-light p-3 rounded-lg border border-blue-100 flex items-center gap-3">
                                         <div class="text-right">
                                             <p class="text-xs text-gray-500 font-bold uppercase">Fournisseur</p>
-                                            <p class="text-sm font-bold text-brand-blue">${p.supplier}</p>
+                                            <p class="text-sm font-bold text-brand-blue">${VoyageFiestaAPI.isOtherSupplier(p.supplier) ? 'Autres' : p.supplier}</p>
                                         </div>
                                         <img src="https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&fit=crop" class="w-12 h-12 rounded object-cover" alt="Fournisseur">
                                     </div>
@@ -275,7 +298,7 @@
                                 <div class="space-y-4 mb-6 border-b pb-6">
                                     <div class="flex justify-between text-sm">
                                         <span class="text-gray-500">Départ de :</span>
-                                        <span class="font-bold text-brand-blue">Montréal (YUL)</span>
+                                        <span class="font-bold text-brand-blue">${p.departureAirport || 'Montréal (YUL)'}</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
                                         <span class="text-gray-500">Durée :</span>
@@ -315,7 +338,7 @@
                                 ${isSoldOut
                                     ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">COMPLET</button>
                                        <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
-                                    : `<button class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 text-lg">RÉSERVER MAINTENANT</button>
+                                    : `<button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-95 text-lg">RÉSERVER MAINTENANT</button>
                                        <p class="text-center text-[10px] text-gray-400 mt-4 px-4">En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>`}
                             </div>
                         </div>
@@ -330,6 +353,52 @@
                 </section>`;
 
             startCountdown(p.endDate);
+            bindReservationModal(p);
+        }
+
+        function bindReservationModal(p) {
+            const modal = document.getElementById('reservation-modal');
+            const openBtn = document.getElementById('open-reservation');
+            if (!openBtn) return;
+
+            const supplierLabel = VoyageFiestaAPI.isOtherSupplier(p.supplier) ? 'Autres' : p.supplier;
+
+            function openModal() {
+                document.getElementById('modal-product-name').textContent =
+                    `${p.name} — ${p.price}$/pers · Départ ${p.departureAirport} · ${supplierLabel}`;
+
+                const iframe = document.getElementById('ghl-form-iframe');
+                const placeholder = document.getElementById('ghl-form-placeholder');
+
+                if (GHL_FORM_EMBED_URL) {
+                    const params = new URLSearchParams({
+                        forfait_slug: p.slug,
+                        forfait_name: p.name,
+                        forfait_price: String(p.price),
+                        forfait_supplier: supplierLabel,
+                        forfait_departure: p.departureAirport || 'Montréal (YUL)'
+                    });
+                    const sep = GHL_FORM_EMBED_URL.includes('?') ? '&' : '?';
+                    iframe.src = GHL_FORM_EMBED_URL + sep + params.toString();
+                    iframe.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                } else {
+                    iframe.classList.add('hidden');
+                    placeholder.classList.remove('hidden');
+                }
+
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+
+            openBtn.addEventListener('click', openModal);
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            document.getElementById('modal-backdrop').addEventListener('click', closeModal);
         }
 
         function startCountdown(endDate) {
@@ -351,16 +420,26 @@
             setInterval(tick, 1000);
         }
 
-        const params = new URLSearchParams(window.location.search);
-        const slug = params.get('slug');
-        const product = slug ? getProductBySlug(slug) : null;
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('slug');
+            if (!slug) {
+                document.getElementById('not-found').classList.remove('hidden');
+                document.querySelector('.bg-red-600').classList.add('hidden');
+                return;
+            }
 
-        if (product) {
-            renderProduct(product);
-        } else {
-            document.getElementById('not-found').classList.remove('hidden');
-            document.querySelector('.bg-red-600').classList.add('hidden');
+            const product = await VoyageFiestaAPI.fetchProductBySlug(slug);
+
+            if (product) {
+                renderProduct(product);
+            } else {
+                document.getElementById('not-found').classList.remove('hidden');
+                document.querySelector('.bg-red-600').classList.add('hidden');
+            }
         }
+
+        init();
     </script>
 </body>
 </html>

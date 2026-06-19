@@ -8,6 +8,29 @@
 
     window.HERO_IMAGE = pexels(1450360, 1920);
 
+    const destinationBySlug = {
+        'Majestic-Elegance-Punta-Cana': 'Punta Cana',
+        'Riu-Palace-Peninsula': 'Cancun',
+        'Margaritaville-Island-Reserve': 'Riviera Maya',
+        'Hotel-Riu-Plaza-Espana': 'Madrid',
+        'Royal-Caribbean-Oasis': 'Miami',
+        'Circuit-Rome-Florence': 'Rome',
+        'Fairmont-Chateau-Frontenac': 'Québec',
+        'The-Venetian-Las-Vegas': 'Las Vegas',
+        'Sandals-Grande-St-Lucian': 'Sainte-Lucie',
+        'Bahia-Principe-Tulum': 'Riviera Maya',
+        'Barcelo-Bavaro-Palace': 'Punta Cana',
+        'Hotel-Metropole-Monaco': 'Monaco',
+        'NH-Collection-Berlin': 'Berlin',
+        'MSC-Meraviglia': 'Barcelone',
+        'Riu-Palace-Aruba': 'Aruba',
+        'Sandals-Royal-Bahamian': 'Bahamas'
+    };
+
+    const airportBySlug = {
+        'Fairmont-Chateau-Frontenac': 'Québec (YQB)'
+    };
+
     const raw = [
         {
             id: "TC-AZKhf6e",
@@ -48,6 +71,7 @@
             roomCategory: "Suite Standard",
             criteria: ["Familial", "Glissades d'eau"],
             inventory: 0,
+            state: 'complet_sold_out',
             price: 1689,
             packageType: "Forfait Tout-Inclus",
             endDateIn: 1,
@@ -332,6 +356,52 @@
             imgRoom: pexels(271743, 400),
             imgExtra: pexels(1285625, 400),
             seoTags: ["#CROISIERE", "#BARCELONE", "#MEDITERRANEE", "#FAMILIAL"]
+        },
+        {
+            id: "TC-OPLtu1k",
+            slug: "Riu-Palace-Aruba",
+            name: "Riu Palace Aruba",
+            destTag: "SUD",
+            subDest: "Aruba",
+            country: "Aruba",
+            location: "Palm Beach, Aruba",
+            stars: 5,
+            supplier: "Vacances Hola Sun",
+            carrier: "Sunwing Airlines",
+            durationNights: 7,
+            roomCategory: "Suite Junior Vue Mer",
+            criteria: ["Vue mer", "Adultes seulement"],
+            inventory: 4,
+            price: 1799,
+            packageType: "Forfait Tout-Inclus",
+            endDateIn: 4,
+            img: pexels(1450351, 800),
+            imgRoom: pexels(271743, 400),
+            imgExtra: pexels(258154, 400),
+            seoTags: ["#SUD", "#ARUBA", "#TOUT_INCLUS", "#VUE_MER"]
+        },
+        {
+            id: "TC-PQMuv2l",
+            slug: "Sandals-Royal-Bahamian",
+            name: "Sandals Royal Bahamian",
+            destTag: "SUD",
+            subDest: "Nassau",
+            country: "Bahamas",
+            location: "Cable Beach, Nassau - Bahamas",
+            stars: 5,
+            supplier: "Vacances Transat",
+            carrier: "Air Transat",
+            durationNights: 7,
+            roomCategory: "Suite Swim Out",
+            criteria: ["Swim Out", "Adultes seulement", "Vue mer"],
+            inventory: 2,
+            price: 2699,
+            packageType: "Forfait Tout-Inclus",
+            endDateIn: 6,
+            img: pexels(457881, 800),
+            imgRoom: pexels(189296, 400),
+            imgExtra: pexels(1450360, 400),
+            seoTags: ["#SUD", "#BAHAMAS", "#SWIM_OUT", "#ADULTES_SEULEMENT"]
         }
     ];
 
@@ -344,11 +414,19 @@
         USA: "États-Unis"
     };
 
-    window.products = raw.map(p => ({
-        ...p,
-        destLabel: destLabels[p.destTag] || p.destTag,
-        endDate: new Date(now + (p.endDateIn || 3) * day + (p.endDateExtra || 0))
-    }));
+    window.products = raw.map(p => {
+        const endDate = new Date(now + (p.endDateIn || 3) * day + (p.endDateExtra || 0));
+        return {
+            ...p,
+            state: p.state || (p.inventory === 0 ? 'complet_sold_out' : 'actif'),
+            active: p.active || (p.inventory === 0 ? 'complet_sold_out' : 'actif'),
+            destination: p.destination || destinationBySlug[p.slug] || p.subDest,
+            departureAirport: p.departureAirport || airportBySlug[p.slug] || 'Montréal (YUL)',
+            destLabel: destLabels[p.destTag] || p.destTag,
+            endDate,
+            endDateISO: endDate.toISOString()
+        };
+    });
 
     window.getProductBySlug = function (slug) {
         return window.products.find(p => p.slug === slug);
