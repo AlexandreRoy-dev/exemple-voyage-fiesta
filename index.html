@@ -145,8 +145,8 @@
 
     </main>
 
-    <script src="config.js?v=2"></script>
-    <script src="api.js?v=10"></script>
+    <script src="config.js?v=3"></script>
+    <script src="api.js?v=15"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -358,9 +358,9 @@
                 const incentiveBadge = renderIncentiveBadge(p);
                 const hasIncentive = Boolean(incentiveBadge);
                 const priceFooterHtml = hasIncentive
-                    ? `<p class="text-xs text-gray-500">Occupation double · prix par personne</p>`
+                    ? `<p class="text-xs text-gray-500">Occ. double · prix par personne</p>`
                     : `<div>
-                            <p class="text-xs text-gray-500 mb-1">Occupation Double</p>
+                            <p class="text-xs text-gray-500 mb-1">Occ. double</p>
                             <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
                        </div>`;
 

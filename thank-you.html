@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merci — Voyage Fiesta</title>
+    <script>
+        (function () {
+            try {
+                if (window.self !== window.top) {
+                    window.top.location.replace(window.location.href);
+                }
+            } catch (_) { /* cross-origin */ }
+        })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            blue: '#025091',
+                            orange: '#F26522',
+                            dark: '#1F2937',
+                            light: '#F3F7FA'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-brand-light text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <main class="flex-grow flex items-center justify-center px-4 py-16">
+        <div class="w-full max-w-lg">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-10 text-center">
+                <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
+                    <i class="fa-solid fa-circle-check text-3xl text-green-600"></i>
+                </div>
+                <h1 class="text-2xl md:text-3xl font-bold text-brand-blue mb-3">Merci pour votre demande!</h1>
+                <p id="thank-you-lead" class="text-gray-600 leading-relaxed mb-2">
+                    Votre demande de réservation a bien été reçue.
+                </p>
+                <p id="thank-you-forfait" class="text-sm font-semibold text-brand-orange mb-6 hidden"></p>
+                <p class="text-sm text-gray-500 leading-relaxed mb-8">
+                    Un conseiller Aubaines Express Voyage vous contactera sous peu pour confirmer les détails de votre forfait et les prochaines étapes (dépôt, paiement final, documents).
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a id="thank-you-forfait-link" href="index.html" class="hidden bg-brand-blue hover:bg-brand-orange text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                        Voir le forfait
+                    </a>
+                    <a href="index.html" class="bg-brand-orange hover:bg-brand-blue text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                        Retour aux promotions
+                    </a>
+                </div>
+            </div>
+            <p class="text-center text-xs text-gray-400 mt-6">
+                Des questions? Répondez directement au courriel de confirmation ou contactez votre agence Voyage Fiesta.
+            </p>
+        </div>
+    </main>
+
+    <script src="config.js?v=3"></script>
+    <script src="api.js?v=15"></script>
+    <script>
+        (async function () {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('forfait_slug') || params.get('slug');
+            const firstName = params.get('first_name') || params.get('firstName') || params.get('prenom');
+
+            if (firstName) {
+                const lead = document.getElementById('thank-you-lead');
+                const name = decodeURIComponent(firstName.replace(/\+/g, ' ')).trim();
+                if (name) {
+                    lead.textContent = `Merci ${name}, votre demande de réservation a bien été reçue.`;
+                }
+            }
+
+            if (!slug) return;
+
+            const product = await VoyageFiestaAPI.fetchProductBySlug(slug);
+            if (!product) return;
+
+            const forfaitEl = document.getElementById('thank-you-forfait');
+            forfaitEl.textContent = product.name;
+            forfaitEl.classList.remove('hidden');
+
+            const link = document.getElementById('thank-you-forfait-link');
+            link.href = `product.html?slug=${encodeURIComponent(slug)}`;
+            link.classList.remove('hidden');
+
+            document.title = `Merci — ${product.name} | Voyage Fiesta`;
+        })();
+    </script>
+</body>
+</html>

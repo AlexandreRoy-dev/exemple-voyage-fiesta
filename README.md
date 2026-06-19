@@ -90,6 +90,12 @@ node scripts/sync-ghl-products.mjs
 | price_original | `priceOriginal` | 1515 | Prix régulier barré (optionnel) |
 | discount_amount | `discountAmount` | 116 | Rabais en $ (optionnel — calculé si `price_original` > `price`) |
 | financement_mensuel | `financingMonthly` | 116 | Paiement mensuel affiché si renseigné |
+| taxes_amount | `taxesAmount` | 240 | Taxes et frais aériens par personne |
+| deposit_amount | `depositAmount` | 200 | Dépôt requis par personne |
+| final_payment_date | `finalPaymentDate` | 2027-01-11 | Date paiement final |
+| return_date | `returnDate` | 2027-04-04 | Date de retour du séjour |
+| price_child_2_12 | `priceChild212` | 668 | Enfant 2–12 ans (avant taxes) |
+| price_child_13_17 | `priceChild1317` | 958 | Enfant 13–17 ans (avant taxes) |
 
 ### Vols (section fiche produit)
 
@@ -155,6 +161,12 @@ Le client continue d'uploader normalement dans GHL — aucune URL à copier manu
 1. Créer un **formulaire standard** (pas Custom Object) avec un champ caché `forfait_slug` (Query Key = `forfait_slug`) + champs contact (prénom, nom, courriel, téléphone)
 2. Copier l'URL d'intégration iframe
 3. Coller dans `config.js` → `GHL_FORM_EMBED_URL`
+4. **Page de remerciement** : Formulaire → Paramètres → **À la soumission** → **Rediriger vers une URL** (désactiver le message de remerciement intégré) :
+   ```
+   https://promofiesta.roymarketing.ca/thank-you.html?forfait_slug={{forfait_slug}}
+   ```
+   Optionnel pour personnaliser le texte : ajoutez `&first_name={{contact.first_name}}`
+5. La page `thank-you.html` sort automatiquement de l'iframe du modal et affiche le message Voyage Fiesta
 
 ## Make.com (déprécié)
 

@@ -422,6 +422,14 @@ async function mapRecord(record, apiKey, manifest) {
     financingMonthly: optionalPrice(
       pick(props, 'financement_mensuel', 'financing_monthly', 'financingMonthly')
     ),
+    taxesAmount: optionalPrice(pick(props, 'taxes_amount', 'taxesAmount')),
+    depositAmount: optionalPrice(pick(props, 'deposit_amount', 'depositAmount')),
+    finalPaymentDate: normalizeDateField(
+      pick(props, 'final_payment_date', 'finalPaymentDate', 'date_paiement_final')
+    ),
+    returnDate: normalizeDateField(pick(props, 'return_date', 'returnDate', 'date_retour')),
+    priceChild212: optionalPrice(pick(props, 'price_child_2_12', 'priceChild212', 'price_child_2_12_ans')),
+    priceChild1317: optionalPrice(pick(props, 'price_child_13_17', 'priceChild1317', 'price_child_13_17_ans')),
     packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
     hotelDescription: pickText(props, 'hotel_description', 'hotelDescription', 'description_hotel'),
     endDate,

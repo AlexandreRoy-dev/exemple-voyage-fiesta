@@ -121,47 +121,139 @@
         return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
     }
 
-    /** Occupation rows for product page — only prices set in GHL are returned */
+    /** Occupation + enfant rows — prix avant taxes affichés; taxes en note si renseignées */
     function getOccupationPrices(p) {
         const rows = [];
+        const taxes = optionalPrice(p.taxesAmount ?? p.taxes_amount);
+
+        function withTaxes(row) {
+            if (taxes !== null) {
+                row.taxes = taxes;
+                row.totalWithTaxes = row.price + taxes;
+            }
+            return row;
+        }
+
         const double = optionalPrice(p.price ?? p.price_occ_double);
         if (double !== null) {
-            rows.push({
+            rows.push(withTaxes({
                 id: 'double',
-                label: 'Occupation double (2 pers.)',
+                label: 'Occ. double (2 pers.)',
                 price: double,
                 primary: true,
-                hint: 'Prix par personne'
-            });
-        }
-        const simple = optionalPrice(p.priceOccSimple ?? p.price_occ_simple);
-        if (simple !== null) {
-            rows.push({
-                id: 'simple',
-                label: 'Occupation simple (1 pers.)',
-                price: simple,
-                hint: 'Prix par personne'
-            });
+                hint: 'Prix par personne, avant taxes'
+            }));
         }
         const triple = optionalPrice(p.priceOccTriple ?? p.price_occ_triple);
         if (triple !== null) {
-            rows.push({
+            rows.push(withTaxes({
                 id: 'triple',
-                label: 'Occupation triple (3 pers.)',
+                label: 'Occ. triple (3 pers.)',
                 price: triple,
-                hint: 'Prix par personne'
-            });
+                hint: 'Prix par personne, avant taxes'
+            }));
+        }
+        const simple = optionalPrice(p.priceOccSimple ?? p.price_occ_simple);
+        if (simple !== null) {
+            rows.push(withTaxes({
+                id: 'simple',
+                label: 'Occ. simple (1 pers.)',
+                price: simple,
+                hint: 'Prix par personne, avant taxes'
+            }));
         }
         const doubleChild = optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child);
         if (doubleChild !== null) {
-            rows.push({
+            rows.push(withTaxes({
                 id: 'double_1_child',
-                label: 'Occupation double avec 1 enfant (- de 12 ans)',
+                label: 'Occ. double avec 1 enfant (- de 12 ans)',
                 price: doubleChild,
                 hint: '2 adultes + 1 enfant de moins de 12 ans au retour'
-            });
+            }));
+        }
+        const child212 = optionalPrice(p.priceChild212 ?? p.price_child_2_12);
+        if (child212 !== null) {
+            rows.push(withTaxes({
+                id: 'child_2_12',
+                label: 'Enfant (2 à 12 ans)',
+                price: child212,
+                hint: 'Prix par personne, avant taxes'
+            }));
+        }
+        const child1317 = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
+        if (child1317 !== null) {
+            rows.push(withTaxes({
+                id: 'child_13_17',
+                label: 'Enfant (13 à 17 ans)',
+                price: child1317,
+                hint: 'Prix par personne, avant taxes'
+            }));
         }
         return rows;
+    }
+
+    function getPaymentTerms(p) {
+        const deposit = optionalPrice(p.depositAmount ?? p.deposit_amount);
+        const finalPaymentDateRaw = p.finalPaymentDate ?? p.final_payment_date;
+        const finalPaymentDate = finalPaymentDateRaw ? new Date(finalPaymentDateRaw) : null;
+        const finalPaymentValid = finalPaymentDate && !Number.isNaN(finalPaymentDate.getTime())
+            ? finalPaymentDate
+            : null;
+        const taxes = optionalPrice(p.taxesAmount ?? p.taxes_amount);
+
+        if (deposit === null && !finalPaymentValid && taxes === null) return null;
+
+        return { deposit, finalPaymentDate: finalPaymentValid, taxes };
+    }
+
+    function inferArrivalLabel(p, leg) {
+        if (leg?.to) return leg.to;
+        if (p.subDest) return p.subDest;
+        return p.destination || p.destination1 || '';
+    }
+
+    function inferDepartureLabel(p, leg) {
+        if (leg?.from) return leg.from;
+        return p.departureAirport || 'Montréal (YUL)';
+    }
+
+    /** Use GHL flight fields, or build from departure/return dates when routes missing */
+    function getEffectiveFlights(p) {
+        const flights = p.flights || { out: {}, return: {}, airlineLogo: '' };
+        const out = { ...(flights.out || {}) };
+        const ret = { ...(flights.return || {}) };
+
+        const departureDate = p.departureDate instanceof Date
+            ? p.departureDate.toISOString()
+            : (p.departureDate || p.departure_date || '');
+        const returnDateRaw = p.returnDate ?? p.return_date;
+        const returnDate = returnDateRaw instanceof Date
+            ? returnDateRaw.toISOString()
+            : (returnDateRaw || '');
+
+        if (!flightLegHasData(out) && (departureDate || p.departureAirport)) {
+            out.from = inferDepartureLabel(p, out);
+            out.departDate = out.departDate || departureDate;
+            out.to = inferArrivalLabel(p, out);
+            out.arriveDate = out.arriveDate || out.departDate || departureDate;
+        }
+        if (!flightLegHasData(ret) && (returnDate || p.subDest)) {
+            ret.from = ret.from || inferArrivalLabel(p, ret);
+            ret.departDate = ret.departDate || returnDate;
+            ret.to = ret.to || inferDepartureLabel(p, ret);
+            ret.arriveDate = ret.arriveDate || ret.departDate || returnDate;
+        }
+
+        return {
+            out,
+            return: ret,
+            airlineLogo: flights.airlineLogo || ''
+        };
+    }
+
+    function hasFlights(p) {
+        const flights = getEffectiveFlights(p);
+        return flightLegHasData(flights.out) || flightLegHasData(flights.return);
     }
 
     function formatMoney(amount) {
@@ -223,9 +315,9 @@
         );
     }
 
-    function hasFlights(p) {
-        const flights = p.flights || {};
-        return flightLegHasData(flights.out) || flightLegHasData(flights.return);
+    function formatFlightNumber(value) {
+        const s = value === undefined || value === null ? '' : String(value).trim();
+        return s || 'À venir';
     }
 
     function normalizeProduct(p) {
@@ -236,6 +328,16 @@
         const departureDateRaw = p.departureDate ?? p.departure_date ?? p.date_de_depart;
         const departureDate = departureDateRaw ? new Date(departureDateRaw) : null;
         const departureDateValid = departureDate && !Number.isNaN(departureDate.getTime()) ? departureDate : null;
+
+        const returnDateRaw = p.returnDate ?? p.return_date;
+        const returnDate = returnDateRaw ? new Date(returnDateRaw) : null;
+        const returnDateValid = returnDate && !Number.isNaN(returnDate.getTime()) ? returnDate : null;
+
+        const finalPaymentRaw = p.finalPaymentDate ?? p.final_payment_date;
+        const finalPaymentDate = finalPaymentRaw ? new Date(finalPaymentRaw) : null;
+        const finalPaymentValid = finalPaymentDate && !Number.isNaN(finalPaymentDate.getTime())
+            ? finalPaymentDate
+            : null;
 
         const state = normalizeState(p.state, p.active);
         const img = normalizeImageSrc(p.img);
@@ -250,6 +352,7 @@
             destination: p.destination1 || p.destination || p.subDest,
             departureAirport: p.departureAirport || 'Montréal (YUL)',
             departureDate: departureDateValid,
+            returnDate: returnDateValid,
             criteria: Array.isArray(p.criteria) ? p.criteria.map(normalizeCriterionValue) : [],
             priceOccSimple: optionalPrice(p.priceOccSimple ?? p.price_occ_simple),
             priceOccTriple: optionalPrice(p.priceOccTriple ?? p.price_occ_triple),
@@ -259,6 +362,11 @@
             financingMonthly: optionalPrice(
                 p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
             ),
+            taxesAmount: optionalPrice(p.taxesAmount ?? p.taxes_amount),
+            depositAmount: optionalPrice(p.depositAmount ?? p.deposit_amount),
+            finalPaymentDate: finalPaymentValid,
+            priceChild212: optionalPrice(p.priceChild212 ?? p.price_child_2_12),
+            priceChild1317: optionalPrice(p.priceChild1317 ?? p.price_child_13_17),
             flights: p.flights || { out: {}, return: {}, airlineLogo: '' },
             endDate,
             inventory: isSoldOut({ ...p, state }) ? 0 : p.inventory,
@@ -416,10 +524,13 @@
         getCriteriaLabel,
         productHasCriterion,
         getOccupationPrices,
+        getPaymentTerms,
+        getEffectiveFlights,
         getIncentive,
         formatMoney,
         formatFlightDate,
         formatFlightTime,
+        formatFlightNumber,
         hasFlights,
         flightLegHasData,
         buildProductGallery,

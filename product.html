@@ -83,14 +83,15 @@
                         <p>Formulaire GHL à configurer dans <code class="text-xs bg-gray-100 px-1 rounded">config.js</code></p>
                         <p class="mt-2 text-xs">Collez l'URL d'intégration du formulaire GoHighLevel.</p>
                     </div>
-                    <iframe id="ghl-form-iframe" class="hidden w-full min-h-[500px] border-0" title="Formulaire de réservation"></iframe>
+                    <iframe id="ghl-form-iframe" class="hidden w-full min-h-[500px] border-0" title="Formulaire de réservation" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation allow-top-navigation-by-user-activation"></iframe>
                 </div>
             </div>
         </div>
     </div>
+    <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=2"></script>
-    <script src="api.js?v=13"></script>
+    <script src="config.js?v=3"></script>
+    <script src="api.js?v=15"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -392,7 +393,7 @@
                                 <i class="fa-solid fa-plane text-sm"></i>
                                 <span class="flex-1 h-px bg-brand-blue/40"></span>
                             </div>
-                            ${leg.number ? `<p class="text-xs font-bold text-brand-blue mt-2">${leg.number}</p>` : ''}
+                            ${leg.number ? `<p class="text-xs font-bold text-brand-blue mt-2">${leg.number}</p>` : `<p class="text-xs text-gray-500 mt-2 italic">${VoyageFiestaAPI.formatFlightNumber(leg.number)}</p>`}
                         </div>
                         <div class="text-right">
                             <p class="font-bold text-brand-blue text-sm leading-tight">${leg.to || '—'}</p>
@@ -406,7 +407,7 @@
         function buildFlightsSectionHtml(p) {
             if (!VoyageFiestaAPI.hasFlights(p)) return '';
 
-            const flights = p.flights || {};
+            const flights = VoyageFiestaAPI.getEffectiveFlights(p);
             const supplierLabel = VoyageFiestaAPI.isOtherSupplier(p.supplier) ? 'Autres' : (p.supplier || 'le fournisseur');
             const carrier = p.carrier || supplierLabel;
             const airlineLogo = flights.airlineLogo || '';
@@ -418,7 +419,7 @@
             return `
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 class="text-xl font-bold text-brand-blue mb-1">Vols</h3>
-                    <p class="text-sm text-gray-600 mb-5">Vols directs aller-retour avec ${supplierLabel}&nbsp;:</p>
+                    <p class="text-sm text-gray-600 mb-5">Vols aller-retour avec <strong>${escapeHtml(carrier)}</strong> (${supplierLabel})&nbsp;:</p>
                     ${outHtml}
                     ${returnHtml}
                     <p class="text-[11px] text-gray-500 leading-relaxed mt-4">
@@ -427,12 +428,78 @@
                 </div>`;
         }
 
+        function buildPaymentTermsHtml(p) {
+            const terms = VoyageFiestaAPI.getPaymentTerms(p);
+            if (!terms) return '';
+
+            const parts = [];
+            if (terms.deposit !== null) {
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-hand-holding-dollar text-brand-orange text-xs mt-0.5"></i> Dépôt de <strong>${VoyageFiestaAPI.formatMoney(terms.deposit)}</strong> par personne requis</li>`);
+            }
+            if (terms.finalPaymentDate) {
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-calendar-check text-brand-blue text-xs mt-0.5"></i> Paiement final : <strong>${VoyageFiestaAPI.formatDepartureDate(terms.finalPaymentDate)}</strong></li>`);
+            }
+            if (terms.taxes !== null) {
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-receipt text-gray-400 text-xs mt-0.5"></i> Taxes et frais aériens : <strong>${VoyageFiestaAPI.formatMoney(terms.taxes)}</strong> par personne (non inclus dans les tarifs ci-dessous)</li>`);
+            }
+            if (!parts.length) return '';
+
+            return `
+                <div class="mb-6 pb-6 border-b border-gray-100">
+                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter mb-3">Modalités de paiement</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">${parts.join('')}</ul>
+                </div>`;
+        }
+
         function buildOccupationPricesHtml(p, isSoldOut) {
             const rows = VoyageFiestaAPI.getOccupationPrices(p);
             if (!rows.length) {
                 return `<p class="text-sm text-gray-500 italic">Tarifs sur demande.</p>`;
             }
-            return rows.map((row, index) => {
+
+            const hasTaxes = rows.some(r => r.taxes != null);
+            const priceOriginal = VoyageFiestaAPI.optionalPrice(p.priceOriginal ?? p.price_original);
+            const incentive = VoyageFiestaAPI.getIncentive(p);
+
+            let headerHtml = '';
+            if (priceOriginal !== null || incentive) {
+                headerHtml = `
+                    <div class="mb-4 p-3 rounded-lg bg-brand-light border border-blue-100 text-sm">
+                        ${priceOriginal !== null ? `<p class="text-gray-600">Prix internet : <span class="line-through text-gray-400">${VoyageFiestaAPI.formatMoney(priceOriginal)}</span> <span class="text-gray-500">/ pers. avant taxes (sujet à changement)</span></p>` : ''}
+                        ${incentive ? `<p class="text-brand-orange font-bold mt-1"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)} / pers.</p>` : ''}
+                    </div>`;
+            }
+
+            if (hasTaxes) {
+                const tableRows = rows.map(row => {
+                    const priceColor = isSoldOut ? 'text-gray-400 line-through' : (row.primary ? 'text-brand-blue font-bold' : 'text-gray-800');
+                    const taxesCell = row.taxes != null ? VoyageFiestaAPI.formatMoney(row.taxes) : '—';
+                    return `
+                        <tr class="border-b border-gray-100 last:border-0 ${row.primary ? 'bg-orange-50/60' : ''}">
+                            <td class="py-2.5 pr-2 text-sm ${row.primary ? 'font-semibold text-brand-blue' : 'text-gray-700'}">${row.label}</td>
+                            <td class="py-2.5 px-2 text-sm text-right ${priceColor}">${VoyageFiestaAPI.formatMoney(row.price)}</td>
+                            <td class="py-2.5 pl-2 text-sm text-right text-gray-600">${taxesCell}</td>
+                        </tr>`;
+                }).join('');
+
+                return `
+                    ${headerHtml}
+                    <div class="overflow-x-auto -mx-1 px-1">
+                        <table class="w-full text-left min-w-[16rem]">
+                            <thead>
+                                <tr class="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-200">
+                                    <th class="pb-2 font-bold">Occ.</th>
+                                    <th class="pb-2 font-bold text-right">Avant taxes</th>
+                                    <th class="pb-2 font-bold text-right">Taxes</th>
+                                </tr>
+                            </thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-3 italic">Tarifs par personne, avant taxes et frais aériens.</p>`;
+            }
+
+            return headerHtml + rows.map(row => {
                 const isPrimary = row.primary === true;
                 const border = isPrimary && !isSoldOut
                     ? 'border-2 border-brand-orange bg-orange-50'
@@ -474,6 +541,7 @@
             const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
             const days = p.durationNights + 1;
             const occupationHtml = buildOccupationPricesHtml(p, isSoldOut);
+            const paymentTermsHtml = buildPaymentTermsHtml(p);
             const flightsHtml = buildFlightsSectionHtml(p);
             const inclusions = getInclusions(p);
             const packageTabLabel = p.packageType || 'Forfait';
@@ -543,6 +611,7 @@
             const gallery = VoyageFiestaAPI.buildProductGallery(p);
             const galleryHtml = buildProductGalleryHtml(p, gallery);
             const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
+            const returnLabel = VoyageFiestaAPI.formatDepartureDate(p.returnDate);
 
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">
@@ -617,6 +686,11 @@
                                         <span class="text-gray-500">Date de départ :</span>
                                         <span class="font-bold text-brand-blue">${departureLabel || 'À confirmer'}</span>
                                     </div>
+                                    ${returnLabel ? `
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">Date de retour :</span>
+                                        <span class="font-bold text-brand-blue">${returnLabel}</span>
+                                    </div>` : ''}
                                     <div class="flex justify-between text-sm">
                                         <span class="text-gray-500">Départ de :</span>
                                         <span class="font-bold text-brand-blue">${p.departureAirport || 'Montréal (YUL)'}</span>
@@ -627,8 +701,10 @@
                                     </div>
                                 </div>
 
+                                ${paymentTermsHtml}
+
                                 <div class="space-y-4 mb-8">
-                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">Tarifs par occupation</h4>
+                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">Tarifs par occ.</h4>
                                     ${occupationHtml}
                                 </div>
 
@@ -667,6 +743,10 @@
 
                 if (GHL_FORM_EMBED_URL) {
                     const params = new URLSearchParams({ forfait_slug: p.slug });
+                    const thankYouUrl = typeof buildGhlThankYouUrl === 'function'
+                        ? buildGhlThankYouUrl(p.slug)
+                        : '';
+                    if (thankYouUrl) params.set('redirect_url', thankYouUrl);
                     const sep = GHL_FORM_EMBED_URL.includes('?') ? '&' : '?';
                     iframe.src = GHL_FORM_EMBED_URL + sep + params.toString();
                     iframe.classList.remove('hidden');

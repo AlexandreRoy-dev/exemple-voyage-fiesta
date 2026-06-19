@@ -157,6 +157,27 @@
     /** GHL reservation form — « Réservation de forfait » (prefill: forfait_slug) */
     window.GHL_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/V5DftNAy6QDV4X64bYzV';
 
+    /**
+     * Page de remerciement après soumission du formulaire.
+     * Dans GHL : Formulaire → Paramètres → À la soumission → Rediriger vers une URL :
+     *   https://promofiesta.roymarketing.ca/thank-you.html?forfait_slug={{forfait_slug}}
+     * (ajustez le domaine si besoin ; le champ caché forfait_slug doit correspondre)
+     */
+    window.GHL_FORM_THANKYOU_PATH = 'thank-you.html';
+
+    window.buildGhlThankYouUrl = function (forfaitSlug, extraParams) {
+        const url = new URL(window.GHL_FORM_THANKYOU_PATH, window.location.href);
+        if (forfaitSlug) url.searchParams.set('forfait_slug', forfaitSlug);
+        if (extraParams && typeof extraParams === 'object') {
+            Object.entries(extraParams).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    url.searchParams.set(key, value);
+                }
+            });
+        }
+        return url.toString();
+    };
+
     window.destLabels = {
         SUD: 'Sud',
         EUROPE: 'Europe',
