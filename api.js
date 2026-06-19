@@ -3,7 +3,11 @@
     const JSON_URL = (window.PRODUCTS_JSON_URL || 'products.json').replace(/^\//, '');
 
     function isActifPackage(p) {
-        return p && p.active === 'actif';
+        return p && normalizeState(p.state, p.active) === 'actif';
+    }
+
+    function isListingVisible(p) {
+        return isDetailVisible(p);
     }
 
     function isDetailVisible(p) {
@@ -98,7 +102,7 @@
 
         return {
             ...p,
-            active: p.active || state,
+            active: state,
             state,
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
             destination: p.destination || p.subDest,
@@ -147,7 +151,7 @@
     async function fetchProducts() {
         try {
             const all = await loadProductsJson();
-            return all.filter(isActifPackage);
+            return all.filter(isListingVisible);
         } catch (err) {
             const message = err.name === 'AbortError'
                 ? 'Request timed out after ' + FETCH_TIMEOUT_MS + 'ms'
@@ -210,6 +214,7 @@
         isSoldOut,
         isVisibleOnSite,
         isActifPackage,
+        isListingVisible,
         isDetailVisible,
         normalizeState,
         extractPackageArray

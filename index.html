@@ -157,7 +157,7 @@
             <div id="empty-state" class="hidden col-span-full text-center py-16 text-gray-500">
                 <i class="fa-solid fa-suitcase-rolling text-4xl mb-4 text-gray-300"></i>
                 <p class="text-brand-blue font-semibold mb-2">Aucun forfait disponible pour le moment.</p>
-                <p class="text-sm max-w-md mx-auto">Les forfaits publiés dans GoHighLevel (état <strong>actif</strong>) apparaîtront ici après la synchronisation — jusqu'à 15 minutes.</p>
+                <p class="text-sm max-w-md mx-auto">Les forfaits publiés dans GoHighLevel (<strong>actif</strong> ou <strong>complet</strong>) apparaîtront ici après la synchronisation — jusqu'à 15 minutes.</p>
             </div>
             <div id="error-state" class="hidden col-span-full text-center py-16 text-gray-500">
                 <p class="text-brand-blue font-semibold mb-2">Impossible de charger les forfaits.</p>
@@ -192,7 +192,7 @@
     </footer>
 
     <script src="config.js"></script>
-    <script src="api.js?v=5"></script>
+    <script src="api.js?v=6"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -366,7 +366,7 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isSoldOut ? 'opacity-75 grayscale-[0.5]' : ''}`;
+                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isSoldOut ? 'border-red-200' : ''}`;
 
                 const productUrl = `product.html?slug=${encodeURIComponent(p.slug)}`;
                 const endMs = p.endDate instanceof Date ? p.endDate.getTime() : new Date(p.endDate).getTime();
@@ -404,9 +404,9 @@
                                     <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
                                         <i class="fa-solid fa-circle-info mr-1"></i> Détail
                                     </a>
-                                    <a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm ${isSoldOut ? 'bg-gray-400 hover:bg-gray-400 pointer-events-none' : ''}">
-                                        ${isSoldOut ? 'Complet' : 'Réserver'}
-                                    </a>
+                                    ${isSoldOut
+                                        ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">Complet</span>`
+                                        : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
                                 </div>
                             </div>
                         </div>
