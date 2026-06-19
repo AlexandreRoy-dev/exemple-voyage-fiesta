@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-19T16:46:21.836Z",
+  "updatedAt": "2026-06-19T17:00:35.413Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -25,18 +25,9 @@
       "price": 1459,
       "packageType": "Forfait Tout-Inclus",
       "departureAirport": "Montréal (YUL)",
-      "img": [
-        {
-          "meta": {
-            "extension": ".jpg",
-            "size": 144246,
-            "name": "square5.jpg"
-          },
-          "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a35702a10100de597a5ef3a/e6d4e47d-f95b-4ec2-85d0-22e9cb186f4d.jpg"
-        }
-      ],
-      "imgRoom": "",
-      "imgExtra": "",
+      "img": "assets/forfaits/Majestic-Elegance-Punta-Cana-img.jpg",
+      "imgRoom": "assets/forfaits/Majestic-Elegance-Punta-Cana-img.jpg",
+      "imgExtra": "assets/forfaits/Majestic-Elegance-Punta-Cana-img.jpg",
       "seoTags": []
     }
   ]
