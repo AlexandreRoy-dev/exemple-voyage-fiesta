@@ -483,13 +483,13 @@
 
             const flights = VoyageFiestaAPI.getEffectiveFlights(p);
             const supplierLabel = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier || 'le fournisseur';
-            const carrier = p.carrier || supplierLabel;
+            const carrier = p.carrier || 'Compagnie aérienne';
             const airlineLogo = flights.airlineLogo || '';
             const supplierKey = VoyageFiestaAPI.normalizeSupplierKey(p.supplier);
             const carrierKey = VoyageFiestaAPI.normalizeSupplierKey(carrier);
             const viaSupplierNote = supplierLabel && supplierKey && carrierKey && supplierKey !== carrierKey
                 ? ` <span class="text-gray-500 font-normal">(via ${escapeHtml(supplierLabel)})</span>`
-                : (!airlineLogo && supplierLabel ? ` (${escapeHtml(supplierLabel)})` : '');
+                : '';
             const outHtml = buildFlightLegHtml('Aller', flights.out, carrier, airlineLogo);
             const returnHtml = buildFlightLegHtml('Retour', flights.return, carrier, airlineLogo);
 
