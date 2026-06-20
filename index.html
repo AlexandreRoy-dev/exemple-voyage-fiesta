@@ -154,7 +154,7 @@
     </main>
 
     <script src="config.js?v=13"></script>
-    <script src="api.js?v=34"></script>
+    <script src="api.js?v=35"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -325,8 +325,7 @@
             return `${days}j ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
         }
 
-        function renderIncentiveBadge(p) {
-            const inc = VoyageFiestaAPI.getIncentive(p);
+        function renderIncentiveBadge(inc) {
             if (!inc) return '';
 
             const financingHtml = inc.financing
@@ -392,11 +391,18 @@
                 const departureBadge = departureLabel
                     ? `<span class="inline-block bg-blue-50 text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-calendar-day mr-1"></i> Départ ${departureLabel}</span>`
                     : '';
-                const incentiveBadge = renderIncentiveBadge(p);
+                const inc = VoyageFiestaAPI.getIncentive(p);
+                const incentiveBadge = renderIncentiveBadge(inc);
                 const hasIncentive = Boolean(incentiveBadge);
+                const listingPrice = VoyageFiestaAPI.getListingDisplayPrice(p);
                 const priceFooterHtml = hasIncentive
-                    ? `<p class="text-xs text-gray-500">Occ. double · prix par personne</p>`
-                    : `<div>
+                    ? `<p class="text-xs text-gray-500">${escapeHtml(inc.occupationLabel || listingPrice?.label || 'Occ. double')} · à partir de</p>`
+                    : listingPrice
+                        ? `<div>
+                            <p class="text-xs text-gray-500 mb-1">${escapeHtml(listingPrice.label)} · à partir de</p>
+                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoney(listingPrice.amount)}</p>
+                       </div>`
+                        : `<div>
                             <p class="text-xs text-gray-500 mb-1">Occ. double</p>
                             <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
                        </div>`;

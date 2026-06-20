@@ -314,6 +314,44 @@
         return rows;
     }
 
+    function getOccupationComparableAmount(row) {
+        if (!row) return null;
+        return row.totalWithTaxes ?? row.price ?? null;
+    }
+
+    /** Occupation la moins chère parmi celles définies dans GHL (total avec taxes si disponible). */
+    function getLowestOccupationRow(p) {
+        const rows = getOccupationPrices(p);
+        if (!rows.length) return null;
+
+        return rows.reduce((best, row) => {
+            const value = getOccupationComparableAmount(row);
+            const bestValue = getOccupationComparableAmount(best);
+            if (value === null) return best;
+            if (bestValue === null || value < bestValue) return row;
+            return best;
+        });
+    }
+
+    /** Prix affiché sur la fiche liste — occupation la moins chère. */
+    function getListingDisplayPrice(p) {
+        const lowest = getLowestOccupationRow(p);
+        if (lowest) {
+            const amount = getOccupationComparableAmount(lowest);
+            if (amount !== null) {
+                return { amount, label: lowest.label };
+            }
+        }
+
+        const base = optionalPrice(p.price);
+        if (base === null) return null;
+        const taxes = pickOccupationTaxes(p, ['taxesOccDouble', 'taxes_occ_double']);
+        return {
+            amount: taxes !== null ? base + taxes : base,
+            label: 'Occ. double'
+        };
+    }
+
     function getOccupationDef(occupationId) {
         return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
     }
@@ -557,7 +595,8 @@
 
     /** Red card incentive — rabais, prix barré, financement optionnel */
     function getIncentive(p) {
-        const price = optionalPrice(p.price);
+        const listing = getListingDisplayPrice(p);
+        const price = listing?.amount ?? optionalPrice(p.price);
         if (price === null) return null;
 
         const original = optionalPrice(p.priceOriginal ?? p.price_original);
@@ -579,7 +618,8 @@
             price,
             strikePrice,
             discount,
-            financing
+            financing,
+            occupationLabel: listing?.label ?? 'Occ. double'
         };
     }
 
@@ -1082,6 +1122,8 @@
         getCriteriaLabel,
         productHasCriterion,
         getOccupationPrices,
+        getLowestOccupationRow,
+        getListingDisplayPrice,
         getSelectedOccupationRow,
         getOccupationPricingBreakdown,
         pickOccupationPrice,
