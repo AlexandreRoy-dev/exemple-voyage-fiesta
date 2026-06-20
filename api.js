@@ -121,7 +121,92 @@
         return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
     }
 
-    /** Occupation + enfant rows — prix avant taxes affichés; taxes en note si renseignées */
+    /** Catalogue occupations client — affiché seulement si le prix GHL est renseigné */
+    const OCCUPATION_DEFS = [
+        {
+            id: 'double',
+            label: 'Occ. double',
+            hint: '2 adultes — prix par personne, avant taxes',
+            primary: true,
+            adults: 2,
+            children212: 0,
+            children1317: 0,
+            priceKeys: ['price', 'price_occ_double']
+        },
+        {
+            id: 'double_1_child',
+            label: 'Occ. double + 1 enfant (2-12 ans)',
+            hint: '2 adultes + 1 enfant (2-12 ans au retour)',
+            adults: 2,
+            children212: 1,
+            children1317: 0,
+            priceKeys: ['priceOccDouble1Child', 'price_occ_double_1_child']
+        },
+        {
+            id: 'double_2_child',
+            label: 'Occ. double + 2 enfants (2-12 ans)',
+            hint: '2 adultes + 2 enfants (2-12 ans au retour)',
+            adults: 2,
+            children212: 2,
+            children1317: 0,
+            priceKeys: ['priceOccDouble2Child', 'price_occ_double_2_child']
+        },
+        {
+            id: 'simple',
+            label: 'Occ. simple',
+            hint: '1 adulte — prix par personne, avant taxes',
+            adults: 1,
+            children212: 0,
+            children1317: 0,
+            priceKeys: ['priceOccSimple', 'price_occ_simple']
+        },
+        {
+            id: 'simple_1_child',
+            label: 'Occ. simple + 1 enfant (2-12 ans)',
+            hint: '1 adulte + 1 enfant (2-12 ans au retour)',
+            adults: 1,
+            children212: 1,
+            children1317: 0,
+            priceKeys: ['priceOccSimple1Child', 'price_occ_simple_1_child']
+        },
+        {
+            id: 'triple',
+            label: 'Occ. triple',
+            hint: '3 adultes — prix par personne, avant taxes',
+            adults: 3,
+            children212: 0,
+            children1317: 0,
+            priceKeys: ['priceOccTriple', 'price_occ_triple']
+        },
+        {
+            id: 'quad',
+            label: 'Occ. quad',
+            hint: '4 adultes — prix par personne, avant taxes',
+            adults: 4,
+            children212: 0,
+            children1317: 0,
+            priceKeys: ['priceOccQuad', 'price_occ_quad']
+        },
+        {
+            id: 'autres',
+            label: 'Autres',
+            hint: 'Autre configuration — prix par personne, avant taxes',
+            adults: 1,
+            children212: 0,
+            children1317: 0,
+            priceKeys: ['priceAutres', 'price_autres', 'price_occ_autres']
+        }
+    ];
+
+    function pickOccupationPrice(p, priceKeys) {
+        for (const key of priceKeys) {
+            const val = optionalPrice(p[key]);
+            if (val !== null) return val;
+        }
+        return null;
+    }
+
+    /** Occupations client — seulement celles avec un prix défini dans GHL */
     function getOccupationPrices(p) {
         const rows = [];
         const taxes = optionalPrice(p.taxesAmount ?? p.taxes_amount);
@@ -134,62 +219,201 @@
             return row;
         }
 
-        const double = optionalPrice(p.price ?? p.price_occ_double);
-        if (double !== null) {
+        for (const def of OCCUPATION_DEFS) {
+            const price = pickOccupationPrice(p, def.priceKeys);
+            if (price === null) continue;
             rows.push(withTaxes({
-                id: 'double',
-                label: 'Occ. double (2 pers.)',
-                price: double,
-                primary: true,
-                hint: 'Prix par personne, avant taxes'
+                id: def.id,
+                label: def.label,
+                price,
+                primary: def.primary === true,
+                hint: def.hint
             }));
         }
-        const triple = optionalPrice(p.priceOccTriple ?? p.price_occ_triple);
-        if (triple !== null) {
-            rows.push(withTaxes({
-                id: 'triple',
-                label: 'Occ. triple (3 pers.)',
-                price: triple,
-                hint: 'Prix par personne, avant taxes'
-            }));
+
+        if (rows.length && !rows.some(r => r.primary)) {
+            rows[0].primary = true;
         }
-        const simple = optionalPrice(p.priceOccSimple ?? p.price_occ_simple);
-        if (simple !== null) {
-            rows.push(withTaxes({
-                id: 'simple',
-                label: 'Occ. simple (1 pers.)',
-                price: simple,
-                hint: 'Prix par personne, avant taxes'
-            }));
-        }
-        const doubleChild = optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child);
-        if (doubleChild !== null) {
-            rows.push(withTaxes({
-                id: 'double_1_child',
-                label: 'Occ. double avec 1 enfant (- de 12 ans)',
-                price: doubleChild,
-                hint: '2 adultes + 1 enfant de moins de 12 ans au retour'
-            }));
-        }
-        const child212 = optionalPrice(p.priceChild212 ?? p.price_child_2_12);
-        if (child212 !== null) {
-            rows.push(withTaxes({
-                id: 'child_2_12',
-                label: 'Enfant (2 à 12 ans)',
-                price: child212,
-                hint: 'Prix par personne, avant taxes'
-            }));
-        }
-        const child1317 = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
-        if (child1317 !== null) {
-            rows.push(withTaxes({
-                id: 'child_13_17',
-                label: 'Enfant (13 à 17 ans)',
-                price: child1317,
-                hint: 'Prix par personne, avant taxes'
-            }));
-        }
+
         return rows;
+    }
+
+    function getOccupationDef(occupationId) {
+        return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
+    }
+
+    function getAdultUnitPriceForDef(p, def) {
+        if (!def) return 0;
+        switch (def.id) {
+            case 'simple':
+            case 'simple_1_child':
+                return pickOccupationPrice(p, ['priceOccSimple', 'price_occ_simple']) ?? 0;
+            case 'triple':
+                return pickOccupationPrice(p, ['priceOccTriple', 'price_occ_triple']) ?? 0;
+            case 'quad':
+                return pickOccupationPrice(p, ['priceOccQuad', 'price_occ_quad']) ?? 0;
+            case 'autres':
+                return pickOccupationPrice(p, ['priceAutres', 'price_autres', 'price_occ_autres']) ?? 0;
+            default:
+                return pickOccupationPrice(p, ['price', 'price_occ_double']) ?? 0;
+        }
+    }
+
+    /**
+     * Dépôt total, prix total (adultes + enfants) et décomposition pour reporting / courriel GHL.
+     */
+    function getOccupationPricingBreakdown(p, occupationId) {
+        const def = getOccupationDef(occupationId);
+        const row = getSelectedOccupationRow(p, occupationId);
+        if (!def || !row) return null;
+
+        const adults = def.adults ?? 0;
+        const children212 = def.children212 ?? 0;
+        const children1317 = def.children1317 ?? 0;
+        const totalPeople = adults + children212 + children1317;
+
+        const adultUnit = getAdultUnitPriceForDef(p, def);
+        const child212Unit = optionalPrice(p.priceChild212 ?? p.price_child_2_12);
+        const child1317Unit = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
+        const taxesPerPerson = optionalPrice(p.taxesAmount ?? p.taxes_amount);
+        const depositPerPerson = optionalPrice(p.depositAmount ?? p.deposit_amount);
+
+        const hasChildTravelers = children212 > 0 || children1317 > 0;
+        const canSplitChildPricing = hasChildTravelers && (child212Unit !== null || child1317Unit !== null);
+
+        let totalBeforeTaxes;
+        let pricingMethod;
+
+        if (!hasChildTravelers) {
+            const unit = row.price || adultUnit;
+            totalBeforeTaxes = adults * unit;
+            pricingMethod = 'adults_only';
+        } else if (canSplitChildPricing) {
+            totalBeforeTaxes =
+                adults * adultUnit +
+                children212 * (child212Unit ?? row.price) +
+                children1317 * (child1317Unit ?? child212Unit ?? row.price);
+            pricingMethod = 'adults_and_children';
+        } else {
+            totalBeforeTaxes = totalPeople * row.price;
+            pricingMethod = 'package_per_person';
+        }
+
+        totalBeforeTaxes = Math.round(totalBeforeTaxes);
+        const totalTaxes = taxesPerPerson !== null ? totalPeople * taxesPerPerson : null;
+        const totalWithTaxes = totalTaxes !== null ? totalBeforeTaxes + totalTaxes : null;
+        const totalDeposit = depositPerPerson !== null ? totalPeople * depositPerPerson : null;
+
+        const parts = [];
+        if (adults > 0 && (pricingMethod !== 'package_per_person' || !hasChildTravelers)) {
+            parts.push(`${adults} adulte${adults > 1 ? 's' : ''} × ${formatMoney(adultUnit || row.price)}`);
+        }
+        if (children212 > 0 && canSplitChildPricing) {
+            parts.push(`${children212} enfant${children212 > 1 ? 's' : ''} (2-12) × ${formatMoney(child212Unit)}`);
+        }
+        if (children1317 > 0 && canSplitChildPricing && child1317Unit !== null) {
+            parts.push(`${children1317} enfant${children1317 > 1 ? 's' : ''} (13-17) × ${formatMoney(child1317Unit)}`);
+        }
+        if (pricingMethod === 'package_per_person') {
+            parts.push(`${totalPeople} pers. × ${formatMoney(row.price)}`);
+        }
+
+        return {
+            adults,
+            children212,
+            children1317,
+            totalPeople,
+            adultUnitPrice: adultUnit || row.price,
+            child212UnitPrice: child212Unit,
+            child1317UnitPrice: child1317Unit,
+            selectedUnitPrice: row.price,
+            totalBeforeTaxes,
+            totalTaxes,
+            totalWithTaxes,
+            taxesPerPerson,
+            depositPerPerson,
+            totalDeposit,
+            pricingMethod,
+            pricingSummary: parts.join(' + ') + ` = ${formatMoney(totalBeforeTaxes)} avant taxes`
+        };
+    }
+
+    function getSelectedOccupationRow(p, occupationId) {
+        const rows = getOccupationPrices(p);
+        if (!rows.length) return null;
+        if (occupationId) {
+            return rows.find(r => r.id === occupationId) || null;
+        }
+        return rows.find(r => r.primary) || rows[0];
+    }
+
+    /** URL params → champs cachés GHL (Query Key identique au nom du paramètre) */
+    function buildGhlReservationParams(p, occupationId) {
+        const params = {};
+        const set = (key, value) => {
+            if (value === undefined || value === null || value === '') return;
+            params[key] = String(value);
+        };
+
+        set('forfait_slug', p.slug);
+        set('forfait_name', p.name);
+        set('destination', p.destination || p.destination1 || p.subDest);
+        set('sub_destination', p.subDest);
+        set('country', p.country);
+        set('departure_airport', p.departureAirport);
+        set('supplier', p.supplier);
+        set('carrier', p.carrier);
+        set('room_category', p.roomCategory);
+        set('package_type', p.packageType);
+        set('duration_nights', p.durationNights);
+
+        set('departure_date', formatDepartureDate(p.departureDate));
+        set('return_date', formatDepartureDate(p.returnDate));
+        set('final_payment_date', formatDepartureDate(p.finalPaymentDate));
+        set('deposit_amount', optionalPrice(p.depositAmount ?? p.deposit_amount));
+        set('taxes_amount', optionalPrice(p.taxesAmount ?? p.taxes_amount));
+
+        set('price_double', pickOccupationPrice(p, ['price', 'price_occ_double']));
+        set('price_double_1_child', pickOccupationPrice(p, ['priceOccDouble1Child', 'price_occ_double_1_child']));
+        set('price_double_2_child', pickOccupationPrice(p, ['priceOccDouble2Child', 'price_occ_double_2_child']));
+        set('price_simple', pickOccupationPrice(p, ['priceOccSimple', 'price_occ_simple']));
+        set('price_simple_1_child', pickOccupationPrice(p, ['priceOccSimple1Child', 'price_occ_simple_1_child']));
+        set('price_triple', pickOccupationPrice(p, ['priceOccTriple', 'price_occ_triple']));
+        set('price_quad', pickOccupationPrice(p, ['priceOccQuad', 'price_occ_quad']));
+        set('price_autres', pickOccupationPrice(p, ['priceAutres', 'price_autres', 'price_occ_autres']));
+        set('price_child_2_12', optionalPrice(p.priceChild212 ?? p.price_child_2_12));
+        set('price_child_13_17', optionalPrice(p.priceChild1317 ?? p.price_child_13_17));
+        set('price_original', optionalPrice(p.priceOriginal ?? p.price_original));
+
+        const row = getSelectedOccupationRow(p, occupationId);
+        if (row) {
+            set('occupation', row.id);
+            set('occupation_label', row.label);
+            set('selected_price', row.price);
+            set('selected_taxes', row.taxes);
+            set('selected_total', row.totalWithTaxes);
+        }
+
+        const breakdown = getOccupationPricingBreakdown(p, occupationId);
+        if (breakdown) {
+            set('nombre_personnes', breakdown.totalPeople);
+            set('nombre_adultes', breakdown.adults);
+            set('nombre_enfants_2_12', breakdown.children212);
+            set('nombre_enfants_13_17', breakdown.children1317);
+            set('depot_par_personne', breakdown.depositPerPerson);
+            set('depot_total', breakdown.totalDeposit);
+            set('prix_adulte_unitaire', breakdown.adultUnitPrice);
+            set('prix_enfant_2_12_unitaire', breakdown.child212UnitPrice);
+            set('prix_enfant_13_17_unitaire', breakdown.child1317UnitPrice);
+            set('prix_total_avant_taxes', breakdown.totalBeforeTaxes);
+            set('taxes_total', breakdown.totalTaxes);
+            set('prix_total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
+            set('pricing_summary', breakdown.pricingSummary);
+            // Alias pour champs formulaire existants (capture d'écran client)
+            set('total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
+        }
+
+        return params;
     }
 
     function getPaymentTerms(p) {
@@ -320,6 +544,50 @@
         return s || 'À venir';
     }
 
+    /** Hotel star rating — supports half stars (e.g. 3.5) */
+    function normalizeStars(value) {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n <= 0) return 0;
+        return Math.round(n * 2) / 2;
+    }
+
+    function starsFilterKey(value) {
+        const n = normalizeStars(value);
+        if (!n) return '0';
+        return Number.isInteger(n) ? String(n) : n.toFixed(1);
+    }
+
+    function formatStarsLabel(count) {
+        const n = normalizeStars(count);
+        if (!n) return '';
+        const formatted = n.toLocaleString('fr-CA', {
+            minimumFractionDigits: n % 1 ? 1 : 0,
+            maximumFractionDigits: 1
+        });
+        return `${formatted} étoile${n > 1 ? 's' : ''}`;
+    }
+
+    function renderStarsHtml(count, sizeClass) {
+        const rating = normalizeStars(count);
+        const cls = sizeClass || 'text-sm';
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            if (rating >= i) {
+                html += `<i class="fa-solid fa-star text-yellow-400 ${cls}"></i>`;
+            } else if (rating >= i - 0.5) {
+                html += `<i class="fa-solid fa-star-half-stroke text-yellow-400 ${cls}"></i>`;
+            } else {
+                html += `<i class="fa-solid fa-star text-gray-300 ${cls}"></i>`;
+            }
+        }
+        return html;
+    }
+
+    function matchesStarsFilter(product, selectedStars) {
+        if (!selectedStars.length) return true;
+        return selectedStars.includes(starsFilterKey(product.stars));
+    }
+
     function normalizeProduct(p) {
         const endDate = p.endDate
             ? new Date(p.endDate)
@@ -357,6 +625,10 @@
             priceOccSimple: optionalPrice(p.priceOccSimple ?? p.price_occ_simple),
             priceOccTriple: optionalPrice(p.priceOccTriple ?? p.price_occ_triple),
             priceOccDouble1Child: optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child),
+            priceOccDouble2Child: optionalPrice(p.priceOccDouble2Child ?? p.price_occ_double_2_child),
+            priceOccSimple1Child: optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child),
+            priceOccQuad: optionalPrice(p.priceOccQuad ?? p.price_occ_quad),
+            priceAutres: optionalPrice(p.priceAutres ?? p.price_autres ?? p.price_occ_autres),
             priceOriginal: optionalPrice(p.priceOriginal ?? p.price_original),
             discountAmount: optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais),
             financingMonthly: optionalPrice(
@@ -368,6 +640,7 @@
             priceChild212: optionalPrice(p.priceChild212 ?? p.price_child_2_12),
             priceChild1317: optionalPrice(p.priceChild1317 ?? p.price_child_13_17),
             flights: p.flights || { out: {}, return: {}, airlineLogo: '' },
+            stars: normalizeStars(p.stars),
             endDate,
             inventory: isSoldOut({ ...p, state }) ? 0 : p.inventory,
             img,
@@ -524,6 +797,10 @@
         getCriteriaLabel,
         productHasCriterion,
         getOccupationPrices,
+        getSelectedOccupationRow,
+        getOccupationPricingBreakdown,
+        pickOccupationPrice,
+        buildGhlReservationParams,
         getPaymentTerms,
         getEffectiveFlights,
         getIncentive,
@@ -531,6 +808,11 @@
         formatFlightDate,
         formatFlightTime,
         formatFlightNumber,
+        normalizeStars,
+        starsFilterKey,
+        formatStarsLabel,
+        renderStarsHtml,
+        matchesStarsFilter,
         hasFlights,
         flightLegHasData,
         buildProductGallery,

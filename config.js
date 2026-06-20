@@ -151,11 +151,65 @@
         'Vancouver (YVR)'
     ];
 
+    /** Hotel star filter options (supports half stars) */
+    window.FILTER_STAR_OPTIONS = [3, 3.5, 4, 5];
+
     /** Static product feed — synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
 
-    /** GHL reservation form — « Réservation de forfait » (prefill: forfait_slug) */
+    /** GHL reservation form — « Réservation de forfait » (prefill via Query Key = param URL) */
     window.GHL_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/V5DftNAy6QDV4X64bYzV';
+
+    /**
+     * Champs à créer dans le formulaire GHL (type: Hidden ou Texte en lecture seule).
+     * Query Key = exactement la clé ci-dessous (Settings du champ → Query Key).
+     */
+    window.GHL_FORM_HIDDEN_FIELDS = [
+        { key: 'forfait_slug', label: 'Forfait — identifiant (slug)' },
+        { key: 'forfait_name', label: 'Forfait — nom de l\'hôtel' },
+        { key: 'destination', label: 'Destination' },
+        { key: 'sub_destination', label: 'Sous-destination (ville)' },
+        { key: 'departure_date', label: 'Date de départ' },
+        { key: 'return_date', label: 'Date de retour' },
+        { key: 'departure_airport', label: 'Aéroport de départ' },
+        { key: 'final_payment_date', label: 'Date paiement final' },
+        { key: 'deposit_amount', label: 'Dépôt requis ($ / pers.)' },
+        { key: 'taxes_amount', label: 'Taxes et frais aériens ($ / pers.)' },
+        { key: 'occupation', label: 'Occupation — code (double, double_1_child, quad, autres…)' },
+        { key: 'occupation_label', label: 'Occupation — libellé' },
+        { key: 'selected_price', label: 'Prix sélectionné — avant taxes ($ / pers.)' },
+        { key: 'selected_taxes', label: 'Taxes pour l\'occupation choisie ($ / pers.)' },
+        { key: 'selected_total', label: 'Total par personne avant taxes + taxes ($ / pers.)' },
+        { key: 'nombre_personnes', label: 'Nombre total de voyageurs' },
+        { key: 'nombre_adultes', label: 'Nombre d\'adultes' },
+        { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants 2-12 ans' },
+        { key: 'nombre_enfants_13_17', label: 'Nombre d\'enfants 13-17 ans' },
+        { key: 'depot_par_personne', label: 'Dépôt par personne ($)' },
+        { key: 'depot_total', label: 'Dépôt total (dépôt × nb personnes)' },
+        { key: 'prix_adulte_unitaire', label: 'Prix unitaire adulte ($)' },
+        { key: 'prix_enfant_2_12_unitaire', label: 'Prix unitaire enfant 2-12 ($)' },
+        { key: 'prix_total_avant_taxes', label: 'Prix total avant taxes ($) — « prix sans taxe »' },
+        { key: 'taxes_total', label: 'Taxes totales ($)' },
+        { key: 'prix_total', label: 'Prix total avec taxes ($)' },
+        { key: 'total', label: 'Alias prix total (même que prix_total)' },
+        { key: 'pricing_summary', label: 'Résumé texte du calcul (courriel)' },
+        { key: 'price_double', label: 'Tarif — occ. double ($ / pers.)' },
+        { key: 'price_double_1_child', label: 'Tarif — occ. double + 1 enfant 2-12 ($ / pers.)' },
+        { key: 'price_double_2_child', label: 'Tarif — occ. double + 2 enfants 2-12 ($ / pers.)' },
+        { key: 'price_simple', label: 'Tarif — occ. simple ($ / pers.)' },
+        { key: 'price_simple_1_child', label: 'Tarif — occ. simple + 1 enfant 2-12 ($ / pers.)' },
+        { key: 'price_triple', label: 'Tarif — occ. triple ($ / pers.)' },
+        { key: 'price_quad', label: 'Tarif — occ. quad ($ / pers.)' },
+        { key: 'price_autres', label: 'Tarif — autres ($ / pers.)' },
+        { key: 'price_child_2_12', label: 'Réf. enfant 2-12 ans seul ($ / pers.) — optionnel' },
+        { key: 'price_child_13_17', label: 'Réf. enfant 13-17 ans seul ($ / pers.) — optionnel' },
+        { key: 'price_original', label: 'Prix internet ($ / pers.)' },
+        { key: 'supplier', label: 'Fournisseur' },
+        { key: 'carrier', label: 'Transporteur' },
+        { key: 'room_category', label: 'Catégorie de chambre' },
+        { key: 'package_type', label: 'Type de forfait' },
+        { key: 'duration_nights', label: 'Durée (nuits)' }
+    ];
 
     /**
      * Page de remerciement après soumission du formulaire.

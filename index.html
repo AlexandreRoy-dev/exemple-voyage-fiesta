@@ -95,10 +95,11 @@
 
             <div class="mb-4">
                 <h3 class="font-semibold mb-2 text-gray-700 text-sm">Classement Hôtelier</h3>
-                <div class="flex gap-2">
-                    <button type="button" class="filter-star flex-1 py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="3">3 <i class="fa-solid fa-star text-xs"></i></button>
-                    <button type="button" class="filter-star flex-1 py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="4">4 <i class="fa-solid fa-star text-xs"></i></button>
-                    <button type="button" class="filter-star flex-1 py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="5">5 <i class="fa-solid fa-star text-xs"></i></button>
+                <div class="grid grid-cols-4 gap-2" id="filter-stars-wrap">
+                    <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="3">3 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="3.5">3,5 <i class="fa-solid fa-star-half-stroke text-xs"></i></button>
+                    <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="4">4 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="5">5 <i class="fa-solid fa-star text-xs"></i></button>
                 </div>
             </div>
 
@@ -146,7 +147,7 @@
     </main>
 
     <script src="config.js?v=3"></script>
-    <script src="api.js?v=15"></script>
+    <script src="api.js?v=18"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -285,11 +286,7 @@
         }
 
         function renderStars(count) {
-            let starsHtml = '';
-            for (let i = 0; i < 5; i++) {
-                starsHtml += `<i class="fa-solid fa-star ${i < count ? 'text-yellow-400' : 'text-gray-300'} text-sm"></i>`;
-            }
-            return starsHtml;
+            return VoyageFiestaAPI.renderStarsHtml(count, 'text-sm');
         }
 
         function formatTime(ms) {
@@ -433,7 +430,7 @@
                 if (!VoyageFiestaAPI.matchesDestinationFilter(p, selectedDestinations)) return false;
                 if (!VoyageFiestaAPI.matchesSupplierFilter(p, selectedSuppliers)) return false;
                 if (!VoyageFiestaAPI.matchesAirportFilter(p, selectedAirports)) return false;
-                if (activeStars.length > 0 && !activeStars.includes(p.stars.toString())) return false;
+                if (!VoyageFiestaAPI.matchesStarsFilter(p, activeStars)) return false;
                 if (durationValue !== 'all' && p.durationNights.toString() !== durationValue) return false;
                 if (!VoyageFiestaAPI.matchesCriteriaFilter(p, selectedCriteria)) return false;
                 return true;

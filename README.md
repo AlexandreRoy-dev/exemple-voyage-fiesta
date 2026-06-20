@@ -75,7 +75,7 @@ node scripts/sync-ghl-products.mjs
 | sub_dest | `subDest` | Punta Cana |
 | country | `country` | République Dominicaine |
 | location | `location` | Bavaro Beach... |
-| stars | `stars` | 5 |
+| stars | `stars` | 5 · 3.5 (demi-étoiles supportées) |
 | supplier | `supplier` | Vacances Sunwing |
 | carrier | `carrier` | Sunwing Airlines |
 | duration_nights | `durationNights` | 7 |
@@ -83,10 +83,16 @@ node scripts/sync-ghl-products.mjs
 | hotel_description | `hotelDescription` | Texte descriptif de l'hôtel (optionnel) |
 | criteria | `criteria` | `["familial","vue_sur_la_mer"]` (GHL multi-select keys) |
 | inventory | `inventory` | 3 |
-| price | `price` | 1459 | Occupation double — **prix par personne** (requis) |
-| price_occ_simple | `priceOccSimple` | 1890 | Occupation simple — par personne (optionnel) |
-| price_occ_triple | `priceOccTriple` | 1399 | Occupation triple — par personne (optionnel) |
-| price_occ_double_1_child | `priceOccDouble1Child` | 4200 | Occ. double + 1 enfant -12 ans (optionnel) |
+| price | `price` | 1459 | Occ. double — **prix par personne** (requis pour afficher l'option) |
+| price_occ_double_1_child | `priceOccDouble1Child` | 4200 | Occ. double + 1 enfant 2-12 |
+| price_occ_double_2_child | `priceOccDouble2Child` | — | Occ. double + 2 enfants 2-12 **(à créer)** |
+| price_occ_simple | `priceOccSimple` | 1890 | Occ. simple |
+| price_occ_simple_1_child | `priceOccSimple1Child` | — | Occ. simple + 1 enfant 2-12 **(à créer)** |
+| price_occ_triple | `priceOccTriple` | 1399 | Occ. triple |
+| price_occ_quad | `priceOccQuad` | — | Occ. quad **(à créer)** |
+| price_autres | `priceAutres` | — | Autres **(à créer)** |
+| price_child_2_12 | `priceChild212` | 668 | Réf. tarif enfant seul (optionnel, pas dans le picker) |
+| price_child_13_17 | `priceChild1317` | 958 | Réf. tarif enfant seul (optionnel) |
 | price_original | `priceOriginal` | 1515 | Prix régulier barré (optionnel) |
 | discount_amount | `discountAmount` | 116 | Rabais en $ (optionnel — calculé si `price_original` > `price`) |
 | financement_mensuel | `financingMonthly` | 116 | Paiement mensuel affiché si renseigné |
@@ -158,15 +164,64 @@ Le client continue d'uploader normalement dans GHL — aucune URL à copier manu
 
 ## Formulaire GHL
 
-1. Créer un **formulaire standard** (pas Custom Object) avec un champ caché `forfait_slug` (Query Key = `forfait_slug`) + champs contact (prénom, nom, courriel, téléphone)
-2. Copier l'URL d'intégration iframe
-3. Coller dans `config.js` → `GHL_FORM_EMBED_URL`
-4. **Page de remerciement** : Formulaire → Paramètres → **À la soumission** → **Rediriger vers une URL** (désactiver le message de remerciement intégré) :
+### Champs contact (visibles)
+Prénom, nom, courriel, téléphone — champs standards GHL.
+
+### Champs forfait (cachés — Query Key = clé exacte)
+
+Créez un champ **Hidden** (ou texte) par ligne. Dans les paramètres du champ, **Query Key** doit correspondre exactement :
+
+| Query Key | Exemple de valeur |
+|-----------|-------------------|
+| `forfait_slug` | Gran-Muthu-Runaway-Bay-Montego-Bay |
+| `forfait_name` | Gran Muthu Runaway Bay |
+| `destination` | Jamaïque |
+| `sub_destination` | Montego Bay |
+| `departure_date` | 25 février 2027 |
+| `return_date` | 4 mars 2027 |
+| `departure_airport` | Montréal (YUL) |
+| `final_payment_date` | 11 décembre 2026 |
+| `deposit_amount` | 200 |
+| `taxes_amount` | 390 |
+| `occupation` | double |
+| `occupation_label` | Occ. double (2 pers.) |
+| `selected_price` | 1518 |
+| `selected_taxes` | 390 |
+| `selected_total` | 1908 |
+| `nombre_personnes` | 3 |
+| `nombre_adultes` | 2 |
+| `nombre_enfants_2_12` | 1 |
+| `depot_par_personne` | 200 |
+| `depot_total` | 600 |
+| `prix_total_avant_taxes` | 4184 |
+| `taxes_total` | 1170 |
+| `prix_total` / `total` | 5354 |
+| `pricing_summary` | 2 adultes × 1 518 $ + 1 enfant (2-12) × 1 148 $ = 4 184 $ avant taxes |
+| `price_double` | 1518 |
+| `price_triple` | *(vide si N/A)* |
+| `price_simple` | 2208 |
+| `price_child_2_12` | 1148 |
+| `price_child_13_17` | 958 |
+| `price_original` | 2165 |
+| `supplier` | sunwing |
+| `carrier` | WestJet |
+| `room_category` | Chambre avec vue cour |
+| `package_type` | Forfait Tout-Inclus |
+| `duration_nights` | 7 |
+
+Liste complète aussi dans `config.js` → `GHL_FORM_HIDDEN_FIELDS`.
+
+Le site envoie ces valeurs automatiquement dans l'URL de l'iframe quand le client clique **Réserver**. L'occupation choisie sur la fiche produit (radio ou liste déroulante) remplit `occupation`, `selected_price`, etc.
+
+### Configuration
+
+1. Créer le formulaire standard avec les champs ci-dessus + contact
+2. Copier l'URL d'intégration iframe → `config.js` → `GHL_FORM_EMBED_URL`
+3. **Page de remerciement** : Paramètres → **À la soumission** → **Rediriger vers une URL** :
    ```
-   https://promofiesta.roymarketing.ca/thank-you.html?forfait_slug={{forfait_slug}}
+   https://promofiesta.roymarketing.ca/thank-you.html?forfait_slug={{forfait_slug}}&first_name={{contact.first_name}}
    ```
-   Optionnel pour personnaliser le texte : ajoutez `&first_name={{contact.first_name}}`
-5. La page `thank-you.html` sort automatiquement de l'iframe du modal et affiche le message Voyage Fiesta
+4. Dans GHL, mappez les champs cachés vers des **Custom Fields contact** si vous voulez les voir dans le CRM et les workflows
 
 ## Make.com (déprécié)
 

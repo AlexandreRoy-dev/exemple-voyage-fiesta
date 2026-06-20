@@ -52,6 +52,12 @@ function toNumber(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function normalizeStars(value, fallback = 0) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return fallback;
+  return Math.round(n * 2) / 2;
+}
+
 function normalizeDateField(raw) {
   if (raw === undefined || raw === null || raw === '') return null;
   if (typeof raw === 'number') {
@@ -404,7 +410,7 @@ async function mapRecord(record, apiKey, manifest) {
     destination: destination1,
     country: pick(props, 'country', 'pays') || '',
     location: pick(props, 'location', 'address', 'adresse') || '',
-    stars: toNumber(pick(props, 'stars', 'star_rating'), 0),
+    stars: normalizeStars(pick(props, 'stars', 'star_rating'), 0),
     supplier: pick(props, 'supplier', 'fournisseur') || '',
     carrier: pick(props, 'carrier', 'transporteur') || '',
     durationNights: toNumber(pick(props, 'duration_nights', 'durationNights'), 7),
@@ -417,6 +423,14 @@ async function mapRecord(record, apiKey, manifest) {
     priceOccDouble1Child: optionalPrice(
       pick(props, 'price_occ_double_1_child', 'priceOccDouble1Child', 'price_double_1_child')
     ),
+    priceOccDouble2Child: optionalPrice(
+      pick(props, 'price_occ_double_2_child', 'priceOccDouble2Child', 'price_double_2_child')
+    ),
+    priceOccSimple1Child: optionalPrice(
+      pick(props, 'price_occ_simple_1_child', 'priceOccSimple1Child', 'price_simple_1_child')
+    ),
+    priceOccQuad: optionalPrice(pick(props, 'price_occ_quad', 'priceOccQuad')),
+    priceAutres: optionalPrice(pick(props, 'price_autres', 'priceAutres', 'price_occ_autres')),
     priceOriginal: optionalPrice(pick(props, 'price_original', 'priceOriginal', 'prix_regulier')),
     discountAmount: optionalPrice(pick(props, 'discount_amount', 'discountAmount', 'rabais')),
     financingMonthly: optionalPrice(
