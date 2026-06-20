@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-20T16:38:15.406Z",
+  "updatedAt": "2026-06-20T16:43:34.717Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -166,10 +166,13 @@
         },
         "airlineLogo": ""
       },
-      "img": "",
-      "imgRoom": "",
-      "imgExtra": "",
-      "images": [],
+      "img": "assets/forfaits/sandos-playacar-jour-de-lan-img.jpg",
+      "imgRoom": "assets/forfaits/sandos-playacar-jour-de-lan-img.jpg",
+      "imgExtra": "assets/forfaits/sandos-playacar-jour-de-lan-extra.jpg",
+      "images": [
+        "assets/forfaits/sandos-playacar-jour-de-lan-img.jpg",
+        "assets/forfaits/sandos-playacar-jour-de-lan-extra.jpg"
+      ],
       "seoTags": [
         "#SUD #RIVIRAMAYA #SANDOS #TOUT-INCLUS"
       ]
