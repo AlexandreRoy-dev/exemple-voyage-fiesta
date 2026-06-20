@@ -255,13 +255,53 @@
         }
     ];
 
-    function pickOccupationTaxes(p, taxesKeys) {
-        if (!taxesKeys?.length) return null;
-        for (const key of taxesKeys) {
-            const val = optionalPrice(p[key]);
-            if (val !== null) return val;
+    function pickOccupationTaxPerPerson(p) {
+        return optionalPrice(p.taxesAmount ?? p.taxes_amount);
+    }
+
+    /** Legacy taxes_occ_* = total occupation; taxes_amount = $ / pers. × voyageurs */
+    function resolveOccupationTaxes(p, def) {
+        const peopleCount = getOccupationPeopleCount(def);
+        if (!peopleCount) {
+            return { taxesPerPerson: null, totalTaxes: null };
         }
-        return null;
+
+        for (const key of def.taxesKeys || []) {
+            const legacyTotal = optionalPrice(p[key]);
+            if (legacyTotal !== null) {
+                return {
+                    taxesPerPerson: Math.round(legacyTotal / peopleCount),
+                    totalTaxes: legacyTotal
+                };
+            }
+        }
+
+        const perPerson = pickOccupationTaxPerPerson(p);
+        if (perPerson === null) {
+            return { taxesPerPerson: null, totalTaxes: null };
+        }
+
+        return {
+            taxesPerPerson: perPerson,
+            totalTaxes: Math.round(perPerson * peopleCount)
+        };
+    }
+
+    function addUtcDays(date, days) {
+        const d = new Date(date.getTime());
+        d.setUTCDate(d.getUTCDate() + Number(days));
+        return d;
+    }
+
+    function deriveReturnDate(departureDate, durationNights) {
+        if (!departureDate || durationNights === undefined || durationNights === null) return null;
+        const nights = Number(durationNights);
+        if (!Number.isFinite(nights) || nights <= 0) return null;
+        return addUtcDays(departureDate, nights);
+    }
+
+    function buildLocationText(subDest, country) {
+        return [subDest, country].filter(Boolean).join(', ') || '';
     }
 
     function pickOccupationPrice(p, priceKeys) {
@@ -281,16 +321,14 @@
     function getOccupationPrices(p) {
         const rows = [];
 
-        /** Prix et taxes saisis par occupation (totaux GHL, pas par personne). */
+        /** Prix occupation (total GHL) + taxes_amount ($ / pers. × nb voyageurs). */
         function withTaxes(row, def, product) {
             const peopleCount = getOccupationPeopleCount(def);
-            const totalTaxes = pickOccupationTaxes(product, def.taxesKeys);
+            const { taxesPerPerson, totalTaxes } = resolveOccupationTaxes(product, def);
             row.peopleCount = peopleCount;
+            row.taxesPerPerson = taxesPerPerson;
             row.totalTaxes = totalTaxes;
             row.taxes = totalTaxes;
-            row.taxesPerPerson = totalTaxes !== null && peopleCount > 0
-                ? Math.round(totalTaxes / peopleCount)
-                : null;
             row.totalWithTaxes = totalTaxes !== null ? row.price + totalTaxes : null;
             return row;
         }
@@ -345,9 +383,10 @@
 
         const base = optionalPrice(p.price);
         if (base === null) return null;
-        const taxes = pickOccupationTaxes(p, ['taxesOccDouble', 'taxes_occ_double']);
+        const doubleDef = getOccupationDef('double');
+        const { totalTaxes } = doubleDef ? resolveOccupationTaxes(p, doubleDef) : { totalTaxes: null };
         return {
-            amount: taxes !== null ? base + taxes : base,
+            amount: totalTaxes !== null ? base + totalTaxes : base,
             label: 'Occ. double'
         };
     }
@@ -380,8 +419,7 @@
     }
 
     /**
-     * Totaux occupation (prix + taxes saisis dans GHL pour l'occupation entière).
-     * taxes_par_personne = taxes totales ÷ nb voyageurs (pour le formulaire).
+     * Totaux occupation — prix total GHL; taxes_amount = $ / pers. × nb voyageurs.
      */
     function getOccupationPricingBreakdown(p, occupationId, overrides) {
         const def = getOccupationDef(occupationId);
@@ -402,9 +440,9 @@
         const totalBeforeTaxes = Math.round(row.price);
         const totalTaxes = row.totalTaxes ?? null;
         const totalWithTaxes = row.totalWithTaxes ?? (totalTaxes !== null ? totalBeforeTaxes + totalTaxes : null);
-        const taxesPerPerson = totalTaxes !== null && totalPeople > 0
-            ? Math.round(totalTaxes / totalPeople)
-            : null;
+        const taxesPerPerson = row.taxesPerPerson ?? (
+            totalTaxes !== null && totalPeople > 0 ? Math.round(totalTaxes / totalPeople) : null
+        );
 
         const depositPerPerson = optionalPrice(p.depositAmount ?? p.deposit_amount);
         const totalDeposit = depositPerPerson !== null ? totalPeople * depositPerPerson : null;
@@ -545,7 +583,7 @@
 
     function inferDepartureLabel(p, leg) {
         if (leg?.from) return leg.from;
-        return p.departureAirport || 'Montréal (YUL)';
+        return p.departureAirport || '';
     }
 
     /** Use GHL flight fields, or build from departure/return dates when routes missing */
@@ -600,11 +638,7 @@
         if (price === null) return null;
 
         const original = optionalPrice(p.priceOriginal ?? p.price_original);
-        let discount = optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais);
-
-        if (discount === null && original !== null && original > price) {
-            discount = original - price;
-        }
+        const discount = optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais);
 
         const hasPromo = discount !== null && discount > 0;
         if (!hasPromo) return null;
@@ -714,7 +748,11 @@
         const departureDateValid = departureDate && !Number.isNaN(departureDate.getTime()) ? departureDate : null;
 
         const returnDateRaw = p.returnDate ?? p.return_date;
-        const returnDate = returnDateRaw ? new Date(returnDateRaw) : null;
+        let returnDate = returnDateRaw ? new Date(returnDateRaw) : null;
+        if (returnDate && Number.isNaN(returnDate.getTime())) returnDate = null;
+        if (!returnDate && departureDateValid) {
+            returnDate = deriveReturnDate(departureDateValid, p.durationNights ?? p.duration_nights);
+        }
         const returnDateValid = returnDate && !Number.isNaN(returnDate.getTime()) ? returnDate : null;
 
         const finalPaymentRaw = p.finalPaymentDate ?? p.final_payment_date;
@@ -727,16 +765,27 @@
         const img = normalizeImageSrc(p.img);
         const imgRoom = normalizeImageSrc(p.imgRoom || p.img);
         const imgExtra = normalizeImageSrc(p.imgExtra || p.img);
-        const { taxesAmount: _legacyTax1, taxes_amount: _legacyTax2, ...productBase } = p;
+        const subDest = p.subDest ?? p.sub_dest ?? '';
+        const country = p.country ?? p.pays ?? '';
+        const supplier = p.supplier || '';
+        const carrier = p.carrier || '';
+        const location = p.location || buildLocationText(subDest, country);
+        const taxesAmount = pickOccupationTaxPerPerson(p);
 
-        return {
-            ...productBase,
+        const base = {
+            ...p,
             active: state,
             state,
+            subDest,
+            country,
+            location,
+            supplier,
+            carrier,
+            taxesAmount,
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
-            destination: p.destination1 || p.destination || p.subDest,
-            destinationLabel: formatDestinationLabel(p.destination1 || p.destination || p.subDest),
-            departureAirport: p.departureAirport || 'Montréal (YUL)',
+            destination: p.destination1 || p.destination || subDest,
+            destinationLabel: formatDestinationLabel(p.destination1 || p.destination || subDest),
+            departureAirport: p.departureAirport || p.departure_airport || '',
             departureDate: departureDateValid,
             returnDate: returnDateValid,
             criteria: Array.isArray(p.criteria) ? p.criteria.map(normalizeCriterionValue) : [],
@@ -776,6 +825,8 @@
             imgExtra,
             images: buildProductGallery({ ...p, img, imgRoom, imgExtra })
         };
+
+        return base;
     }
 
     function extractPackageArray(data) {

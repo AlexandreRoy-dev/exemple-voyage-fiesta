@@ -155,7 +155,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=13"></script>
-    <script src="api.js?v=36"></script>
+    <script src="api.js?v=38"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -368,7 +368,7 @@
                 ? `<p class="mt-4 mb-0">
                         <a href="${escapeHtml(forfaitLink)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-brand-blue font-semibold hover:text-brand-orange underline underline-offset-2 transition-colors">
                             <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
-                            Voir le forfait original
+                            Consultez la fiche complète de l'hôtel ici
                         </a>
                    </p>`
                 : '';
@@ -816,7 +816,7 @@
                                     </div>` : ''}
                                     <div class="flex justify-between text-sm gap-3">
                                         <span class="text-gray-500 shrink-0">Départ de :</span>
-                                        <span class="font-bold text-brand-blue text-right">${p.departureAirport || 'Montréal (YUL)'}</span>
+                                        <span class="font-bold text-brand-blue text-right">${escapeHtml(p.departureAirport || '—')}</span>
                                     </div>
                                     <div class="flex justify-between text-sm gap-3">
                                         <span class="text-gray-500 shrink-0">Durée :</span>

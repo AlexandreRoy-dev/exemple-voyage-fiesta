@@ -93,6 +93,20 @@ function normalizeDateField(raw) {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
+function deriveReturnDateIso(departureDateIso, durationNights) {
+  if (!departureDateIso || durationNights === undefined || durationNights === null) return null;
+  const nights = Number(durationNights);
+  if (!Number.isFinite(nights) || nights <= 0) return null;
+  const d = new Date(departureDateIso);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setUTCDate(d.getUTCDate() + nights);
+  return d.toISOString();
+}
+
+function buildLocationText(subDest, country) {
+  return [subDest, country].filter(Boolean).join(', ') || '';
+}
+
 function toStringArray(value) {
   if (Array.isArray(value)) {
     return value
@@ -128,6 +142,96 @@ function slugify(text) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function normalizeExplicitSlug(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function normalizeSlug(value, fallback = 'forfait') {
+  const slug = slugify(value);
+  return slug || fallback;
+}
+
+function getRecordId(record, props) {
+  return String(record.id || pick(props, 'id') || '').trim();
+}
+
+function loadPreviousSlugById() {
+  try {
+    if (!existsSync(OUTPUT)) return {};
+    const data = JSON.parse(readFileSync(OUTPUT, 'utf8'));
+    const map = {};
+    for (const product of data.products || []) {
+      if (product.id && product.slug) map[product.id] = product.slug;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+/** Slug URL stable par enregistrement GHL; dérivé du nom si absent, suffixe -2, -3 si collision. */
+function assignSlugs(records, previousSlugById = {}) {
+  const used = new Set();
+  const assignments = new Map();
+
+  const sorted = [...records].sort((a, b) => {
+    const propsA = a.properties || a.fields || a;
+    const propsB = b.properties || b.fields || b;
+    const idA = getRecordId(a, propsA);
+    const idB = getRecordId(b, propsB);
+    if (idA && idB) return idA.localeCompare(idB);
+    const nameA = pick(propsA, 'name', 'title', 'forfait_name') || '';
+    const nameB = pick(propsB, 'name', 'title', 'forfait_name') || '';
+    return nameA.localeCompare(nameB, 'fr');
+  });
+
+  const reserveSlug = (raw, { fromName = false } = {}) => {
+    let base = fromName
+      ? normalizeSlug(raw)
+      : (normalizeExplicitSlug(raw) || normalizeSlug(raw));
+    let candidate = base;
+    let suffix = 2;
+    while (used.has(candidate.toLowerCase())) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    used.add(candidate.toLowerCase());
+    return candidate;
+  };
+
+  for (const record of sorted) {
+    const props = record.properties || record.fields || record;
+    const recordId = getRecordId(record, props);
+    const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
+    const departureDate = normalizeDateField(
+      pick(props, 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
+    );
+    const mapKey = recordId || `__name__:${normalizeSlug(name)}`;
+
+    if (recordId && previousSlugById[recordId]) {
+      assignments.set(mapKey, reserveSlug(previousSlugById[recordId]));
+      continue;
+    }
+
+    assignments.set(mapKey, reserveSlug(buildAutoSlugBase(name, departureDate)));
+  }
+
+  return assignments;
+}
+
+function buildAutoSlugBase(name, departureDateIso) {
+  const namePart = normalizeSlug(name) || 'forfait';
+  if (!departureDateIso) return namePart;
+  const d = new Date(departureDateIso);
+  if (Number.isNaN(d.getTime())) return namePart;
+  return `${namePart}-${d.toISOString().slice(0, 10)}`;
 }
 
 /** Correct known GHL destination slug typos → canonical value */
@@ -380,14 +484,20 @@ function mapFlights(props) {
   };
 }
 
-async function mapRecord(record, apiKey, manifest) {
+async function mapRecord(record, apiKey, manifest, slug) {
   const props = record.properties || record.fields || record;
   const state = normalizeState(pick(props, 'state', 'status'));
   const active = state;
 
   const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
-  const slug = pick(props, 'slug') || slugify(name);
   const subDest = pick(props, 'sub_dest', 'subDest', 'sub_destination', 'city') || '';
+  const durationNights = toNumber(pick(props, 'duration_nights', 'durationNights'), 7);
+  const departureDate = normalizeDateField(
+    pick(props, 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
+  );
+  const resolvedSlug = slug
+    ? (normalizeExplicitSlug(slug) || normalizeSlug(slug))
+    : buildAutoSlugBase(name, departureDate);
   const destination1 = normalizeDestination1(
     pick(props, 'destination1', 'destination', 'dest_destination') || subDest
   );
@@ -396,9 +506,13 @@ async function mapRecord(record, apiKey, manifest) {
   const seoTags = toStringArray(pick(props, 'seo_tags', 'seoTags', 'seo'));
 
   let endDate = normalizeDateField(pick(props, 'end_date', 'endDate', 'top_chrono_end'));
-  const departureDate = normalizeDateField(
-    pick(props, 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
-  );
+  const returnDate = normalizeDateField(pick(props, 'return_date', 'returnDate', 'date_retour'))
+    || deriveReturnDateIso(departureDate, durationNights);
+
+  const country = pick(props, 'country', 'pays') || '';
+  const supplier = pick(props, 'supplier', 'fournisseur') || '';
+  const carrier = pick(props, 'carrier', 'transporteur') || '';
+  const location = pick(props, 'location', 'address', 'adresse') || buildLocationText(subDest, country);
 
   const imgUpload = pick(props, 'img', 'image', 'main_image', 'photo');
   const imgRoomUpload = pick(props, 'img_room', 'imgRoom', 'room_image');
@@ -406,7 +520,7 @@ async function mapRecord(record, apiKey, manifest) {
 
   const img = await mirrorImageField({
     apiKey,
-    slug,
+    slug: resolvedSlug,
     field: 'img',
     uploadValue: imgUpload,
     urlOverride: pick(props, 'img_url', 'image_url'),
@@ -414,7 +528,7 @@ async function mapRecord(record, apiKey, manifest) {
   });
   const imgRoom = await mirrorImageField({
     apiKey,
-    slug,
+    slug: resolvedSlug,
     field: 'room',
     uploadValue: imgRoomUpload,
     urlOverride: pick(props, 'img_room_url'),
@@ -422,7 +536,7 @@ async function mapRecord(record, apiKey, manifest) {
   });
   const imgExtra = await mirrorImageField({
     apiKey,
-    slug,
+    slug: resolvedSlug,
     field: 'extra',
     uploadValue: imgExtraUpload,
     urlOverride: pick(props, 'img_extra_url'),
@@ -431,15 +545,15 @@ async function mapRecord(record, apiKey, manifest) {
   const imgGalleryUpload = pick(props, 'img_gallery', 'gallery', 'photos', 'images');
   const galleryPaths = await mirrorGalleryImages({
     apiKey,
-    slug,
+    slug: resolvedSlug,
     uploadValue: imgGalleryUpload,
     manifest
   });
   const images = uniqueImagePaths([img], [imgRoom], [imgExtra], galleryPaths);
 
   return {
-    id: record.id || pick(props, 'id') || slug,
-    slug,
+    id: record.id || pick(props, 'id') || resolvedSlug,
+    slug: resolvedSlug,
     name,
     state,
     active,
@@ -447,12 +561,12 @@ async function mapRecord(record, apiKey, manifest) {
     subDest,
     destination1,
     destination: destination1,
-    country: pick(props, 'country', 'pays') || '',
-    location: pick(props, 'location', 'address', 'adresse') || '',
+    country,
+    location,
     stars: normalizeStars(pick(props, 'stars', 'star_rating'), 0),
-    supplier: pick(props, 'supplier', 'fournisseur') || '',
-    carrier: pick(props, 'carrier', 'transporteur') || '',
-    durationNights: toNumber(pick(props, 'duration_nights', 'durationNights'), 7),
+    supplier,
+    carrier,
+    durationNights,
     roomCategory: pick(props, 'room_category', 'roomCategory', 'chambre') || '',
     criteria,
     inventory: state === 'complet_sold_out' ? 0 : toNumber(pick(props, 'inventory', 'stock'), 0),
@@ -470,6 +584,7 @@ async function mapRecord(record, apiKey, manifest) {
     ),
     priceOccQuad: optionalPrice(pick(props, 'price_occ_quad', 'priceOccQuad')),
     priceAutres: optionalPrice(pick(props, 'price_autres', 'priceAutres', 'price_occ_autres')),
+    taxesAmount: optionalPrice(pick(props, 'taxes_amount', 'taxesAmount')),
     taxesOccDouble: optionalPrice(pick(props, 'taxes_occ_double', 'taxesOccDouble')),
     taxesOccDouble1Child: optionalPrice(pick(props, 'taxes_occ_double_1_child', 'taxesOccDouble1Child')),
     taxesOccDouble2Child: optionalPrice(pick(props, 'taxes_occ_double_2_child', 'taxesOccDouble2Child')),
@@ -487,7 +602,7 @@ async function mapRecord(record, apiKey, manifest) {
     finalPaymentDate: normalizeDateField(
       pick(props, 'final_payment_date', 'finalPaymentDate', 'date_paiement_final')
     ),
-    returnDate: normalizeDateField(pick(props, 'return_date', 'returnDate', 'date_retour')),
+    returnDate,
     priceChild212: optionalPrice(pick(props, 'price_child_2_12', 'priceChild212', 'price_child_2_12_ans')),
     priceChild1317: optionalPrice(pick(props, 'price_child_13_17', 'priceChild1317', 'price_child_13_17_ans')),
     taxChild212: optionalPrice(pick(props, 'tax_child_2_12', 'taxChild212', 'tax_child_2_12_ans')),
@@ -497,7 +612,7 @@ async function mapRecord(record, apiKey, manifest) {
     forfaitLink: normalizeExternalUrl(pick(props, 'forfait_link', 'forfaitLink')),
     endDate,
     departureDate,
-    departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || 'Montréal (YUL)',
+    departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || '',
     flights: mapFlights(props),
     img,
     imgRoom: imgRoom || img,
@@ -571,10 +686,17 @@ async function main() {
   console.log(`Fetched ${records.length} raw record(s).`);
 
   const manifest = loadManifest();
+  const previousSlugById = loadPreviousSlugById();
+  const slugAssignments = assignSlugs(records, previousSlugById);
   const products = [];
 
   for (const record of records) {
-    const product = await mapRecord(record, apiKey, manifest);
+    const props = record.properties || record.fields || record;
+    const recordId = getRecordId(record, props);
+    const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
+    const mapKey = recordId || `__name__:${normalizeSlug(name)}`;
+    const slug = slugAssignments.get(mapKey) || normalizeSlug(name);
+    const product = await mapRecord(record, apiKey, manifest, slug);
     if (VISIBLE_STATES.has(product.state)) {
       products.push(product);
     }
