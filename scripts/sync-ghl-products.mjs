@@ -50,6 +50,15 @@ function unwrapFieldValue(value) {
   return value;
 }
 
+function normalizeExternalUrl(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const url = String(value).trim();
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  if (/^\/\//.test(url)) return 'https:' + url;
+  return 'https://' + url;
+}
+
 function optionalPrice(value) {
   value = unwrapFieldValue(value);
   if (value === undefined || value === null || value === '') return null;
@@ -468,6 +477,7 @@ async function mapRecord(record, apiKey, manifest) {
     priceChild1317: optionalPrice(pick(props, 'price_child_13_17', 'priceChild1317', 'price_child_13_17_ans')),
     packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
     hotelDescription: pickText(props, 'hotel_description', 'hotelDescription', 'description_hotel'),
+    forfaitLink: normalizeExternalUrl(pick(props, 'forfait_link', 'forfaitLink')),
     endDate,
     departureDate,
     departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || 'Montréal (YUL)',

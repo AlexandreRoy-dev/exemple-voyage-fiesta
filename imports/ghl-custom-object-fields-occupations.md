@@ -72,6 +72,7 @@ Utilisé quand l'occupation inclut des enfants et que le prix enfant diffère du
 | `package_type` | Type forfait | Text |
 | `duration_nights` | Durée (nuits) | Number |
 | `inventory` | Chambres disponibles | Number |
+| `forfait_link` | Lien forfait original (fournisseur) | URL / Text |
 
 > **Ne plus utiliser** `taxes_amount` (global) — remplacé par `taxes_occ_*` par occupation.
 

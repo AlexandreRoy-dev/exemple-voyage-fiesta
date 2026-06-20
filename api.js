@@ -136,7 +136,15 @@
         return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
     }
 
-    const TPS_RATE = 0.05;
+    function normalizeExternalUrl(value) {
+        const raw = unwrapFieldValue(value);
+        const url = raw === undefined || raw === null ? '' : String(raw).trim();
+        if (!url) return null;
+        if (/^https?:\/\//i.test(url)) return url;
+        if (/^\/\//.test(url)) return 'https:' + url;
+        return 'https://' + url;
+    }
+
     const TVQ_RATE = 0.09975;
 
     function getTaxRates() {
@@ -713,6 +721,7 @@
             finalPaymentDate: finalPaymentValid,
             priceChild212: optionalPrice(p.priceChild212 ?? p.price_child_2_12),
             priceChild1317: optionalPrice(p.priceChild1317 ?? p.price_child_13_17),
+            forfaitLink: normalizeExternalUrl(p.forfaitLink ?? p.forfait_link),
             flights: p.flights || { out: {}, return: {}, airlineLogo: '' },
             stars: normalizeStars(p.stars),
             endDate,
@@ -962,6 +971,7 @@
         flightLegHasData,
         buildProductGallery,
         optionalPrice,
+        normalizeExternalUrl,
         normalizeSupplierKey,
         formatSupplierLabel,
         getSupplierFilterOptions,
