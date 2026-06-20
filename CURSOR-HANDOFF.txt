@@ -1,7 +1,7 @@
 ================================================================================
 VOYAGE FIESTA / AUBAINES EXPRESS VOYAGE — CURSOR SESSION HANDOFF
 ================================================================================
-Updated: 2026-06-20
+Updated: 2026-06-20 (end of session)
 Use this file on your other computer: open the project folder in Cursor, then
 paste the "Prompt to continue" section below into a new Agent chat.
 
@@ -49,112 +49,125 @@ Assets:
 --------------------------------------------------------------------------------
 CACHE-BUST VERSIONS (hard refresh after deploy)
 --------------------------------------------------------------------------------
-index.html:   config.js?v=12   api.js?v=32
-product.html: config.js?v=11   api.js?v=31   (bump product.html config to v=12 when deploying)
-thank-you.html: older versions — update if needed
+index.html:     config.js?v=12   api.js?v=33
+product.html:   config.js?v=11   api.js?v=35   ← align config to v=12 on deploy
+thank-you.html: config.js?v=3    api.js?v=15   ← outdated, update if touched
+integration-iframe.html: config.js (no version query)
+
+After deploy: Ctrl+F5. Bump ?v= if cache persists.
 
 --------------------------------------------------------------------------------
-FEATURES COMPLETED IN RECENT SESSIONS
+FEATURES COMPLETED (CURRENT STATE)
 --------------------------------------------------------------------------------
 
-[Suppliers]
+[Suppliers & logos]
 - SUPPLIER_LABELS + SUPPLIER_LOGOS in config.js
-- Logos on listing cards, product header, supplier filter, flight section
-- Flight logo uses carrier (WestJet), NOT supplier (Sunwing) — getAirlineLogo()
-- westjet → westjet_quebec logo alias
+- Logos: listing cards, product header, supplier filter dropdown
+- Flight section: logo from carrier (WestJet), NOT supplier (Sunwing)
+- getAirlineLogo() in api.js; westjet → westjet_quebec logo alias
 
 [Taxes]
-- NO auto TPS/TVQ calculation
-- Per-occupation taxes from GHL: taxes_occ_double, taxes_occ_triple, etc.
-- Occupation totals model (see below)
+- NO auto TPS/TVQ — uses GHL fields only
+- taxes_occ_* = TOTAL tax amount per occupation (not per person)
+- taxes_par_personne sent to GHL form = total taxes ÷ nb voyageurs (internal calc)
 
-[Occupation pricing — IMPORTANT]
-Client enters TOTALS per occupation in GHL (not per person):
-  price / price_occ_*     = total BEFORE taxes for full occupation
-  taxes_occ_*             = total TAX amount for full occupation
-Site displays:
-  Avant taxes | Taxes | Total (occupation totals)
-  taxes_par_personne = total taxes ÷ number of travelers (for GHL form)
+[Occupation pricing — CRITICAL RULE]
+Client enters in GHL per occupation:
+  price / price_occ_*  = total BEFORE taxes for the full occupation
+  taxes_occ_*          = total TAXES for the full occupation
+Frontend displays:
+  Table: Avant taxes | Taxes | Total (occupation totals, NOT per person)
+  Picker: total with taxes + breakdown "dont X avant taxes + Y taxes"
+  Summary after selection: occupation label + "Total estimé" + dépôt only
+NO per-person multiplication on the frontend.
 
-[Children]
-- UI on product.html: +/- for enfants 2-12 and 13-17
-- Fields: price_child_2_12, price_child_13_17, tax_child_2_12, tax_child_13_17
-- Sent to GHL form: nombre_enfants_2_12, nombre_enfants_13_17, etc.
+[Children — backend only, NO frontend selector]
+- NO Enfants +/- UI on product page (removed)
+- KEEP price/tax details on occupation options and summary box
+- Child counts for GHL form from occupation definition (nombre_enfants_2_12, etc.)
+- GHL fields: price_child_2_12, price_child_13_17, tax_child_2_12, tax_child_13_17
 
 [Filters]
-- Dynamic supplier filter from products
-- Departure date filter (from product dates)
-- Destination filter with normalizeDestinationKey() — case/slug insensitive
-  (e.g. GHL "bahamas" matches filter "Bahamas")
-- Star filter includes 4.5
-- Destination alias: jamaque → Jamaïque
+- Suppliers (dynamic from products)
+- Destinations — normalizeDestinationKey() case/slug insensitive
+  (GHL "bahamas" ↔ filter "Bahamas"; alias jamaque → Jamaïque)
+- Departure dates (from product departureDate)
+- Stars: 3, 3.5, 4, 4.5, 5
+- Criteria, airports, duration
 
-[UI]
-- Rabais badge: red (bg-red-600 on cards, text-red-600 on product)
+[UI / copy — customer-facing only]
+- Rabais badge: red (bg-red-600 cards, text-red-600 product header)
 - forfait_link → "Voir le forfait original" on hotel tab
+- NO internal comments on frontend (no GHL, config.js, sync, taxes/pers breakdown)
+- Empty state: generic message (no GoHighLevel mention)
+- Form placeholder: "temporarily unavailable" (no dev instructions)
 
 [iframe embed]
-- embed.js + ?embed=1 hides hero/countdown in iframe
-- integration-iframe.html — auto-resize iframe snippet for client sites
-- config.js: BOUTIQUE_EMBED_URL = .../index.html?embed=1
+- embed.js + ?embed=1 hides hero (index) and countdown bar (product)
+- integration-iframe.html — copy-paste snippet + live preview for client
+- config.js: BOUTIQUE_BASE_URL, BOUTIQUE_EMBED_URL
 
 [GHL form prefill]
-- buildGhlReservationParams() in api.js
-- GHL_FORM_IFRAME_KEYS in config.js (limited keys for URL length)
-- Form URL: GHL_FORM_EMBED_URL in config.js
+- buildGhlReservationParams(p, occupationId) in api.js
+- GHL_FORM_IFRAME_KEYS in config.js (URL length limit)
+- GHL_FORM_EMBED_URL in config.js
+- Field list: GHL_FORM_HIDDEN_FIELDS in config.js
+- Email template doc: imports/ghl-email-confirmation-reservation.md
 
 --------------------------------------------------------------------------------
 GHL CUSTOM OBJECT — MAIN FIELDS
 --------------------------------------------------------------------------------
-Listing: state (actif | complet_sold_out), destination1, supplier, stars, etc.
+Visibility: state = actif (listing) | complet_sold_out (detail only, badge COMPLET)
 
-Prices (8 occupations):
+destination1     — slug often lowercase (bahamas, jamaque); filter normalizes
+supplier         — sunwing, transat, etc.
+carrier          — airline for flight section logo (WestJet, sunwing, …)
+stars            — supports 4.5
+
+Prices (8 occupations — TOTAL before taxes per occupation):
   price, price_occ_simple, price_occ_triple, price_occ_quad,
   price_occ_double_1_child, price_occ_double_2_child,
   price_occ_simple_1_child, price_autres
 
-Taxes (8 occupations — TOTAL for occupation):
+Taxes (8 occupations — TOTAL taxes per occupation):
   taxes_occ_double, taxes_occ_simple, taxes_occ_triple, taxes_occ_quad,
   taxes_occ_double_1_child, taxes_occ_double_2_child,
   taxes_occ_simple_1_child, taxes_occ_autres
 
-Children reference:
+Children (reference / form, not UI):
   price_child_2_12, price_child_13_17, tax_child_2_12, tax_child_13_17
 
 Other:
-  forfait_link, deposit_amount, final_payment_date, carrier, flight fields
-
-Form hidden fields list: config.js → GHL_FORM_HIDDEN_FIELDS
+  forfait_link, deposit_amount, final_payment_date, flight_* fields,
+  price_original, discount_amount, hotel_description, criteria, inventory
 
 --------------------------------------------------------------------------------
 DEPLOY CHECKLIST
 --------------------------------------------------------------------------------
-Upload changed files to hosting (promofiesta.roymarketing.ca):
-  - index.html, product.html, config.js, api.js, embed.js
-  - integration-iframe.html (if using embed page)
-  - assets/suppliers/* (logos)
-  - products.json updates via GitHub Actions OR manual upload after sync
+Upload to promofiesta.roymarketing.ca:
+  index.html, product.html, config.js, api.js, embed.js
+  integration-iframe.html (optional)
+  assets/suppliers/*
+  products.json (via GitHub Actions or manual)
 
-After deploy: Ctrl+F5 hard refresh. Bump ?v= on script tags if cache persists.
-
-GitHub secrets (if using Actions): GHL_API_KEY, GHL_LOCATION_ID, GHL_OBJECT_SCHEMA_KEY
+GitHub Actions secrets: GHL_API_KEY, GHL_LOCATION_ID, GHL_OBJECT_SCHEMA_KEY
 
 --------------------------------------------------------------------------------
 KNOWN QUIRKS / TODO
 --------------------------------------------------------------------------------
-- GHL destination1 often lowercase slug (bahamas, jamaque) — filter normalizes
-- Re-enter occupation prices in GHL as TOTALS if old data was per-person
-- product.html config.js still v=11 — align with index v=12 on next deploy
-- thank-you.html uses old api/config versions
+- GHL destination1 often lowercase slug — filter handles it; prefer proper labels in GHL
+- Occupation prices in GHL must be TOTALS (re-enter if old data was per-person)
+- product.html config.js still v=11 — bump to v=12 with index on next deploy
+- thank-you.html script versions very old
 - air-canada.png ~600KB — could optimize
-- Child picker updates people count for form; occupation price stays package total
+- Do NOT add internal/dev text to frontend (GHL, formulaire, répartition taxes, etc.)
 
 --------------------------------------------------------------------------------
 SAMPLE PRODUCTS (products.json)
 --------------------------------------------------------------------------------
-- Gran Muthu Runaway Bay (jamaque, sunwing, WestJet carrier)
-- Viva Fortuna Beach Freeport (bahamas, sunwing, WestJet)
-- Plus test/other entries from GHL sync
+- Gran Muthu Runaway Bay — jamaque, sunwing, carrier WestJet
+- Viva Fortuna Beach Freeport — bahamas, sunwing, carrier WestJet
+- Additional test/live entries from GHL sync
 
 --------------------------------------------------------------------------------
 PROMPT TO CONTINUE IN CURSOR (copy-paste into new chat)
@@ -166,14 +179,17 @@ Read @CURSOR-HANDOFF.txt and @README.md for full context.
 Stack: static HTML + config.js + api.js + products.json synced from GHL.
 Live: https://promofiesta.roymarketing.ca
 
-Key rules already in place:
-- Occupation prices/taxes in GHL are TOTALS per occupation (not per person)
-- Flight logos use carrier field, supplier logos use supplier field
-- Taxes from taxes_occ_* fields, not auto-calculated TPS/TVQ
-- Destination filter is case/slug normalized
+Key rules — do not break:
+- Occupation price/taxes in GHL = TOTALS per occupation (not per person)
+- Flight logos = carrier; supplier logos = supplier
+- No internal/dev text on frontend (no GHL mentions, no tax breakdown math)
+- No children +/- UI — child counts from occupation type only
+- Destination filter: case/slug normalized (bahamas = Bahamas)
+- Summary shows pricing details (avant taxes, taxes, total) — no internal GHL text
 
-Recent work included: supplier logos, iframe embed, children count UI,
-occupation total pricing, Bahamas filter fix, 4.5 stars, red rabais badge.
+Recent session work: occupation total pricing, Bahamas filter fix, iframe embed,
+supplier/flight logos, removed children picker & internal comments, 4.5 stars,
+red rabais badge, CURSOR-HANDOFF maintenance.
 
 Help me with: [describe your next task here]
 
