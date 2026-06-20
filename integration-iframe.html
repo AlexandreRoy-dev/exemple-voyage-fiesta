@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intégration iframe — Aubaines Voyage Fiesta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        brand: { blue: '#025091', orange: '#F26522', light: '#F3F7FA' }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        pre { white-space: pre-wrap; word-break: break-word; }
+        .demo-frame { border: 2px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; }
+    </style>
+    <script src="config.js"></script>
+</head>
+<body class="bg-brand-light text-gray-800 font-sans">
+
+    <header class="bg-brand-blue text-white py-8 px-4">
+        <div class="container mx-auto max-w-4xl">
+            <h1 class="text-2xl md:text-3xl font-bold">Intégrer la boutique Aubaines Voyage Fiesta</h1>
+            <p class="mt-2 text-white/90 text-sm md:text-base">Copiez le code ci-dessous dans votre site (WordPress, GoHighLevel, Wix, page HTML, etc.).</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto max-w-4xl px-4 py-10 space-y-10">
+
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-xl font-bold text-brand-blue mb-2">1. Code recommandé (hauteur automatique)</h2>
+            <p class="text-sm text-gray-600 mb-4">La boutique s’adapte à son contenu (liste, filtres, fiche produit, formulaire). Collez ce bloc dans une page ou un bloc HTML personnalisé.</p>
+            <button type="button" id="copy-recommended" class="mb-3 text-sm bg-brand-orange hover:bg-orange-600 text-white font-medium px-4 py-2 rounded transition-colors">
+                Copier le code
+            </button>
+            <pre id="snippet-recommended" class="bg-gray-900 text-green-100 text-xs md:text-sm p-4 rounded-lg leading-relaxed"></pre>
+        </section>
+
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-xl font-bold text-brand-blue mb-2">2. Code simple (hauteur fixe)</h2>
+            <p class="text-sm text-gray-600 mb-4">Si votre plateforme ne permet pas le JavaScript parent, utilisez une hauteur fixe (ajustez <code class="bg-gray-100 px-1 rounded">min-height</code> au besoin).</p>
+            <button type="button" id="copy-simple" class="mb-3 text-sm border border-brand-blue text-brand-blue hover:bg-brand-light font-medium px-4 py-2 rounded transition-colors">
+                Copier le code
+            </button>
+            <pre id="snippet-simple" class="bg-gray-900 text-green-100 text-xs md:text-sm p-4 rounded-lg leading-relaxed"></pre>
+        </section>
+
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <h2 class="text-xl font-bold text-brand-blue mb-2">3. Lien direct (sans iframe)</h2>
+            <p class="text-sm text-gray-600 mb-3">Pour un bouton « Voir les aubaines » qui ouvre la boutique dans un nouvel onglet :</p>
+            <p class="text-sm"><a id="direct-link" href="#" target="_blank" rel="noopener" class="text-brand-blue font-semibold underline break-all"></a></p>
+        </section>
+
+        <section>
+            <h2 class="text-xl font-bold text-brand-blue mb-4">Aperçu en direct</h2>
+            <div class="demo-frame bg-white shadow-lg">
+                <iframe
+                    id="demo-iframe"
+                    title="Aubaines Voyage Fiesta — aperçu"
+                    src=""
+                    width="100%"
+                    style="border:0;width:100%;min-height:900px;display:block;"
+                    loading="lazy"
+                ></iframe>
+            </div>
+        </section>
+
+        <section class="bg-blue-50 border border-blue-100 rounded-xl p-6 text-sm text-gray-700 space-y-3">
+            <h2 class="font-bold text-brand-blue">Notes pour l’intégration</h2>
+            <ul class="list-disc pl-5 space-y-2">
+                <li>Le paramètre <code class="bg-white px-1 rounded">?embed=1</code> masque la bannière promo en haut — idéal dans une iframe.</li>
+                <li>Navigation interne (filtres, fiche produit, retour liste) reste dans l’iframe.</li>
+                <li>Le formulaire de réservation GoHighLevel s’ouvre dans la fiche produit, toujours dans l’iframe.</li>
+                <li>Forfaits mis à jour automatiquement depuis GoHighLevel (sync ~15 min).</li>
+                <li><strong>GoHighLevel :</strong> Sites → Page → élément <em>Custom Code</em> ou <em>HTML</em> → coller le code.</li>
+                <li><strong>WordPress :</strong> Bloc « HTML personnalisé » ou « Code ».</li>
+            </ul>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+            var base = window.BOUTIQUE_BASE_URL || (location.origin + location.pathname.replace(/[^/]+$/, '').replace(/\/$/, ''));
+            var embedUrl = window.BOUTIQUE_EMBED_URL || (base + '/index.html?embed=1');
+
+            var recommended = [
+                '<!-- Aubaines Voyage Fiesta -->',
+                '<div id="voyage-fiesta-boutique">',
+                '  <iframe',
+                '    id="voyage-fiesta-iframe"',
+                '    src="' + embedUrl + '"',
+                '    title="Aubaines Voyage Fiesta"',
+                '    width="100%"',
+                '    style="border:0;width:100%;min-height:900px;display:block;"',
+                '    loading="lazy"',
+                '    allow="fullscreen"',
+                '  ></iframe>',
+                '</div>',
+                '<script>',
+                '(function(){',
+                '  window.addEventListener("message", function(e) {',
+                '    if (!e.data || e.data.type !== "voyage-fiesta-resize") return;',
+                '    var iframe = document.getElementById("voyage-fiesta-iframe");',
+                '    if (!iframe || e.source !== iframe.contentWindow) return;',
+                '    if (typeof e.data.height === "number" && e.data.height > 0) {',
+                '      iframe.style.height = e.data.height + "px";',
+                '    }',
+                '  });',
+                '})();',
+                '<\/script>'
+            ].join('\n');
+
+            var simple = [
+                '<!-- Aubaines Voyage Fiesta (hauteur fixe) -->',
+                '<iframe',
+                '  src="' + embedUrl + '"',
+                '  title="Aubaines Voyage Fiesta"',
+                '  width="100%"',
+                '  height="1200"',
+                '  style="border:0;width:100%;max-width:100%;display:block;"',
+                '  loading="lazy"',
+                '  allow="fullscreen"',
+                '></iframe>'
+            ].join('\n');
+
+            document.getElementById('snippet-recommended').textContent = recommended;
+            document.getElementById('snippet-simple').textContent = simple;
+
+            var direct = document.getElementById('direct-link');
+            direct.href = base + '/index.html';
+            direct.textContent = base + '/index.html';
+
+            document.getElementById('demo-iframe').src = embedUrl;
+
+            window.addEventListener('message', function (e) {
+                if (!e.data || e.data.type !== 'voyage-fiesta-resize') return;
+                var iframe = document.getElementById('demo-iframe');
+                if (!iframe || e.source !== iframe.contentWindow) return;
+                if (typeof e.data.height === 'number' && e.data.height > 0) {
+                    iframe.style.height = e.data.height + 'px';
+                }
+            });
+
+            function copyText(text, btn) {
+                navigator.clipboard.writeText(text).then(function () {
+                    var original = btn.textContent;
+                    btn.textContent = 'Copié !';
+                    setTimeout(function () { btn.textContent = original; }, 2000);
+                });
+            }
+
+            document.getElementById('copy-recommended').addEventListener('click', function () {
+                copyText(recommended, this);
+            });
+            document.getElementById('copy-simple').addEventListener('click', function () {
+                copyText(simple, this);
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -190,10 +190,16 @@
     ];
 
     /** Hotel star filter options (supports half stars) */
-    window.FILTER_STAR_OPTIONS = [3, 3.5, 4, 5];
+    window.FILTER_STAR_OPTIONS = [3, 3.5, 4, 4.5, 5];
 
     /** Static product feed — synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
+
+    /** URL publique de la boutique (iframe + liens directs) */
+    window.BOUTIQUE_BASE_URL = 'https://promofiesta.roymarketing.ca';
+
+    /** Chemin liste avec mode intégration (sans bannière hero) */
+    window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/index.html?embed=1';
 
     /** Taux TPS/TVQ — non utilisés (taxes par occupation dans GHL) */
     window.TAX_TPS_RATE = 0.05;

@@ -618,9 +618,16 @@
         return s || 'À venir';
     }
 
-    /** Hotel star rating — supports half stars (e.g. 3.5) */
+    /** Hotel star rating — supports half stars (e.g. 3.5, 4.5) */
+    function parseStarValue(value) {
+        if (value === undefined || value === null || value === '') return NaN;
+        if (typeof value === 'number') return value;
+        const s = String(value).trim().replace(',', '.');
+        return Number(s);
+    }
+
     function normalizeStars(value) {
-        const n = Number(value);
+        const n = parseStarValue(value);
         if (!Number.isFinite(n) || n <= 0) return 0;
         return Math.round(n * 2) / 2;
     }

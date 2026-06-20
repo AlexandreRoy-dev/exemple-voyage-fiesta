@@ -70,11 +70,15 @@
         @media (min-width: 1024px) {
             .filters-sidebar { top: 1rem; }
         }
+
+        html.embed-mode .boutique-hero { display: none; }
+        html.embed-mode main { padding-top: 1rem; }
     </style>
+    <script src="embed.js"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans flex flex-col min-h-screen">
 
-    <section class="relative bg-brand-dark">
+    <section class="boutique-hero relative bg-brand-dark">
         <img src="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1920&fit=crop" alt="Destination de rêve" class="w-full h-36 md:h-44 object-cover">
         <div class="absolute inset-x-0 top-0 bg-brand-orange/95 text-white text-center py-3 px-4 text-sm md:text-base font-semibold tracking-wide shadow-md">
             🔥 Les places s'envolent rapidement ! Réservez aujourd'hui et profitez de nos meilleures aubaines voyage à prix exceptionnels.
@@ -95,10 +99,11 @@
 
             <div class="mb-4">
                 <h3 class="font-semibold mb-2 text-gray-700 text-sm">Classement Hôtelier</h3>
-                <div class="grid grid-cols-4 gap-2" id="filter-stars-wrap">
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-2" id="filter-stars-wrap">
                     <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="3">3 <i class="fa-solid fa-star text-xs"></i></button>
                     <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="3.5">3,5 <i class="fa-solid fa-star-half-stroke text-xs"></i></button>
                     <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="4">4 <i class="fa-solid fa-star text-xs"></i></button>
+                    <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="4.5">4,5 <i class="fa-solid fa-star-half-stroke text-xs"></i></button>
                     <button type="button" class="filter-star py-1.5 border rounded hover:bg-brand-blue hover:text-white transition text-sm" data-star="5">5 <i class="fa-solid fa-star text-xs"></i></button>
                 </div>
             </div>
@@ -149,7 +154,7 @@
     </main>
 
     <script src="config.js?v=11"></script>
-    <script src="api.js?v=28"></script>
+    <script src="api.js?v=30"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -332,7 +337,7 @@
                 : '';
 
             return `
-                <div class="absolute bottom-3 right-3 z-10 bg-[#e85d6a] text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
+                <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
                     <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)}</p>
                     <p class="mt-0.5">
                         <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoney(inc.strikePrice)}</span>
@@ -379,7 +384,9 @@
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isSoldOut ? 'border-red-200' : ''}`;
 
-                const productUrl = `product.html?slug=${encodeURIComponent(p.slug)}`;
+                const productUrl = window.VoyageFiestaEmbed
+                    ? window.VoyageFiestaEmbed.boutiqueUrl(`product.html?slug=${encodeURIComponent(p.slug)}`)
+                    : `product.html?slug=${encodeURIComponent(p.slug)}`;
                 const endMs = p.endDate instanceof Date ? p.endDate.getTime() : new Date(p.endDate).getTime();
                 const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
                 const departureBadge = departureLabel
@@ -472,6 +479,7 @@
             });
 
             renderProducts(sortProducts(filtered));
+            if (window.VoyageFiestaEmbed) window.VoyageFiestaEmbed.notifyParentHeight();
         }
 
         document.getElementById('sort-products').addEventListener('change', applyFilters);

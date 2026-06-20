@@ -85,11 +85,13 @@
                 body.product-has-booking { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
             }
         }
+        html.embed-mode .product-countdown-bar { display: none; }
     </style>
+    <script src="embed.js"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans product-has-booking">
 
-    <div class="bg-red-600 text-white py-2 overflow-hidden">
+    <div class="product-countdown-bar bg-red-600 text-white py-2 overflow-hidden">
         <div class="container mx-auto px-4 flex justify-center items-center gap-4">
             <span class="font-bold animate-pulse text-sm md:text-base">🔥 OFFRE AUBAINES EXPRESS VOYAGE :</span>
             <div id="countdown" class="font-mono font-bold text-lg tracking-tighter">00j 00h 00m 00s</div>
@@ -143,7 +145,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=11"></script>
-    <script src="api.js?v=29"></script>
+    <script src="api.js?v=30"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -571,7 +573,7 @@
                 headerHtml = `
                     <div class="mb-4 p-3 rounded-lg bg-brand-light border border-blue-100 text-sm">
                         ${priceOriginal !== null ? `<p class="text-gray-600">Prix internet : <span class="line-through text-gray-400">${VoyageFiestaAPI.formatMoney(priceOriginal)}</span> <span class="text-gray-500">/ pers. avant taxes (sujet à changement)</span></p>` : ''}
-                        ${incentive ? `<p class="text-brand-orange font-bold mt-1"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)} / pers.</p>` : ''}
+                        ${incentive ? `<p class="text-red-600 font-bold mt-1"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)} / pers.</p>` : ''}
                     </div>`;
             }
 
@@ -987,7 +989,7 @@
             const slug = params.get('slug');
             if (!slug) {
                 document.getElementById('not-found').classList.remove('hidden');
-                document.querySelector('.bg-red-600').classList.add('hidden');
+                document.querySelector('.product-countdown-bar')?.classList.add('hidden');
                 return;
             }
 
@@ -995,9 +997,13 @@
 
             if (product) {
                 renderProduct(product);
+                if (window.VoyageFiestaEmbed) {
+                    window.VoyageFiestaEmbed.patchLinks();
+                    window.VoyageFiestaEmbed.notifyParentHeight();
+                }
             } else {
                 document.getElementById('not-found').classList.remove('hidden');
-                document.querySelector('.bg-red-600').classList.add('hidden');
+                document.querySelector('.product-countdown-bar')?.classList.add('hidden');
             }
         }
 

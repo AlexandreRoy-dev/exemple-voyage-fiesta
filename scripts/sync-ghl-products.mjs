@@ -77,7 +77,8 @@ function toNumber(value, fallback = 0) {
 }
 
 function normalizeStars(value, fallback = 0) {
-  const n = Number(value);
+  const raw = typeof value === 'string' ? value.trim().replace(',', '.') : value;
+  const n = Number(raw);
   if (!Number.isFinite(n) || n <= 0) return fallback;
   return Math.round(n * 2) / 2;
 }
