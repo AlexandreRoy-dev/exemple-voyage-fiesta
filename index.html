@@ -153,8 +153,8 @@
 
     </main>
 
-    <script src="config.js?v=12"></script>
-    <script src="api.js?v=33"></script>
+    <script src="config.js?v=13"></script>
+    <script src="api.js?v=34"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -413,7 +413,7 @@
                     </a>
                     <div class="p-5 flex-grow flex flex-col">
                         <div class="flex items-center justify-between mb-3 text-sm text-gray-500">
-                            <span class="font-medium text-brand-blue"><i class="fa-solid fa-location-dot mr-1"></i> ${p.destination}, ${p.country}</span>
+                            <span class="font-medium text-brand-blue"><i class="fa-solid fa-location-dot mr-1"></i> ${p.destinationLabel || p.destination}${p.country ? `, ${p.country}` : ''}</span>
                             <span>${p.durationNights} nuits</span>
                         </div>
                         <div class="mb-4">

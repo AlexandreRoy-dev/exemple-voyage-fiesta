@@ -695,6 +695,7 @@
             state,
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
             destination: p.destination1 || p.destination || p.subDest,
+            destinationLabel: formatDestinationLabel(p.destination1 || p.destination || p.subDest),
             departureAirport: p.departureAirport || 'Montréal (YUL)',
             departureDate: departureDateValid,
             returnDate: returnDateValid,
@@ -938,6 +939,36 @@
         return slug;
     }
 
+    function formatDestinationLabel(value) {
+        if (value === undefined || value === null || value === '') return '';
+        const raw = String(value).trim();
+        if (!raw) return '';
+
+        const labels = window.FILTER_DESTINATIONS || [];
+        for (const label of labels) {
+            if (raw === label || raw.toLowerCase() === label.toLowerCase()) {
+                return label;
+            }
+        }
+
+        const key = normalizeDestinationKey(raw);
+        for (const label of labels) {
+            if (normalizeDestinationKey(label) === key) {
+                return label;
+            }
+        }
+
+        const aliases = window.DESTINATION_ALIASES || {};
+        const lower = raw.toLowerCase();
+        const slug = slugifyDestination(raw);
+        const aliasTarget = aliases[raw] ?? aliases[lower] ?? aliases[slug];
+        if (aliasTarget) return aliasTarget;
+
+        return raw
+            .replace(/_/g, ' ')
+            .replace(/\b([a-zàâäéèêëïîôùûüç])/gi, (_, c) => c.toUpperCase());
+    }
+
     function slugifyDestination(value) {
         return String(value)
             .trim()
@@ -1039,6 +1070,7 @@
         matchesSupplierFilter,
         matchesDestinationFilter,
         normalizeDestinationKey,
+        formatDestinationLabel,
         matchesAirportFilter,
         matchesDepartureDateFilter,
         matchesCriteriaFilter,

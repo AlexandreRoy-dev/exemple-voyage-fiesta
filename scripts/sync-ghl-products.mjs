@@ -130,6 +130,18 @@ function slugify(text) {
     .replace(/^-+|-+$/g, '');
 }
 
+/** Correct known GHL destination slug typos → canonical value */
+function normalizeDestination1(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return raw;
+  const key = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+  if (key === 'jamaque') return 'jamaïque';
+  return raw;
+}
+
 function rawStateValue(raw) {
   if (raw === undefined || raw === null || raw === '') return '';
   if (typeof raw === 'object') {
@@ -376,7 +388,9 @@ async function mapRecord(record, apiKey, manifest) {
   const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
   const slug = pick(props, 'slug') || slugify(name);
   const subDest = pick(props, 'sub_dest', 'subDest', 'sub_destination', 'city') || '';
-  const destination1 = pick(props, 'destination1', 'destination', 'dest_destination') || subDest;
+  const destination1 = normalizeDestination1(
+    pick(props, 'destination1', 'destination', 'dest_destination') || subDest
+  );
 
   const criteria = toStringArray(pick(props, 'criteria', 'criteres', 'tags'));
   const seoTags = toStringArray(pick(props, 'seo_tags', 'seoTags', 'seo'));

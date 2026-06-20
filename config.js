@@ -126,8 +126,10 @@
 
     /** Alias GHL (slug / variante) → libellé filtre ou slug cible */
     window.DESTINATION_ALIASES = {
+        jamaïque: 'Jamaïque',
         jamaque: 'Jamaïque',
-        jamaique: 'Jamaïque'
+        jamaique: 'Jamaïque',
+        saintelucie: 'Sainte-Lucie'
     };
 
     /** Critères (boutique filter) — labels + GHL keys from field `criteria` */
