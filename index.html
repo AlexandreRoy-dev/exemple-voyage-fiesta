@@ -112,6 +112,8 @@
                 </select>
             </div>
 
+            <div class="mb-4" id="filter-departure-dates-wrap"></div>
+
             <div class="mb-4" id="filter-criteria-wrap"></div>
 
             <div class="mb-2" id="filter-airports-wrap"></div>
@@ -147,7 +149,7 @@
     </main>
 
     <script src="config.js?v=10"></script>
-    <script src="api.js?v=26"></script>
+    <script src="api.js?v=28"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -291,6 +293,17 @@
                 options,
                 inputClass: 'filter-supplier',
                 defaultLabel: 'Tous les fournisseurs'
+            });
+        }
+
+        function buildDepartureDateFilter(productList) {
+            const options = VoyageFiestaAPI.getDepartureDateFilterOptions(productList);
+            buildSearchableMultiSelect({
+                containerId: 'filter-departure-dates-wrap',
+                label: 'Date de départ',
+                options,
+                inputClass: 'filter-departure-date',
+                defaultLabel: 'Toutes les dates'
             });
         }
 
@@ -443,6 +456,7 @@
             const selectedDestinations = Array.from(document.querySelectorAll('.filter-destination:checked')).map(cb => cb.value);
             const selectedSuppliers = Array.from(document.querySelectorAll('.filter-supplier:checked')).map(cb => cb.value);
             const selectedAirports = Array.from(document.querySelectorAll('.filter-airport:checked')).map(cb => cb.value);
+            const selectedDepartureDates = Array.from(document.querySelectorAll('.filter-departure-date:checked')).map(cb => cb.value);
             const durationValue = document.getElementById('filter-duration').value;
             const selectedCriteria = Array.from(document.querySelectorAll('.filter-criteria:checked')).map(cb => cb.value);
 
@@ -450,6 +464,7 @@
                 if (!VoyageFiestaAPI.matchesDestinationFilter(p, selectedDestinations)) return false;
                 if (!VoyageFiestaAPI.matchesSupplierFilter(p, selectedSuppliers)) return false;
                 if (!VoyageFiestaAPI.matchesAirportFilter(p, selectedAirports)) return false;
+                if (!VoyageFiestaAPI.matchesDepartureDateFilter(p, selectedDepartureDates)) return false;
                 if (!VoyageFiestaAPI.matchesStarsFilter(p, activeStars)) return false;
                 if (durationValue !== 'all' && p.durationNights.toString() !== durationValue) return false;
                 if (!VoyageFiestaAPI.matchesCriteriaFilter(p, selectedCriteria)) return false;
@@ -477,7 +492,7 @@
         });
 
         document.getElementById('reset-filters').addEventListener('click', () => {
-            document.querySelectorAll('.filter-supplier, .filter-criteria, .filter-destination, .filter-airport').forEach(cb => {
+            document.querySelectorAll('.filter-supplier, .filter-criteria, .filter-destination, .filter-airport, .filter-departure-date').forEach(cb => {
                 cb.checked = false;
             });
             document.querySelectorAll('.filter-dropdown').forEach(updateDropdownLabel);
@@ -505,6 +520,7 @@
             try {
                 products = await VoyageFiestaAPI.fetchProducts();
                 buildSupplierFilter(products);
+                buildDepartureDateFilter(products);
                 if (!products.length) {
                     document.getElementById('empty-state').classList.remove('hidden');
                     document.getElementById('result-count').innerText = '0';

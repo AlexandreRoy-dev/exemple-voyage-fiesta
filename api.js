@@ -947,6 +947,33 @@
         return Number.isNaN(t) ? Number.POSITIVE_INFINITY : t;
     }
 
+    /** Stable YYYY-MM-DD key for departure date filters (UTC). */
+    function departureDateFilterKey(value) {
+        if (!value) return '';
+        const d = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(d.getTime())) return '';
+        return d.toISOString().slice(0, 10);
+    }
+
+    function getDepartureDateFilterOptions(products) {
+        const seen = new Map();
+        for (const p of products || []) {
+            const key = departureDateFilterKey(p.departureDate);
+            if (!key || seen.has(key)) continue;
+            seen.set(key, formatDepartureDate(p.departureDate) || key);
+        }
+        return [...seen.entries()]
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([value, label]) => ({ value, label }));
+    }
+
+    function matchesDepartureDateFilter(product, selectedDates) {
+        if (!selectedDates.length) return true;
+        const key = departureDateFilterKey(product.departureDate);
+        if (!key) return false;
+        return selectedDates.includes(key);
+    }
+
     window.VoyageFiestaAPI = {
         fetchProducts,
         fetchProductBySlug,
@@ -954,9 +981,12 @@
         matchesSupplierFilter,
         matchesDestinationFilter,
         matchesAirportFilter,
+        matchesDepartureDateFilter,
         matchesCriteriaFilter,
         formatDepartureDate,
         departureDateSortKey,
+        departureDateFilterKey,
+        getDepartureDateFilterOptions,
         normalizeCriterionValue,
         getCriteriaLabel,
         productHasCriterion,
