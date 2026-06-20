@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-20T16:31:58.386Z",
+  "updatedAt": "2026-06-20T16:38:15.406Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -103,12 +103,12 @@
       "destination1": "riviera_maya",
       "destination": "riviera_maya",
       "country": "Mexique",
-      "location": "",
-      "stars": 0,
+      "location": "Riviera Maya",
+      "stars": 4,
       "supplier": "transat",
       "carrier": "Transat",
       "durationNights": 7,
-      "roomCategory": "",
+      "roomCategory": "Suite Junior Familiale Riviera 2 grands lit",
       "criteria": [
         "familial",
         "directement_sur_la_plage",
@@ -137,17 +137,17 @@
       "depositAmount": null,
       "finalPaymentDate": "2026-09-15T00:00:00.000Z",
       "returnDate": "2027-02-06T00:00:00.000Z",
-      "priceChild212": null,
+      "priceChild212": 1368,
       "priceChild1317": null,
-      "packageType": "",
+      "packageType": "Forfait Tout-Inclus",
       "hotelDescription": "Sandos Playacar Beach Resort – Séjour tout inclus à Riviera Maya, Mexique\n\nDécouvrez le charme authentique du Mexique au Sandos Playacar Beach Resort, un magnifique complexe tout inclus situé sur la célèbre plage de Playacar, à quelques minutes de Playa del Carmen et à environ 60 km de Aéroport international de Cancún.\n\nCe vaste complexe 4 étoiles de la Riviera Maya propose une expérience adaptée autant aux familles qu’aux voyageurs en quête de tranquillité grâce à ses sections distinctes pour adultes et pour familles.\n\nHébergement confortable pour tous les types de voyageurs\n\nLes chambres spacieuses du Sandos Playacar sont décorées dans un style inspiré des tropiques mexicains et offrent tout le confort nécessaire pour des vacances réussies. Chaque unité comprend notamment :\n\nBalcon ou terrasse privée\nTélévision à écran plat\nMinibar réapprovisionné régulièrement\nClimatisation\nCoffre-fort\nWi-Fi\n\nLes voyageurs à la recherche d'une expérience plus exclusive apprécieront la section Select Club Adults Only, réservée aux adultes de 18 ans et plus. Située à proximité de la plage, cette section offre plusieurs privilèges, dont :\n\nPiscine réservée aux adultes\nAccès à une plage exclusive\nBars privés\nServices personnalisés\nAmbiance calme et raffinée\n\nLes familles profiteront quant à elles de chambres pouvant accueillir jusqu'à cinq personnes et d'un emplacement privilégié près de la piscine principale et du parc aquatique.\n\nUne des plus belles plages de Riviera Maya\n\nLe Sandos Playacar bénéficie d'un emplacement exceptionnel sur une plage privée de près de 800 mètres de sable blanc bordée de palapas et de chaises longues.\n\nLes vacanciers peuvent profiter de :\n\nPlusieurs piscines réparties sur le site\nPiscines pour enfants\nParc aquatique en bord de mer\nCentre de plongée sous-marine\nAccès direct à la mer des Caraïbes\n\nPour les amateurs d'activités nautiques, plusieurs options sont offertes :\n\nKayak\nPlanche à voile\nPaddleboard\nCatamaran\nSports nautiques non motorisés inclus\n\nDes activités supplémentaires sont également disponibles moyennant supplément, notamment :\n\nJet ski\nParavoile\nKitesurf\nExcursions nautiques\nActivités et divertissements pour toute la famille\n\nLe complexe propose une programmation complète d'activités quotidiennes pour tous les âges.\n\nLes vacanciers peuvent profiter de :\n\nMini-golf\nTennis\nBasketball\nSoccer\nYoga\nSéances d'étirement\nVélo\nCentre d'entraînement\nAnimation en journée et en soirée\n\nLes sentiers aménagés du complexe permettent également d'explorer la végétation luxuriante de la Riviera Maya tout en découvrant des vestiges de la culture maya.\n\nClubs pour enfants et adolescents\n\nLe Sandos Playacar est particulièrement apprécié des familles grâce à ses installations dédiées aux jeunes voyageurs :\n\nMiniclub\n\nPour les enfants de 4 à 10 ans :\n\nJeux supervisés\nActivités créatives\nJeux aquatiques\nAnimation adaptée à leur âge\nClub Ado\n\nPour les jeunes de 11 à 17 ans :\n\nJeux vidéo\nSports\nActivités sociales\nEspaces dédiés aux adolescents\n\nPendant ce temps, les parents peuvent profiter d'un moment de détente au spa ou se rendre au centre de conditionnement physique.\n\nRestaurants et gastronomie\n\nLe Sandos Playacar propose une grande variété d'expériences culinaires avec plusieurs restaurants et bars offrant :\n\nCuisine mexicaine authentique\nSaveurs internationales\nRestaurants à la carte\nBuffets variés\nBars de piscine\nCocktails tropicaux\nCollations en journée\n\nChaque voyageur y trouvera une option correspondant à ses goûts, que ce soit pour un souper romantique ou un repas en famille.\n\nPourquoi choisir le Sandos Playacar ?\n\n✔ Accès à l'une des plus belles plages de Riviera Maya\n✔ Formule tout inclus complète\n✔ Section exclusive réservée aux adultes\n✔ Parc aquatique familial\n✔ Activités pour tous les âges\n✔ Excellente proximité avec Playa del Carmen\n✔ Grande variété de restaurants et de bars\n✔ Idéal pour les couples, familles et groupes\n\nLe Sandos Playacar Beach Resort est une excellente option pour les voyageurs souhaitant combiner détente, plage paradisiaque, activités variées et découverte de la culture mexicaine dans l'une des destinations les plus recherchées du Mexique.",
       "forfaitLink": "https://www.transat.com/fr-CA/hotels/sandos-playacar",
-      "endDate": null,
+      "endDate": "2026-09-14T00:00:00.000Z",
       "departureDate": "2026-12-30T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "flights": {
         "out": {
-          "from": "",
+          "from": "Montréal (YUL)",
           "departDate": "2026-12-30T00:00:00.000Z",
           "departTime": "07:20",
           "to": "Cancun (CUN)",
@@ -170,7 +170,9 @@
       "imgRoom": "",
       "imgExtra": "",
       "images": [],
-      "seoTags": []
+      "seoTags": [
+        "#SUD #RIVIRAMAYA #SANDOS #TOUT-INCLUS"
+      ]
     },
     {
       "id": "6a35adb70ab1013d3542fa97",
