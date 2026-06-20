@@ -545,7 +545,7 @@
         return {
             out,
             return: ret,
-            airlineLogo: String(flights.airlineLogo || '').trim() || getSupplierLogo(p.supplier) || ''
+            airlineLogo: getAirlineLogo(p) || ''
         };
     }
 
@@ -814,15 +814,34 @@
         const aliases = {
             vacances_sunwing: 'sunwing',
             sunwing_vacations: 'sunwing',
+            sunwing_airlines: 'sunwing',
             vacances_air_canada: 'air_canada',
+            air_canada_vacations: 'air_canada',
             vacances_westjet_quebec: 'westjet_quebec',
             vacances_westjet: 'westjet_quebec',
+            west_jet: 'westjet_quebec',
             westjet: 'westjet_quebec',
             vacances_transat: 'transat',
             transat_vacations: 'transat'
         };
 
         return aliases[slug] || slug;
+    }
+
+    function resolveLogoKey(normalizedKey) {
+        if (!normalizedKey) return '';
+        const aliases = window.SUPPLIER_LOGO_KEY_ALIASES || {};
+        return aliases[normalizedKey] || normalizedKey;
+    }
+
+    /** Logo compagnie aérienne — carrier d'abord, jamais le fournisseur tour operator. */
+    function getAirlineLogo(p) {
+        const flights = p.flights || {};
+        const custom = String(flights.airlineLogo || '').trim();
+        if (custom) return custom;
+        const carrier = String(p.carrier || '').trim();
+        if (carrier) return getSupplierLogo(carrier);
+        return null;
     }
 
     function formatSupplierLabel(supplier) {
@@ -841,7 +860,7 @@
     }
 
     function getSupplierLogo(supplier) {
-        const key = normalizeSupplierKey(supplier);
+        const key = resolveLogoKey(normalizeSupplierKey(supplier));
         if (!key) return null;
         const logos = window.SUPPLIER_LOGOS || {};
         const path = logos[key];
@@ -1017,6 +1036,8 @@
         normalizeSupplierKey,
         formatSupplierLabel,
         getSupplierLogo,
+        getAirlineLogo,
+        resolveLogoKey,
         getSupplierFilterOptions,
         isOtherSupplier,
         isSoldOut,

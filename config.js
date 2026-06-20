@@ -15,7 +15,12 @@
         vacances_transat: 'Vacances Transat'
     };
 
-    /** Logos fournisseurs — clé normalisée → chemin relatif (fichiers dans assets/suppliers/) */
+    /** Alias clé normalisée → clé utilisée dans SUPPLIER_LOGOS */
+    window.SUPPLIER_LOGO_KEY_ALIASES = {
+        westjet: 'westjet_quebec'
+    };
+
+    /** Logos fournisseurs / compagnies — clé normalisée → chemin relatif (assets/suppliers/) */
     window.SUPPLIER_LOGOS = {
         sunwing: 'assets/suppliers/sunwing.svg',
         air_canada: 'assets/suppliers/air-canada.png',

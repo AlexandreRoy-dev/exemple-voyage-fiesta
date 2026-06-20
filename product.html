@@ -142,8 +142,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=10"></script>
-    <script src="api.js?v=27"></script>
+    <script src="config.js?v=11"></script>
+    <script src="api.js?v=29"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -473,13 +473,18 @@
             const supplierLabel = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier || 'le fournisseur';
             const carrier = p.carrier || supplierLabel;
             const airlineLogo = flights.airlineLogo || '';
+            const supplierKey = VoyageFiestaAPI.normalizeSupplierKey(p.supplier);
+            const carrierKey = VoyageFiestaAPI.normalizeSupplierKey(carrier);
+            const viaSupplierNote = supplierLabel && supplierKey && carrierKey && supplierKey !== carrierKey
+                ? ` <span class="text-gray-500 font-normal">(via ${escapeHtml(supplierLabel)})</span>`
+                : (!airlineLogo && supplierLabel ? ` (${escapeHtml(supplierLabel)})` : '');
             const outHtml = buildFlightLegHtml('Aller', flights.out, carrier, airlineLogo);
             const returnHtml = buildFlightLegHtml('Retour', flights.return, carrier, airlineLogo);
 
             if (!outHtml && !returnHtml) return '';
 
             const logoHeaderHtml = airlineLogo
-                ? `<img src="${escapeHtml(airlineLogo)}" alt="${escapeHtml(supplierLabel)}" class="h-10 w-auto max-w-[9rem] object-contain shrink-0">`
+                ? `<img src="${escapeHtml(airlineLogo)}" alt="${escapeHtml(carrier)}" class="h-10 w-auto max-w-[9rem] object-contain shrink-0">`
                 : '';
 
             return `
@@ -487,7 +492,7 @@
                     <h3 class="text-xl font-bold text-brand-blue mb-1">Vols</h3>
                     <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5">
                         ${logoHeaderHtml}
-                        <p class="text-sm text-gray-600">Vols aller-retour avec <strong>${escapeHtml(carrier)}</strong>${airlineLogo ? '' : ` (${escapeHtml(supplierLabel)})`}&nbsp;:</p>
+                        <p class="text-sm text-gray-600">Vols aller-retour avec <strong>${escapeHtml(carrier)}</strong>${viaSupplierNote}&nbsp;:</p>
                     </div>
                     ${outHtml}
                     ${returnHtml}
