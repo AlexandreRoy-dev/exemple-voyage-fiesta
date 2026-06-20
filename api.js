@@ -545,7 +545,7 @@
         return {
             out,
             return: ret,
-            airlineLogo: flights.airlineLogo || ''
+            airlineLogo: String(flights.airlineLogo || '').trim() || getSupplierLogo(p.supplier) || ''
         };
     }
 

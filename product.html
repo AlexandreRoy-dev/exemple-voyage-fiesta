@@ -143,7 +143,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=10"></script>
-    <script src="api.js?v=26"></script>
+    <script src="api.js?v=27"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -436,8 +436,8 @@
             const departTime = VoyageFiestaAPI.formatFlightTime(leg.departTime);
             const arriveTime = VoyageFiestaAPI.formatFlightTime(leg.arriveTime);
             const airlineHtml = airlineLogo
-                ? `<img src="${airlineLogo}" alt="${carrier}" class="h-6 mx-auto object-contain mb-2">`
-                : `<p class="text-xs font-black tracking-widest text-brand-blue uppercase mb-2">${carrier || 'Compagnie'}</p>`;
+                ? `<img src="${escapeHtml(airlineLogo)}" alt="${escapeHtml(carrier || 'Compagnie')}" class="h-8 w-auto max-w-[6rem] mx-auto object-contain mb-2">`
+                : `<p class="text-xs font-black tracking-widest text-brand-blue uppercase mb-2">${escapeHtml(carrier || 'Compagnie')}</p>`;
 
             return `
                 <div class="border border-gray-200 rounded-lg overflow-hidden mb-4 last:mb-0">
@@ -478,10 +478,17 @@
 
             if (!outHtml && !returnHtml) return '';
 
+            const logoHeaderHtml = airlineLogo
+                ? `<img src="${escapeHtml(airlineLogo)}" alt="${escapeHtml(supplierLabel)}" class="h-10 w-auto max-w-[9rem] object-contain shrink-0">`
+                : '';
+
             return `
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <h3 class="text-xl font-bold text-brand-blue mb-1">Vols</h3>
-                    <p class="text-sm text-gray-600 mb-5">Vols aller-retour avec <strong>${escapeHtml(carrier)}</strong> (${supplierLabel})&nbsp;:</p>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5">
+                        ${logoHeaderHtml}
+                        <p class="text-sm text-gray-600">Vols aller-retour avec <strong>${escapeHtml(carrier)}</strong>${airlineLogo ? '' : ` (${escapeHtml(supplierLabel)})`}&nbsp;:</p>
+                    </div>
                     ${outHtml}
                     ${returnHtml}
                     <p class="text-[11px] text-gray-500 leading-relaxed mt-4">
