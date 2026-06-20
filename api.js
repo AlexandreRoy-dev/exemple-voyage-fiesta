@@ -377,9 +377,6 @@
         let pricingSummary = `${formatMoney(totalBeforeTaxes)} avant taxes`;
         if (totalTaxes !== null && totalWithTaxes !== null) {
             pricingSummary += ` + taxes ${formatMoney(totalTaxes)} = ${formatMoney(totalWithTaxes)} total`;
-            if (taxesPerPerson !== null && totalPeople > 0) {
-                pricingSummary += ` (${totalPeople} pers. × ${formatMoney(taxesPerPerson)} taxes/pers.)`;
-            }
         }
 
         return {
