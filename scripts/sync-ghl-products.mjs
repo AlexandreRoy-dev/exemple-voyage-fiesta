@@ -476,6 +476,8 @@ async function mapRecord(record, apiKey, manifest) {
     returnDate: normalizeDateField(pick(props, 'return_date', 'returnDate', 'date_retour')),
     priceChild212: optionalPrice(pick(props, 'price_child_2_12', 'priceChild212', 'price_child_2_12_ans')),
     priceChild1317: optionalPrice(pick(props, 'price_child_13_17', 'priceChild1317', 'price_child_13_17_ans')),
+    taxChild212: optionalPrice(pick(props, 'tax_child_2_12', 'taxChild212', 'tax_child_2_12_ans')),
+    taxChild1317: optionalPrice(pick(props, 'tax_child_13_17', 'taxChild1317', 'tax_child_13_17_ans')),
     packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
     hotelDescription: pickText(props, 'hotel_description', 'hotelDescription', 'description_hotel'),
     forfaitLink: normalizeExternalUrl(pick(props, 'forfait_link', 'forfaitLink')),

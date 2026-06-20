@@ -145,7 +145,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=11"></script>
-    <script src="api.js?v=30"></script>
+    <script src="api.js?v=31"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -545,8 +545,11 @@
                                     <span class="text-sm font-medium text-gray-700 leading-snug">${row.label}</span>
                                 </span>
                                 <span class="text-left sm:text-right shrink-0 sm:pl-2 pl-8">
-                                    <span class="font-bold ${isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue'}">${VoyageFiestaAPI.formatMoney(row.price)}</span>
-                                    ${row.taxes != null ? `<span class="block text-[11px] text-gray-500 leading-tight">+ ${VoyageFiestaAPI.formatMoney(row.taxes)} taxes / pers.</span>` : ''}
+                                    ${row.totalWithTaxes != null
+                                        ? `<span class="font-bold ${isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue'}">${VoyageFiestaAPI.formatMoney(row.totalWithTaxes)}</span>
+                                           <span class="block text-[11px] text-gray-500 leading-tight">dont ${VoyageFiestaAPI.formatMoney(row.price)} avant taxes + ${VoyageFiestaAPI.formatMoney(row.taxes)} taxes</span>`
+                                        : `<span class="font-bold ${isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue'}">${VoyageFiestaAPI.formatMoney(row.price)}</span>
+                                           ${row.taxes != null ? `<span class="block text-[11px] text-gray-500 leading-tight">+ ${VoyageFiestaAPI.formatMoney(row.taxes)} taxes</span>` : ''}`}
                                 </span>
                             </span>
                         </label>
@@ -555,6 +558,28 @@
                         <i class="fa-solid fa-circle-info mr-1"></i> Touchez une option ci-dessus avant de réserver.
                     </p>
                     <div id="occupation-summary" class="hidden text-sm bg-brand-light border border-blue-100 rounded-lg px-3 py-2.5 text-brand-blue font-medium leading-snug"></div>
+                    <div id="children-picker" class="hidden bg-white border border-gray-200 rounded-xl p-3">
+                        <p class="text-xs font-bold text-gray-600 uppercase tracking-tighter mb-2">Enfants</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="block">
+                                <span class="block text-xs text-gray-500 mb-1">2–12 ans</span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" class="child-stepper w-10 h-10 rounded-lg border border-gray-300 text-gray-600 hover:border-brand-orange" data-target="child-212" data-delta="-1" aria-label="Retirer un enfant 2-12">−</button>
+                                    <input id="child-212" type="number" inputmode="numeric" min="0" max="9" value="0" class="w-16 text-center border border-gray-300 rounded-lg py-2 text-sm focus:outline-none focus:border-brand-orange">
+                                    <button type="button" class="child-stepper w-10 h-10 rounded-lg border border-gray-300 text-gray-600 hover:border-brand-orange" data-target="child-212" data-delta="1" aria-label="Ajouter un enfant 2-12">+</button>
+                                </div>
+                            </label>
+                            <label class="block">
+                                <span class="block text-xs text-gray-500 mb-1">13–17 ans</span>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" class="child-stepper w-10 h-10 rounded-lg border border-gray-300 text-gray-600 hover:border-brand-orange" data-target="child-1317" data-delta="-1" aria-label="Retirer un enfant 13-17">−</button>
+                                    <input id="child-1317" type="number" inputmode="numeric" min="0" max="9" value="0" class="w-16 text-center border border-gray-300 rounded-lg py-2 text-sm focus:outline-none focus:border-brand-orange">
+                                    <button type="button" class="child-stepper w-10 h-10 rounded-lg border border-gray-300 text-gray-600 hover:border-brand-orange" data-target="child-1317" data-delta="1" aria-label="Ajouter un enfant 13-17">+</button>
+                                </div>
+                            </label>
+                        </div>
+                        <p id="children-pricing-hint" class="mt-2 text-[11px] text-gray-500 leading-snug"></p>
+                    </div>
                 </div>`;
         }
 
@@ -595,14 +620,14 @@
                                 <tr class="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-200">
                                     <th class="pb-2 font-bold">Occ.</th>
                                     <th class="pb-2 font-bold text-right">Avant taxes</th>
-                                    <th class="pb-2 font-bold text-right">Taxes / pers.</th>
-                                    <th class="pb-2 font-bold text-right">Total / pers.</th>
+                                    <th class="pb-2 font-bold text-right">Taxes</th>
+                                    <th class="pb-2 font-bold text-right">Total</th>
                                 </tr>
                             </thead>
                             <tbody>${tableRows}</tbody>
                         </table>
                     </div>
-                    <p class="text-[10px] text-gray-500 mb-4 italic">Tarifs par personne, avant taxes et frais aériens. Taxes saisies par occupation dans GHL.</p>`;
+                    <p class="text-[10px] text-gray-500 mb-4 italic">Tarifs totaux par occupation, avant taxes et frais aériens. Taxes saisies par occupation dans GHL (réparties par personne pour le formulaire).</p>`;
             }
 
             return headerHtml + tableHtml + buildOccupationSelectionHtml(p, isSoldOut);
@@ -826,6 +851,16 @@
             const hint = document.getElementById('occupation-required-hint');
             const summary = document.getElementById('occupation-summary');
             const picker = document.getElementById('occupation-picker');
+            const childrenPicker = document.getElementById('children-picker');
+            const child212Input = document.getElementById('child-212');
+            const child1317Input = document.getElementById('child-1317');
+            const childrenHint = document.getElementById('children-pricing-hint');
+
+            function readChildrenSelection() {
+                const children212 = VoyageFiestaAPI.clampInt(child212Input?.value, { min: 0, max: 9 });
+                const children1317 = VoyageFiestaAPI.clampInt(child1317Input?.value, { min: 0, max: 9 });
+                return { children212, children1317 };
+            }
 
             function setButtonEnabled(enabled) {
                 openBtn.disabled = !enabled;
@@ -846,10 +881,12 @@
 
                 setButtonEnabled(hasSelection);
                 if (hint) hint.classList.toggle('hidden', hasSelection);
+                if (childrenPicker) childrenPicker.classList.toggle('hidden', !hasSelection);
 
                 if (summary) {
                     if (hasSelection && row) {
-                        const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId);
+                        const overrides = readChildrenSelection();
+                        const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
                         summary.classList.remove('hidden');
                         let html = `<i class="fa-solid fa-check mr-1 text-green-600"></i> ${row.label}`;
                         if (breakdown) {
@@ -860,16 +897,27 @@
                             if (breakdown.totalWithTaxes !== null) {
                                 html += `<br><span class="text-xs font-bold text-brand-blue">Total estimé : ${VoyageFiestaAPI.formatMoney(breakdown.totalWithTaxes)}</span>`;
                                 if (breakdown.totalTaxes !== null) {
-                                    html += `<br><span class="text-xs font-normal text-gray-600">dont taxes ${VoyageFiestaAPI.formatMoney(breakdown.totalTaxes)} (${breakdown.totalPeople} pers. × ${VoyageFiestaAPI.formatMoney(breakdown.taxesPerPerson)})</span>`;
+                                    const taxesPieces = [
+                                        breakdown.adults > 0 ? `${breakdown.adults} × ${VoyageFiestaAPI.formatMoney(breakdown.taxesPerPerson)}` : null,
+                                        breakdown.children212 > 0 && breakdown.taxChild212Unit !== null ? `${breakdown.children212} × ${VoyageFiestaAPI.formatMoney(breakdown.taxChild212Unit)}` : null,
+                                        breakdown.children1317 > 0 && breakdown.taxChild1317Unit !== null ? `${breakdown.children1317} × ${VoyageFiestaAPI.formatMoney(breakdown.taxChild1317Unit)}` : null
+                                    ].filter(Boolean).join(' + ');
+                                    html += `<br><span class="text-xs font-normal text-gray-600">dont taxes ${VoyageFiestaAPI.formatMoney(breakdown.totalTaxes)}${taxesPieces ? ` (${taxesPieces})` : ''}</span>`;
                                 }
                             } else {
                                 html += `<br><span class="text-xs font-bold text-brand-blue">Total estimé : ${VoyageFiestaAPI.formatMoney(breakdown.totalBeforeTaxes)} avant taxes</span>`;
                             }
+
+                            if (childrenHint) {
+                                childrenHint.textContent = breakdown.totalPeople > 0 && breakdown.taxesPerPerson !== null
+                                    ? `Taxes réparties : ${breakdown.totalPeople} pers. × ${VoyageFiestaAPI.formatMoney(breakdown.taxesPerPerson)} taxes/pers.`
+                                    : '';
+                            }
                         } else {
                             const taxesPart = row.taxes != null
-                                ? ` (+ ${VoyageFiestaAPI.formatMoney(row.taxes)} taxes/pers.)`
+                                ? ` (${VoyageFiestaAPI.formatMoney(row.price)} avant taxes + ${VoyageFiestaAPI.formatMoney(row.taxes)} taxes)`
                                 : '';
-                            html += ` — <strong>${VoyageFiestaAPI.formatMoney(row.price)}/pers.</strong>${taxesPart}`;
+                            html += taxesPart;
                         }
                         summary.innerHTML = html;
                     } else {
@@ -884,8 +932,19 @@
                 input.addEventListener('input', updateSelection);
             });
 
+            // Default children counts per occupation, then allow edits
+            function syncChildrenDefaults() {
+                const occupationId = getSelectedOccupationId();
+                if (!occupationId) return;
+                const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId);
+                if (!breakdown) return;
+                if (child212Input) child212Input.value = String(breakdown.children212 || 0);
+                if (child1317Input) child1317Input.value = String(breakdown.children1317 || 0);
+            }
+
             document.querySelectorAll('.occupation-option').forEach(label => {
                 label.addEventListener('click', () => {
+                    requestAnimationFrame(syncChildrenDefaults);
                     requestAnimationFrame(updateSelection);
                 });
             });
@@ -900,12 +959,31 @@
                 });
             }
 
+            document.querySelectorAll('.child-stepper').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const b = e.currentTarget;
+                    const targetId = b.getAttribute('data-target');
+                    const delta = Number(b.getAttribute('data-delta') || '0');
+                    const input = targetId ? document.getElementById(targetId) : null;
+                    if (!input) return;
+                    const next = VoyageFiestaAPI.clampInt(Number(input.value) + delta, { min: 0, max: 9 });
+                    input.value = String(next);
+                    updateSelection();
+                });
+            });
+            [child212Input, child1317Input].filter(Boolean).forEach(el => {
+                el.addEventListener('change', updateSelection);
+                el.addEventListener('input', updateSelection);
+            });
+
             updateSelection();
         }
 
         function buildGhlIframeSrc(p) {
             const occupationId = getSelectedOccupationId();
-            const formParams = VoyageFiestaAPI.buildGhlReservationParams(p, occupationId);
+            const children212 = VoyageFiestaAPI.clampInt(document.getElementById('child-212')?.value, { min: 0, max: 9 });
+            const children1317 = VoyageFiestaAPI.clampInt(document.getElementById('child-1317')?.value, { min: 0, max: 9 });
+            const formParams = VoyageFiestaAPI.buildGhlReservationParams(p, occupationId, { children212, children1317 });
             const iframeKeys = window.GHL_FORM_IFRAME_KEYS;
             const params = new URLSearchParams();
             Object.entries(formParams).forEach(([key, value]) => {
@@ -936,7 +1014,9 @@
                 const row = VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId);
                 const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
                 const priceLine = row
-                    ? `${VoyageFiestaAPI.formatMoney(row.price)}/pers.${row.taxes != null ? ' (+ taxes)' : ''} · ${row.label}`
+                    ? (row.totalWithTaxes != null
+                        ? `${VoyageFiestaAPI.formatMoney(row.totalWithTaxes)} total · ${row.label}`
+                        : `${VoyageFiestaAPI.formatMoney(row.price)} · ${row.label}`)
                     : `${p.price}$/pers`;
 
                 document.getElementById('modal-product-name').textContent =

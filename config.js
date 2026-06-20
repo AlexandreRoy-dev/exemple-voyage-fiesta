@@ -45,7 +45,7 @@
         'Vacances Transat'
     ];
 
-    /** Destinations (boutique filter) — must match GHL field `destination1` exactly */
+    /** Destinations (boutique filter) — libellés affichés; comparés en slug (voir DESTINATION_ALIASES) */
     window.FILTER_DESTINATIONS = [
         'Amsterdam',
         'Antigua',
@@ -123,6 +123,12 @@
         'Vienne',
         'Zanzibar'
     ];
+
+    /** Alias GHL (slug / variante) → libellé filtre ou slug cible */
+    window.DESTINATION_ALIASES = {
+        jamaque: 'Jamaïque',
+        jamaique: 'Jamaïque'
+    };
 
     /** Critères (boutique filter) — labels + GHL keys from field `criteria` */
     window.CRITERIA_OPTIONS = [
@@ -218,9 +224,12 @@
         'nombre_personnes',
         'nombre_adultes',
         'nombre_enfants_2_12',
+        'nombre_enfants_13_17',
         'prix_total_avant_taxe',
         'taxes_total1',
         'taxes_par_personne',
+        'tax_child_2_12',
+        'tax_child_13_17',
         'depot_par_personne',
         'depot_total',
         'final_payment_date',
