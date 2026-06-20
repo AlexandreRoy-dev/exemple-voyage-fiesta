@@ -840,6 +840,14 @@
             .replace(/\b\w/g, ch => ch.toUpperCase());
     }
 
+    function getSupplierLogo(supplier) {
+        const key = normalizeSupplierKey(supplier);
+        if (!key) return null;
+        const logos = window.SUPPLIER_LOGOS || {};
+        const path = logos[key];
+        return path ? String(path).trim() : null;
+    }
+
     function getSupplierFilterOptions(products) {
         const seen = new Map();
         for (const p of products || []) {
@@ -859,7 +867,11 @@
             return a[1].localeCompare(b[1], 'fr');
         });
 
-        return entries.map(([value, label]) => ({ value, label }));
+        return entries.map(([value, label]) => ({
+            value,
+            label,
+            logo: getSupplierLogo(value)
+        }));
     }
 
     function isOtherSupplier(supplier) {
@@ -974,6 +986,7 @@
         normalizeExternalUrl,
         normalizeSupplierKey,
         formatSupplierLabel,
+        getSupplierLogo,
         getSupplierFilterOptions,
         isOtherSupplier,
         isSoldOut,

@@ -146,8 +146,8 @@
 
     </main>
 
-    <script src="config.js?v=8"></script>
-    <script src="api.js?v=24"></script>
+    <script src="config.js?v=10"></script>
+    <script src="api.js?v=26"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -190,6 +190,8 @@
                 typeof opt === 'string' ? { label: opt, value: opt } : opt
             );
 
+            const isSupplierFilter = inputClass === 'filter-supplier';
+
             container.innerHTML = `
                 <div class="filter-dropdown" data-default-label="${escapeHtml(safeDefault)}">
                     <label class="font-semibold mb-2 text-gray-700 text-sm block">${escapeHtml(label)}</label>
@@ -200,9 +202,12 @@
                     <div class="filter-dropdown-panel">
                         <input type="search" class="filter-dropdown-search w-full border border-gray-200 rounded-md px-3 py-2 text-sm mb-2 focus:outline-none focus:border-brand-orange" placeholder="Rechercher..." autocomplete="off">
                         <div class="filter-dropdown-options filter-scroll max-h-60 overflow-y-auto space-y-1">
-                            ${normalizedOptions.map(({ label: optionLabel, value }) => `
+                            ${normalizedOptions.map(({ label: optionLabel, value, logo }) => `
                                 <label class="filter-dropdown-option flex items-center gap-2 text-sm px-2 py-1.5 rounded hover:bg-brand-light cursor-pointer">
                                     <input type="checkbox" value="${escapeHtml(value)}" class="${inputClass} rounded text-brand-orange focus:ring-brand-orange shrink-0">
+                                    ${isSupplierFilter && logo
+                                        ? `<img src="${escapeHtml(logo)}" alt="" class="h-5 w-auto max-w-[5rem] object-contain shrink-0" loading="lazy">`
+                                        : ''}
                                     <span class="truncate">${escapeHtml(optionLabel)}</span>
                                 </label>
                             `).join('')}
@@ -324,6 +329,17 @@
                 </div>`;
         }
 
+        function renderSupplierChip(p) {
+            const label = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+            const logo = VoyageFiestaAPI.getSupplierLogo(p.supplier);
+            if (logo) {
+                return `<span class="inline-flex items-center gap-1.5 bg-white text-gray-700 text-xs px-2 py-1.5 rounded border border-gray-200 mb-1 mr-1" title="${escapeHtml(label)}">
+                    <img src="${escapeHtml(logo)}" alt="${escapeHtml(label)}" class="h-4 w-auto max-w-[4.5rem] object-contain" loading="lazy">
+                </span>`;
+            }
+            return `<span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 mb-1 mr-1"><i class="fa-solid fa-plane mr-1"></i> ${escapeHtml(label)}</span>`;
+        }
+
         function renderProducts(filteredData) {
             const container = document.getElementById('products-container');
             container.innerHTML = '';
@@ -381,7 +397,7 @@
                             <span>${p.durationNights} nuits</span>
                         </div>
                         <div class="mb-4">
-                            <span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 mb-1 mr-1"><i class="fa-solid fa-plane mr-1"></i> ${VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier}</span>
+                            ${renderSupplierChip(p)}
                             <span class="inline-block bg-brand-light text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-bed mr-1"></i> ${p.roomCategory}</span>
                             <span class="inline-block bg-orange-50 text-brand-orange text-xs px-2 py-1 rounded border border-orange-100 mb-1"><i class="fa-solid fa-plane-departure mr-1"></i> ${p.departureAirport}</span>
                             ${departureBadge}

@@ -142,8 +142,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=8"></script>
-    <script src="api.js?v=25"></script>
+    <script src="config.js?v=10"></script>
+    <script src="api.js?v=26"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -691,12 +691,18 @@
                                         </div>
                                         <p class="text-gray-600 mt-2"><i class="fa-solid fa-location-dot text-brand-orange"></i> ${p.location}</p>
                                     </div>
-                                    <div class="bg-brand-light p-3 rounded-lg border border-blue-100 flex items-center gap-3">
-                                        <div class="text-right">
+                                    <div class="bg-brand-light p-3 rounded-lg border border-blue-100 flex items-center gap-3 min-w-0">
+                                        <div class="text-right min-w-0 flex-1">
                                             <p class="text-xs text-gray-500 font-bold uppercase">Fournisseur</p>
-                                            <p class="text-sm font-bold text-brand-blue">${VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier}</p>
+                                            ${(() => {
+                                                const supplierLabel = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+                                                const supplierLogo = VoyageFiestaAPI.getSupplierLogo(p.supplier);
+                                                if (supplierLogo) {
+                                                    return `<img src="${escapeHtml(supplierLogo)}" alt="${escapeHtml(supplierLabel)}" class="h-10 w-auto max-w-[9rem] object-contain object-right ml-auto mt-1" loading="lazy">`;
+                                                }
+                                                return `<p class="text-sm font-bold text-brand-blue">${escapeHtml(supplierLabel)}</p>`;
+                                            })()}
                                         </div>
-                                        <img src="https://images.pexels.com/photos/1032650/pexels-photo-1032650.jpeg?auto=compress&cs=tinysrgb&w=96&h=96&fit=crop" class="w-12 h-12 rounded object-cover" alt="Fournisseur">
                                     </div>
                                 </div>
                             </div>

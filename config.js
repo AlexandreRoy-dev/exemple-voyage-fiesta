@@ -15,6 +15,14 @@
         vacances_transat: 'Vacances Transat'
     };
 
+    /** Logos fournisseurs — clé normalisée → chemin relatif (fichiers dans assets/suppliers/) */
+    window.SUPPLIER_LOGOS = {
+        sunwing: 'assets/suppliers/sunwing.svg',
+        air_canada: 'assets/suppliers/air-canada.png',
+        westjet_quebec: 'assets/suppliers/westjet-quebec.svg',
+        transat: 'assets/suppliers/transat.svg'
+    };
+
     /** Ordre préféré dans le filtre fournisseurs (clés normalisées) */
     window.KNOWN_SUPPLIER_ORDER = [
         'sunwing',
