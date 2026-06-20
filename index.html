@@ -146,8 +146,8 @@
 
     </main>
 
-    <script src="config.js?v=3"></script>
-    <script src="api.js?v=18"></script>
+    <script src="config.js?v=8"></script>
+    <script src="api.js?v=24"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -255,13 +255,6 @@
                 defaultLabel: 'Toutes les destinations'
             });
             buildSearchableMultiSelect({
-                containerId: 'filter-suppliers-wrap',
-                label: 'Fournisseurs',
-                options: [...KNOWN_SUPPLIERS, 'Autres'],
-                inputClass: 'filter-supplier',
-                defaultLabel: 'Tous les fournisseurs'
-            });
-            buildSearchableMultiSelect({
                 containerId: 'filter-criteria-wrap',
                 label: 'Critères',
                 options: CRITERIA_OPTIONS,
@@ -282,6 +275,17 @@
                 if (!e.target.closest('.filter-dropdown')) {
                     closeAllDropdowns();
                 }
+            });
+        }
+
+        function buildSupplierFilter(productList) {
+            const options = VoyageFiestaAPI.getSupplierFilterOptions(productList);
+            buildSearchableMultiSelect({
+                containerId: 'filter-suppliers-wrap',
+                label: 'Fournisseurs',
+                options,
+                inputClass: 'filter-supplier',
+                defaultLabel: 'Tous les fournisseurs'
             });
         }
 
@@ -377,7 +381,7 @@
                             <span>${p.durationNights} nuits</span>
                         </div>
                         <div class="mb-4">
-                            <span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 mb-1 mr-1"><i class="fa-solid fa-plane mr-1"></i> ${VoyageFiestaAPI.isOtherSupplier(p.supplier) ? 'Autres' : p.supplier}</span>
+                            <span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 mb-1 mr-1"><i class="fa-solid fa-plane mr-1"></i> ${VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier}</span>
                             <span class="inline-block bg-brand-light text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-bed mr-1"></i> ${p.roomCategory}</span>
                             <span class="inline-block bg-orange-50 text-brand-orange text-xs px-2 py-1 rounded border border-orange-100 mb-1"><i class="fa-solid fa-plane-departure mr-1"></i> ${p.departureAirport}</span>
                             ${departureBadge}
@@ -484,6 +488,7 @@
             document.getElementById('error-state').classList.add('hidden');
             try {
                 products = await VoyageFiestaAPI.fetchProducts();
+                buildSupplierFilter(products);
                 if (!products.length) {
                     document.getElementById('empty-state').classList.remove('hidden');
                     document.getElementById('result-count').innerText = '0';

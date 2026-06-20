@@ -1,5 +1,30 @@
 (function () {
-    /** Primary suppliers shown in filters; all others match "Autres" */
+    /**
+     * Libellés fournisseurs — clé normalisée (slug GHL) → nom affiché.
+     * Évite le regroupement « Autres » pour sunwing, transat, etc.
+     */
+    window.SUPPLIER_LABELS = {
+        sunwing: 'Vacances Sunwing',
+        vacances_sunwing: 'Vacances Sunwing',
+        air_canada: 'Vacances Air Canada',
+        vacances_air_canada: 'Vacances Air Canada',
+        westjet: 'Vacances WestJet Québec',
+        westjet_quebec: 'Vacances WestJet Québec',
+        vacances_westjet_quebec: 'Vacances WestJet Québec',
+        transat: 'Vacances Transat',
+        vacances_transat: 'Vacances Transat'
+    };
+
+    /** Ordre préféré dans le filtre fournisseurs (clés normalisées) */
+    window.KNOWN_SUPPLIER_ORDER = [
+        'sunwing',
+        'air_canada',
+        'westjet',
+        'westjet_quebec',
+        'transat'
+    ];
+
+    /** @deprecated Utiliser SUPPLIER_LABELS — conservé pour compatibilité */
     window.KNOWN_SUPPLIERS = [
         'Vacances Sunwing',
         'Vacances Air Canada',
@@ -157,7 +182,7 @@
     /** Static product feed — synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
 
-    /** Taux de taxes de vente — calculés sur le montant avant taxes */
+    /** Taux TPS/TVQ — non utilisés (taxes par occupation dans GHL) */
     window.TAX_TPS_RATE = 0.05;
     window.TAX_TVQ_RATE = 0.09975;
 
@@ -175,8 +200,6 @@
         'nombre_adultes',
         'nombre_enfants_2_12',
         'prix_total_avant_taxe',
-        'tps_total',
-        'tvq_total',
         'taxes_total1',
         'taxes_par_personne',
         'depot_par_personne',
@@ -201,11 +224,10 @@
         { key: 'departure_airport', label: 'Aéroport de départ' },
         { key: 'final_payment_date', label: 'Date paiement final' },
         { key: 'deposit_amount', label: 'Dépôt requis ($ / pers.)' },
-        { key: 'taxes_amount', label: 'Taxes et frais aériens ($ / pers.)' },
-        { key: 'occupation', label: 'Occupation — code (double, double_1_child, quad, autres…)' },
+        { key: 'occupation', label: 'Occupation — libellé (Occ. double, etc.)' },
         { key: 'occupation_label', label: 'Occupation — libellé' },
         { key: 'selected_price', label: 'Prix sélectionné — avant taxes ($ / pers.)' },
-        { key: 'selected_taxes', label: 'Taxes pour l\'occupation choisie ($ / pers.)' },
+        { key: 'selected_taxes', label: 'Taxes / pers. pour l\'occupation choisie ($)' },
         { key: 'selected_total', label: 'Total par personne avant taxes + taxes ($ / pers.)' },
         { key: 'nombre_personnes', label: 'Nombre total de voyageurs' },
         { key: 'nombre_adultes', label: 'Nombre d\'adultes' },
@@ -216,7 +238,9 @@
         { key: 'prix_adulte_unitaire', label: 'Prix unitaire adulte ($)' },
         { key: 'prix_enfant_2_12_unitaire', label: 'Prix unitaire enfant 2-12 ($)' },
         { key: 'prix_total_avant_taxes', label: 'Prix total avant taxes ($) — « prix sans taxe »' },
-        { key: 'taxes_total', label: 'Taxes totales ($)' },
+        { key: 'taxes_total', label: 'Taxes totales ($) — taxes × nb personnes' },
+        { key: 'taxes_total1', label: 'Alias taxes totales (formulaire client)' },
+        { key: 'taxes_par_personne', label: 'Taxes / pers. (occupation choisie)' },
         { key: 'prix_total', label: 'Prix total avec taxes ($)' },
         { key: 'total', label: 'Alias prix total (même que prix_total)' },
         { key: 'pricing_summary', label: 'Résumé texte du calcul (courriel)' },

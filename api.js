@@ -172,7 +172,8 @@
             adults: 2,
             children212: 0,
             children1317: 0,
-            priceKeys: ['price', 'price_occ_double']
+            priceKeys: ['price', 'price_occ_double'],
+            taxesKeys: ['taxesOccDouble', 'taxes_occ_double']
         },
         {
             id: 'double_1_child',
@@ -181,7 +182,8 @@
             adults: 2,
             children212: 1,
             children1317: 0,
-            priceKeys: ['priceOccDouble1Child', 'price_occ_double_1_child']
+            priceKeys: ['priceOccDouble1Child', 'price_occ_double_1_child'],
+            taxesKeys: ['taxesOccDouble1Child', 'taxes_occ_double_1_child']
         },
         {
             id: 'double_2_child',
@@ -190,7 +192,8 @@
             adults: 2,
             children212: 2,
             children1317: 0,
-            priceKeys: ['priceOccDouble2Child', 'price_occ_double_2_child']
+            priceKeys: ['priceOccDouble2Child', 'price_occ_double_2_child'],
+            taxesKeys: ['taxesOccDouble2Child', 'taxes_occ_double_2_child']
         },
         {
             id: 'simple',
@@ -199,7 +202,8 @@
             adults: 1,
             children212: 0,
             children1317: 0,
-            priceKeys: ['priceOccSimple', 'price_occ_simple']
+            priceKeys: ['priceOccSimple', 'price_occ_simple'],
+            taxesKeys: ['taxesOccSimple', 'taxes_occ_simple']
         },
         {
             id: 'simple_1_child',
@@ -208,7 +212,8 @@
             adults: 1,
             children212: 1,
             children1317: 0,
-            priceKeys: ['priceOccSimple1Child', 'price_occ_simple_1_child']
+            priceKeys: ['priceOccSimple1Child', 'price_occ_simple_1_child'],
+            taxesKeys: ['taxesOccSimple1Child', 'taxes_occ_simple_1_child']
         },
         {
             id: 'triple',
@@ -217,7 +222,8 @@
             adults: 3,
             children212: 0,
             children1317: 0,
-            priceKeys: ['priceOccTriple', 'price_occ_triple']
+            priceKeys: ['priceOccTriple', 'price_occ_triple'],
+            taxesKeys: ['taxesOccTriple', 'taxes_occ_triple']
         },
         {
             id: 'quad',
@@ -226,7 +232,8 @@
             adults: 4,
             children212: 0,
             children1317: 0,
-            priceKeys: ['priceOccQuad', 'price_occ_quad']
+            priceKeys: ['priceOccQuad', 'price_occ_quad'],
+            taxesKeys: ['taxesOccQuad', 'taxes_occ_quad']
         },
         {
             id: 'autres',
@@ -235,9 +242,19 @@
             adults: 1,
             children212: 0,
             children1317: 0,
-            priceKeys: ['priceAutres', 'price_autres', 'price_occ_autres']
+            priceKeys: ['priceAutres', 'price_autres', 'price_occ_autres'],
+            taxesKeys: ['taxesOccAutres', 'taxes_occ_autres']
         }
     ];
+
+    function pickOccupationTaxes(p, taxesKeys) {
+        if (!taxesKeys?.length) return null;
+        for (const key of taxesKeys) {
+            const val = optionalPrice(p[key]);
+            if (val !== null) return val;
+        }
+        return null;
+    }
 
     function pickOccupationPrice(p, priceKeys) {
         for (const key of priceKeys) {
@@ -251,13 +268,12 @@
     function getOccupationPrices(p) {
         const rows = [];
 
-        function withTaxes(row) {
-            const tax = calculateSalesTaxes(row.price);
-            if (tax) {
-                row.tps = tax.tps;
-                row.tvq = tax.tvq;
-                row.taxes = tax.total;
-                row.totalWithTaxes = row.price + tax.total;
+        function withTaxes(row, def, product) {
+            const taxesPerPerson = pickOccupationTaxes(product, def.taxesKeys);
+            row.taxesPerPerson = taxesPerPerson;
+            row.taxes = taxesPerPerson;
+            if (taxesPerPerson !== null) {
+                row.totalWithTaxes = row.price + taxesPerPerson;
             }
             return row;
         }
@@ -271,7 +287,7 @@
                 price,
                 primary: def.primary === true,
                 hint: def.hint
-            }));
+            }, def, p));
         }
 
         if (rows.length && !rows.some(r => r.primary)) {
@@ -342,12 +358,9 @@
         }
 
         totalBeforeTaxes = Math.round(totalBeforeTaxes);
-        const taxBreakdown = calculateSalesTaxes(totalBeforeTaxes);
-        const tpsTotal = taxBreakdown?.tps ?? null;
-        const tvqTotal = taxBreakdown?.tvq ?? null;
-        const totalTaxes = taxBreakdown?.total ?? null;
-        const totalWithTaxes = taxBreakdown ? totalBeforeTaxes + totalTaxes : null;
-        const perPersonTax = totalPeople > 0 ? calculateSalesTaxes(totalBeforeTaxes / totalPeople) : null;
+        const taxesPerPerson = row.taxesPerPerson ?? null;
+        const totalTaxes = taxesPerPerson !== null ? totalPeople * taxesPerPerson : null;
+        const totalWithTaxes = totalTaxes !== null ? totalBeforeTaxes + totalTaxes : null;
         const totalDeposit = depositPerPerson !== null ? totalPeople * depositPerPerson : null;
 
         const parts = [];
@@ -365,8 +378,8 @@
         }
 
         let pricingSummary = parts.join(' + ') + ` = ${formatMoney(totalBeforeTaxes)} avant taxes`;
-        if (taxBreakdown && totalWithTaxes !== null) {
-            pricingSummary += ` + TPS ${formatMoney(tpsTotal)} + TVQ ${formatMoney(tvqTotal)} = ${formatMoney(totalWithTaxes)} total`;
+        if (totalTaxes !== null && totalWithTaxes !== null) {
+            pricingSummary += ` + taxes ${formatMoney(totalTaxes)} = ${formatMoney(totalWithTaxes)} total`;
         }
 
         return {
@@ -379,13 +392,9 @@
             child1317UnitPrice: child1317Unit,
             selectedUnitPrice: row.price,
             totalBeforeTaxes,
-            tpsTotal,
-            tvqTotal,
             totalTaxes,
             totalWithTaxes,
-            taxesPerPerson: perPersonTax?.total ?? null,
-            tpsPerPerson: perPersonTax?.tps ?? null,
-            tvqPerPerson: perPersonTax?.tvq ?? null,
+            taxesPerPerson,
             depositPerPerson,
             totalDeposit,
             pricingMethod,
@@ -430,13 +439,9 @@
             set('nombre_enfants_13_17', breakdown.children1317);
             set('prix_total_avant_taxe', breakdown.totalBeforeTaxes);
             set('prix_total_avant_taxes', breakdown.totalBeforeTaxes);
-            set('tps_total', breakdown.tpsTotal);
-            set('tvq_total', breakdown.tvqTotal);
             set('taxes_total1', breakdown.totalTaxes);
             set('taxes_total', breakdown.totalTaxes);
             set('taxes_par_personne', breakdown.taxesPerPerson);
-            set('tps_par_personne', breakdown.tpsPerPerson);
-            set('tvq_par_personne', breakdown.tvqPerPerson);
             set('depot_par_personne', breakdown.depositPerPerson);
             set('depot_total', breakdown.totalDeposit);
             set('prix_total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
@@ -488,7 +493,7 @@
 
         if (deposit === null && !finalPaymentValid) return null;
 
-        return { deposit, finalPaymentDate: finalPaymentValid, salesTaxLabel: formatTaxRatesLabel() };
+        return { deposit, finalPaymentDate: finalPaymentValid };
     }
 
     function inferArrivalLabel(p, leg) {
@@ -691,6 +696,14 @@
             priceOccSimple1Child: optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child),
             priceOccQuad: optionalPrice(p.priceOccQuad ?? p.price_occ_quad),
             priceAutres: optionalPrice(p.priceAutres ?? p.price_autres ?? p.price_occ_autres),
+            taxesOccDouble: optionalPrice(p.taxesOccDouble ?? p.taxes_occ_double),
+            taxesOccDouble1Child: optionalPrice(p.taxesOccDouble1Child ?? p.taxes_occ_double_1_child),
+            taxesOccDouble2Child: optionalPrice(p.taxesOccDouble2Child ?? p.taxes_occ_double_2_child),
+            taxesOccSimple: optionalPrice(p.taxesOccSimple ?? p.taxes_occ_simple),
+            taxesOccSimple1Child: optionalPrice(p.taxesOccSimple1Child ?? p.taxes_occ_simple_1_child),
+            taxesOccTriple: optionalPrice(p.taxesOccTriple ?? p.taxes_occ_triple),
+            taxesOccQuad: optionalPrice(p.taxesOccQuad ?? p.taxes_occ_quad),
+            taxesOccAutres: optionalPrice(p.taxesOccAutres ?? p.taxes_occ_autres),
             priceOriginal: optionalPrice(p.priceOriginal ?? p.price_original),
             discountAmount: optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais),
             financingMonthly: optionalPrice(
@@ -770,16 +783,85 @@
         return products.find(p => p.slug === slug);
     }
 
+    function normalizeSupplierKey(supplier) {
+        if (supplier === undefined || supplier === null || supplier === '') return '';
+        const raw = String(supplier).trim();
+        if (!raw) return '';
+
+        const labels = window.SUPPLIER_LABELS || {};
+        for (const [key, label] of Object.entries(labels)) {
+            if (raw === key || raw.toLowerCase() === key || raw === label) {
+                return key;
+            }
+        }
+
+        const slug = raw
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '');
+
+        const aliases = {
+            vacances_sunwing: 'sunwing',
+            sunwing_vacations: 'sunwing',
+            vacances_air_canada: 'air_canada',
+            vacances_westjet_quebec: 'westjet_quebec',
+            vacances_westjet: 'westjet_quebec',
+            westjet: 'westjet_quebec',
+            vacances_transat: 'transat',
+            transat_vacations: 'transat'
+        };
+
+        return aliases[slug] || slug;
+    }
+
+    function formatSupplierLabel(supplier) {
+        const key = normalizeSupplierKey(supplier);
+        if (!key) return '';
+        const labels = window.SUPPLIER_LABELS || {};
+        if (labels[key]) return labels[key];
+
+        const raw = String(supplier).trim();
+        const known = window.KNOWN_SUPPLIERS || [];
+        if (known.includes(raw)) return raw;
+
+        return raw
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+
+    function getSupplierFilterOptions(products) {
+        const seen = new Map();
+        for (const p of products || []) {
+            const key = normalizeSupplierKey(p.supplier);
+            if (!key || seen.has(key)) continue;
+            seen.set(key, formatSupplierLabel(p.supplier));
+        }
+
+        const preferred = (window.KNOWN_SUPPLIER_ORDER || []).map(normalizeSupplierKey);
+        const entries = [...seen.entries()];
+        entries.sort((a, b) => {
+            const ai = preferred.indexOf(a[0]);
+            const bi = preferred.indexOf(b[0]);
+            if (ai !== -1 && bi !== -1) return ai - bi;
+            if (ai !== -1) return -1;
+            if (bi !== -1) return 1;
+            return a[1].localeCompare(b[1], 'fr');
+        });
+
+        return entries.map(([value, label]) => ({ value, label }));
+    }
+
     function isOtherSupplier(supplier) {
-        return !(window.KNOWN_SUPPLIERS || []).includes(supplier);
+        return !normalizeSupplierKey(supplier);
     }
 
     function matchesSupplierFilter(product, selectedSuppliers) {
         if (!selectedSuppliers.length) return true;
-        return selectedSuppliers.some(s => {
-            if (s === 'Autres') return isOtherSupplier(product.supplier);
-            return product.supplier === s;
-        });
+        const productKey = normalizeSupplierKey(product.supplier);
+        if (!productKey) return false;
+        return selectedSuppliers.some(s => normalizeSupplierKey(s) === productKey);
     }
 
     function matchesDestinationFilter(product, selectedDestinations) {
@@ -880,6 +962,9 @@
         flightLegHasData,
         buildProductGallery,
         optionalPrice,
+        normalizeSupplierKey,
+        formatSupplierLabel,
+        getSupplierFilterOptions,
         isOtherSupplier,
         isSoldOut,
         isVisibleOnSite,
