@@ -409,7 +409,10 @@
             set('taxes_total', breakdown.totalTaxes);
             set('prix_total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
             set('pricing_summary', breakdown.pricingSummary);
-            // Alias pour champs formulaire existants (capture d'écran client)
+            // Alias pour champs formulaire GHL client (Query Keys du formulaire actuel)
+            set('prix_total_avant_taxe', breakdown.totalBeforeTaxes);
+            set('taxes_total1', breakdown.totalTaxes);
+            set('sommaire', breakdown.pricingSummary);
             set('total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
         }
 
