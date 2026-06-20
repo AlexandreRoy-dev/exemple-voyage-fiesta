@@ -41,8 +41,23 @@ function pick(props, ...keys) {
   return undefined;
 }
 
+function unwrapFieldValue(value) {
+  if (value === undefined || value === null || value === '') return value;
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    const inner = value.value ?? value.amount ?? value.number ?? value.val;
+    if (inner !== undefined && inner !== null && inner !== '') return inner;
+  }
+  return value;
+}
+
 function optionalPrice(value) {
+  value = unwrapFieldValue(value);
   if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/\s/g, '').replace(/\$/g, '').replace(',', '.');
+    const n = Number(cleaned);
+    return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+  }
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
 }
@@ -436,7 +451,6 @@ async function mapRecord(record, apiKey, manifest) {
     financingMonthly: optionalPrice(
       pick(props, 'financement_mensuel', 'financing_monthly', 'financingMonthly')
     ),
-    taxesAmount: optionalPrice(pick(props, 'taxes_amount', 'taxesAmount')),
     depositAmount: optionalPrice(pick(props, 'deposit_amount', 'depositAmount')),
     finalPaymentDate: normalizeDateField(
       pick(props, 'final_payment_date', 'finalPaymentDate', 'date_paiement_final')

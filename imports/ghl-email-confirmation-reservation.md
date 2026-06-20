@@ -10,7 +10,8 @@ Correspondance avec votre formulaire GHL (sans le slug).
 | nombre_adultes | `nombre_adultes` | `{{contact.custom.nombre_adultes}}` |
 | nombre_enfants_2_12 | `nombre_enfants_2_12` | `{{contact.custom.nombre_enfants_2_12}}` |
 | prix_total_avant_taxe | `prix_total_avant_taxe` | `{{contact.custom.prix_total_avant_taxe}}` |
-| taxes_total1 | `taxes_total1` | `{{contact.custom.taxes_total1}}` |
+| taxes_total1 | `taxes_total1` | **Total taxes pour le groupe** (ex. 480 $ pour occ. double = 2 × 240 $) |
+| taxes_par_personne | `taxes_par_personne` | 240 $ / pers. (optionnel) |
 | Dépôt/pers | `depot_par_personne` | `{{contact.custom.depot_par_personne}}` |
 | dépôt total | `depot_total` | `{{contact.custom.depot_total}}` |
 | date de paiement | `final_payment_date` | `{{contact.custom.final_payment_date}}` |

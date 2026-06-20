@@ -157,8 +157,35 @@
     /** Static product feed — synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
 
+    /** Taux de taxes de vente — calculés sur le montant avant taxes */
+    window.TAX_TPS_RATE = 0.05;
+    window.TAX_TVQ_RATE = 0.09975;
+
     /** GHL reservation form — « Réservation de forfait » (prefill via Query Key = param URL) */
     window.GHL_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/V5DftNAy6QDV4X64bYzV';
+
+    /**
+     * Query Keys envoyés à l'iframe GHL uniquement (évite URL trop longue → taxes_total1 coupé).
+     * Doit correspondre aux champs cachés du formulaire.
+     */
+    window.GHL_FORM_IFRAME_KEYS = [
+        'forfait_name',
+        'occupation',
+        'nombre_personnes',
+        'nombre_adultes',
+        'nombre_enfants_2_12',
+        'prix_total_avant_taxe',
+        'tps_total',
+        'tvq_total',
+        'taxes_total1',
+        'taxes_par_personne',
+        'depot_par_personne',
+        'depot_total',
+        'final_payment_date',
+        'pricing_summary',
+        'sommaire',
+        'prix_total'
+    ];
 
     /**
      * Champs à créer dans le formulaire GHL (type: Hidden ou Texte en lecture seule).

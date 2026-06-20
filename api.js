@@ -115,13 +115,54 @@
         return gallery;
     }
 
+    function unwrapFieldValue(value) {
+        if (value === undefined || value === null || value === '') return value;
+        if (typeof value === 'object' && !Array.isArray(value)) {
+            const inner = value.value ?? value.amount ?? value.number ?? value.val;
+            if (inner !== undefined && inner !== null && inner !== '') return inner;
+        }
+        return value;
+    }
+
     function optionalPrice(value) {
+        value = unwrapFieldValue(value);
         if (value === undefined || value === null || value === '') return null;
+        if (typeof value === 'string') {
+            const cleaned = value.replace(/\s/g, '').replace(/\$/g, '').replace(',', '.');
+            const n = Number(cleaned);
+            return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+        }
         const n = Number(value);
         return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
     }
 
-    /** Catalogue occupations client — affiché seulement si le prix GHL est renseigné */
+    const TPS_RATE = 0.05;
+    const TVQ_RATE = 0.09975;
+
+    function getTaxRates() {
+        return {
+            tps: window.TAX_TPS_RATE ?? TPS_RATE,
+            tvq: window.TAX_TVQ_RATE ?? TVQ_RATE
+        };
+    }
+
+    /** TPS 5 % + TVQ 9,975 % — chaque taxe calculée sur le montant avant taxes */
+    function calculateSalesTaxes(baseAmount) {
+        const base = Math.round(Number(baseAmount));
+        if (!Number.isFinite(base) || base <= 0) return null;
+        const { tps: tpsRate, tvq: tvqRate } = getTaxRates();
+        const tps = Math.round(base * tpsRate);
+        const tvq = Math.round(base * tvqRate);
+        return { base, tps, tvq, total: tps + tvq };
+    }
+
+    function formatTaxRatesLabel() {
+        const { tps, tvq } = getTaxRates();
+        const tpsPct = (tps * 100).toLocaleString('fr-CA', { maximumFractionDigits: 2 });
+        const tvqPct = (tvq * 100).toLocaleString('fr-CA', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+        return `TPS ${tpsPct} % + TVQ ${tvqPct} %`;
+    }
+
     const OCCUPATION_DEFS = [
         {
             id: 'double',
@@ -209,12 +250,14 @@
     /** Occupations client — seulement celles avec un prix défini dans GHL */
     function getOccupationPrices(p) {
         const rows = [];
-        const taxes = optionalPrice(p.taxesAmount ?? p.taxes_amount);
 
         function withTaxes(row) {
-            if (taxes !== null) {
-                row.taxes = taxes;
-                row.totalWithTaxes = row.price + taxes;
+            const tax = calculateSalesTaxes(row.price);
+            if (tax) {
+                row.tps = tax.tps;
+                row.tvq = tax.tvq;
+                row.taxes = tax.total;
+                row.totalWithTaxes = row.price + tax.total;
             }
             return row;
         }
@@ -275,7 +318,6 @@
         const adultUnit = getAdultUnitPriceForDef(p, def);
         const child212Unit = optionalPrice(p.priceChild212 ?? p.price_child_2_12);
         const child1317Unit = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
-        const taxesPerPerson = optionalPrice(p.taxesAmount ?? p.taxes_amount);
         const depositPerPerson = optionalPrice(p.depositAmount ?? p.deposit_amount);
 
         const hasChildTravelers = children212 > 0 || children1317 > 0;
@@ -300,8 +342,12 @@
         }
 
         totalBeforeTaxes = Math.round(totalBeforeTaxes);
-        const totalTaxes = taxesPerPerson !== null ? totalPeople * taxesPerPerson : null;
-        const totalWithTaxes = totalTaxes !== null ? totalBeforeTaxes + totalTaxes : null;
+        const taxBreakdown = calculateSalesTaxes(totalBeforeTaxes);
+        const tpsTotal = taxBreakdown?.tps ?? null;
+        const tvqTotal = taxBreakdown?.tvq ?? null;
+        const totalTaxes = taxBreakdown?.total ?? null;
+        const totalWithTaxes = taxBreakdown ? totalBeforeTaxes + totalTaxes : null;
+        const perPersonTax = totalPeople > 0 ? calculateSalesTaxes(totalBeforeTaxes / totalPeople) : null;
         const totalDeposit = depositPerPerson !== null ? totalPeople * depositPerPerson : null;
 
         const parts = [];
@@ -318,6 +364,11 @@
             parts.push(`${totalPeople} pers. × ${formatMoney(row.price)}`);
         }
 
+        let pricingSummary = parts.join(' + ') + ` = ${formatMoney(totalBeforeTaxes)} avant taxes`;
+        if (taxBreakdown && totalWithTaxes !== null) {
+            pricingSummary += ` + TPS ${formatMoney(tpsTotal)} + TVQ ${formatMoney(tvqTotal)} = ${formatMoney(totalWithTaxes)} total`;
+        }
+
         return {
             adults,
             children212,
@@ -328,13 +379,17 @@
             child1317UnitPrice: child1317Unit,
             selectedUnitPrice: row.price,
             totalBeforeTaxes,
+            tpsTotal,
+            tvqTotal,
             totalTaxes,
             totalWithTaxes,
-            taxesPerPerson,
+            taxesPerPerson: perPersonTax?.total ?? null,
+            tpsPerPerson: perPersonTax?.tps ?? null,
+            tvqPerPerson: perPersonTax?.tvq ?? null,
             depositPerPerson,
             totalDeposit,
             pricingMethod,
-            pricingSummary: parts.join(' + ') + ` = ${formatMoney(totalBeforeTaxes)} avant taxes`
+            pricingSummary
         };
     }
 
@@ -355,8 +410,45 @@
             params[key] = String(value);
         };
 
-        set('forfait_slug', p.slug);
+        const row = getSelectedOccupationRow(p, occupationId);
+        const breakdown = getOccupationPricingBreakdown(p, occupationId);
+
+        // Champs du formulaire GHL — en premier (URL iframe limitée)
         set('forfait_name', p.name);
+        if (row) {
+            set('occupation', row.label);
+            set('occupation_code', row.id);
+            set('occupation_label', row.label);
+            set('selected_price', row.price);
+            set('selected_taxes', row.taxes);
+            set('selected_total', row.totalWithTaxes);
+        }
+        if (breakdown) {
+            set('nombre_personnes', breakdown.totalPeople);
+            set('nombre_adultes', breakdown.adults);
+            set('nombre_enfants_2_12', breakdown.children212);
+            set('nombre_enfants_13_17', breakdown.children1317);
+            set('prix_total_avant_taxe', breakdown.totalBeforeTaxes);
+            set('prix_total_avant_taxes', breakdown.totalBeforeTaxes);
+            set('tps_total', breakdown.tpsTotal);
+            set('tvq_total', breakdown.tvqTotal);
+            set('taxes_total1', breakdown.totalTaxes);
+            set('taxes_total', breakdown.totalTaxes);
+            set('taxes_par_personne', breakdown.taxesPerPerson);
+            set('tps_par_personne', breakdown.tpsPerPerson);
+            set('tvq_par_personne', breakdown.tvqPerPerson);
+            set('depot_par_personne', breakdown.depositPerPerson);
+            set('depot_total', breakdown.totalDeposit);
+            set('prix_total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
+            set('total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
+            set('pricing_summary', breakdown.pricingSummary);
+            set('sommaire', breakdown.pricingSummary);
+        }
+        set('final_payment_date', formatDepartureDate(p.finalPaymentDate));
+        set('deposit_amount', optionalPrice(p.depositAmount ?? p.deposit_amount));
+
+        // Contexte étendu (exclu de l'iframe si GHL_FORM_IFRAME_KEYS est défini)
+        set('forfait_slug', p.slug);
         set('destination', p.destination || p.destination1 || p.subDest);
         set('sub_destination', p.subDest);
         set('country', p.country);
@@ -366,13 +458,11 @@
         set('room_category', p.roomCategory);
         set('package_type', p.packageType);
         set('duration_nights', p.durationNights);
-
         set('departure_date', formatDepartureDate(p.departureDate));
         set('return_date', formatDepartureDate(p.returnDate));
-        set('final_payment_date', formatDepartureDate(p.finalPaymentDate));
-        set('deposit_amount', optionalPrice(p.depositAmount ?? p.deposit_amount));
-        set('taxes_amount', optionalPrice(p.taxesAmount ?? p.taxes_amount));
-
+        set('prix_adulte_unitaire', breakdown?.adultUnitPrice);
+        set('prix_enfant_2_12_unitaire', breakdown?.child212UnitPrice);
+        set('prix_enfant_13_17_unitaire', breakdown?.child1317UnitPrice);
         set('price_double', pickOccupationPrice(p, ['price', 'price_occ_double']));
         set('price_double_1_child', pickOccupationPrice(p, ['priceOccDouble1Child', 'price_occ_double_1_child']));
         set('price_double_2_child', pickOccupationPrice(p, ['priceOccDouble2Child', 'price_occ_double_2_child']));
@@ -385,37 +475,6 @@
         set('price_child_13_17', optionalPrice(p.priceChild1317 ?? p.price_child_13_17));
         set('price_original', optionalPrice(p.priceOriginal ?? p.price_original));
 
-        const row = getSelectedOccupationRow(p, occupationId);
-        if (row) {
-            set('occupation', row.id);
-            set('occupation_label', row.label);
-            set('selected_price', row.price);
-            set('selected_taxes', row.taxes);
-            set('selected_total', row.totalWithTaxes);
-        }
-
-        const breakdown = getOccupationPricingBreakdown(p, occupationId);
-        if (breakdown) {
-            set('nombre_personnes', breakdown.totalPeople);
-            set('nombre_adultes', breakdown.adults);
-            set('nombre_enfants_2_12', breakdown.children212);
-            set('nombre_enfants_13_17', breakdown.children1317);
-            set('depot_par_personne', breakdown.depositPerPerson);
-            set('depot_total', breakdown.totalDeposit);
-            set('prix_adulte_unitaire', breakdown.adultUnitPrice);
-            set('prix_enfant_2_12_unitaire', breakdown.child212UnitPrice);
-            set('prix_enfant_13_17_unitaire', breakdown.child1317UnitPrice);
-            set('prix_total_avant_taxes', breakdown.totalBeforeTaxes);
-            set('taxes_total', breakdown.totalTaxes);
-            set('prix_total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
-            set('pricing_summary', breakdown.pricingSummary);
-            // Alias pour champs formulaire GHL client (Query Keys du formulaire actuel)
-            set('prix_total_avant_taxe', breakdown.totalBeforeTaxes);
-            set('taxes_total1', breakdown.totalTaxes);
-            set('sommaire', breakdown.pricingSummary);
-            set('total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
-        }
-
         return params;
     }
 
@@ -426,11 +485,10 @@
         const finalPaymentValid = finalPaymentDate && !Number.isNaN(finalPaymentDate.getTime())
             ? finalPaymentDate
             : null;
-        const taxes = optionalPrice(p.taxesAmount ?? p.taxes_amount);
 
-        if (deposit === null && !finalPaymentValid && taxes === null) return null;
+        if (deposit === null && !finalPaymentValid) return null;
 
-        return { deposit, finalPaymentDate: finalPaymentValid, taxes };
+        return { deposit, finalPaymentDate: finalPaymentValid, salesTaxLabel: formatTaxRatesLabel() };
     }
 
     function inferArrivalLabel(p, leg) {
@@ -614,9 +672,10 @@
         const img = normalizeImageSrc(p.img);
         const imgRoom = normalizeImageSrc(p.imgRoom || p.img);
         const imgExtra = normalizeImageSrc(p.imgExtra || p.img);
+        const { taxesAmount: _legacyTax1, taxes_amount: _legacyTax2, ...productBase } = p;
 
         return {
-            ...p,
+            ...productBase,
             active: state,
             state,
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
@@ -637,7 +696,6 @@
             financingMonthly: optionalPrice(
                 p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
             ),
-            taxesAmount: optionalPrice(p.taxesAmount ?? p.taxes_amount),
             depositAmount: optionalPrice(p.depositAmount ?? p.deposit_amount),
             finalPaymentDate: finalPaymentValid,
             priceChild212: optionalPrice(p.priceChild212 ?? p.price_child_2_12),
@@ -803,6 +861,8 @@
         getSelectedOccupationRow,
         getOccupationPricingBreakdown,
         pickOccupationPrice,
+        calculateSalesTaxes,
+        formatTaxRatesLabel,
         buildGhlReservationParams,
         getPaymentTerms,
         getEffectiveFlights,
