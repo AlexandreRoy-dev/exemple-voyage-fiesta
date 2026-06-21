@@ -394,6 +394,77 @@
         return (def.adults ?? 0) + (def.children212 ?? 0) + (def.children1317 ?? 0);
     }
 
+    function isChildOccupationDef(def) {
+        if (!def) return false;
+        return (def.children212 ?? 0) > 0 || (def.children1317 ?? 0) > 0;
+    }
+
+    function getChildPricingInfo(p) {
+        const child212First = optionalPrice(p.priceChild212 ?? p.price_child_2_12);
+        const child212Second = optionalPrice(p.priceChild212_2 ?? p.prix_2e_enfant_2_12);
+        const child1317First = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
+        const child1317Second = optionalPrice(p.priceChild1317_2 ?? p.prix_2e_enfant_13_17);
+        return {
+            has212: child212First !== null,
+            has1317: child1317First !== null,
+            hasSecond212: child212Second !== null,
+            hasSecond1317: child1317Second !== null,
+            max212: child212First === null ? 0 : (child212Second !== null ? 2 : 1),
+            max1317: child1317First === null ? 0 : (child1317Second !== null ? 2 : 1),
+            child212First,
+            child212Second,
+            child1317First,
+            child1317Second
+        };
+    }
+
+    function productHasChildUnitPricing(p) {
+        const info = getChildPricingInfo(p);
+        return info.has212 || info.has1317;
+    }
+
+    function getChild212UnitPrice(p, index) {
+        const info = getChildPricingInfo(p);
+        if (index === 0) return info.child212First;
+        if (index === 1) return info.child212Second;
+        return null;
+    }
+
+    function getChild1317UnitPrice(p, index) {
+        const info = getChildPricingInfo(p);
+        if (index === 0) return info.child1317First;
+        if (index === 1) return info.child1317Second;
+        return null;
+    }
+
+    function sumChildUnitPrices(p, children212, children1317) {
+        let total = 0;
+        for (let i = 0; i < children212; i++) {
+            const price = getChild212UnitPrice(p, i);
+            if (price === null) return null;
+            total += price;
+        }
+        for (let i = 0; i < children1317; i++) {
+            const price = getChild1317UnitPrice(p, i);
+            if (price === null) return null;
+            total += price;
+        }
+        return total;
+    }
+
+    function buildBookingOccupationLabel(def, children212, children1317) {
+        if (!def) return '';
+        const parts = [];
+        if (children212 > 0) {
+            parts.push(`${children212} enfant${children212 > 1 ? 's' : ''} (2-12 ans)`);
+        }
+        if (children1317 > 0) {
+            parts.push(`${children1317} enfant${children1317 > 1 ? 's' : ''} (13-17 ans)`);
+        }
+        if (!parts.length) return def.label;
+        return `${def.label} + ${parts.join(' + ')}`;
+    }
+
     /** taxes_amount = $ / pers. — affiché tel quel (sans × nb voyageurs). */
     function resolveOccupationTaxes(p, def) {
         const perPerson = pickOccupationTaxPerPerson(p);
@@ -439,6 +510,7 @@
     /** Occupations client — prix GHL = $ / pers. avant taxes */
     function getOccupationPrices(p) {
         const rows = [];
+        const hideChildOccRows = productHasChildUnitPricing(p);
 
         function withTaxes(row, def, product) {
             const peopleCount = getOccupationPeopleCount(def);
@@ -450,10 +522,12 @@
             row.taxes = totalTaxes;
             row.totalWithTaxes = totalTaxes !== null ? row.price + totalTaxes : null;
             row.totalPerPerson = row.totalWithTaxes;
+            row.isChildOccupation = isChildOccupationDef(def);
             return row;
         }
 
         for (const def of OCCUPATION_DEFS) {
+            if (hideChildOccRows && isChildOccupationDef(def)) continue;
             const price = pickOccupationPrice(p, def.priceKeys);
             if (price === null) continue;
             rows.push(withTaxes({
@@ -537,61 +611,142 @@
     }
 
     /**
-     * Détail tarifaire — affichage / pers.; totaux réservation = × nb voyageurs (formulaire GHL).
+     * Détail tarifaire — adulte / pers. + enfant / enfant; totaux = somme des composantes.
      */
     function getOccupationPricingBreakdown(p, occupationId, overrides) {
         const def = getOccupationDef(occupationId);
         const row = getSelectedOccupationRow(p, occupationId);
         if (!def || !row) return null;
 
-        const adults = def.adults ?? 0;
-        const baseChildren212 = def.children212 ?? 0;
-        const baseChildren1317 = def.children1317 ?? 0;
-        const children212 = overrides && overrides.children212 !== undefined
-            ? clampInt(overrides.children212, { min: 0, max: 9 })
-            : baseChildren212;
-        const children1317 = overrides && overrides.children1317 !== undefined
-            ? clampInt(overrides.children1317, { min: 0, max: 9 })
-            : baseChildren1317;
-        const totalPeople = adults + children212 + children1317;
-
-        const pricePerPerson = row.pricePerPerson ?? row.price;
-        const taxesPerPerson = row.taxesPerPerson ?? row.taxes ?? null;
-        const totalPerPerson = row.totalPerPerson ?? row.totalWithTaxes ?? (
-            taxesPerPerson !== null ? pricePerPerson + taxesPerPerson : pricePerPerson
-        );
-
+        const childInfo = getChildPricingInfo(p);
+        const useComponentPricing = productHasChildUnitPricing(p) && !isChildOccupationDef(def);
         const roundMoney = (value) => Math.round(value * 100) / 100;
-        const bookingBeforeTaxes = roundMoney(pricePerPerson * totalPeople);
+
+        const adults = def.adults ?? 0;
+        let children212;
+        let children1317;
+
+        if (useComponentPricing) {
+            children212 = overrides && overrides.children212 !== undefined
+                ? clampInt(overrides.children212, { min: 0, max: childInfo.max212 })
+                : 0;
+            children1317 = overrides && overrides.children1317 !== undefined
+                ? clampInt(overrides.children1317, { min: 0, max: childInfo.max1317 })
+                : 0;
+        } else {
+            children212 = overrides && overrides.children212 !== undefined
+                ? clampInt(overrides.children212, { min: 0, max: 9 })
+                : (def.children212 ?? 0);
+            children1317 = overrides && overrides.children1317 !== undefined
+                ? clampInt(overrides.children1317, { min: 0, max: 9 })
+                : (def.children1317 ?? 0);
+        }
+
+        const totalPeople = adults + children212 + children1317;
+        const adultUnitPrice = row.pricePerPerson ?? row.price;
+        const taxesPerPerson = row.taxesPerPerson ?? row.taxes ?? pickOccupationTaxPerPerson(p);
+        const bookingLabel = buildBookingOccupationLabel(def, children212, children1317);
+
+        const child212Lines = [];
+        for (let i = 0; i < children212; i++) {
+            const unit = getChild212UnitPrice(p, i);
+            if (unit === null) return null;
+            child212Lines.push({
+                index: i + 1,
+                band: '212',
+                label: i === 0 ? '1er enfant (2-12 ans)' : '2e enfant (2-12 ans)',
+                unitPrice: unit,
+                taxesPerPerson: taxesPerPerson,
+                totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
+            });
+        }
+
+        const child1317Lines = [];
+        for (let i = 0; i < children1317; i++) {
+            const unit = getChild1317UnitPrice(p, i);
+            if (unit === null) return null;
+            child1317Lines.push({
+                index: i + 1,
+                band: '1317',
+                label: i === 0 ? '1er enfant (13-17 ans)' : '2e enfant (13-17 ans)',
+                unitPrice: unit,
+                taxesPerPerson: taxesPerPerson,
+                totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
+            });
+        }
+
+        let bookingBeforeTaxes;
+        let pricePerPerson;
+        let totalPerPerson;
+        let pricingSummary;
+
+        if (useComponentPricing) {
+            const childTotal = sumChildUnitPrices(p, children212, children1317);
+            if (childTotal === null) return null;
+            bookingBeforeTaxes = roundMoney((adultUnitPrice * adults) + childTotal);
+            pricePerPerson = adultUnitPrice;
+            totalPerPerson = taxesPerPerson !== null ? adultUnitPrice + taxesPerPerson : adultUnitPrice;
+
+            const summaryParts = [`${formatMoneyPerPerson(adultUnitPrice, { html: false })} × ${adults} adulte${adults > 1 ? 's' : ''}`];
+            child212Lines.forEach(line => {
+                summaryParts.push(`${formatMoneyPerChild(line.unitPrice, { html: false })} (${line.label.toLowerCase()})`);
+            });
+            child1317Lines.forEach(line => {
+                summaryParts.push(`${formatMoneyPerChild(line.unitPrice, { html: false })} (${line.label.toLowerCase()})`);
+            });
+            pricingSummary = summaryParts.join(' + ');
+            if (taxesPerPerson !== null) {
+                pricingSummary += ` · taxes ${formatMoneyPerPerson(taxesPerPerson, { html: false })} / pers.`;
+            }
+            if (totalPeople > 0) {
+                const bookingTotalPreview = taxesPerPerson !== null
+                    ? roundMoney(bookingBeforeTaxes + (taxesPerPerson * totalPeople))
+                    : bookingBeforeTaxes;
+                pricingSummary += ` · forfait ${totalPeople} pers. : ${formatMoney(bookingTotalPreview)}`;
+            }
+        } else {
+            pricePerPerson = adultUnitPrice;
+            totalPerPerson = row.totalPerPerson ?? row.totalWithTaxes ?? (
+                taxesPerPerson !== null ? pricePerPerson + taxesPerPerson : pricePerPerson
+            );
+            bookingBeforeTaxes = roundMoney(pricePerPerson * totalPeople);
+            pricingSummary = `${formatMoneyPerPerson(pricePerPerson, { html: false })} avant taxes`;
+            if (taxesPerPerson !== null && totalPerPerson !== null) {
+                pricingSummary += ` + ${formatMoneyPerPerson(taxesPerPerson, { html: false })} taxes = ${formatMoneyPerPerson(totalPerPerson, { html: false })} total`;
+            }
+            if (totalPeople > 1) {
+                const bookingTotalPreview = totalPerPerson !== null
+                    ? roundMoney(totalPerPerson * totalPeople)
+                    : bookingBeforeTaxes;
+                pricingSummary += ` · forfait ${totalPeople} pers. : ${formatMoney(bookingTotalPreview)}`;
+            }
+        }
+
         const bookingTaxes = taxesPerPerson !== null ? roundMoney(taxesPerPerson * totalPeople) : null;
-        const bookingTotalWithTaxes = totalPerPerson !== null
-            ? roundMoney(totalPerPerson * totalPeople)
+        const bookingTotalWithTaxes = taxesPerPerson !== null
+            ? roundMoney(bookingBeforeTaxes + bookingTaxes)
             : bookingBeforeTaxes;
 
         const depositPerPerson = optionalPrice(p.depositAmount ?? p.deposit_amount);
         const totalDeposit = depositPerPerson !== null ? roundMoney(depositPerPerson * totalPeople) : null;
-
-        let pricingSummary = `${formatMoneyPerPerson(pricePerPerson)} avant taxes`;
-        if (taxesPerPerson !== null && totalPerPerson !== null) {
-            pricingSummary += ` + ${formatMoneyPerPerson(taxesPerPerson)} taxes = ${formatMoneyPerPerson(totalPerPerson)} total`;
-        }
-        if (totalPeople > 1 && bookingTotalWithTaxes !== null) {
-            pricingSummary += ` · forfait ${totalPeople} pers. : ${formatMoney(bookingTotalWithTaxes)}`;
-        }
 
         return {
             adults,
             children212,
             children1317,
             totalPeople,
-            adultUnitPrice: pricePerPerson,
-            child212UnitPrice: optionalPrice(p.priceChild212 ?? p.price_child_2_12),
-            child1317UnitPrice: optionalPrice(p.priceChild1317 ?? p.price_child_13_17),
+            adultUnitPrice,
+            child212UnitPrice: childInfo.child212First,
+            child1317UnitPrice: childInfo.child1317First,
+            child212SecondUnitPrice: childInfo.child212Second,
+            child1317SecondUnitPrice: childInfo.child1317Second,
+            child212Lines,
+            child1317Lines,
             taxChild212Unit: taxesPerPerson,
             taxChild1317Unit: taxesPerPerson,
             selectedUnitPrice: pricePerPerson,
             pricePerPerson,
-            totalBeforeTaxes: pricePerPerson,
+            totalBeforeTaxes: useComponentPricing ? adultUnitPrice : pricePerPerson,
             totalTaxes: taxesPerPerson,
             totalWithTaxes: totalPerPerson,
             bookingBeforeTaxes,
@@ -600,8 +755,10 @@
             taxesPerPerson,
             depositPerPerson,
             totalDeposit,
-            pricingMethod: 'per_person',
-            pricingSummary
+            pricingMethod: useComponentPricing ? 'component' : 'per_person',
+            pricingSummary,
+            bookingLabel,
+            useComponentPricing
         };
     }
 
@@ -628,12 +785,13 @@
         // Champs du formulaire GHL — en premier (URL iframe limitée)
         set('forfait_name', p.name);
         if (row) {
-            set('occupation', row.label);
+            const occupationLabel = breakdown?.bookingLabel || row.label;
+            set('occupation', occupationLabel);
             set('occupation_code', row.id);
-            set('occupation_label', row.label);
-            set('selected_price', row.pricePerPerson ?? row.price);
-            set('selected_taxes', row.taxesPerPerson ?? row.taxes);
-            set('selected_total', row.totalPerPerson ?? row.totalWithTaxes);
+            set('occupation_label', occupationLabel);
+            set('selected_price', breakdown?.adultUnitPrice ?? row.pricePerPerson ?? row.price);
+            set('selected_taxes', breakdown?.taxesPerPerson ?? row.taxesPerPerson ?? row.taxes);
+            set('selected_total', breakdown?.totalWithTaxes ?? row.totalPerPerson ?? row.totalWithTaxes);
         }
         if (breakdown) {
             set('nombre_personnes', breakdown.totalPeople);
@@ -793,6 +951,14 @@
         if (options.html === false) return `${formatted} / pers.`;
         const suffixClass = options.suffixClass || 'text-[0.72em] font-normal text-gray-500 whitespace-nowrap';
         return `${formatted}<span class="${suffixClass}"> / pers.</span>`;
+    }
+
+    function formatMoneyPerChild(amount, options = {}) {
+        const formatted = formatMoney(amount);
+        if (!formatted) return '';
+        if (options.html === false) return `${formatted} / enfant`;
+        const suffixClass = options.suffixClass || 'text-[0.72em] font-normal text-gray-500 whitespace-nowrap';
+        return `${formatted}<span class="${suffixClass}"> / enfant</span>`;
     }
 
     /** Red card incentive — price / pers. + taxes / pers. ; barré = (price + rabais) + taxes */
@@ -990,7 +1156,9 @@
             depositAmount: optionalPrice(p.depositAmount ?? p.deposit_amount),
             finalPaymentDate: finalPaymentValid,
             priceChild212: optionalPrice(p.priceChild212 ?? p.price_child_2_12),
+            priceChild212_2: optionalPrice(p.priceChild212_2 ?? p.prix_2e_enfant_2_12),
             priceChild1317: optionalPrice(p.priceChild1317 ?? p.price_child_13_17),
+            priceChild1317_2: optionalPrice(p.priceChild1317_2 ?? p.prix_2e_enfant_13_17),
             taxChild212: optionalPrice(p.taxChild212 ?? p.tax_child_2_12),
             taxChild1317: optionalPrice(p.taxChild1317 ?? p.tax_child_13_17),
             forfaitLink: normalizeExternalUrl(p.forfaitLink ?? p.forfait_link),
@@ -1498,11 +1666,14 @@
         getCriteriaLabel,
         productHasCriterion,
         getOccupationPrices,
+        getChildPricingInfo,
+        productHasChildUnitPricing,
         getLowestOccupationRow,
         getDoubleOccupationDisplayPrice,
         getListingDisplayPrice,
         getSelectedOccupationRow,
         getOccupationPricingBreakdown,
+        buildBookingOccupationLabel,
         pickOccupationPrice,
         calculateSalesTaxes,
         formatTaxRatesLabel,
@@ -1512,6 +1683,7 @@
         getIncentive,
         formatMoney,
         formatMoneyPerPerson,
+        formatMoneyPerChild,
         formatFlightDate,
         formatFlightTime,
         formatFlightNumber,
