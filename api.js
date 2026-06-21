@@ -1024,6 +1024,8 @@
         const slug = slugifyDestination(raw);
         const aliasTarget = aliases[raw] ?? aliases[lower] ?? aliases[slug];
         if (aliasTarget) {
+            const targetSlug = slugifyDestination(String(aliasTarget).trim());
+            if (targetSlug === slug) return slug;
             return normalizeDestinationKey(aliasTarget);
         }
 
