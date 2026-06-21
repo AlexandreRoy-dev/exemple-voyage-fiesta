@@ -154,9 +154,19 @@ function mergeSyncOverrides(product, previous) {
   return clearLegacyTaxOccFields(merged);
 }
 
+function resolveTaxesAmountPerPerson(props) {
+  const direct = optionalTaxAmount(pick(props, 'taxes_amount', 'taxesAmount'));
+  if (direct !== null) return direct;
+
+  const doubleLegacy = optionalPrice(pick(props, 'taxes_occ_double', 'taxesOccDouble'));
+  if (doubleLegacy !== null) return Math.round(doubleLegacy / 2 * 100) / 100;
+
+  return null;
+}
+
 /** taxes_amount ($/pers.) prime — legacy taxes_occ_* ignorés quand présent. */
 function applyTaxFields(props) {
-  const taxesAmount = optionalTaxAmount(pick(props, 'taxes_amount', 'taxesAmount'));
+  const taxesAmount = resolveTaxesAmountPerPerson(props);
   const legacy = taxesAmount === null
     ? {
         taxesOccDouble: optionalPrice(pick(props, 'taxes_occ_double', 'taxesOccDouble')),
