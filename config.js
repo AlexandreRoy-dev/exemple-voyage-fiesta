@@ -129,7 +129,10 @@
         jamaïque: 'Jamaïque',
         jamaque: 'Jamaïque',
         jamaique: 'Jamaïque',
-        saintelucie: 'Sainte-Lucie'
+        saintelucie: 'Sainte-Lucie',
+        panama: 'Panama',
+        roatan: 'Roatan',
+        saintmartin: 'Saint-Martin'
     };
 
     /** Critères (boutique filter) — labels + GHL keys from field `criteria` */
