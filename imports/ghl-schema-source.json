@@ -1,0 +1,490 @@
+{
+  "schemaKey": "custom_objects.forfaits_voyage",
+  "id": "6a3556ea4bbdb76ba073fd53",
+  "fields": [
+    {
+      "key": "custom_objects.forfaits_voyage.name",
+      "label": "name",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_out_from",
+      "label": "flight_out_from",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.sub_dest",
+      "label": "sub_dest",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.country",
+      "label": "country",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.package_type",
+      "label": "package_type",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.room_category",
+      "label": "room_category",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.seo_tags",
+      "label": "seo_tags",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.carrier",
+      "label": "carrier",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.stars",
+      "label": "stars",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.inventory",
+      "label": "inventory",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price",
+      "label": "price",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.supplier",
+      "label": "supplier",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "transat",
+        "sunwing",
+        "vacances_air_canada",
+        "westjet",
+        "caribe_sol",
+        "autre"
+      ]
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.dest_tag",
+      "label": "dest_tag",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "sud",
+        "europe",
+        "croisire",
+        "circuit",
+        "canada",
+        "usa"
+      ]
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.criteria",
+      "label": "criteria",
+      "type": "MULTIPLE_OPTIONS",
+      "required": false,
+      "options": [
+        "pour_adultes_18",
+        "familial",
+        "romantique__lune_de_miel",
+        "tranquille__dtente",
+        "animation__fte",
+        "pour_clibataires",
+        "adapt_aux_bbs",
+        "directement_sur_la_plage",
+        "vue_sur_la_mer",
+        "deuxime_ligne_courte_marche",
+        "prs_du_centreville",
+        "isol__en_nature",
+        "tout_inclus_allinclusive",
+        "djeuners_inclus",
+        "plan_europen_sans_repas",
+        "boissons_de_marques_premium_incluses",
+        "soupers__la_carte_illimits",
+        "glissades_deau__parc_aquatique",
+        "piscine_pour_enfants",
+        "piscine_rserve_aux_adultes",
+        "piscine__dbordement_infinity",
+        "prendre_un_verre_dans_la_piscine_swimup_bar",
+        "section_privilge__club_slect",
+        "spa__centre_de_bientre",
+        "wifi_gratuit_partout",
+        "wifi_gratuit_au_lobby_seulement",
+        "service_aux_chambres_24h",
+        "rcemment_rnov",
+        "accessible_en_fauteuil_roulant",
+        "parcours_de_golf__proximit",
+        "centre_de_plonge_padi",
+        "tennis",
+        "sports_nautiques_non_motoriss_inclus",
+        "gym__centre_de_fitness",
+        "casino_sur_place",
+        "vol_direct_sans_escale",
+        "transferts_aroporthtel_inclus",
+        "dpart_de_nuit",
+        "siges_en_classe_conomique_privilge_disponibles"
+      ]
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.end_date",
+      "label": "end_date",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.img",
+      "label": "img",
+      "type": "FILE_UPLOAD",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.img_room",
+      "label": "img_room",
+      "type": "FILE_UPLOAD",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.img_extra",
+      "label": "img_extra",
+      "type": "FILE_UPLOAD",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.state",
+      "label": "state",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "actif",
+        "brouillon",
+        "complet_sold_out",
+        "archiv"
+      ]
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.departure_airport",
+      "label": "departure_airport",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.duration_nights",
+      "label": "duration_nights",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.destination1",
+      "label": "destination",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "antigua",
+        "aruba",
+        "bahamas",
+        "belize",
+        "cancun",
+        "capvert",
+        "cartagena",
+        "cayo_coco",
+        "cozumel",
+        "cuba",
+        "curaao",
+        "floride",
+        "grenade",
+        "holbox",
+        "holguin",
+        "jamaque",
+        "la_havane",
+        "miami",
+        "montego_bay",
+        "puerto_vallarta",
+        "punta_cana",
+        "rio_de_janeiro",
+        "riviera_maya",
+        "saintbarthlemy",
+        "saintmartin",
+        "saintelucie",
+        "san_francisco",
+        "santo_domingo",
+        "turks_et_caicos",
+        "varadero",
+        "roatan",
+        "panama"
+      ]
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.departure_date",
+      "label": "departure_date",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_occ_simple",
+      "label": "price_occ_simple",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.occupation_triple_3_pers",
+      "label": "Occupation triple (3 pers.)",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.occ_double__1_enfant_12_ans",
+      "label": "Occ. double + 1 enfant (-12 ans)",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_original",
+      "label": "price_original",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.discount_amount",
+      "label": "discount_amount",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.financement_mensuel",
+      "label": "financement_mensuel",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_out_depart_date",
+      "label": "flight_out_depart_date",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_out_depart_time",
+      "label": "flight_out_depart_time",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_out_to",
+      "label": "flight_out_to",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_out_arrive_date",
+      "label": "flight_out_arrive_date",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_out_arrive_time",
+      "label": "flight_out_arrive_time",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_out_number",
+      "label": "flight_out_number",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_return_from",
+      "label": "flight_return_from",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_return_depart_date",
+      "label": "flight_return_depart_date",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_return_depart_time",
+      "label": "flight_return_depart_time",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_return_to",
+      "label": "flight_return_to",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_return_arrive_date",
+      "label": "flight_return_arrive_date",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_return_arrive_time",
+      "label": "flight_return_arrive_time",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.flight_return_number",
+      "label": "flight_return_number",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.hotel_description",
+      "label": "hotel_description",
+      "type": "LARGE_TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.taxes_amount",
+      "label": "taxes_amount",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.deposit_amount",
+      "label": "deposit_amount",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.final_payment_date",
+      "label": "final_payment_date",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_child_2_12",
+      "label": "price_child_2_12",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_child_13_17",
+      "label": "price_child_13_17",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_occ_double_2_child",
+      "label": "price_occ_double_2_child",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_occ_simple_1_child",
+      "label": "price_occ_simple_1_child",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_occ_quad",
+      "label": "price_occ_quad",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_autres",
+      "label": "price_autres",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.forfait_link",
+      "label": "forfait_link",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.tax_child_2_12",
+      "label": "tax_child_2_12",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.tax_child_13_17",
+      "label": "tax_child_13_17",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.forfaits_voyage.price_occ_double_1_child",
+      "label": "price_occ_double_1_child",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    }
+  ]
+}
