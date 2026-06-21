@@ -78,8 +78,8 @@ Sorties :
 | `flight_return_depart_time` / `vol_retour_heure_depart` | `vol_retour_heure_depart` | |
 | `flight_return_arrive_time` / `vol_retour_heure_arrivee` | `vol_retour_heure_arrivee` | Optionnel |
 | `img` | `photo_principale` | Fichier — repasse tel quel |
-| `img_room` | `photo_chambre` | |
-| `img_extra` | `photo_extra` | |
+| `img_room` | `photo_extra` | **Photo chambre → photo extra** (pas `photo_chambre`) |
+| `img_extra` | `photo_extra` | Seulement si `img_room` absent |
 | `img_gallery` | `galerie_photos` | |
 
 ### Champs **non** migrés (obsolètes)

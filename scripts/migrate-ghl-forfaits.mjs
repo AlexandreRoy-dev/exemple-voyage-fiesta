@@ -246,8 +246,11 @@ function mapOldRecordToNew(oldProps, meta = {}) {
       pick(old, 'vol_retour_heure_arrivee', 'flight_return_arrive_time')
     ),
     photo_principale: copyFileField(pick(old, 'img', 'image', 'photo_principale')),
-    photo_chambre: copyFileField(pick(old, 'img_room', 'imgRoom', 'photo_chambre')),
-    photo_extra: copyFileField(pick(old, 'img_extra', 'imgExtra', 'photo_extra')),
+    // Ancien img_room (photo chambre) → photo_extra sur le nouvel objet
+    photo_extra: copyFileField(
+      pick(old, 'img_room', 'imgRoom', 'photo_chambre')
+      || pick(old, 'img_extra', 'imgExtra', 'photo_extra')
+    ),
     galerie_photos: copyFileField(pick(old, 'img_gallery', 'gallery', 'galerie_photos'))
   };
 
