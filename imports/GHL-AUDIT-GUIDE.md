@@ -53,10 +53,11 @@ Basé sur le dernier sync GHL + règles site. **À corriger dans GHL** puis lais
 | Champ | Problème | Action GHL |
 |-------|----------|------------|
 | `price` | OK **1358** (sync) | — |
-| `price_occ_double_1_child` | **Vide dans GHL** — doit être **1996** (1358+638) | Remplir |
-| `price_occ_double_2_child` | **Vide dans GHL** — doit être **3074** (1358+638+1078) | Remplir |
+| `price_occ_double_1_child` | **Vide dans GHL** — le sync met `null` | Remplir **1996** (1358+638) |
+| `price_occ_simple_1_child` | **1996 à la mauvaise place** — affiche « Occ. simple + 1 enfant » | **Vider** ; mettre 1996 dans `price_occ_double_1_child` |
+| `price_occ_double_2_child` | OK **3074** (sync) | — |
 | `taxes_amount` | OK **300** $/pers. | — |
-| `taxes_occ_*` | Vider si encore remplis | Supprimer valeurs |
+| `taxes_occ_*` | Encore **300** sur double / enfants (legacy) | **Vider tous** — laisser seulement `taxes_amount` |
 
 ### Melia Cozumel
 | Champ | Problème | Action GHL |

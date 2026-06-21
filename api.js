@@ -877,7 +877,8 @@
     async function fetchProductBySlug(slug) {
         try {
             const all = await loadProductsJson();
-            return all.find(p => p.slug === slug && isDetailVisible(p)) || null;
+            const wanted = String(slug || '').trim().toLowerCase();
+            return all.find(p => String(p.slug || '').trim().toLowerCase() === wanted && isDetailVisible(p)) || null;
         } catch (err) {
             console.error('[api] products.json unavailable for slug:', slug, err.message);
             return null;
@@ -885,7 +886,8 @@
     }
 
     function getProductBySlug(products, slug) {
-        return products.find(p => p.slug === slug);
+        const wanted = String(slug || '').trim().toLowerCase();
+        return products.find(p => String(p.slug || '').trim().toLowerCase() === wanted);
     }
 
     function normalizeSupplierKey(supplier) {
