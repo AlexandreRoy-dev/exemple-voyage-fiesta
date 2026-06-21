@@ -161,8 +161,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=22"></script>
-    <script src="api.js?v=64"></script>
+    <script src="config.js?v=23"></script>
+    <script src="api.js?v=65"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -825,24 +825,24 @@
                     const childRows = [];
                     if (childInfo.has212) {
                         childRows.push([
-                            VoyageFiestaAPI.getChildPriceLabel('212', 0, childInfo.hasSecond212),
+                            VoyageFiestaAPI.formatChildTableLabelHtml('212', 0, childInfo.hasSecond212),
                             childInfo.child212First
                         ]);
                         if (childInfo.hasSecond212) {
                             childRows.push([
-                                VoyageFiestaAPI.getChildPriceLabel('212', 1, true),
+                                VoyageFiestaAPI.formatChildTableLabelHtml('212', 1, true),
                                 childInfo.child212Second
                             ]);
                         }
                     }
                     if (childInfo.has1317) {
                         childRows.push([
-                            VoyageFiestaAPI.getChildPriceLabel('1317', 0, childInfo.hasSecond1317),
+                            VoyageFiestaAPI.formatChildTableLabelHtml('1317', 0, childInfo.hasSecond1317),
                             childInfo.child1317First
                         ]);
                         if (childInfo.hasSecond1317) {
                             childRows.push([
-                                VoyageFiestaAPI.getChildPriceLabel('1317', 1, true),
+                                VoyageFiestaAPI.formatChildTableLabelHtml('1317', 1, true),
                                 childInfo.child1317Second
                             ]);
                         }
@@ -852,7 +852,7 @@
                         const total = taxes != null ? price + taxes : null;
                         return `
                             <tr class="border-b border-gray-100 last:border-0 bg-brand-light/40">
-                                <td class="py-2.5 pr-2 text-sm text-gray-700">${label}</td>
+                                <td class="py-2.5 pr-2 text-sm text-gray-700 leading-snug">${label}</td>
                                 <td class="py-2.5 px-2 text-sm text-right text-gray-800">${VoyageFiestaAPI.formatMoneyPerChild(price)}</td>
                                 <td class="py-2.5 px-2 text-sm text-right text-gray-600">${taxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(taxes) : '—'}</td>
                                 <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue">${total != null ? VoyageFiestaAPI.formatMoneyPerChild(total) : '—'}</td>

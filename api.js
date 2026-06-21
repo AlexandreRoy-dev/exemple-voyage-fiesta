@@ -423,8 +423,8 @@
             has1317: child1317First !== null,
             hasSecond212: child212Second !== null,
             hasSecond1317: child1317Second !== null,
-            max212: child212First === null ? 0 : (child212Second !== null ? 2 : 1),
-            max1317: child1317First === null ? 0 : (child1317Second !== null ? 2 : 1),
+            max212: child212First === null ? 0 : clampInt(window.MAX_CHILD_COUNT_SELECT ?? 4, { min: 1, max: 9 }),
+            max1317: child1317First === null ? 0 : clampInt(window.MAX_CHILD_COUNT_SELECT ?? 4, { min: 1, max: 9 }),
             child212First,
             child212Second,
             child1317First,
@@ -439,24 +439,40 @@
 
     function getChild212UnitPrice(p, index) {
         const info = getChildPricingInfo(p);
+        if (info.child212First === null || index < 0) return null;
         if (index === 0) return info.child212First;
-        if (index === 1) return info.child212Second;
-        return null;
+        if (index === 1 && info.child212Second !== null) return info.child212Second;
+        return info.child212Second ?? info.child212First;
     }
 
     function getChild1317UnitPrice(p, index) {
         const info = getChildPricingInfo(p);
+        if (info.child1317First === null || index < 0) return null;
         if (index === 0) return info.child1317First;
-        if (index === 1) return info.child1317Second;
-        return null;
+        if (index === 1 && info.child1317Second !== null) return info.child1317Second;
+        return info.child1317Second ?? info.child1317First;
     }
 
     /** Libellé enfant — sans « 1er » s'il n'y a qu'un seul tarif enfant pour la tranche. */
     function getChildPriceLabel(band, childIndex, hasSecondPrice) {
         const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
-        if (childIndex === 1) return `2e enfant (${ageLabel})`;
-        if (hasSecondPrice) return `1er enfant (${ageLabel})`;
-        return `Enfant (${ageLabel})`;
+        if (childIndex === 0 && !hasSecondPrice) return `Enfant (${ageLabel})`;
+        const ordinals = ['1er', '2e', '3e', '4e'];
+        const ordinal = ordinals[childIndex] || `${childIndex + 1}e`;
+        return `${ordinal} enfant (${ageLabel})`;
+    }
+
+    /** Libellé tableau tarifs — tranche d'âge sur la ligne suivante. */
+    function formatChildTableLabelHtml(band, childIndex, hasSecondPrice) {
+        const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
+        let main;
+        if (childIndex === 0 && !hasSecondPrice) {
+            main = 'Enfant';
+        } else {
+            const ordinals = ['1er', '2e', '3e', '4e'];
+            main = `${ordinals[childIndex] || `${childIndex + 1}e`} enfant`;
+        }
+        return `${main}<br><span class="text-gray-500 text-xs leading-tight">(${ageLabel})</span>`;
     }
 
     function sumChildUnitPrices(p, children212, children1317) {
@@ -1908,6 +1924,7 @@
         getChildPricingInfo,
         productHasChildUnitPricing,
         getChildPriceLabel,
+        formatChildTableLabelHtml,
         getLowestOccupationRow,
         getDoubleOccupationDisplayPrice,
         getListingDisplayPrice,

@@ -248,6 +248,9 @@
     window.TAXES_AIR_FEES_LABEL = 'Taxes et frais aériens';
     window.BEFORE_TAXES_AIR_FEES_LABEL = 'Avant taxes et frais aériens';
 
+    /** Nombre max d'enfants sélectionnables par tranche (2-12 et 13-17) */
+    window.MAX_CHILD_COUNT_SELECT = 4;
+
     /** URL publique de la boutique (iframe + liens directs) */
     window.BOUTIQUE_BASE_URL = 'https://promofiesta.roymarketing.ca';
 
