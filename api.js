@@ -1643,6 +1643,223 @@
         return selectedDates.includes(key);
     }
 
+    function getSiteBaseUrl() {
+        const configured = String(window.BOUTIQUE_BASE_URL || '').trim().replace(/\/$/, '');
+        if (configured) return configured;
+        const path = window.location.pathname.replace(/[^/]+$/, '').replace(/\/$/, '');
+        return `${window.location.origin}${path}`;
+    }
+
+    function resolveAbsoluteUrl(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        if (/^https?:\/\//i.test(raw)) return raw;
+        const base = getSiteBaseUrl().replace(/\/$/, '');
+        const path = raw.startsWith('/') ? raw : `/${raw.replace(/^\.\//, '')}`;
+        return `${base}${path}`;
+    }
+
+    function escapeShareAttr(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;');
+    }
+
+    function getProductShareImage(p) {
+        const gallery = buildProductGallery(p);
+        const imagePath = gallery[0] || normalizeImageSrc(p.img);
+        const absolute = resolveAbsoluteUrl(imagePath);
+        if (absolute && !isPlaceholderImage(imagePath)) return absolute;
+        return window.SITE_DEFAULT_SHARE_IMAGE || resolveAbsoluteUrl(PLACEHOLDER_IMG);
+    }
+
+    function getProductShareUrl(p) {
+        const slug = String(p?.slug || '').trim();
+        if (!slug) return getSiteBaseUrl();
+        return `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`;
+    }
+
+    function buildProductShareDescription(p) {
+        const parts = [];
+        const destination = p.destinationLabel || p.destination || p.subDest;
+        if (destination) parts.push(destination);
+        if (p.country && p.country !== destination) parts.push(p.country);
+        if (p.durationNights) parts.push(`${p.durationNights} nuits`);
+        const listing = getListingDisplayPrice(p);
+        if (listing?.amount != null) {
+            parts.push(`à partir de ${formatMoneyPerPerson(listing.amount, { html: false })}`);
+        }
+        return parts.join(' · ') || window.SITE_DEFAULT_DESCRIPTION || '';
+    }
+
+    function buildProductSharePayload(p) {
+        const title = `${p.name} | ${window.SITE_NAME || 'Voyage Fiesta'}`;
+        return {
+            url: getProductShareUrl(p),
+            title,
+            description: buildProductShareDescription(p),
+            image: getProductShareImage(p),
+            imageAlt: p.name || window.SITE_NAME || 'Voyage Fiesta'
+        };
+    }
+
+    function buildListingSharePayload() {
+        const base = getSiteBaseUrl().replace(/\/$/, '');
+        return {
+            url: `${base}/index.html`,
+            title: `Promotions | ${window.SITE_NAME || 'Voyage Fiesta'}`,
+            description: window.SITE_DEFAULT_DESCRIPTION || '',
+            image: window.SITE_DEFAULT_SHARE_IMAGE || '',
+            imageAlt: window.SITE_NAME || 'Voyage Fiesta'
+        };
+    }
+
+    function setDocumentMeta(attr, key, content) {
+        if (content === undefined || content === null || content === '') return;
+        let el = document.querySelector(`meta[${attr}="${key}"]`);
+        if (!el) {
+            el = document.createElement('meta');
+            el.setAttribute(attr, key);
+            document.head.appendChild(el);
+        }
+        el.setAttribute('content', String(content));
+    }
+
+    function applySocialMetaTags(payload) {
+        if (!payload || typeof document === 'undefined') return;
+        const siteName = window.SITE_NAME || 'Voyage Fiesta';
+        setDocumentMeta('property', 'og:type', 'website');
+        setDocumentMeta('property', 'og:site_name', siteName);
+        setDocumentMeta('property', 'og:locale', 'fr_CA');
+        setDocumentMeta('property', 'og:title', payload.title);
+        setDocumentMeta('property', 'og:description', payload.description);
+        setDocumentMeta('property', 'og:url', payload.url);
+        setDocumentMeta('property', 'og:image', payload.image);
+        setDocumentMeta('property', 'og:image:alt', payload.imageAlt || payload.title);
+        setDocumentMeta('name', 'twitter:card', 'summary_large_image');
+        setDocumentMeta('name', 'twitter:title', payload.title);
+        setDocumentMeta('name', 'twitter:description', payload.description);
+        setDocumentMeta('name', 'twitter:image', payload.image);
+        setDocumentMeta('name', 'description', payload.description);
+    }
+
+    function getSocialShareHref(platform, payload) {
+        const url = encodeURIComponent(payload.url);
+        const text = encodeURIComponent(`${payload.title}${payload.description ? ` — ${payload.description}` : ''}`);
+        const image = encodeURIComponent(payload.image || '');
+        switch (platform) {
+            case 'facebook':
+                return `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            case 'x':
+                return `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+            case 'whatsapp':
+                return `https://wa.me/?text=${text}%20${url}`;
+            case 'pinterest':
+                return `https://pinterest.com/pin/create/button/?url=${url}&media=${image}&description=${text}`;
+            case 'linkedin':
+                return `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+            case 'email':
+                return `mailto:?subject=${encodeURIComponent(payload.title)}&body=${text}%0A%0A${url}`;
+            default:
+                return payload.url;
+        }
+    }
+
+    function showShareToast(message) {
+        if (typeof document === 'undefined') return;
+        let toast = document.getElementById('share-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'share-toast';
+            toast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 z-[200] bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-opacity duration-200';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.classList.remove('opacity-0');
+        clearTimeout(showShareToast._timer);
+        showShareToast._timer = setTimeout(() => toast.classList.add('opacity-0'), 2200);
+    }
+
+    function renderSocialShareButtonsHtml(p, options = {}) {
+        const payload = buildProductSharePayload(p);
+        const compact = options.compact === true;
+        const btnClass = compact
+            ? 'inline-flex items-center justify-center w-8 h-8 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-brand-light hover:text-brand-blue transition-colors shrink-0'
+            : 'inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-brand-light hover:text-brand-blue transition-colors shrink-0';
+
+        const platforms = [];
+        if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+            platforms.push({ id: 'native', icon: 'fa-solid fa-share-nodes', label: 'Partager', action: 'native' });
+        }
+        platforms.push(
+            { id: 'facebook', icon: 'fa-brands fa-facebook-f', label: 'Facebook' },
+            { id: 'whatsapp', icon: 'fa-brands fa-whatsapp', label: 'WhatsApp' },
+            { id: 'pinterest', icon: 'fa-brands fa-pinterest-p', label: 'Pinterest' },
+            { id: 'x', icon: 'fa-brands fa-x-twitter', label: 'X (Twitter)' },
+            { id: 'email', icon: 'fa-solid fa-envelope', label: 'Courriel' },
+            { id: 'copy', icon: 'fa-solid fa-link', label: 'Copier le lien', action: 'copy' }
+        );
+
+        const slug = escapeShareAttr(p.slug);
+        const buttons = platforms.map(platform => {
+            const title = escapeShareAttr(platform.label);
+            if (platform.action === 'copy' || platform.action === 'native') {
+                return `<button type="button" class="${btnClass}" data-share-action="${platform.action}" data-share-slug="${slug}" aria-label="${title}" title="${title}"><i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i></button>`;
+            }
+            const href = escapeShareAttr(getSocialShareHref(platform.id, payload));
+            return `<a href="${href}" class="${btnClass}" target="_blank" rel="noopener noreferrer" aria-label="${title}" title="${title}" data-share-link="1"><i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i></a>`;
+        }).join('');
+
+        const labelHtml = compact
+            ? ''
+            : '<p class="text-xs font-bold text-gray-500 uppercase tracking-tighter mb-2"><i class="fa-solid fa-share-nodes mr-1"></i> Partager cette offre</p>';
+
+        return `<div class="social-share ${compact ? 'social-share--compact' : ''}" data-share-slug="${slug}">${labelHtml}<div class="flex flex-wrap items-center gap-2">${buttons}</div></div>`;
+    }
+
+    function bindSocialShare(root, getProduct) {
+        const container = root && root.querySelectorAll ? root : document;
+        container.querySelectorAll('[data-share-action]').forEach(btn => {
+            if (btn.dataset.shareBound === '1') return;
+            btn.dataset.shareBound = '1';
+
+            btn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const slug = btn.dataset.shareSlug
+                    || btn.closest('[data-share-slug]')?.dataset.shareSlug
+                    || '';
+                const product = typeof getProduct === 'function' ? getProduct(slug) : null;
+                if (!product) return;
+
+                const payload = buildProductSharePayload(product);
+                const action = btn.dataset.shareAction;
+
+                if (action === 'copy') {
+                    try {
+                        await navigator.clipboard.writeText(payload.url);
+                        showShareToast('Lien copié!');
+                    } catch (_) {
+                        window.prompt('Copier le lien:', payload.url);
+                    }
+                    return;
+                }
+
+                if (action === 'native' && navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: payload.title,
+                            text: payload.description,
+                            url: payload.url
+                        });
+                    } catch (_) { /* cancelled */ }
+                }
+            });
+        });
+    }
+
     window.VoyageFiestaAPI = {
         fetchProducts,
         fetchProductBySlug,
@@ -1715,6 +1932,16 @@
         isListingVisible,
         isDetailVisible,
         normalizeState,
-        extractPackageArray
+        extractPackageArray,
+        getSiteBaseUrl,
+        resolveAbsoluteUrl,
+        getProductShareImage,
+        getProductShareUrl,
+        buildProductSharePayload,
+        buildListingSharePayload,
+        applySocialMetaTags,
+        getSocialShareHref,
+        renderSocialShareButtonsHtml,
+        bindSocialShare
     };
 })();

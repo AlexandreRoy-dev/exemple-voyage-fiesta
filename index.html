@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Promotions - Voyage Fiesta</title>
+    <meta name="description" content="Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Voyage Fiesta">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:title" content="Promotions - Voyage Fiesta">
+    <meta property="og:description" content="Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.">
+    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta name="twitter:card" content="summary_large_image">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -160,8 +168,8 @@
 
     </main>
 
-    <script src="config.js?v=20"></script>
-    <script src="api.js?v=61"></script>
+    <script src="config.js?v=21"></script>
+    <script src="api.js?v=62"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -447,15 +455,21 @@
                                 <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Aubaines Express Voyage se termine dans :</span>
                                 <div class="text-lg font-bold text-red-600 timer-box" data-end="${endMs}">Calcul...</div>
                             </div>
-                            <div class="flex items-end justify-between gap-3">
+                            <div class="flex items-end justify-between gap-3 flex-wrap">
                                 ${priceFooterHtml}
-                                <div class="flex flex-col sm:flex-row gap-2">
-                                    <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
-                                        <i class="fa-solid fa-circle-info mr-1"></i> Détail
-                                    </a>
-                                    ${isSoldOut
-                                        ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">Complet</span>`
-                                        : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
+                                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                                    <div class="flex items-center justify-between sm:justify-end gap-2" onclick="event.stopPropagation()">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Partager</span>
+                                        ${VoyageFiestaAPI.renderSocialShareButtonsHtml(p, { compact: true })}
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row gap-2">
+                                        <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
+                                            <i class="fa-solid fa-circle-info mr-1"></i> Détail
+                                        </a>
+                                        ${isSoldOut
+                                            ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">Complet</span>`
+                                            : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -463,6 +477,9 @@
                 container.appendChild(card);
             });
 
+            VoyageFiestaAPI.bindSocialShare(container, slug =>
+                filteredData.find(item => item.slug === slug)
+            );
             updateTimers();
         }
 
@@ -559,6 +576,7 @@
         }
 
         async function init() {
+            VoyageFiestaAPI.applySocialMetaTags(VoyageFiestaAPI.buildListingSharePayload());
             buildFilterUI();
             document.getElementById('loading-state').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');

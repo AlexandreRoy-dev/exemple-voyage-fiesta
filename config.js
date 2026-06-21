@@ -238,6 +238,12 @@
     /** Static product feed — synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
 
+    window.SITE_NAME = window.SITE_NAME || 'Voyage Fiesta';
+    window.SITE_DEFAULT_DESCRIPTION = window.SITE_DEFAULT_DESCRIPTION
+        || 'Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.';
+    window.SITE_DEFAULT_SHARE_IMAGE = window.SITE_DEFAULT_SHARE_IMAGE
+        || 'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
+
     /** URL publique de la boutique (iframe + liens directs) */
     window.BOUTIQUE_BASE_URL = 'https://promofiesta.roymarketing.ca';
 
