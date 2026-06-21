@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-21T18:44:56.508Z",
+  "updatedAt": "2026-06-21T18:52:52.454Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -125,7 +125,7 @@
       "priceOccSimple1Child": null,
       "priceOccQuad": null,
       "priceAutres": null,
-      "taxesAmount": 150,
+      "taxesAmount": 300,
       "taxesOccDouble": null,
       "taxesOccDouble1Child": null,
       "taxesOccDouble2Child": null,
