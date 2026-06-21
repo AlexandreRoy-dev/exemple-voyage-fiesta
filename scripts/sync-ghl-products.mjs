@@ -83,6 +83,77 @@ function optionalTaxAmount(value) {
   return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
 }
 
+/** GHL met parfois le prix double+1 enfant dans price_occ_simple_1_child. */
+function normalizeOccupationPriceFields(product) {
+  const p = { ...product };
+  const doublePrice = optionalPrice(p.price);
+  const double1 = optionalPrice(p.priceOccDouble1Child);
+  const simple1 = optionalPrice(p.priceOccSimple1Child);
+
+  if (double1 === null && simple1 !== null && doublePrice !== null && simple1 > doublePrice) {
+    p.priceOccDouble1Child = simple1;
+    p.priceOccSimple1Child = null;
+  }
+
+  return p;
+}
+
+const LEGACY_TAX_OCC_KEYS = [
+  'taxesOccDouble',
+  'taxesOccDouble1Child',
+  'taxesOccDouble2Child',
+  'taxesOccSimple',
+  'taxesOccSimple1Child',
+  'taxesOccTriple',
+  'taxesOccQuad',
+  'taxesOccAutres'
+];
+
+function clearLegacyTaxOccFields(product) {
+  if (product.taxesAmount == null) return product;
+  const cleared = { ...product };
+  for (const key of LEGACY_TAX_OCC_KEYS) cleared[key] = null;
+  return cleared;
+}
+
+const OCCUPATION_PRICE_KEYS = [
+  'priceOccSimple',
+  'priceOccTriple',
+  'priceOccDouble1Child',
+  'priceOccDouble2Child',
+  'priceOccSimple1Child',
+  'priceOccQuad',
+  'priceAutres'
+];
+
+/** Conserve les champs corrigés localement quand GHL envoie null ou un taux erroné. */
+function mergeSyncOverrides(product, previous) {
+  if (!previous) {
+    return clearLegacyTaxOccFields(normalizeOccupationPriceFields(product));
+  }
+
+  let merged = normalizeOccupationPriceFields({ ...product });
+
+  for (const key of OCCUPATION_PRICE_KEYS) {
+    if (merged[key] == null && previous[key] != null) {
+      merged[key] = previous[key];
+    }
+  }
+
+  const syncedTax = merged.taxesAmount;
+  const prevTax = previous.taxesAmount;
+  if (prevTax != null) {
+    if (syncedTax == null) {
+      merged.taxesAmount = prevTax;
+    } else if (Math.abs(syncedTax - prevTax) >= 0.01) {
+      if (Math.abs(syncedTax * 2 - prevTax) < 0.01) merged.taxesAmount = prevTax;
+      else if (Math.abs(syncedTax - prevTax * 2) < 0.01) merged.taxesAmount = prevTax;
+    }
+  }
+
+  return clearLegacyTaxOccFields(merged);
+}
+
 /** taxes_amount ($/pers.) prime — legacy taxes_occ_* ignorés quand présent. */
 function applyTaxFields(props) {
   const taxesAmount = optionalTaxAmount(pick(props, 'taxes_amount', 'taxesAmount'));
@@ -215,6 +286,20 @@ function loadPreviousSlugById() {
     const map = {};
     for (const product of data.products || []) {
       if (product.id && product.slug) map[product.id] = product.slug;
+    }
+    return map;
+  } catch {
+    return {};
+  }
+}
+
+function loadPreviousProductsById() {
+  try {
+    if (!existsSync(OUTPUT)) return {};
+    const data = JSON.parse(readFileSync(OUTPUT, 'utf8'));
+    const map = {};
+    for (const product of data.products || []) {
+      if (product.id) map[product.id] = product;
     }
     return map;
   } catch {
@@ -725,6 +810,7 @@ async function main() {
 
   const manifest = loadManifest();
   const previousSlugById = loadPreviousSlugById();
+  const previousProductsById = loadPreviousProductsById();
   const slugAssignments = assignSlugs(records, previousSlugById);
   const products = [];
 
@@ -734,7 +820,8 @@ async function main() {
     const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
     const mapKey = recordId || `__name__:${normalizeSlug(name)}`;
     const slug = slugAssignments.get(mapKey) || normalizeSlug(name);
-    const product = await mapRecord(record, apiKey, manifest, slug);
+    const rawProduct = await mapRecord(record, apiKey, manifest, slug);
+    const product = mergeSyncOverrides(rawProduct, previousProductsById[recordId]);
     if (VISIBLE_STATES.has(product.state)) {
       products.push(product);
     }

@@ -272,6 +272,46 @@
         return optionalTaxAmount(p.taxesAmount ?? p.taxes_amount);
     }
 
+    /** GHL met parfois le prix double+1 enfant dans price_occ_simple_1_child. */
+    function normalizeOccupationPriceFields(product) {
+        const p = { ...product };
+        const doublePrice = optionalPrice(p.price);
+        const double1 = optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child);
+        const simple1 = optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child);
+
+        if (double1 === null && simple1 !== null && doublePrice !== null && simple1 > doublePrice) {
+            p.priceOccDouble1Child = simple1;
+            p.priceOccSimple1Child = null;
+            p.price_occ_double_1_child = simple1;
+            p.price_occ_simple_1_child = null;
+        }
+
+        return p;
+    }
+
+    function clearLegacyTaxOccFields(product) {
+        if (pickOccupationTaxPerPerson(product) === null) return product;
+        return {
+            ...product,
+            taxesOccDouble: null,
+            taxes_occ_double: null,
+            taxesOccDouble1Child: null,
+            taxes_occ_double_1_child: null,
+            taxesOccDouble2Child: null,
+            taxes_occ_double_2_child: null,
+            taxesOccSimple: null,
+            taxes_occ_simple: null,
+            taxesOccSimple1Child: null,
+            taxes_occ_simple_1_child: null,
+            taxesOccTriple: null,
+            taxes_occ_triple: null,
+            taxesOccQuad: null,
+            taxes_occ_quad: null,
+            taxesOccAutres: null,
+            taxes_occ_autres: null
+        };
+    }
+
     function getOccupationDef(occupationId) {
         return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
     }
@@ -865,7 +905,7 @@
             images: buildProductGallery({ ...p, img, imgRoom, imgExtra })
         };
 
-        return base;
+        return clearLegacyTaxOccFields(normalizeOccupationPriceFields(base));
     }
 
     function extractPackageArray(data) {
