@@ -154,8 +154,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=17"></script>
-    <script src="api.js?v=56"></script>
+    <script src="config.js?v=18"></script>
+    <script src="api.js?v=57"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -781,7 +781,10 @@
                 .filter(Boolean)
                 .filter((part, index, arr) => index === 0 || part !== arr[0])
                 .join(', ');
-            const breadcrumbDestParam = encodeURIComponent(p.destinationLabel || p.destination || p.country || '');
+            const breadcrumbDestKey = VoyageFiestaAPI.normalizeDestinationKey(
+                p.destinationLabel || p.destination || p.subDest || ''
+            );
+            const breadcrumbDestParam = encodeURIComponent(breadcrumbDestKey || p.destinationLabel || p.destination || '');
 
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">

@@ -1103,13 +1103,49 @@
             product.destination1,
             product.destination,
             product.destinationLabel,
-            product.country
+            product.country,
+            product.location
         ];
         for (const value of candidates) {
-            const key = normalizeDestinationKey(value);
-            if (key) keys.add(key);
+            if (value === undefined || value === null || value === '') continue;
+            const parts = String(value).split(/[,/|]/).map(s => s.trim()).filter(Boolean);
+            for (const part of (parts.length ? parts : [String(value).trim()])) {
+                const key = normalizeDestinationKey(part);
+                if (key) keys.add(key);
+            }
         }
         return keys;
+    }
+
+    function formatDestinationLabelFromKey(key) {
+        if (!key) return '';
+        const labels = window.FILTER_DESTINATIONS || [];
+        for (const label of labels) {
+            if (normalizeDestinationKey(label) === key) return label;
+        }
+        const aliases = window.DESTINATION_ALIASES || {};
+        for (const [alias, target] of Object.entries(aliases)) {
+            if (normalizeDestinationKey(alias) === key || normalizeDestinationKey(target) === key) {
+                return target;
+            }
+        }
+        return String(key)
+            .replace(/_/g, ' ')
+            .replace(/\b([a-zàâäéèêëïîôùûüç])/gi, (_, c) => c.toUpperCase());
+    }
+
+    /** Options filtre destination — uniquement les clés présentes dans le catalogue. */
+    function getDestinationFilterOptions(products) {
+        const map = new Map();
+        for (const product of products || []) {
+            for (const key of getProductDestinationFilterKeys(product)) {
+                if (!key || map.has(key)) continue;
+                map.set(key, formatDestinationLabelFromKey(key));
+            }
+        }
+        return [...map.entries()]
+            .sort((a, b) => a[1].localeCompare(b[1], 'fr'))
+            .map(([value, label]) => ({ value, label }));
     }
 
     function matchesDestinationFilter(product, selectedDestinations) {
@@ -1279,6 +1315,8 @@
         matchesSupplierFilter,
         matchesDestinationFilter,
         getProductDestinationFilterKeys,
+        getDestinationFilterOptions,
+        formatDestinationLabelFromKey,
         normalizeDestinationKey,
         formatDestinationLabel,
         formatAirportLabel,

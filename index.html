@@ -85,14 +85,15 @@
         </div>
     </section>
 
-    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row lg:flex-wrap gap-8 flex-grow">
-        <nav class="w-full text-xs text-gray-500 flex flex-wrap items-center gap-2 -mb-2" aria-label="Fil d'Ariane">
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <nav class="text-xs text-gray-500 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
             <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
             <span aria-hidden="true">/</span>
             <span class="text-brand-blue font-semibold">Promotions</span>
         </nav>
-        
-        <aside class="filters-sidebar w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-6 h-fit lg:sticky lg:z-30 lg:self-start">
+
+        <div class="flex flex-col lg:flex-row gap-8">
+        <aside class="filters-sidebar w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-6 h-fit lg:sticky lg:z-30 lg:self-start shrink-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-brand-blue"><i class="fa-solid fa-filter mr-2"></i>Filtres</h2>
                 <button id="reset-filters" class="text-sm text-gray-500 hover:text-brand-orange underline">Réinitialiser</button>
@@ -129,7 +130,7 @@
             <div class="mb-2" id="filter-airports-wrap"></div>
         </aside>
 
-        <section class="w-full lg:w-3/4 relative z-0">
+        <section class="w-full lg:flex-1 min-w-0 relative z-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800"><span id="result-count">0</span> Forfaits trouvés</h2>
                 <select id="sort-products" class="border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
@@ -155,11 +156,12 @@
                 <p class="text-sm">Veuillez réessayer plus tard.</p>
             </div>
         </section>
+        </div>
 
     </main>
 
-    <script src="config.js?v=17"></script>
-    <script src="api.js?v=56"></script>
+    <script src="config.js?v=18"></script>
+    <script src="api.js?v=57"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -259,18 +261,14 @@
                 cb.addEventListener('change', () => {
                     updateDropdownLabel(dropdown);
                     applyFilters();
+                    if (inputClass === 'filter-destination') {
+                        closeAllDropdowns();
+                    }
                 });
             });
         }
 
         function buildFilterUI() {
-            buildSearchableMultiSelect({
-                containerId: 'filter-destinations-wrap',
-                label: 'Destinations',
-                options: FILTER_DESTINATIONS,
-                inputClass: 'filter-destination',
-                defaultLabel: 'Toutes les destinations'
-            });
             buildSearchableMultiSelect({
                 containerId: 'filter-criteria-wrap',
                 label: 'Critères',
@@ -292,6 +290,17 @@
                 if (!e.target.closest('.filter-dropdown')) {
                     closeAllDropdowns();
                 }
+            });
+        }
+
+        function buildDestinationFilter(productList) {
+            const options = VoyageFiestaAPI.getDestinationFilterOptions(productList);
+            buildSearchableMultiSelect({
+                containerId: 'filter-destinations-wrap',
+                label: 'Destinations',
+                options,
+                inputClass: 'filter-destination',
+                defaultLabel: 'Toutes les destinations'
             });
         }
 
@@ -539,7 +548,8 @@
             if (!wanted) return;
 
             document.querySelectorAll('.filter-destination').forEach(cb => {
-                cb.checked = VoyageFiestaAPI.normalizeDestinationKey(cb.value) === wanted;
+                cb.checked = cb.value === wanted
+                    || VoyageFiestaAPI.normalizeDestinationKey(cb.value) === wanted;
             });
             document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
                 if (dropdown.querySelector('.filter-destination')) {
@@ -550,14 +560,15 @@
 
         async function init() {
             buildFilterUI();
-            applyDestinationFromUrl();
             document.getElementById('loading-state').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('error-state').classList.add('hidden');
             try {
                 products = await VoyageFiestaAPI.fetchProducts();
+                buildDestinationFilter(products);
                 buildSupplierFilter(products);
                 buildDepartureDateFilter(products);
+                applyDestinationFromUrl();
                 if (!products.length) {
                     document.getElementById('empty-state').classList.remove('hidden');
                     document.getElementById('result-count').innerText = '0';

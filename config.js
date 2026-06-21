@@ -138,7 +138,8 @@
         st_martin: 'Saint-Martin',
         playacar: 'Riviera Maya',
         freeport: 'Bahamas',
-        republique_dominicaine: 'Punta Cana'
+        republique_dominicaine: 'Punta Cana',
+        cozumel: 'Cozumel'
     };
 
     /** Critères (boutique filter) — labels + GHL keys from field `criteria` */
