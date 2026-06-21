@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-21T22:13:10.974Z",
+  "updatedAt": "2026-06-21T22:16:16.415Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -458,7 +458,7 @@
       "taxesOccAutres": null,
       "discountAmount": 1541,
       "financingMonthly": null,
-      "depositAmount": null,
+      "depositAmount": 200,
       "finalPaymentDate": "2026-09-15T00:00:00.000Z",
       "returnDate": "2027-01-06T00:00:00.000Z",
       "priceChild212": 1368,
@@ -603,12 +603,14 @@
       "carrier": "westjet",
       "durationNights": 7,
       "roomCategory": "Chambre Supérieur",
-      "criteria": [],
+      "criteria": [
+        "tout_inclus"
+      ],
       "inventory": 8,
-      "price": 2099,
+      "price": 1858,
       "priceOccSimple": null,
       "priceOccTriple": null,
-      "priceOccDouble1Child": 1732,
+      "priceOccDouble1Child": 1571.33,
       "priceOccDouble2Child": null,
       "priceOccSimple1Child": null,
       "priceOccQuad": null,
