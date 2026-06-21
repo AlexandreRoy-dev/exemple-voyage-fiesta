@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-21T19:11:09.466Z",
+  "updatedAt": "2026-06-21T19:23:17.884Z",
   "source": "ghl",
   "schemaKey": "custom_objects.forfaits_voyage",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -34,7 +34,7 @@
       "priceOccSimple1Child": null,
       "priceOccQuad": null,
       "priceAutres": null,
-      "taxesAmount": 195,
+      "taxesAmount": 390,
       "taxesOccDouble": null,
       "taxesOccDouble1Child": null,
       "taxesOccDouble2Child": null,
@@ -548,7 +548,7 @@
         "tout_inclus_allinclusive"
       ],
       "inventory": 1,
-      "price": 1568,
+      "price": 1658,
       "priceOccSimple": null,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
@@ -556,7 +556,7 @@
       "priceOccSimple1Child": null,
       "priceOccQuad": null,
       "priceAutres": null,
-      "taxesAmount": 120,
+      "taxesAmount": 240,
       "taxesOccDouble": null,
       "taxesOccDouble1Child": null,
       "taxesOccDouble2Child": null,
