@@ -663,8 +663,8 @@
         set('sub_destination', p.subDest);
         set('country', p.country);
         set('departure_airport', p.departureAirport);
-        set('supplier', p.supplier);
-        set('carrier', p.carrier);
+        set('supplier', p.supplierLabel || formatSupplierLabel(p.supplier));
+        set('carrier', p.carrierLabel || formatCarrierLabel(p.carrier));
         set('room_category', p.roomCategory);
         set('package_type', p.packageType);
         set('duration_nights', p.durationNights);
@@ -945,6 +945,8 @@
             location,
             supplier,
             carrier,
+            supplierLabel: formatSupplierLabel(supplier),
+            carrierLabel: formatCarrierLabel(carrier),
             taxesAmount,
             destLabel: (window.destLabels && window.destLabels[p.destTag])
                 || (p.destTag ? String(p.destTag) : '')
@@ -1109,12 +1111,26 @@
     }
 
     /** Logo compagnie aérienne — carrier d'abord, jamais le fournisseur tour operator. */
+    function resolveCarrierLogoKey(normalizedKey) {
+        if (!normalizedKey) return '';
+        const aliases = window.CARRIER_LOGO_KEY_ALIASES || {};
+        return aliases[normalizedKey] || normalizedKey;
+    }
+
+    function getCarrierLogo(carrier) {
+        const key = resolveCarrierLogoKey(normalizeCarrierKey(carrier));
+        if (!key) return null;
+        const logos = window.SUPPLIER_LOGOS || {};
+        const path = logos[key];
+        return path ? String(path).trim() : null;
+    }
+
     function getAirlineLogo(p) {
         const flights = p.flights || {};
         const custom = String(flights.airlineLogo || '').trim();
         if (custom) return custom;
         const carrier = String(p.carrier || '').trim();
-        if (carrier) return getSupplierLogo(carrier);
+        if (carrier) return getCarrierLogo(carrier);
         return null;
     }
 
@@ -1131,6 +1147,75 @@
         return raw
             .replace(/_/g, ' ')
             .replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+
+    function normalizeCarrierKey(carrier) {
+        if (carrier === undefined || carrier === null || carrier === '') return '';
+        const raw = String(carrier).trim();
+        if (!raw) return '';
+
+        const labels = window.CARRIER_LABELS || {};
+        for (const [key, label] of Object.entries(labels)) {
+            if (raw === key || raw.toLowerCase() === key || raw === label) {
+                return key;
+            }
+        }
+
+        const slug = raw
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '');
+
+        const aliases = {
+            ac: 'air_canada',
+            air_canada_vacations: 'air_canada',
+            west_jet: 'westjet',
+            sunwing_airlines: 'sunwing'
+        };
+
+        return aliases[slug] || slug;
+    }
+
+    function formatCarrierLabel(carrier) {
+        const key = normalizeCarrierKey(carrier);
+        if (!key) return '';
+        const labels = window.CARRIER_LABELS || {};
+        if (labels[key]) return labels[key];
+
+        const raw = String(carrier).trim();
+        return raw
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, ch => ch.toUpperCase());
+    }
+
+    /** Libellé affiché pour un champ produit (carrier, supplier, etc.) */
+    function formatProductDisplayValue(product, fieldKey, rawValue) {
+        const p = product || {};
+        const key = String(fieldKey || '').trim().toLowerCase();
+        const value = rawValue !== undefined && rawValue !== null && rawValue !== ''
+            ? rawValue
+            : p[key] ?? p[fieldKey];
+
+        switch (key) {
+            case 'carrier':
+            case 'transporteur':
+                return p.carrierLabel || formatCarrierLabel(value);
+            case 'supplier':
+            case 'fournisseur':
+                return p.supplierLabel || formatSupplierLabel(value);
+            case 'departure_airport':
+            case 'departureairport':
+            case 'aeroport_depart':
+                return p.departureAirport || formatAirportLabel(value);
+            case 'return_airport':
+            case 'returnairport':
+            case 'aeroport_retour':
+                return p.returnAirport || formatAirportLabel(value);
+            default:
+                return value === undefined || value === null ? '' : String(value);
+        }
     }
 
     function getSupplierLogo(supplier) {
@@ -1442,7 +1527,11 @@
         normalizeExternalUrl,
         normalizeSupplierKey,
         formatSupplierLabel,
+        normalizeCarrierKey,
+        formatCarrierLabel,
+        formatProductDisplayValue,
         getSupplierLogo,
+        getCarrierLogo,
         getAirlineLogo,
         resolveLogoKey,
         clampInt,

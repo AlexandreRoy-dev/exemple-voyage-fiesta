@@ -154,8 +154,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=18"></script>
-    <script src="api.js?v=58"></script>
+    <script src="config.js?v=20"></script>
+    <script src="api.js?v=60"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -208,11 +208,15 @@
         }
 
         function getInclusions(p) {
+            const carrierLabel = VoyageFiestaAPI.formatProductDisplayValue(p, 'carrier');
+            const baggageNote = carrierLabel
+                ? `1 bagage enregistré (selon ${carrierLabel})`
+                : '1 bagage enregistré (selon le transporteur)';
             const base = [
                 { icon: 'fa-plane', text: 'Vols aller-retour directs ou avec escales' },
                 { icon: 'fa-bus', text: 'Transferts aéroport → hôtel → aéroport' },
                 { icon: 'fa-hotel', text: 'Hébergement pour la durée du séjour' },
-                { icon: 'fa-suitcase', text: '1 bagage enregistré (selon le transporteur)' },
+                { icon: 'fa-suitcase', text: baggageNote },
                 { icon: 'fa-shield-halved', text: 'Contribution au Fonds FICAV' }
             ];
             if (p.packageType.includes('Tout-Inclus') || p.packageType.includes('Croisière')) {
@@ -482,11 +486,11 @@
             if (!VoyageFiestaAPI.hasFlights(p)) return '';
 
             const flights = VoyageFiestaAPI.getEffectiveFlights(p);
-            const supplierLabel = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier || 'le fournisseur';
-            const carrier = p.carrier || 'Compagnie aérienne';
+            const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier || 'le fournisseur';
+            const carrier = p.carrierLabel || VoyageFiestaAPI.formatCarrierLabel(p.carrier) || 'Compagnie aérienne';
             const airlineLogo = flights.airlineLogo || '';
             const supplierKey = VoyageFiestaAPI.normalizeSupplierKey(p.supplier);
-            const carrierKey = VoyageFiestaAPI.normalizeSupplierKey(carrier);
+            const carrierKey = VoyageFiestaAPI.normalizeCarrierKey(p.carrier);
             const viaSupplierNote = supplierLabel && supplierKey && carrierKey && supplierKey !== carrierKey
                 ? ` <span class="text-gray-500 font-normal">(via ${escapeHtml(supplierLabel)})</span>`
                 : '';
@@ -746,7 +750,7 @@
             ).join('');
 
             const metaCards = [
-                { icon: 'fa-plane-up', label: 'Transporteur', value: p.carrier },
+                { icon: 'fa-plane-up', label: 'Transporteur', value: VoyageFiestaAPI.formatProductDisplayValue(p, 'carrier') },
                 { icon: 'fa-bed', label: 'Type de chambre', value: p.roomCategory }
             ].filter(c => String(c.value || '').trim());
 
@@ -816,7 +820,7 @@
                                         <div class="text-right min-w-0 flex-1">
                                             <p class="text-xs text-gray-500 font-bold uppercase">Fournisseur</p>
                                             ${(() => {
-                                                const supplierLabel = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+                                                const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
                                                 const supplierLogo = VoyageFiestaAPI.getSupplierLogo(p.supplier);
                                                 if (supplierLogo) {
                                                     return `<img src="${escapeHtml(supplierLogo)}" alt="${escapeHtml(supplierLabel)}" class="h-10 w-auto max-w-[9rem] object-contain object-right ml-auto mt-1" loading="lazy">`;
@@ -1012,7 +1016,7 @@
             const openBtn = document.getElementById('open-reservation');
             if (!openBtn) return;
 
-            const supplierLabel = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+            const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
             const iframe = document.getElementById('ghl-form-iframe');
             const placeholder = document.getElementById('ghl-form-placeholder');
 

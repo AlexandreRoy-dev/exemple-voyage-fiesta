@@ -15,9 +15,24 @@
         vacances_transat: 'Vacances Transat'
     };
 
+    /** Compagnies aériennes — clé normalisée (slug GHL) → nom affiché */
+    window.CARRIER_LABELS = {
+        air_canada: 'Air Canada',
+        westjet: 'WestJet',
+        westjet_quebec: 'WestJet',
+        sunwing: 'Sunwing Airlines',
+        transat: 'Air Transat'
+    };
+
     /** Alias clé normalisée → clé utilisée dans SUPPLIER_LOGOS */
     window.SUPPLIER_LOGO_KEY_ALIASES = {
         westjet: 'westjet_quebec'
+    };
+
+    /** Alias compagnie aérienne → clé logo (assets/suppliers/) */
+    window.CARRIER_LOGO_KEY_ALIASES = {
+        westjet: 'westjet_quebec',
+        westjet_quebec: 'westjet_quebec'
     };
 
     /** Logos fournisseurs / compagnies — clé normalisée → chemin relatif (assets/suppliers/) */
