@@ -85,7 +85,12 @@
         </div>
     </section>
 
-    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 flex-grow">
+    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row lg:flex-wrap gap-8 flex-grow">
+        <nav class="w-full text-xs text-gray-500 flex flex-wrap items-center gap-2 -mb-2" aria-label="Fil d'Ariane">
+            <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <span class="text-brand-blue font-semibold">Promotions</span>
+        </nav>
         
         <aside class="filters-sidebar w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-6 h-fit lg:sticky lg:z-30 lg:self-start">
             <div class="flex justify-between items-center mb-6">
@@ -153,8 +158,8 @@
 
     </main>
 
-    <script src="config.js?v=16"></script>
-    <script src="api.js?v=53"></script>
+    <script src="config.js?v=17"></script>
+    <script src="api.js?v=56"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -526,8 +531,26 @@
 
         setInterval(updateTimers, 1000);
 
+        function applyDestinationFromUrl() {
+            const dest = new URLSearchParams(window.location.search).get('destination');
+            if (!dest) return;
+
+            const wanted = VoyageFiestaAPI.normalizeDestinationKey(dest);
+            if (!wanted) return;
+
+            document.querySelectorAll('.filter-destination').forEach(cb => {
+                cb.checked = VoyageFiestaAPI.normalizeDestinationKey(cb.value) === wanted;
+            });
+            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+                if (dropdown.querySelector('.filter-destination')) {
+                    updateDropdownLabel(dropdown);
+                }
+            });
+        }
+
         async function init() {
             buildFilterUI();
+            applyDestinationFromUrl();
             document.getElementById('loading-state').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('error-state').classList.add('hidden');

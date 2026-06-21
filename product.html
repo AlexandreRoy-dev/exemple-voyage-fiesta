@@ -154,8 +154,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=16"></script>
-    <script src="api.js?v=55"></script>
+    <script src="config.js?v=17"></script>
+    <script src="api.js?v=56"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -777,13 +777,23 @@
             const galleryHtml = buildProductGalleryHtml(p, gallery);
             const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
             const returnLabel = VoyageFiestaAPI.formatDepartureDate(p.returnDate);
+            const breadcrumbLocation = [p.destinationLabel || p.destination, p.country]
+                .filter(Boolean)
+                .filter((part, index, arr) => index === 0 || part !== arr[0])
+                .join(', ');
+            const breadcrumbDestParam = encodeURIComponent(p.destinationLabel || p.destination || p.country || '');
 
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">
-                    <nav class="text-xs text-gray-500 mb-4 flex gap-2 flex-wrap">
-                        <a href="index.html" class="hover:underline">Accueil</a> <span>/</span>
-                        <a href="index.html" class="hover:underline">${p.destLabel}</a> <span>/</span>
-                        <span class="text-brand-blue font-bold">${p.country}</span>
+                    <nav class="text-xs text-gray-500 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
+                        <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
+                        <span aria-hidden="true">/</span>
+                        <a href="index.html" class="hover:underline">Promotions</a>
+                        ${breadcrumbLocation ? `
+                            <span aria-hidden="true">/</span>
+                            <a href="index.html?destination=${breadcrumbDestParam}" class="hover:underline">${escapeHtml(breadcrumbLocation)}</a>` : ''}
+                        <span aria-hidden="true">/</span>
+                        <span class="text-brand-blue font-bold">${escapeHtml(p.name)}</span>
                     </nav>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -134,7 +134,11 @@
         saintelucie: 'Sainte-Lucie',
         panama: 'Panama',
         roatan: 'Roatan',
-        saintmartin: 'Saint-Martin'
+        saintmartin: 'Saint-Martin',
+        st_martin: 'Saint-Martin',
+        playacar: 'Riviera Maya',
+        freeport: 'Bahamas',
+        republique_dominicaine: 'Punta Cana'
     };
 
     /** Critères (boutique filter) — labels + GHL keys from field `criteria` */

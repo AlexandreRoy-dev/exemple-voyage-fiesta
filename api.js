@@ -870,7 +870,9 @@
             supplier,
             carrier,
             taxesAmount,
-            destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
+            destLabel: (window.destLabels && window.destLabels[p.destTag])
+                || (p.destTag ? String(p.destTag) : '')
+                || formatDestinationLabel(p.destination1 || p.destination || subDest),
             destination: p.destination1 || p.destination || subDest,
             destinationLabel: formatDestinationLabel(p.destination1 || p.destination || subDest),
             departureAirport: formatAirportLabel(
@@ -1094,11 +1096,30 @@
         return selectedSuppliers.some(s => normalizeSupplierKey(s) === productKey);
     }
 
+    function getProductDestinationFilterKeys(product) {
+        const keys = new Set();
+        const candidates = [
+            product.subDest,
+            product.destination1,
+            product.destination,
+            product.destinationLabel,
+            product.country
+        ];
+        for (const value of candidates) {
+            const key = normalizeDestinationKey(value);
+            if (key) keys.add(key);
+        }
+        return keys;
+    }
+
     function matchesDestinationFilter(product, selectedDestinations) {
         if (!selectedDestinations.length) return true;
-        const productKey = normalizeDestinationKey(product.destination);
-        if (!productKey) return false;
-        return selectedDestinations.some(d => normalizeDestinationKey(d) === productKey);
+        const productKeys = getProductDestinationFilterKeys(product);
+        if (!productKeys.size) return false;
+        return selectedDestinations.some(d => {
+            const selectedKey = normalizeDestinationKey(d);
+            return selectedKey && productKeys.has(selectedKey);
+        });
     }
 
     function normalizeDestinationKey(value) {
@@ -1257,6 +1278,7 @@
         getProductBySlug,
         matchesSupplierFilter,
         matchesDestinationFilter,
+        getProductDestinationFilterKeys,
         normalizeDestinationKey,
         formatDestinationLabel,
         formatAirportLabel,
