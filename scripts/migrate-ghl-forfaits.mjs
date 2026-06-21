@@ -16,6 +16,11 @@
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  VOYAGES_SCHEMA_KEY,
+  formatPropertiesForGhlApi,
+  loadVoyagesFieldKeysFromSchema
+} from './ghl-voyages-fields.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -332,7 +337,19 @@ function loadTargetFieldKeys() {
   const path = resolve(IMPORTS, 'ghl-schema-target.json');
   if (!existsSync(path)) return null;
   const data = JSON.parse(readFileSync(path, 'utf8'));
-  return new Set((data.fields || []).map(f => f.key).filter(Boolean));
+  return loadVoyagesFieldKeysFromSchema(data);
+}
+
+function validateMappedProperties(ghlProps, targetKeys) {
+  const warnings = [];
+  if (!targetKeys) return warnings;
+  for (const key of Object.keys(ghlProps)) {
+    if (key === 'name') continue;
+    if (!targetKeys.has(key) && !targetKeys.has(`${VOYAGES_SCHEMA_KEY}.${key}`)) {
+      warnings.push(`Key "${key}" absente du schéma cible GHL`);
+    }
+  }
+  return warnings;
 }
 
 async function main() {
@@ -371,22 +388,9 @@ async function main() {
   for (const record of records) {
     const props = record.properties || record.fields || record;
     const mapped = mapOldRecordToNew(props, { sourceId: record.id });
-
-    if (targetKeys) {
-      for (const key of Object.keys(mapped.properties)) {
-        if (key === 'name') continue;
-        if (!targetKeys.has(key)) {
-          mapped.warnings.push(`Key "${key}" absente du schéma cible — retirée à l'apply`);
-        }
-      }
-      if (APPLY) {
-        const filtered = { name: mapped.properties.name };
-        for (const [k, v] of Object.entries(mapped.properties)) {
-          if (k === 'name' || targetKeys.has(k)) filtered[k] = v;
-        }
-        mapped.properties = filtered;
-      }
-    }
+    const ghlProperties = formatPropertiesForGhlApi(mapped.properties);
+    mapped.ghlProperties = ghlProperties;
+    mapped.warnings.push(...validateMappedProperties(ghlProperties, targetKeys));
 
     if (APPLY && targetKey) {
       try {
@@ -394,7 +398,7 @@ async function main() {
           apiKey,
           locationId,
           schemaKey: targetKey,
-          properties: mapped.properties
+          properties: ghlProperties
         });
         mapped.targetRecordId = result.record?.id || result.id;
         created += 1;

@@ -13,6 +13,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { pickVoyagesUnwrapped } from './ghl-voyages-fields.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -39,6 +40,12 @@ function pick(props, ...keys) {
     if (val !== undefined && val !== null && val !== '') return val;
   }
   return undefined;
+}
+
+function pickProp(props, logicalKey, ...legacyKeys) {
+  const voyagesVal = pickVoyagesUnwrapped(props, logicalKey);
+  if (voyagesVal !== undefined && voyagesVal !== null && voyagesVal !== '') return voyagesVal;
+  return pick(props, logicalKey, ...legacyKeys);
 }
 
 function unwrapFieldValue(value) {
@@ -158,7 +165,63 @@ function mergeSyncOverrides(product, previous) {
 }
 
 function resolveTaxesAmountPerPerson(props) {
-  return optionalTaxAmount(pick(props, 'taxes_amount', 'taxesAmount'));
+  return optionalTaxAmount(
+    pickProp(props, 'taxes_par_personne', 'taxes_amount', 'taxesAmount')
+  );
+}
+
+/** Moyenne $ / pers. pour occupations famille (composantes enfant du nouvel objet Voyage). */
+function computeOccupationPerPersonPrices(props) {
+  const avg = (total, people) => {
+    if (!Number.isFinite(total) || people <= 0) return null;
+    return Math.round((total / people) * 100) / 100;
+  };
+
+  const prixDouble = optionalPrice(
+    pickProp(props, 'prix_occ_double', 'price', 'price_occ_double', 'prix')
+  );
+  const prixSimple = optionalPrice(pickProp(props, 'prix_occ_simple', 'price_occ_simple', 'priceOccSimple'));
+  const prixTriple = optionalPrice(pickProp(props, 'prix_occ_triple', 'price_occ_triple', 'priceOccTriple'));
+  const prixQuad = optionalPrice(pickProp(props, 'prix_occ_quad', 'price_occ_quad', 'priceOccQuad'));
+  const enfant1 = optionalPrice(
+    pickProp(props, 'prix_1er_enfant_2_12', 'price_child_2_12', 'priceChild212')
+  );
+  const enfant2 = optionalPrice(pickProp(props, 'prix_2e_enfant_2_12'));
+
+  let priceOccDouble1Child = optionalPrice(
+    pick(props, 'price_occ_double_1_child', 'priceOccDouble1Child', 'price_double_1_child')
+  );
+  let priceOccDouble2Child = optionalPrice(
+    pick(props, 'price_occ_double_2_child', 'priceOccDouble2Child', 'price_double_2_child')
+  );
+  let priceOccSimple1Child = optionalPrice(
+    pick(props, 'price_occ_simple_1_child', 'priceOccSimple1Child', 'price_simple_1_child')
+  );
+
+  if (priceOccDouble1Child === null && prixDouble !== null && enfant1 !== null) {
+    priceOccDouble1Child = avg(2 * prixDouble + enfant1, 3);
+  }
+  if (priceOccDouble2Child === null && prixDouble !== null && enfant1 !== null && enfant2 !== null) {
+    priceOccDouble2Child = avg(2 * prixDouble + enfant1 + enfant2, 4);
+  }
+  if (priceOccSimple1Child === null && prixSimple !== null && enfant1 !== null) {
+    priceOccSimple1Child = avg(prixSimple + enfant1, 2);
+  }
+
+  return {
+    prixDouble,
+    prixSimple,
+    prixTriple,
+    prixQuad,
+    priceOccDouble1Child,
+    priceOccDouble2Child,
+    priceOccSimple1Child,
+    priceChild212: enfant1,
+    priceChild1317: optionalPrice(
+      pickProp(props, 'prix_1er_enfant_13_17', 'price_child_13_17', 'priceChild1317')
+    ),
+    priceChild2Minus: optionalPrice(pickProp(props, 'prix_enfant_2_moins'))
+  };
 }
 
 /** taxes_amount ($/pers.) prime — legacy taxes_occ_* ignorés quand présent. */
@@ -397,6 +460,7 @@ function normalizeState(raw) {
   const s = rawStateValue(raw).toLowerCase().trim();
   if (!s) return 'brouillon';
 
+  if (s === 'inactif' || s === 'inactive') return 'inactif';
   if (s === 'actif' || s === 'active') return 'actif';
   if (s === 'brouillon' || s === 'draft') return 'brouillon';
   if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
@@ -599,10 +663,10 @@ function mapFlightLeg(props, prefix, aliases = {}) {
 }
 
 function mapFlights(props) {
-  return {
+  const flights = {
     out: mapFlightLeg(props, 'flight_out', {
       from: 'vol_aller_depart',
-      departDate: 'vol_aller_date_depart',
+      departDate: 'vol_aller_date',
       departTime: 'vol_aller_heure_depart',
       to: 'vol_aller_arrivee',
       arriveDate: 'vol_aller_date_arrivee',
@@ -611,7 +675,7 @@ function mapFlights(props) {
     }),
     return: mapFlightLeg(props, 'flight_return', {
       from: 'vol_retour_depart',
-      departDate: 'vol_retour_date_depart',
+      departDate: 'vol_retour_date',
       departTime: 'vol_retour_heure_depart',
       to: 'vol_retour_arrivee',
       arriveDate: 'vol_retour_date_arrivee',
@@ -620,41 +684,69 @@ function mapFlights(props) {
     }),
     airlineLogo: pickText(props, 'flight_airline_logo', 'vol_compagnie_logo') || ''
   };
+
+  const outNumber = pickProp(props, 'vol_aller_numero');
+  const outTime = pickProp(props, 'vol_aller_heure_depart');
+  const retNumber = pickProp(props, 'vol_retour_numero');
+  const retTime = pickProp(props, 'vol_retour_heure_depart');
+  if (outNumber) flights.out.number = String(outNumber).trim();
+  if (outTime) flights.out.departTime = String(outTime).trim();
+  if (retNumber) flights.return.number = String(retNumber).trim();
+  if (retTime) flights.return.departTime = String(retTime).trim();
+
+  return flights;
 }
 
 async function mapRecord(record, apiKey, manifest, slug) {
   const props = record.properties || record.fields || record;
-  const state = normalizeState(pick(props, 'state', 'status'));
+  let state = normalizeState(pickProp(props, 'statut', 'state', 'status'));
+  const inventoryRaw = toNumber(pickProp(props, 'inventaire', 'inventory', 'stock'), 0);
+  if (state === 'inactif' && inventoryRaw === 0) state = 'complet_sold_out';
   const active = state;
+  const occ = computeOccupationPerPersonPrices(props);
 
   const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
-  const subDest = pick(props, 'sub_dest', 'subDest', 'sub_destination', 'city') || '';
-  const durationNights = toNumber(pick(props, 'duration_nights', 'durationNights'), 7);
+  const destinationLabel = pickProp(props, 'destination', 'destination1', 'dest_destination') || '';
+  const subDest = pick(props, 'sub_dest', 'subDest', 'sub_destination', 'city') || destinationLabel;
+  const durationNights = toNumber(
+    pickProp(props, 'duree_nuits', 'duration_nights', 'durationNights'),
+    7
+  );
   const departureDate = normalizeDateField(
-    pick(props, 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
+    pickProp(props, 'date_depart', 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
   );
   const resolvedSlug = slug
     ? (normalizeExplicitSlug(slug) || normalizeSlug(slug))
     : buildAutoSlugBase(name, departureDate);
-  const destination1 = normalizeDestination1(
-    pick(props, 'destination1', 'destination', 'dest_destination') || subDest
+  const destination1 = normalizeDestination1(destinationLabel || subDest);
+
+  const criteria = toStringArray(pickProp(props, 'criteres', 'criteria', 'tags'));
+  const seoTags = toStringArray(pick(props, 'tags_seo', 'seo_tags', 'seoTags', 'seo'));
+
+  let endDate = normalizeDateField(
+    pickProp(props, 'date_fin_promo', 'end_date', 'endDate', 'top_chrono_end')
   );
-
-  const criteria = toStringArray(pick(props, 'criteria', 'criteres', 'tags'));
-  const seoTags = toStringArray(pick(props, 'seo_tags', 'seoTags', 'seo'));
-
-  let endDate = normalizeDateField(pick(props, 'end_date', 'endDate', 'top_chrono_end'));
   const returnDate = normalizeDateField(pick(props, 'return_date', 'returnDate', 'date_retour'))
     || deriveReturnDateIso(departureDate, durationNights);
 
-  const country = pick(props, 'country', 'pays') || '';
-  const supplier = pick(props, 'supplier', 'fournisseur') || '';
-  const carrier = pick(props, 'carrier', 'transporteur') || '';
+  const country = pickProp(props, 'pays', 'country') || '';
+  const supplier = pickProp(props, 'fournisseur', 'supplier') || '';
+  const carrier = pickProp(props, 'transporteur', 'carrier') || '';
   const location = pick(props, 'location', 'address', 'adresse') || buildLocationText(subDest, country);
 
-  const imgUpload = pick(props, 'img', 'image', 'main_image', 'photo');
-  const imgRoomUpload = pick(props, 'img_room', 'imgRoom', 'room_image');
-  const imgExtraUpload = pick(props, 'img_extra', 'imgExtra', 'extra_image');
+  const imgUpload = pickProp(props, 'photo_principale', 'img', 'image', 'main_image', 'photo');
+  const imgExtraUpload = pickProp(
+    props,
+    'photo_extra',
+    'img_extra',
+    'imgExtra',
+    'extra_image',
+    'photo_chambre',
+    'img_room',
+    'imgRoom'
+  );
+  const imgGalleryUpload = pick(props, 'galerie_photos', 'img_gallery', 'gallery', 'photos', 'images');
+  const taxFields = applyTaxFields(props);
 
   const img = await mirrorImageField({
     apiKey,
@@ -662,14 +754,6 @@ async function mapRecord(record, apiKey, manifest, slug) {
     field: 'img',
     uploadValue: imgUpload,
     urlOverride: pick(props, 'img_url', 'image_url'),
-    manifest
-  });
-  const imgRoom = await mirrorImageField({
-    apiKey,
-    slug: resolvedSlug,
-    field: 'room',
-    uploadValue: imgRoomUpload,
-    urlOverride: pick(props, 'img_room_url'),
     manifest
   });
   const imgExtra = await mirrorImageField({
@@ -680,72 +764,83 @@ async function mapRecord(record, apiKey, manifest, slug) {
     urlOverride: pick(props, 'img_extra_url'),
     manifest
   });
-  const imgGalleryUpload = pick(props, 'img_gallery', 'gallery', 'photos', 'images');
   const galleryPaths = await mirrorGalleryImages({
     apiKey,
     slug: resolvedSlug,
     uploadValue: imgGalleryUpload,
     manifest
   });
-  const images = uniqueImagePaths([img], [imgRoom], [imgExtra], galleryPaths);
-  const taxFields = applyTaxFields(props);
+  const images = uniqueImagePaths([img], [imgExtra], galleryPaths);
 
   return {
     id: record.id || pick(props, 'id') || resolvedSlug,
-    slug: resolvedSlug,
+    slug: pick(props, 'identifiant_url', 'slug') || resolvedSlug,
     name,
     state,
     active,
-    destTag: pick(props, 'dest_tag', 'destTag', 'region') || '',
+    destTag: pick(props, 'region_promo', 'dest_tag', 'destTag', 'region') || '',
     subDest,
     destination1,
     destination: destination1,
     country,
     location,
-    stars: normalizeStars(pick(props, 'stars', 'star_rating'), 0),
+    stars: normalizeStars(pickProp(props, 'etoiles', 'stars', 'star_rating'), 0),
     supplier,
     carrier,
     durationNights,
-    roomCategory: pick(props, 'room_category', 'roomCategory', 'chambre') || '',
+    roomCategory: pickProp(props, 'categorie_chambre', 'room_category', 'roomCategory', 'chambre') || '',
     criteria,
-    inventory: state === 'complet_sold_out' ? 0 : toNumber(pick(props, 'inventory', 'stock'), 0),
-    price: toNumber(pick(props, 'price', 'prix', 'price_occ_double'), 0),
-    priceOccSimple: optionalPrice(pick(props, 'price_occ_simple', 'priceOccSimple')),
-    priceOccTriple: optionalPrice(pick(props, 'price_occ_triple', 'priceOccTriple')),
-    priceOccDouble1Child: optionalPrice(
-      pick(props, 'price_occ_double_1_child', 'priceOccDouble1Child', 'price_double_1_child')
-    ),
-    priceOccDouble2Child: optionalPrice(
-      pick(props, 'price_occ_double_2_child', 'priceOccDouble2Child', 'price_double_2_child')
-    ),
-    priceOccSimple1Child: optionalPrice(
-      pick(props, 'price_occ_simple_1_child', 'priceOccSimple1Child', 'price_simple_1_child')
-    ),
-    priceOccQuad: optionalPrice(pick(props, 'price_occ_quad', 'priceOccQuad')),
+    inventory: state === 'complet_sold_out'
+      ? 0
+      : toNumber(pickProp(props, 'inventaire', 'inventory', 'stock'), 0),
+    price: toNumber(occ.prixDouble ?? pickProp(props, 'prix_occ_double', 'price', 'prix'), 0),
+    priceOccSimple: occ.prixSimple,
+    priceOccTriple: occ.prixTriple,
+    priceOccDouble1Child: occ.priceOccDouble1Child,
+    priceOccDouble2Child: occ.priceOccDouble2Child,
+    priceOccSimple1Child: occ.priceOccSimple1Child,
+    priceOccQuad: occ.prixQuad,
     priceAutres: optionalPrice(pick(props, 'price_autres', 'priceAutres', 'price_occ_autres')),
     ...taxFields,
-    discountAmount: optionalPrice(pick(props, 'discount_amount', 'discountAmount', 'rabais')),
+    discountAmount: optionalPrice(pickProp(props, 'rabais', 'discount_amount', 'discountAmount')),
     financingMonthly: optionalPrice(
       pick(props, 'financement_mensuel', 'financing_monthly', 'financingMonthly')
     ),
-    depositAmount: optionalPrice(pick(props, 'deposit_amount', 'depositAmount')),
+    depositAmount: optionalPrice(
+      pickProp(props, 'depot_par_personne', 'deposit_amount', 'depositAmount')
+    ),
     finalPaymentDate: normalizeDateField(
-      pick(props, 'final_payment_date', 'finalPaymentDate', 'date_paiement_final')
+      pickProp(props, 'date_paiement_final', 'final_payment_date', 'finalPaymentDate')
     ),
     returnDate,
-    priceChild212: optionalPrice(pick(props, 'price_child_2_12', 'priceChild212', 'price_child_2_12_ans')),
-    priceChild1317: optionalPrice(pick(props, 'price_child_13_17', 'priceChild1317', 'price_child_13_17_ans')),
-    taxChild212: optionalPrice(pick(props, 'tax_child_2_12', 'taxChild212', 'tax_child_2_12_ans')),
-    taxChild1317: optionalPrice(pick(props, 'tax_child_13_17', 'taxChild1317', 'tax_child_13_17_ans')),
-    packageType: pick(props, 'package_type', 'packageType', 'forfait_type') || '',
-    hotelDescription: pickText(props, 'hotel_description', 'hotelDescription', 'description_hotel'),
-    forfaitLink: normalizeExternalUrl(pick(props, 'forfait_link', 'forfaitLink')),
+    priceChild212: occ.priceChild212,
+    priceChild1317: occ.priceChild1317,
+    priceChild2Minus: occ.priceChild2Minus,
+    taxChild212: optionalPrice(pick(props, 'tax_child_2_12', 'taxChild212')),
+    taxChild1317: optionalPrice(pick(props, 'tax_child_13_17', 'taxChild1317')),
+    packageType: pickProp(props, 'type_forfait', 'package_type', 'packageType', 'forfait_type') || '',
+    hotelDescription: pickText(
+      props,
+      'description_hotel',
+      'hotel_description',
+      'hotelDescription'
+    ) || String(pickProp(props, 'description_hotel') || '').trim(),
+    forfaitLink: normalizeExternalUrl(
+      pickProp(props, 'lien_fiche_fournisseur', 'forfait_link', 'forfaitLink')
+    ),
     endDate,
     departureDate,
-    departureAirport: pick(props, 'departure_airport', 'departureAirport', 'airport') || '',
+    departureAirport: pickProp(
+      props,
+      'aeroport_depart',
+      'departure_airport',
+      'departureAirport',
+      'airport'
+    ) || '',
+    returnAirport: pickProp(props, 'aeroport_retour', 'return_airport') || '',
     flights: mapFlights(props),
     img,
-    imgRoom: imgRoom || img,
+    imgRoom: imgExtra || img,
     imgExtra: imgExtra || img,
     images,
     seoTags

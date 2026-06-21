@@ -269,7 +269,7 @@
     ];
 
     function pickOccupationTaxPerPerson(p) {
-        return optionalTaxAmount(p.taxesAmount ?? p.taxes_amount);
+        return optionalTaxAmount(p.taxesAmount ?? p.taxes_amount ?? p.taxes_par_personne);
     }
 
     /** GHL met parfois le prix double+1 enfant dans price_occ_simple_1_child. */
