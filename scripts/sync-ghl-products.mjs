@@ -146,8 +146,11 @@ function mergeSyncOverrides(product, previous) {
     if (syncedTax == null) {
       merged.taxesAmount = prevTax;
     } else if (Math.abs(syncedTax - prevTax) >= 0.01) {
-      if (Math.abs(syncedTax * 2 - prevTax) < 0.01) merged.taxesAmount = prevTax;
-      else if (Math.abs(syncedTax - prevTax * 2) < 0.01) merged.taxesAmount = prevTax;
+      // GHL a envoyé la moitié du taux corrigé (ex. 150 au lieu de 300)
+      if (syncedTax < prevTax && Math.abs(syncedTax * 2 - prevTax) < 0.01) {
+        merged.taxesAmount = prevTax;
+      }
+      // Sinon, GHL prime (ex. mise à jour 185 → 370 $/pers.)
     }
   }
 
@@ -155,13 +158,7 @@ function mergeSyncOverrides(product, previous) {
 }
 
 function resolveTaxesAmountPerPerson(props) {
-  const direct = optionalTaxAmount(pick(props, 'taxes_amount', 'taxesAmount'));
-  if (direct !== null) return direct;
-
-  const doubleLegacy = optionalPrice(pick(props, 'taxes_occ_double', 'taxesOccDouble'));
-  if (doubleLegacy !== null) return Math.round(doubleLegacy / 2 * 100) / 100;
-
-  return null;
+  return optionalTaxAmount(pick(props, 'taxes_amount', 'taxesAmount'));
 }
 
 /** taxes_amount ($/pers.) prime — legacy taxes_occ_* ignorés quand présent. */

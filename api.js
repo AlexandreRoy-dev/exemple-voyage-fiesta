@@ -269,16 +269,7 @@
     ];
 
     function pickOccupationTaxPerPerson(p) {
-        const direct = optionalTaxAmount(p.taxesAmount ?? p.taxes_amount);
-        if (direct !== null) return direct;
-
-        // Legacy GHL : taxes_occ_double = total pour 2 adultes → dériver $ / pers.
-        const doubleLegacy = optionalPrice(p.taxesOccDouble ?? p.taxes_occ_double);
-        if (doubleLegacy !== null) {
-            return Math.round(doubleLegacy / 2 * 100) / 100;
-        }
-
-        return null;
+        return optionalTaxAmount(p.taxesAmount ?? p.taxes_amount);
     }
 
     /** GHL met parfois le prix double+1 enfant dans price_occ_simple_1_child. */
