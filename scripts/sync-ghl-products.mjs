@@ -632,7 +632,6 @@ async function mapRecord(record, apiKey, manifest, slug) {
     priceOccQuad: optionalPrice(pick(props, 'price_occ_quad', 'priceOccQuad')),
     priceAutres: optionalPrice(pick(props, 'price_autres', 'priceAutres', 'price_occ_autres')),
     ...taxFields,
-    priceOriginal: optionalPrice(pick(props, 'price_original', 'priceOriginal', 'prix_regulier')),
     discountAmount: optionalPrice(pick(props, 'discount_amount', 'discountAmount', 'rabais')),
     financingMonthly: optionalPrice(
       pick(props, 'financement_mensuel', 'financing_monthly', 'financingMonthly')

@@ -289,7 +289,6 @@
         { key: 'price_autres', label: 'Tarif — autres ($ / pers.)' },
         { key: 'price_child_2_12', label: 'Réf. enfant 2-12 ans seul ($ / pers.) — optionnel' },
         { key: 'price_child_13_17', label: 'Réf. enfant 13-17 ans seul ($ / pers.) — optionnel' },
-        { key: 'price_original', label: 'Prix internet ($ / pers.)' },
         { key: 'supplier', label: 'Fournisseur' },
         { key: 'carrier', label: 'Transporteur' },
         { key: 'room_category', label: 'Catégorie de chambre' },

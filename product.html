@@ -155,7 +155,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=15"></script>
-    <script src="api.js?v=45"></script>
+    <script src="api.js?v=46"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -641,15 +641,13 @@
             }
 
             const hasTaxes = rows.some(r => r.taxes != null);
-            const priceOriginal = VoyageFiestaAPI.optionalPrice(p.priceOriginal ?? p.price_original);
             const incentive = VoyageFiestaAPI.getIncentive(p);
 
             let headerHtml = '';
-            if (priceOriginal !== null || incentive) {
+            if (incentive) {
                 headerHtml = `
                     <div class="mb-4 p-3 rounded-lg bg-brand-light border border-blue-100 text-sm">
-                        ${priceOriginal !== null ? `<p class="text-gray-600">Prix internet : <span class="line-through text-gray-400">${VoyageFiestaAPI.formatMoney(priceOriginal)}</span> <span class="text-gray-500">/ pers. avant taxes (sujet à changement)</span></p>` : ''}
-                        ${incentive ? `<p class="text-red-600 font-bold mt-1"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)} / pers.</p>` : ''}
+                        <p class="text-red-600 font-bold"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)}</p>
                     </div>`;
             }
 

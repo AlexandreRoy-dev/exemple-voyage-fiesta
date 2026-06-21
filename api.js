@@ -388,25 +388,26 @@
         });
     }
 
-    /** Prix occ. double avec taxes — pastille rouge (liste). */
-    function getDoubleOccupationDisplayPrice(p) {
-        const rows = getOccupationPrices(p);
-        const doubleRow = rows.find(r => r.id === 'double');
-        if (doubleRow) {
-            const amount = getOccupationComparableAmount(doubleRow);
-            if (amount !== null) {
-                return { amount, label: doubleRow.label };
-            }
-        }
+    /** Taxes totales occ. double = taxes_amount × 2 voyageurs. */
+    function getDoubleOccupationTaxTotal(p) {
+        const perPerson = pickOccupationTaxPerPerson(p);
+        if (perPerson === null) return null;
+        return Math.round(perPerson * 2 * 100) / 100;
+    }
 
+    /** Prix occ. double taxes incluses = price + (taxes_amount × 2). */
+    function getDoubleOccupationTotalWithTaxes(p) {
         const base = optionalPrice(p.price);
         if (base === null) return null;
-        const doubleDef = getOccupationDef('double');
-        const { totalTaxes } = doubleDef ? resolveOccupationTaxes(p, doubleDef) : { totalTaxes: null };
-        return {
-            amount: totalTaxes !== null ? base + totalTaxes : base,
-            label: 'Occ. double'
-        };
+        const taxes = getDoubleOccupationTaxTotal(p);
+        return taxes !== null ? base + taxes : base;
+    }
+
+    /** Prix occ. double avec taxes — pastille rouge (liste). */
+    function getDoubleOccupationDisplayPrice(p) {
+        const amount = getDoubleOccupationTotalWithTaxes(p);
+        if (amount === null) return null;
+        return { amount, label: 'Occ. double' };
     }
 
     /** Prix affiché sur la fiche liste — occupation la moins chère. */
@@ -421,10 +422,9 @@
 
         const base = optionalPrice(p.price);
         if (base === null) return null;
-        const doubleDef = getOccupationDef('double');
-        const { totalTaxes } = doubleDef ? resolveOccupationTaxes(p, doubleDef) : { totalTaxes: null };
+        const taxes = getDoubleOccupationTaxTotal(p);
         return {
-            amount: totalTaxes !== null ? base + totalTaxes : base,
+            amount: taxes !== null ? base + taxes : base,
             label: 'Occ. double'
         };
     }
@@ -591,7 +591,6 @@
         set('price_autres', pickOccupationPrice(p, ['priceAutres', 'price_autres', 'price_occ_autres']));
         set('price_child_2_12', optionalPrice(p.priceChild212 ?? p.price_child_2_12));
         set('price_child_13_17', optionalPrice(p.priceChild1317 ?? p.price_child_13_17));
-        set('price_original', optionalPrice(p.priceOriginal ?? p.price_original));
 
         return params;
     }
@@ -672,28 +671,19 @@
         return Math.round(rounded).toLocaleString('fr-CA') + '\u00a0$';
     }
 
-    /** Red card incentive — rabais, prix barré, financement optionnel */
+    /** Red card incentive — price occ. double + taxes ; barré = (price + rabais) + taxes */
     function getIncentive(p) {
-        const doubleListing = getDoubleOccupationDisplayPrice(p);
-        const price = doubleListing?.amount ?? null;
-        if (price === null) return null;
+        const doubleBeforeTaxes = optionalPrice(p.price);
+        const doubleTaxes = getDoubleOccupationTaxTotal(p);
+        if (doubleBeforeTaxes === null) return null;
 
-        const original = optionalPrice(p.priceOriginal ?? p.price_original);
+        const price = doubleTaxes !== null ? doubleBeforeTaxes + doubleTaxes : doubleBeforeTaxes;
         const discount = optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais);
 
-        const hasPromo = discount !== null && discount > 0;
-        if (!hasPromo) return null;
+        if (discount === null || discount <= 0) return null;
 
-        const doubleDef = getOccupationDef('double');
-        const { totalTaxes } = doubleDef ? resolveOccupationTaxes(p, doubleDef) : { totalTaxes: null };
-        const doubleBeforeTaxes = optionalPrice(p.price);
-        let strikeBeforeTaxes = original;
-        if (strikeBeforeTaxes === null && doubleBeforeTaxes !== null && discount !== null) {
-            strikeBeforeTaxes = doubleBeforeTaxes + discount;
-        }
-        const strikePrice = strikeBeforeTaxes !== null
-            ? (totalTaxes !== null ? strikeBeforeTaxes + totalTaxes : strikeBeforeTaxes)
-            : price + discount;
+        const strikeBeforeTaxes = doubleBeforeTaxes + discount;
+        const strikePrice = doubleTaxes !== null ? strikeBeforeTaxes + doubleTaxes : strikeBeforeTaxes;
         const financing = optionalPrice(
             p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
         );
@@ -703,7 +693,7 @@
             strikePrice,
             discount,
             financing,
-            occupationLabel: doubleListing?.label ?? 'Occ. double'
+            occupationLabel: 'Occ. double'
         };
     }
 
@@ -854,7 +844,6 @@
             taxesOccTriple: optionalPrice(p.taxesOccTriple ?? p.taxes_occ_triple),
             taxesOccQuad: optionalPrice(p.taxesOccQuad ?? p.taxes_occ_quad),
             taxesOccAutres: optionalPrice(p.taxesOccAutres ?? p.taxes_occ_autres),
-            priceOriginal: optionalPrice(p.priceOriginal ?? p.price_original),
             discountAmount: optionalPrice(p.discountAmount ?? p.discount_amount ?? p.rabais),
             financingMonthly: optionalPrice(
                 p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
