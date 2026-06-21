@@ -259,11 +259,28 @@
         return optionalPrice(p.taxesAmount ?? p.taxes_amount);
     }
 
-    /** Legacy taxes_occ_* = total occupation; taxes_amount = $ / pers. × voyageurs */
+    function getOccupationDef(occupationId) {
+        return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
+    }
+
+    function getOccupationPeopleCount(def) {
+        if (!def) return 0;
+        return (def.adults ?? 0) + (def.children212 ?? 0) + (def.children1317 ?? 0);
+    }
+
+    /** taxes_amount = $ / pers. (adulte ou enfant) × nb voyageurs de l'occupation. */
     function resolveOccupationTaxes(p, def) {
         const peopleCount = getOccupationPeopleCount(def);
         if (!peopleCount) {
             return { taxesPerPerson: null, totalTaxes: null };
+        }
+
+        const perPerson = pickOccupationTaxPerPerson(p);
+        if (perPerson !== null) {
+            return {
+                taxesPerPerson: perPerson,
+                totalTaxes: Math.round(perPerson * peopleCount)
+            };
         }
 
         for (const key of def.taxesKeys || []) {
@@ -276,15 +293,7 @@
             }
         }
 
-        const perPerson = pickOccupationTaxPerPerson(p);
-        if (perPerson === null) {
-            return { taxesPerPerson: null, totalTaxes: null };
-        }
-
-        return {
-            taxesPerPerson: perPerson,
-            totalTaxes: Math.round(perPerson * peopleCount)
-        };
+        return { taxesPerPerson: null, totalTaxes: null };
     }
 
     function addUtcDays(date, days) {
@@ -312,16 +321,11 @@
         return null;
     }
 
-    function getOccupationPeopleCount(def) {
-        if (!def) return 0;
-        return (def.adults ?? 0) + (def.children212 ?? 0) + (def.children1317 ?? 0);
-    }
-
     /** Occupations client — seulement celles avec un prix défini dans GHL */
     function getOccupationPrices(p) {
         const rows = [];
 
-        /** Prix occupation (total GHL) + taxes_amount ($ / pers. × nb voyageurs). */
+        /** Prix occupation (total GHL) + taxes (taux fixe / pers. dérivé de l'occ. double). */
         function withTaxes(row, def, product) {
             const peopleCount = getOccupationPeopleCount(def);
             const { taxesPerPerson, totalTaxes } = resolveOccupationTaxes(product, def);
@@ -371,6 +375,27 @@
         });
     }
 
+    /** Prix occ. double avec taxes — pastille rouge (liste). */
+    function getDoubleOccupationDisplayPrice(p) {
+        const rows = getOccupationPrices(p);
+        const doubleRow = rows.find(r => r.id === 'double');
+        if (doubleRow) {
+            const amount = getOccupationComparableAmount(doubleRow);
+            if (amount !== null) {
+                return { amount, label: doubleRow.label };
+            }
+        }
+
+        const base = optionalPrice(p.price);
+        if (base === null) return null;
+        const doubleDef = getOccupationDef('double');
+        const { totalTaxes } = doubleDef ? resolveOccupationTaxes(p, doubleDef) : { totalTaxes: null };
+        return {
+            amount: totalTaxes !== null ? base + totalTaxes : base,
+            label: 'Occ. double'
+        };
+    }
+
     /** Prix affiché sur la fiche liste — occupation la moins chère. */
     function getListingDisplayPrice(p) {
         const lowest = getLowestOccupationRow(p);
@@ -389,10 +414,6 @@
             amount: totalTaxes !== null ? base + totalTaxes : base,
             label: 'Occ. double'
         };
-    }
-
-    function getOccupationDef(occupationId) {
-        return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
     }
 
     function clampInt(value, { min = 0, max = 99 } = {}) {
@@ -419,7 +440,7 @@
     }
 
     /**
-     * Totaux occupation — prix total GHL; taxes_amount = $ / pers. × nb voyageurs.
+     * Totaux occupation — prix total GHL; taxes = taxes_amount ($ / pers.) × voyageurs.
      */
     function getOccupationPricingBreakdown(p, occupationId, overrides) {
         const def = getOccupationDef(occupationId);
@@ -633,8 +654,8 @@
 
     /** Red card incentive — rabais, prix barré, financement optionnel */
     function getIncentive(p) {
-        const listing = getListingDisplayPrice(p);
-        const price = listing?.amount ?? optionalPrice(p.price);
+        const doubleListing = getDoubleOccupationDisplayPrice(p);
+        const price = doubleListing?.amount ?? null;
         if (price === null) return null;
 
         const original = optionalPrice(p.priceOriginal ?? p.price_original);
@@ -643,7 +664,16 @@
         const hasPromo = discount !== null && discount > 0;
         if (!hasPromo) return null;
 
-        const strikePrice = original !== null && original > price ? original : price + discount;
+        const doubleDef = getOccupationDef('double');
+        const { totalTaxes } = doubleDef ? resolveOccupationTaxes(p, doubleDef) : { totalTaxes: null };
+        const doubleBeforeTaxes = optionalPrice(p.price);
+        let strikeBeforeTaxes = original;
+        if (strikeBeforeTaxes === null && doubleBeforeTaxes !== null && discount !== null) {
+            strikeBeforeTaxes = doubleBeforeTaxes + discount;
+        }
+        const strikePrice = strikeBeforeTaxes !== null
+            ? (totalTaxes !== null ? strikeBeforeTaxes + totalTaxes : strikeBeforeTaxes)
+            : price + discount;
         const financing = optionalPrice(
             p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
         );
@@ -653,7 +683,7 @@
             strikePrice,
             discount,
             financing,
-            occupationLabel: listing?.label ?? 'Occ. double'
+            occupationLabel: doubleListing?.label ?? 'Occ. double'
         };
     }
 
@@ -1178,6 +1208,7 @@
         productHasCriterion,
         getOccupationPrices,
         getLowestOccupationRow,
+        getDoubleOccupationDisplayPrice,
         getListingDisplayPrice,
         getSelectedOccupationRow,
         getOccupationPricingBreakdown,
