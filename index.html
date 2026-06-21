@@ -154,7 +154,7 @@
     </main>
 
     <script src="config.js?v=15"></script>
-    <script src="api.js?v=49"></script>
+    <script src="api.js?v=51"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -339,8 +339,8 @@
                 <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
                     <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)}</p>
                     <p class="mt-0.5">
-                        <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoney(inc.strikePrice)}</span>
-                        <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoney(inc.price)}</span>
+                        <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice, { suffixClass: 'text-[0.72em] font-normal opacity-90 whitespace-nowrap' })}</span>
+                        <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoneyPerPerson(inc.price, { suffixClass: 'text-sm font-normal opacity-90 whitespace-nowrap' })}</span>
                     </p>
                     ${financingHtml}
                 </div>`;
@@ -400,7 +400,7 @@
                     : listingPrice
                         ? `<div>
                             <p class="text-xs text-gray-500 mb-1">${escapeHtml(listingPrice.label)} · à partir de</p>
-                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoney(listingPrice.amount)}</p>
+                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(listingPrice.amount)}</p>
                        </div>`
                         : `<div>
                             <p class="text-xs text-gray-500 mb-1">Occ. double</p>

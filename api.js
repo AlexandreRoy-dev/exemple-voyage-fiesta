@@ -188,7 +188,7 @@
         {
             id: 'double',
             label: 'Occ. double',
-            hint: '2 adultes — prix total occupation, avant taxes',
+            hint: '2 adultes — prix par personne, avant taxes',
             primary: true,
             adults: 2,
             children212: 0,
@@ -199,7 +199,7 @@
         {
             id: 'double_1_child',
             label: 'Occ. double + 1 enfant (2-12 ans)',
-            hint: '2 adultes + 1 enfant (2-12 ans au retour)',
+            hint: '2 adultes + 1 enfant (2-12 ans au retour) — prix par personne',
             adults: 2,
             children212: 1,
             children1317: 0,
@@ -209,7 +209,7 @@
         {
             id: 'double_2_child',
             label: 'Occ. double + 2 enfants (2-12 ans)',
-            hint: '2 adultes + 2 enfants (2-12 ans au retour)',
+            hint: '2 adultes + 2 enfants (2-12 ans au retour) — prix par personne',
             adults: 2,
             children212: 2,
             children1317: 0,
@@ -219,7 +219,7 @@
         {
             id: 'simple',
             label: 'Occ. simple',
-            hint: '1 adulte — prix total occupation, avant taxes',
+            hint: '1 adulte — prix par personne, avant taxes',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -229,7 +229,7 @@
         {
             id: 'simple_1_child',
             label: 'Occ. simple + 1 enfant (2-12 ans)',
-            hint: '1 adulte + 1 enfant (2-12 ans au retour)',
+            hint: '1 adulte + 1 enfant (2-12 ans au retour) — prix par personne',
             adults: 1,
             children212: 1,
             children1317: 0,
@@ -239,7 +239,7 @@
         {
             id: 'triple',
             label: 'Occ. triple',
-            hint: '3 adultes — prix total occupation, avant taxes',
+            hint: '3 adultes — prix par personne, avant taxes',
             adults: 3,
             children212: 0,
             children1317: 0,
@@ -249,7 +249,7 @@
         {
             id: 'quad',
             label: 'Occ. quad',
-            hint: '4 adultes — prix total occupation, avant taxes',
+            hint: '4 adultes — prix par personne, avant taxes',
             adults: 4,
             children212: 0,
             children1317: 0,
@@ -259,7 +259,7 @@
         {
             id: 'autres',
             label: 'Autres',
-            hint: 'Autre configuration — prix total occupation, avant taxes',
+            hint: 'Autre configuration — prix par personne, avant taxes',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -321,28 +321,17 @@
         return (def.adults ?? 0) + (def.children212 ?? 0) + (def.children1317 ?? 0);
     }
 
-    /** taxes_amount = $ / pers. (adulte ou enfant) × nb voyageurs de l'occupation. */
+    /** taxes_amount = $ / pers. — affiché tel quel (sans × nb voyageurs). */
     function resolveOccupationTaxes(p, def) {
-        const peopleCount = getOccupationPeopleCount(def);
-        if (!peopleCount) {
-            return { taxesPerPerson: null, totalTaxes: null };
-        }
-
         const perPerson = pickOccupationTaxPerPerson(p);
         if (perPerson !== null) {
-            return {
-                taxesPerPerson: perPerson,
-                totalTaxes: Math.round(perPerson * peopleCount * 100) / 100
-            };
+            return { taxesPerPerson: perPerson, totalTaxes: perPerson };
         }
 
         for (const key of def.taxesKeys || []) {
-            const legacyTotal = optionalPrice(p[key]);
-            if (legacyTotal !== null) {
-                return {
-                    taxesPerPerson: Math.round(legacyTotal / peopleCount),
-                    totalTaxes: legacyTotal
-                };
+            const legacyPerPerson = optionalPrice(p[key]);
+            if (legacyPerPerson !== null) {
+                return { taxesPerPerson: legacyPerPerson, totalTaxes: legacyPerPerson };
             }
         }
 
@@ -374,19 +363,20 @@
         return null;
     }
 
-    /** Occupations client — seulement celles avec un prix défini dans GHL */
+    /** Occupations client — prix GHL = $ / pers. avant taxes */
     function getOccupationPrices(p) {
         const rows = [];
 
-        /** Prix occupation (total GHL) + taxes (taux fixe / pers. dérivé de l'occ. double). */
         function withTaxes(row, def, product) {
             const peopleCount = getOccupationPeopleCount(def);
             const { taxesPerPerson, totalTaxes } = resolveOccupationTaxes(product, def);
             row.peopleCount = peopleCount;
+            row.pricePerPerson = row.price;
             row.taxesPerPerson = taxesPerPerson;
             row.totalTaxes = totalTaxes;
             row.taxes = totalTaxes;
             row.totalWithTaxes = totalTaxes !== null ? row.price + totalTaxes : null;
+            row.totalPerPerson = row.totalWithTaxes;
             return row;
         }
 
@@ -428,14 +418,12 @@
         });
     }
 
-    /** Taxes totales occ. double = taxes_amount × 2 voyageurs. */
+    /** Taxes / pers. pour l'occ. double (affichage liste). */
     function getDoubleOccupationTaxTotal(p) {
-        const perPerson = pickOccupationTaxPerPerson(p);
-        if (perPerson === null) return null;
-        return Math.round(perPerson * 2 * 100) / 100;
+        return pickOccupationTaxPerPerson(p);
     }
 
-    /** Prix occ. double taxes incluses = price + (taxes_amount × 2). */
+    /** Prix / pers. occ. double avec taxes = price + taxes_amount. */
     function getDoubleOccupationTotalWithTaxes(p) {
         const base = optionalPrice(p.price);
         if (base === null) return null;
@@ -493,7 +481,7 @@
     }
 
     /**
-     * Totaux occupation — prix total GHL; taxes = taxes_amount ($ / pers.) × voyageurs.
+     * Détail tarifaire — affichage / pers.; totaux réservation = × nb voyageurs (formulaire GHL).
      */
     function getOccupationPricingBreakdown(p, occupationId, overrides) {
         const def = getOccupationDef(occupationId);
@@ -511,22 +499,28 @@
             : baseChildren1317;
         const totalPeople = adults + children212 + children1317;
 
-        const totalBeforeTaxes = Math.round(row.price);
-        const totalTaxes = row.totalTaxes ?? null;
-        const totalWithTaxes = row.totalWithTaxes ?? (totalTaxes !== null ? totalBeforeTaxes + totalTaxes : null);
-        const taxesPerPerson = row.taxesPerPerson ?? (
-            totalTaxes !== null && totalPeople > 0 ? Math.round(totalTaxes / totalPeople) : null
+        const pricePerPerson = row.pricePerPerson ?? row.price;
+        const taxesPerPerson = row.taxesPerPerson ?? row.taxes ?? null;
+        const totalPerPerson = row.totalPerPerson ?? row.totalWithTaxes ?? (
+            taxesPerPerson !== null ? pricePerPerson + taxesPerPerson : pricePerPerson
         );
 
+        const roundMoney = (value) => Math.round(value * 100) / 100;
+        const bookingBeforeTaxes = roundMoney(pricePerPerson * totalPeople);
+        const bookingTaxes = taxesPerPerson !== null ? roundMoney(taxesPerPerson * totalPeople) : null;
+        const bookingTotalWithTaxes = totalPerPerson !== null
+            ? roundMoney(totalPerPerson * totalPeople)
+            : bookingBeforeTaxes;
+
         const depositPerPerson = optionalPrice(p.depositAmount ?? p.deposit_amount);
-        const totalDeposit = depositPerPerson !== null ? totalPeople * depositPerPerson : null;
+        const totalDeposit = depositPerPerson !== null ? roundMoney(depositPerPerson * totalPeople) : null;
 
-        const taxChild212Unit = taxesPerPerson;
-        const taxChild1317Unit = taxesPerPerson;
-
-        let pricingSummary = `${formatMoney(totalBeforeTaxes)} avant taxes`;
-        if (totalTaxes !== null && totalWithTaxes !== null) {
-            pricingSummary += ` + taxes ${formatMoney(totalTaxes)} = ${formatMoney(totalWithTaxes)} total`;
+        let pricingSummary = `${formatMoneyPerPerson(pricePerPerson)} avant taxes`;
+        if (taxesPerPerson !== null && totalPerPerson !== null) {
+            pricingSummary += ` + ${formatMoneyPerPerson(taxesPerPerson)} taxes = ${formatMoneyPerPerson(totalPerPerson)} total`;
+        }
+        if (totalPeople > 1 && bookingTotalWithTaxes !== null) {
+            pricingSummary += ` · forfait ${totalPeople} pers. : ${formatMoney(bookingTotalWithTaxes)}`;
         }
 
         return {
@@ -534,19 +528,23 @@
             children212,
             children1317,
             totalPeople,
-            adultUnitPrice: null,
+            adultUnitPrice: pricePerPerson,
             child212UnitPrice: optionalPrice(p.priceChild212 ?? p.price_child_2_12),
             child1317UnitPrice: optionalPrice(p.priceChild1317 ?? p.price_child_13_17),
-            taxChild212Unit,
-            taxChild1317Unit,
-            selectedUnitPrice: row.price,
-            totalBeforeTaxes,
-            totalTaxes,
-            totalWithTaxes,
+            taxChild212Unit: taxesPerPerson,
+            taxChild1317Unit: taxesPerPerson,
+            selectedUnitPrice: pricePerPerson,
+            pricePerPerson,
+            totalBeforeTaxes: pricePerPerson,
+            totalTaxes: taxesPerPerson,
+            totalWithTaxes: totalPerPerson,
+            bookingBeforeTaxes,
+            bookingTaxes,
+            bookingTotalWithTaxes,
             taxesPerPerson,
             depositPerPerson,
             totalDeposit,
-            pricingMethod: 'occupation_total',
+            pricingMethod: 'per_person',
             pricingSummary
         };
     }
@@ -577,26 +575,26 @@
             set('occupation', row.label);
             set('occupation_code', row.id);
             set('occupation_label', row.label);
-            set('selected_price', row.price);
-            set('selected_taxes', row.totalTaxes ?? row.taxes);
-            set('selected_total', row.totalWithTaxes);
+            set('selected_price', row.pricePerPerson ?? row.price);
+            set('selected_taxes', row.taxesPerPerson ?? row.taxes);
+            set('selected_total', row.totalPerPerson ?? row.totalWithTaxes);
         }
         if (breakdown) {
             set('nombre_personnes', breakdown.totalPeople);
             set('nombre_adultes', breakdown.adults);
             set('nombre_enfants_2_12', breakdown.children212);
             set('nombre_enfants_13_17', breakdown.children1317);
-            set('prix_total_avant_taxe', breakdown.totalBeforeTaxes);
-            set('prix_total_avant_taxes', breakdown.totalBeforeTaxes);
-            set('taxes_total1', breakdown.totalTaxes);
-            set('taxes_total', breakdown.totalTaxes);
+            set('prix_total_avant_taxe', breakdown.bookingBeforeTaxes);
+            set('prix_total_avant_taxes', breakdown.bookingBeforeTaxes);
+            set('taxes_total1', breakdown.bookingTaxes);
+            set('taxes_total', breakdown.bookingTaxes);
             set('taxes_par_personne', breakdown.taxesPerPerson);
             set('tax_child_2_12', breakdown.taxChild212Unit);
             set('tax_child_13_17', breakdown.taxChild1317Unit);
             set('depot_par_personne', breakdown.depositPerPerson);
             set('depot_total', breakdown.totalDeposit);
-            set('prix_total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
-            set('total', breakdown.totalWithTaxes ?? breakdown.totalBeforeTaxes);
+            set('prix_total', breakdown.bookingTotalWithTaxes ?? breakdown.bookingBeforeTaxes);
+            set('total', breakdown.bookingTotalWithTaxes ?? breakdown.bookingBeforeTaxes);
             set('pricing_summary', breakdown.pricingSummary);
             set('sommaire', breakdown.pricingSummary);
         }
@@ -654,6 +652,13 @@
         return p.destination || p.destination1 || '';
     }
 
+    function inferReturnAirportLabel(p, leg) {
+        if (leg?.to) return leg.to;
+        const returnAirport = p.returnAirport ?? p.aeroport_retour ?? p.return_airport;
+        if (returnAirport) return returnAirport;
+        return p.departureAirport || '';
+    }
+
     function inferDepartureLabel(p, leg) {
         if (leg?.from) return leg.from;
         return p.departureAirport || '';
@@ -682,7 +687,7 @@
         if (!flightLegHasData(ret) && (returnDate || p.subDest)) {
             ret.from = ret.from || inferArrivalLabel(p, ret);
             ret.departDate = ret.departDate || returnDate;
-            ret.to = ret.to || inferDepartureLabel(p, ret);
+            ret.to = ret.to || inferReturnAirportLabel(p, ret);
             ret.arriveDate = ret.arriveDate || ret.departDate || returnDate;
         }
 
@@ -711,7 +716,15 @@
         return Math.round(rounded).toLocaleString('fr-CA') + '\u00a0$';
     }
 
-    /** Red card incentive — price occ. double + taxes ; barré = (price + rabais) + taxes */
+    function formatMoneyPerPerson(amount, options = {}) {
+        const formatted = formatMoney(amount);
+        if (!formatted) return '';
+        if (options.html === false) return `${formatted} / pers.`;
+        const suffixClass = options.suffixClass || 'text-[0.72em] font-normal text-gray-500 whitespace-nowrap';
+        return `${formatted}<span class="${suffixClass}"> / pers.</span>`;
+    }
+
+    /** Red card incentive — price / pers. + taxes / pers. ; barré = (price + rabais) + taxes */
     function getIncentive(p) {
         const doubleBeforeTaxes = optionalPrice(p.price);
         const doubleTaxes = getDoubleOccupationTaxTotal(p);
@@ -865,7 +878,8 @@
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
             destination: p.destination1 || p.destination || subDest,
             destinationLabel: formatDestinationLabel(p.destination1 || p.destination || subDest),
-            departureAirport: p.departureAirport || p.departure_airport || '',
+            departureAirport: p.departureAirport || p.departure_airport || p.aeroport_depart || '',
+            returnAirport: p.returnAirport || p.return_airport || p.aeroport_retour || '',
             departureDate: departureDateValid,
             returnDate: returnDateValid,
             criteria: Array.isArray(p.criteria) ? p.criteria.map(normalizeCriterionValue) : [],
@@ -1269,6 +1283,7 @@
         getEffectiveFlights,
         getIncentive,
         formatMoney,
+        formatMoneyPerPerson,
         formatFlightDate,
         formatFlightTime,
         formatFlightNumber,

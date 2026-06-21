@@ -155,7 +155,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=15"></script>
-    <script src="api.js?v=49"></script>
+    <script src="api.js?v=51"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -525,7 +525,7 @@
             if (terms.finalPaymentDate) {
                 parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-calendar-check text-brand-blue text-xs mt-0.5"></i> Paiement final : <strong>${VoyageFiestaAPI.formatDepartureDate(terms.finalPaymentDate)}</strong></li>`);
             }
-            parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-receipt text-gray-400 text-xs mt-0.5"></i> Les taxes s'ajoutent au montant affiché avant taxes</li>`);
+            parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-receipt text-gray-400 text-xs mt-0.5"></i> Tarifs affichés <strong>par personne</strong> · taxes en sus</li>`);
             if (!parts.length) return '';
 
             return `
@@ -539,18 +539,18 @@
             const priceClass = isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue';
             if (row.totalWithTaxes != null) {
                 const detail = row.taxes != null
-                    ? `<span>${VoyageFiestaAPI.formatMoney(row.price)}</span><span class="text-gray-300 mx-1">·</span><span>${VoyageFiestaAPI.formatMoney(row.taxes)} taxes</span>`
+                    ? `<span>${VoyageFiestaAPI.formatMoneyPerPerson(row.price)}</span><span class="text-gray-300 mx-1">·</span><span>${VoyageFiestaAPI.formatMoneyPerPerson(row.taxes)} taxes</span>`
                     : `<span>taxes incluses</span>`;
                 return `
                     <span class="occupation-price-stack text-left sm:text-right shrink-0 sm:pl-2 pl-8">
-                        <span class="price-main block text-base font-bold ${priceClass} leading-none">${VoyageFiestaAPI.formatMoney(row.totalWithTaxes)}</span>
+                        <span class="price-main block text-base font-bold ${priceClass} leading-none">${VoyageFiestaAPI.formatMoneyPerPerson(row.totalWithTaxes)}</span>
                         <span class="block text-[11px] text-gray-500 mt-1 leading-tight tabular-nums">${detail}</span>
                     </span>`;
             }
             return `
                 <span class="occupation-price-stack text-left sm:text-right shrink-0 sm:pl-2 pl-8">
-                    <span class="price-main block text-base font-bold ${priceClass} leading-none">${VoyageFiestaAPI.formatMoney(row.price)}</span>
-                    ${row.taxes != null ? `<span class="block text-[11px] text-gray-500 mt-1 leading-tight tabular-nums">+ ${VoyageFiestaAPI.formatMoney(row.taxes)} taxes</span>` : ''}
+                    <span class="price-main block text-base font-bold ${priceClass} leading-none">${VoyageFiestaAPI.formatMoneyPerPerson(row.price)}</span>
+                    ${row.taxes != null ? `<span class="block text-[11px] text-gray-500 mt-1 leading-tight tabular-nums">+ ${VoyageFiestaAPI.formatMoneyPerPerson(row.taxes)} taxes</span>` : ''}
                 </span>`;
         }
 
@@ -558,27 +558,35 @@
             const rows = [];
             const pushRow = (label, amount, options = {}) => {
                 if (amount === null || amount === undefined) return;
+                const perPerson = options.perPerson !== false;
                 rows.push(`
                     <div class="flex items-baseline justify-between gap-4 text-sm ${options.className || ''}">
                         <span class="${options.labelClass || 'text-gray-500'}">${escapeHtml(label)}</span>
-                        <span class="font-medium tabular-nums shrink-0 ${options.amountClass || 'text-gray-800'}">${VoyageFiestaAPI.formatMoney(amount)}</span>
+                        <span class="font-medium tabular-nums shrink-0 ${options.amountClass || 'text-gray-800'}">${perPerson ? VoyageFiestaAPI.formatMoneyPerPerson(amount) : VoyageFiestaAPI.formatMoney(amount)}</span>
                     </div>`);
             };
 
             if (breakdown) {
-                pushRow('Avant taxes', breakdown.totalBeforeTaxes);
+                pushRow('Avant taxes / pers.', breakdown.totalBeforeTaxes);
                 if (breakdown.totalTaxes !== null) {
-                    pushRow('Taxes et frais aériens', breakdown.totalTaxes);
+                    pushRow('Taxes / pers.', breakdown.totalTaxes);
+                }
+                if (breakdown.totalPeople > 1 && breakdown.bookingTotalWithTaxes != null) {
+                    pushRow(`Forfait ${breakdown.totalPeople} pers.`, breakdown.bookingTotalWithTaxes, {
+                        className: 'pt-1 border-t border-gray-100',
+                        labelClass: 'text-gray-600 font-medium',
+                        perPerson: false
+                    });
                 }
             } else if (row.totalWithTaxes != null) {
-                pushRow('Avant taxes', row.price);
-                if (row.taxes != null) pushRow('Taxes et frais aériens', row.taxes);
+                pushRow('Avant taxes / pers.', row.price);
+                if (row.taxes != null) pushRow('Taxes / pers.', row.taxes);
             } else {
-                pushRow('Avant taxes', row.price);
+                pushRow('Avant taxes / pers.', row.price);
             }
 
             const totalAmount = breakdown?.totalWithTaxes ?? row.totalWithTaxes ?? breakdown?.totalBeforeTaxes ?? row.price;
-            const totalLabel = breakdown?.totalWithTaxes != null || row.totalWithTaxes != null ? 'Total estimé' : 'Total avant taxes';
+            const totalLabel = breakdown?.totalWithTaxes != null || row.totalWithTaxes != null ? 'Total / pers.' : 'Prix / pers.';
             const depositAmount = breakdown?.totalDeposit ?? null;
 
             const detailHtml = rows.length
@@ -594,7 +602,7 @@
                     ${detailHtml}
                     <div class="px-4 py-3 flex items-baseline justify-between gap-4">
                         <span class="text-sm font-semibold text-gray-700">${escapeHtml(totalLabel)}</span>
-                        <span class="text-xl font-bold text-brand-blue tabular-nums">${VoyageFiestaAPI.formatMoney(totalAmount)}</span>
+                        <span class="text-xl font-bold text-brand-blue tabular-nums">${VoyageFiestaAPI.formatMoneyPerPerson(totalAmount)}</span>
                     </div>
                     ${depositAmount !== null ? `
                         <div class="px-4 py-2.5 bg-orange-50 border-t border-orange-100 flex items-baseline justify-between gap-4">
@@ -656,9 +664,9 @@
                 const tableRows = rows.map(row => `
                     <tr class="border-b border-gray-100 last:border-0">
                         <td class="py-2.5 pr-2 text-sm text-gray-700">${row.label}</td>
-                        <td class="py-2.5 px-2 text-sm text-right text-gray-800">${VoyageFiestaAPI.formatMoney(row.price)}</td>
-                        <td class="py-2.5 px-2 text-sm text-right text-gray-600">${row.taxes != null ? VoyageFiestaAPI.formatMoney(row.taxes) : '—'}</td>
-                        <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue">${row.totalWithTaxes != null ? VoyageFiestaAPI.formatMoney(row.totalWithTaxes) : '—'}</td>
+                        <td class="py-2.5 px-2 text-sm text-right text-gray-800">${VoyageFiestaAPI.formatMoneyPerPerson(row.price)}</td>
+                        <td class="py-2.5 px-2 text-sm text-right text-gray-600">${row.taxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(row.taxes) : '—'}</td>
+                        <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue">${row.totalWithTaxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(row.totalWithTaxes) : '—'}</td>
                     </tr>
                 `).join('');
 
@@ -668,15 +676,15 @@
                             <thead>
                                 <tr class="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-200">
                                     <th class="pb-2 font-bold">Occ.</th>
-                                    <th class="pb-2 font-bold text-right">Avant taxes</th>
-                                    <th class="pb-2 font-bold text-right">Taxes</th>
-                                    <th class="pb-2 font-bold text-right">Total</th>
+                                    <th class="pb-2 font-bold text-right">Avant taxes / pers.</th>
+                                    <th class="pb-2 font-bold text-right">Taxes / pers.</th>
+                                    <th class="pb-2 font-bold text-right">Total / pers.</th>
                                 </tr>
                             </thead>
                             <tbody>${tableRows}</tbody>
                         </table>
                     </div>
-                    <p class="text-[10px] text-gray-500 mb-4 italic">Tarifs totaux par occupation, avant taxes et frais aériens.</p>`;
+                    <p class="text-[10px] text-gray-500 mb-4 italic">Tarifs par personne par occupation, avant taxes et frais aériens.</p>`;
             }
 
             return headerHtml + tableHtml + buildOccupationSelectionHtml(p, isSoldOut);
@@ -991,9 +999,9 @@
                 const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
                 const priceLine = row
                     ? (row.totalWithTaxes != null
-                        ? `${VoyageFiestaAPI.formatMoney(row.totalWithTaxes)} total · ${row.label}`
-                        : `${VoyageFiestaAPI.formatMoney(row.price)} · ${row.label}`)
-                    : `${p.price}$/pers`;
+                        ? `${VoyageFiestaAPI.formatMoneyPerPerson(row.totalWithTaxes, { html: false })} total · ${row.label}`
+                        : `${VoyageFiestaAPI.formatMoneyPerPerson(row.price, { html: false })} · ${row.label}`)
+                    : `${VoyageFiestaAPI.formatMoneyPerPerson(p.price, { html: false })}`;
 
                 document.getElementById('modal-product-name').textContent =
                     `${p.name} — ${priceLine}${departureText ? ' · Départ ' + departureText : ''} · ${p.departureAirport} · ${supplierLabel}`;

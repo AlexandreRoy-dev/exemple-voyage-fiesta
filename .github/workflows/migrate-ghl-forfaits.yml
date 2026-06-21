@@ -1,0 +1,72 @@
+name: Migrate GHL Forfaits
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'dry-run = preview only · apply = create records in Voyage'
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - apply
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Export GHL schemas
+        env:
+          GHL_API_KEY: ${{ secrets.GHL_API_KEY }}
+          GHL_LOCATION_ID: ${{ secrets.GHL_LOCATION_ID }}
+          GHL_SOURCE_SCHEMA_KEY: ${{ secrets.GHL_SOURCE_SCHEMA_KEY }}
+          GHL_TARGET_SCHEMA_KEY: ${{ secrets.GHL_TARGET_SCHEMA_KEY }}
+        run: node scripts/export-ghl-schema.mjs
+
+      - name: Migrate forfaits (dry-run or apply)
+        env:
+          GHL_API_KEY: ${{ secrets.GHL_API_KEY }}
+          GHL_LOCATION_ID: ${{ secrets.GHL_LOCATION_ID }}
+          GHL_SOURCE_SCHEMA_KEY: ${{ secrets.GHL_SOURCE_SCHEMA_KEY }}
+          GHL_TARGET_SCHEMA_KEY: ${{ secrets.GHL_TARGET_SCHEMA_KEY }}
+        run: |
+          if [ "${{ inputs.mode }}" = "apply" ]; then
+            node scripts/migrate-ghl-forfaits.mjs --apply
+          else
+            node scripts/migrate-ghl-forfaits.mjs
+          fi
+
+      - name: Upload migration artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghl-migration-${{ inputs.mode }}-${{ github.run_number }}
+          path: |
+            imports/ghl-schema-source.json
+            imports/ghl-schema-target.json
+            imports/migration-preview.json
+          if-no-files-found: warn
+
+      - name: Commit preview on dry-run (optional audit trail)
+        if: inputs.mode == 'dry-run'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add imports/ghl-schema-*.json imports/migration-preview.json
+          if git diff --staged --quiet; then
+            echo "No preview changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: GHL migration dry-run preview [skip ci]"
+          git push origin main
