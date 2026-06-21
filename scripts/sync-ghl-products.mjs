@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pickVoyagesUnwrapped, pickRecordName } from './ghl-voyages-fields.mjs';
+import { pickVoyagesUnwrapped, pickRecordName, formatAeroportLabel } from './ghl-voyages-fields.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -666,7 +666,16 @@ function mapFlightLeg(props, prefix, aliases = {}) {
   };
 }
 
-function mapFlights(props) {
+function mapFlights(props, context = {}) {
+  const {
+    departureDate = '',
+    returnDate = '',
+    departureAirport = '',
+    returnAirport = '',
+    subDest = '',
+    destination = ''
+  } = context;
+
   const flights = {
     out: mapFlightLeg(props, 'flight_out', {
       from: 'vol_aller_depart',
@@ -697,6 +706,23 @@ function mapFlights(props) {
   if (outTime) flights.out.departTime = String(outTime).trim();
   if (retNumber) flights.return.number = String(retNumber).trim();
   if (retTime) flights.return.departTime = String(retTime).trim();
+
+  const destLabel = subDest || destination;
+  if (!flights.out.from && departureAirport) flights.out.from = departureAirport;
+  if (!flights.out.departDate && departureDate) flights.out.departDate = departureDate;
+  if (!flights.out.to && destLabel) flights.out.to = destLabel;
+  if (!flights.out.arriveDate && (flights.out.departDate || departureDate)) {
+    flights.out.arriveDate = flights.out.departDate || departureDate;
+  }
+
+  if (!flights.return.from && destLabel) flights.return.from = destLabel;
+  if (!flights.return.departDate && returnDate) flights.return.departDate = returnDate;
+  if (!flights.return.to && (returnAirport || departureAirport)) {
+    flights.return.to = returnAirport || departureAirport;
+  }
+  if (!flights.return.arriveDate && (flights.return.departDate || returnDate)) {
+    flights.return.arriveDate = flights.return.departDate || returnDate;
+  }
 
   return flights;
 }
@@ -751,6 +777,16 @@ async function mapRecord(record, apiKey, manifest, slug) {
   );
   const imgGalleryUpload = pick(props, 'galerie_photos', 'img_gallery', 'gallery', 'photos', 'images');
   const taxFields = applyTaxFields(props);
+  const rawDepartureAirport = pickProp(
+    props,
+    'aeroport_depart',
+    'departure_airport',
+    'departureAirport',
+    'airport'
+  ) || '';
+  const rawReturnAirport = pickProp(props, 'aeroport_retour', 'return_airport') || '';
+  const departureAirport = formatAeroportLabel(rawDepartureAirport);
+  const returnAirport = formatAeroportLabel(rawReturnAirport) || departureAirport;
 
   const img = await mirrorImageField({
     apiKey,
@@ -834,15 +870,16 @@ async function mapRecord(record, apiKey, manifest, slug) {
     ),
     endDate,
     departureDate,
-    departureAirport: pickProp(
-      props,
-      'aeroport_depart',
-      'departure_airport',
-      'departureAirport',
-      'airport'
-    ) || '',
-    returnAirport: pickProp(props, 'aeroport_retour', 'return_airport') || '',
-    flights: mapFlights(props),
+    departureAirport,
+    returnAirport,
+    flights: mapFlights(props, {
+      departureDate,
+      returnDate,
+      departureAirport,
+      returnAirport,
+      subDest,
+      destination: destinationLabel || subDest
+    }),
     img,
     imgRoom: imgExtra || img,
     imgExtra: imgExtra || img,

@@ -654,14 +654,26 @@
 
     function inferReturnAirportLabel(p, leg) {
         if (leg?.to) return leg.to;
-        const returnAirport = p.returnAirport ?? p.aeroport_retour ?? p.return_airport;
+        const returnAirport = formatAirportLabel(
+            p.returnAirport ?? p.aeroport_retour ?? p.return_airport
+        );
         if (returnAirport) return returnAirport;
-        return p.departureAirport || '';
+        return formatAirportLabel(p.departureAirport || '');
     }
 
     function inferDepartureLabel(p, leg) {
         if (leg?.from) return leg.from;
-        return p.departureAirport || '';
+        return formatAirportLabel(p.departureAirport || '');
+    }
+
+    function formatAirportLabel(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        const key = raw.toLowerCase().replace(/\s+/g, '_');
+        const labels = window.AIRPORT_LABELS || {};
+        if (labels[key]) return labels[key];
+        if (labels[raw]) return labels[raw];
+        return raw;
     }
 
     /** Use GHL flight fields, or build from departure/return dates when routes missing */
@@ -678,17 +690,17 @@
             ? returnDateRaw.toISOString()
             : (returnDateRaw || '');
 
-        if (!flightLegHasData(out) && (departureDate || p.departureAirport)) {
-            out.from = inferDepartureLabel(p, out);
-            out.departDate = out.departDate || departureDate;
-            out.to = inferArrivalLabel(p, out);
-            out.arriveDate = out.arriveDate || out.departDate || departureDate;
+        if (departureDate || p.departureAirport) {
+            if (!out.from) out.from = inferDepartureLabel(p, out);
+            if (!out.departDate) out.departDate = departureDate;
+            if (!out.to) out.to = inferArrivalLabel(p, out);
+            if (!out.arriveDate) out.arriveDate = out.departDate || departureDate;
         }
-        if (!flightLegHasData(ret) && (returnDate || p.subDest)) {
-            ret.from = ret.from || inferArrivalLabel(p, ret);
-            ret.departDate = ret.departDate || returnDate;
-            ret.to = ret.to || inferReturnAirportLabel(p, ret);
-            ret.arriveDate = ret.arriveDate || ret.departDate || returnDate;
+        if (returnDate || p.subDest) {
+            if (!ret.from) ret.from = inferArrivalLabel(p, ret);
+            if (!ret.departDate) ret.departDate = returnDate;
+            if (!ret.to) ret.to = inferReturnAirportLabel(p, ret);
+            if (!ret.arriveDate) ret.arriveDate = ret.departDate || returnDate;
         }
 
         return {
@@ -878,8 +890,12 @@
             destLabel: (window.destLabels && window.destLabels[p.destTag]) || p.destTag,
             destination: p.destination1 || p.destination || subDest,
             destinationLabel: formatDestinationLabel(p.destination1 || p.destination || subDest),
-            departureAirport: p.departureAirport || p.departure_airport || p.aeroport_depart || '',
-            returnAirport: p.returnAirport || p.return_airport || p.aeroport_retour || '',
+            departureAirport: formatAirportLabel(
+                p.departureAirport || p.departure_airport || p.aeroport_depart || ''
+            ),
+            returnAirport: formatAirportLabel(
+                p.returnAirport || p.return_airport || p.aeroport_retour || ''
+            ),
             departureDate: departureDateValid,
             returnDate: returnDateValid,
             criteria: Array.isArray(p.criteria) ? p.criteria.map(normalizeCriterionValue) : [],
@@ -1169,7 +1185,8 @@
 
     function matchesAirportFilter(product, selectedAirports) {
         if (!selectedAirports.length) return true;
-        return selectedAirports.includes(product.departureAirport);
+        const productAirport = formatAirportLabel(product.departureAirport);
+        return selectedAirports.includes(productAirport);
     }
 
     function normalizeCriterionValue(raw) {
@@ -1259,6 +1276,7 @@
         matchesDestinationFilter,
         normalizeDestinationKey,
         formatDestinationLabel,
+        formatAirportLabel,
         matchesAirportFilter,
         matchesDepartureDateFilter,
         matchesCriteriaFilter,

@@ -202,6 +202,16 @@
         'Vancouver (YVR)'
     ];
 
+    /** Clés option GHL → libellé affiché (doit correspondre à FILTER_AIRPORTS) */
+    window.AIRPORT_LABELS = {
+        montral_yul: 'Montréal (YUL)',
+        qubec_yqb: 'Québec (YQB)',
+        ottawa_yow: 'Ottawa (YOW)',
+        toronto_yyz: 'Toronto (YYZ)',
+        halifax_yhz: 'Halifax (YHZ)',
+        vancouver_yvr: 'Vancouver (YVR)'
+    };
+
     /** Hotel star filter options (supports half stars) */
     window.FILTER_STAR_OPTIONS = [3, 3.5, 4, 4.5, 5];
 

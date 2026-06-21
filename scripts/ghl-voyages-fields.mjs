@@ -105,6 +105,25 @@ export function normalizeAeroportOption(value) {
   return null;
 }
 
+/** Clé option GHL → libellé affiché boutique */
+export const AEROPORT_LABELS = {
+  montral_yul: 'Montréal (YUL)',
+  qubec_yqb: 'Québec (YQB)',
+  ottawa_yow: 'Ottawa (YOW)',
+  toronto_yyz: 'Toronto (YYZ)',
+  halifax_yhz: 'Halifax (YHZ)',
+  vancouver_yvr: 'Vancouver (YVR)'
+};
+
+export function formatAeroportLabel(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const key = raw.toLowerCase().replace(/\s+/g, '_');
+  if (AEROPORT_LABELS[key]) return AEROPORT_LABELS[key];
+  if (AEROPORT_LABELS[raw]) return AEROPORT_LABELS[raw];
+  return raw;
+}
+
 export function normalizeStatutOption(value) {
   const s = String(value || '').trim().toLowerCase();
   if (s === 'actif') return 'actif';
