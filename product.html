@@ -155,7 +155,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=16"></script>
-    <script src="api.js?v=53"></script>
+    <script src="api.js?v=54"></script>
     <script>
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -535,8 +535,36 @@
                 </div>`;
         }
 
-        function renderOccupationPriceStack(row, isSoldOut) {
+        function renderOccupationPriceStack(row, isSoldOut, product) {
             const priceClass = isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue';
+            const breakdown = product
+                ? VoyageFiestaAPI.getOccupationPricingBreakdown(product, row.id)
+                : null;
+
+            if (breakdown?.hasFamilyMix) {
+                const parts = [];
+                if (breakdown.adults > 0 && breakdown.adultUnitPrice != null) {
+                    parts.push(`${breakdown.adults} × ${VoyageFiestaAPI.formatMoneyPerPerson(breakdown.adultUnitPrice)}`);
+                }
+                if (breakdown.children212 > 0 && breakdown.child212UnitPrice != null) {
+                    parts.push(`${breakdown.children212} enf. × ${VoyageFiestaAPI.formatMoneyPerPerson(breakdown.child212UnitPrice)}`);
+                }
+                if (breakdown.children1317 > 0 && breakdown.child1317UnitPrice != null) {
+                    parts.push(`${breakdown.children1317} ado. × ${VoyageFiestaAPI.formatMoneyPerPerson(breakdown.child1317UnitPrice)}`);
+                }
+                const mainAmount = breakdown.bookingTotalWithTaxes ?? breakdown.bookingBeforeTaxes;
+                const detail = parts.length
+                    ? parts.join(' · ')
+                    : (breakdown.taxesPerPerson != null
+                        ? `+ ${VoyageFiestaAPI.formatMoneyPerPerson(breakdown.taxesPerPerson)} taxes / pers.`
+                        : 'taxes incluses');
+                return `
+                    <span class="occupation-price-stack text-left sm:text-right shrink-0 sm:pl-2 pl-8">
+                        <span class="price-main block text-base font-bold ${priceClass} leading-none">${VoyageFiestaAPI.formatMoney(mainAmount)}</span>
+                        <span class="block text-[11px] text-gray-500 mt-1 leading-tight tabular-nums">${detail}</span>
+                    </span>`;
+            }
+
             if (row.totalWithTaxes != null) {
                 const detail = row.taxes != null
                     ? `<span>${VoyageFiestaAPI.formatMoneyPerPerson(row.price)}</span><span class="text-gray-300 mx-1">·</span><span>${VoyageFiestaAPI.formatMoneyPerPerson(row.taxes)} taxes</span>`
@@ -565,28 +593,66 @@
                         <span class="font-medium tabular-nums shrink-0 ${options.amountClass || 'text-gray-800'}">${perPerson ? VoyageFiestaAPI.formatMoneyPerPerson(amount) : VoyageFiestaAPI.formatMoney(amount)}</span>
                     </div>`);
             };
+            const pushComponentRow = (count, roleLabel, unitPrice) => {
+                if (count <= 0 || unitPrice == null) return;
+                const subtotal = Math.round(unitPrice * count * 100) / 100;
+                pushRow(
+                    `${count} ${roleLabel} × ${VoyageFiestaAPI.formatMoneyPerPerson(unitPrice)}`,
+                    subtotal,
+                    { perPerson: false }
+                );
+            };
 
-            if (breakdown) {
+            if (breakdown?.hasFamilyMix) {
+                pushComponentRow(breakdown.adults, breakdown.adults > 1 ? 'adultes' : 'adulte', breakdown.adultUnitPrice);
+                pushComponentRow(breakdown.children212, breakdown.children212 > 1 ? 'enfants (2-12 ans)' : 'enfant (2-12 ans)', breakdown.child212UnitPrice);
+                pushComponentRow(breakdown.children1317, breakdown.children1317 > 1 ? 'ados (13-17 ans)' : 'ado (13-17 ans)', breakdown.child1317UnitPrice);
+                pushRow('Sous-total avant taxes', breakdown.bookingBeforeTaxes, {
+                    perPerson: false,
+                    className: 'pt-1 border-t border-gray-100',
+                    labelClass: 'text-gray-600 font-medium'
+                });
+                if (breakdown.bookingTaxes != null && breakdown.taxesPerPerson != null) {
+                    pushRow(
+                        `Taxes (${breakdown.totalPeople} pers. × ${VoyageFiestaAPI.formatMoneyPerPerson(breakdown.taxesPerPerson)})`,
+                        breakdown.bookingTaxes,
+                        { perPerson: false }
+                    );
+                }
+            } else if (breakdown) {
                 pushRow('Avant taxes / pers.', breakdown.totalBeforeTaxes);
                 if (breakdown.totalTaxes !== null) {
                     pushRow('Taxes / pers.', breakdown.totalTaxes);
                 }
-                if (breakdown.totalPeople > 1 && breakdown.bookingTotalWithTaxes != null) {
-                    pushRow(`Forfait ${breakdown.totalPeople} pers.`, breakdown.bookingTotalWithTaxes, {
+                if (breakdown.totalWithTaxes != null) {
+                    pushRow('Total / pers.', breakdown.totalWithTaxes, {
                         className: 'pt-1 border-t border-gray-100',
-                        labelClass: 'text-gray-600 font-medium',
-                        perPerson: false
+                        labelClass: 'text-gray-600 font-medium'
                     });
                 }
             } else if (row.totalWithTaxes != null) {
                 pushRow('Avant taxes / pers.', row.price);
                 if (row.taxes != null) pushRow('Taxes / pers.', row.taxes);
+                pushRow('Total / pers.', row.totalWithTaxes, {
+                    className: 'pt-1 border-t border-gray-100',
+                    labelClass: 'text-gray-600 font-medium'
+                });
             } else {
                 pushRow('Avant taxes / pers.', row.price);
             }
 
-            const totalAmount = breakdown?.totalWithTaxes ?? row.totalWithTaxes ?? breakdown?.totalBeforeTaxes ?? row.price;
-            const totalLabel = breakdown?.totalWithTaxes != null || row.totalWithTaxes != null ? 'Total / pers.' : 'Prix / pers.';
+            const hasBookingTotal = breakdown?.hasFamilyMix
+                || (breakdown?.totalPeople > 1 && breakdown?.bookingTotalWithTaxes != null);
+            const footerLabel = hasBookingTotal
+                ? `Forfait ${breakdown.totalPeople} pers.`
+                : (breakdown?.totalWithTaxes != null || row.totalWithTaxes != null ? 'Total / pers.' : 'Prix / pers.');
+            const footerAmount = hasBookingTotal
+                ? breakdown.bookingTotalWithTaxes
+                : (breakdown?.totalWithTaxes ?? row.totalWithTaxes ?? breakdown?.totalBeforeTaxes ?? row.price);
+            const footerAmountHtml = hasBookingTotal
+                ? VoyageFiestaAPI.formatMoney(footerAmount)
+                : VoyageFiestaAPI.formatMoneyPerPerson(footerAmount);
+
             const depositAmount = breakdown?.totalDeposit ?? null;
 
             const detailHtml = rows.length
@@ -600,9 +666,9 @@
                         <span class="font-semibold text-brand-blue text-sm">${escapeHtml(row.label)}</span>
                     </div>
                     ${detailHtml}
-                    <div class="px-4 py-3 flex items-baseline justify-between gap-4">
-                        <span class="text-sm font-semibold text-gray-700">${escapeHtml(totalLabel)}</span>
-                        <span class="text-xl font-bold text-brand-blue tabular-nums">${VoyageFiestaAPI.formatMoneyPerPerson(totalAmount)}</span>
+                    <div class="px-4 py-3 flex items-baseline justify-between gap-4 bg-brand-light/60">
+                        <span class="text-sm font-bold text-gray-800">${escapeHtml(footerLabel)}</span>
+                        <span class="text-2xl font-bold text-brand-blue tabular-nums leading-none">${footerAmountHtml}</span>
                     </div>
                     ${depositAmount !== null ? `
                         <div class="px-4 py-2.5 bg-orange-50 border-t border-orange-100 flex items-baseline justify-between gap-4">
@@ -631,7 +697,7 @@
                                     <span class="occupation-option-indicator" aria-hidden="true"></span>
                                     <span class="text-sm font-medium text-gray-700 leading-snug">${row.label}</span>
                                 </span>
-                                ${renderOccupationPriceStack(row, isSoldOut)}
+                                ${renderOccupationPriceStack(row, isSoldOut, p)}
                             </span>
                         </label>
                     `).join('')}
