@@ -437,6 +437,14 @@
         return null;
     }
 
+    /** Libellé enfant — sans « 1er » s'il n'y a qu'un seul tarif enfant pour la tranche. */
+    function getChildPriceLabel(band, childIndex, hasSecondPrice) {
+        const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
+        if (childIndex === 1) return `2e enfant (${ageLabel})`;
+        if (hasSecondPrice) return `1er enfant (${ageLabel})`;
+        return `Enfant (${ageLabel})`;
+    }
+
     function sumChildUnitPrices(p, children212, children1317) {
         let total = 0;
         for (let i = 0; i < children212; i++) {
@@ -654,7 +662,7 @@
             child212Lines.push({
                 index: i + 1,
                 band: '212',
-                label: i === 0 ? '1er enfant (2-12 ans)' : '2e enfant (2-12 ans)',
+                label: getChildPriceLabel('212', i, childInfo.hasSecond212),
                 unitPrice: unit,
                 taxesPerPerson: taxesPerPerson,
                 totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
@@ -668,7 +676,7 @@
             child1317Lines.push({
                 index: i + 1,
                 band: '1317',
-                label: i === 0 ? '1er enfant (13-17 ans)' : '2e enfant (13-17 ans)',
+                label: getChildPriceLabel('1317', i, childInfo.hasSecond1317),
                 unitPrice: unit,
                 taxesPerPerson: taxesPerPerson,
                 totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
@@ -1885,6 +1893,7 @@
         getOccupationPrices,
         getChildPricingInfo,
         productHasChildUnitPricing,
+        getChildPriceLabel,
         getLowestOccupationRow,
         getDoubleOccupationDisplayPrice,
         getListingDisplayPrice,
