@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pickVoyagesUnwrapped } from './ghl-voyages-fields.mjs';
+import { pickVoyagesUnwrapped, pickRecordName } from './ghl-voyages-fields.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -46,6 +46,10 @@ function pickProp(props, logicalKey, ...legacyKeys) {
   const voyagesVal = pickVoyagesUnwrapped(props, logicalKey);
   if (voyagesVal !== undefined && voyagesVal !== null && voyagesVal !== '') return voyagesVal;
   return pick(props, logicalKey, ...legacyKeys);
+}
+
+function resolveRecordName(record, props) {
+  return pickRecordName(record, props) || 'Forfait sans nom';
 }
 
 function unwrapFieldValue(value) {
@@ -388,8 +392,8 @@ function assignSlugs(records, previousSlugById = {}) {
     const idA = getRecordId(a, propsA);
     const idB = getRecordId(b, propsB);
     if (idA && idB) return idA.localeCompare(idB);
-    const nameA = pick(propsA, 'name', 'title', 'forfait_name') || '';
-    const nameB = pick(propsB, 'name', 'title', 'forfait_name') || '';
+    const nameA = resolveRecordName(a, propsA);
+    const nameB = resolveRecordName(b, propsB);
     return nameA.localeCompare(nameB, 'fr');
   });
 
@@ -410,7 +414,7 @@ function assignSlugs(records, previousSlugById = {}) {
   for (const record of sorted) {
     const props = record.properties || record.fields || record;
     const recordId = getRecordId(record, props);
-    const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
+    const name = resolveRecordName(record, props);
     const departureDate = normalizeDateField(
       pick(props, 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
     );
@@ -705,7 +709,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
   const active = state;
   const occ = computeOccupationPerPersonPrices(props);
 
-  const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
+  const name = resolveRecordName(record, props);
   const destinationLabel = pickProp(props, 'destination', 'destination1', 'dest_destination') || '';
   const subDest = pick(props, 'sub_dest', 'subDest', 'sub_destination', 'city') || destinationLabel;
   const durationNights = toNumber(
@@ -919,7 +923,7 @@ async function main() {
   for (const record of records) {
     const props = record.properties || record.fields || record;
     const recordId = getRecordId(record, props);
-    const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
+    const name = resolveRecordName(record, props);
     const mapKey = recordId || `__name__:${normalizeSlug(name)}`;
     const slug = slugAssignments.get(mapKey) || normalizeSlug(name);
     const rawProduct = await mapRecord(record, apiKey, manifest, slug);

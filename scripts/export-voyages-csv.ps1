@@ -107,7 +107,7 @@ function Label([string]$suffix, [string]$fallback) {
 }
 
 $headers = @(
-  'name',
+  (Label 'forfaits' 'forfaits'),
   (Label 'statut' 'Statut'),
   (Label 'inventaire' 'Inventaire'),
   (Label 'destination' 'Destination'),

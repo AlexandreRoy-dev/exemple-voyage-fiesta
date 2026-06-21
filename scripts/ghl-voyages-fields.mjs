@@ -45,6 +45,27 @@ export const VOYAGES_FIELDS = {
   photo_extra: 'photos_extra'
 };
 
+/** Nom affiché du voyage — objet Voyages utilise le champ `forfaits`, pas `name`. */
+export function pickRecordName(record, props) {
+  const p = props || record?.properties || record?.fields || record || {};
+  const tryVal = (value) => {
+    const val = unwrapGhlFieldValue(value);
+    if (val !== undefined && val !== null && String(val).trim()) {
+      return String(val).trim();
+    }
+    return '';
+  };
+  return (
+    tryVal(record?.name)
+    || tryVal(p.name)
+    || tryVal(p.forfaits)
+    || tryVal(p[`${VOYAGES_SCHEMA_KEY}.forfaits`])
+    || tryVal(p.title)
+    || tryVal(p.forfait_name)
+    || ''
+  );
+}
+
 export function fieldSuffix(fieldKey) {
   if (!fieldKey) return '';
   const parts = String(fieldKey).split('.');
