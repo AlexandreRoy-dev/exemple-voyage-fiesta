@@ -184,11 +184,25 @@
         return `TPS ${tpsPct} % + TVQ ${tvqPct} %`;
     }
 
+    function getTaxesAirFeesLabel(options = {}) {
+        const base = window.TAXES_AIR_FEES_LABEL || 'Taxes et frais aériens';
+        if (options.perPerson) return `${base} / pers.`;
+        if (options.enSus) return `${base} en sus`;
+        if (options.inclus) return `${base} inclus`;
+        return base;
+    }
+
+    function getBeforeTaxesLabel(options = {}) {
+        const base = window.BEFORE_TAXES_AIR_FEES_LABEL || 'Avant taxes et frais aériens';
+        if (options.perPerson) return `${base} / pers.`;
+        return base;
+    }
+
     const OCCUPATION_DEFS = [
         {
             id: 'double',
             label: 'Occ. double',
-            hint: '2 adultes — prix par personne, avant taxes',
+            hint: '2 adultes — prix par personne, avant taxes et frais aériens',
             primary: true,
             adults: 2,
             children212: 0,
@@ -239,7 +253,7 @@
         {
             id: 'simple',
             label: 'Occ. simple',
-            hint: '1 adulte — prix par personne, avant taxes',
+            hint: '1 adulte — prix par personne, avant taxes et frais aériens',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -269,7 +283,7 @@
         {
             id: 'triple',
             label: 'Occ. triple',
-            hint: '3 adultes — prix par personne, avant taxes',
+            hint: '3 adultes — prix par personne, avant taxes et frais aériens',
             adults: 3,
             children212: 0,
             children1317: 0,
@@ -279,7 +293,7 @@
         {
             id: 'quad',
             label: 'Occ. quad',
-            hint: '4 adultes — prix par personne, avant taxes',
+            hint: '4 adultes — prix par personne, avant taxes et frais aériens',
             adults: 4,
             children212: 0,
             children1317: 0,
@@ -289,7 +303,7 @@
         {
             id: 'autres',
             label: 'Autres',
-            hint: 'Autre configuration — prix par personne, avant taxes',
+            hint: 'Autre configuration — prix par personne, avant taxes et frais aériens',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -704,7 +718,7 @@
             });
             pricingSummary = summaryParts.join(' + ');
             if (taxesPerPerson !== null) {
-                pricingSummary += ` · taxes ${formatMoneyPerPerson(taxesPerPerson, { html: false })} / pers.`;
+                pricingSummary += ` · ${getTaxesAirFeesLabel({ perPerson: true }).toLowerCase()}`;
             }
             if (totalPeople > 0) {
                 const bookingTotalPreview = taxesPerPerson !== null
@@ -718,9 +732,9 @@
                 taxesPerPerson !== null ? pricePerPerson + taxesPerPerson : pricePerPerson
             );
             bookingBeforeTaxes = roundMoney(pricePerPerson * totalPeople);
-            pricingSummary = `${formatMoneyPerPerson(pricePerPerson, { html: false })} avant taxes`;
+            pricingSummary = `${formatMoneyPerPerson(pricePerPerson, { html: false })} ${getBeforeTaxesLabel().toLowerCase()}`;
             if (taxesPerPerson !== null && totalPerPerson !== null) {
-                pricingSummary += ` + ${formatMoneyPerPerson(taxesPerPerson, { html: false })} taxes = ${formatMoneyPerPerson(totalPerPerson, { html: false })} total`;
+                pricingSummary += ` + ${formatMoneyPerPerson(taxesPerPerson, { html: false })} ${getTaxesAirFeesLabel().toLowerCase()} = ${formatMoneyPerPerson(totalPerPerson, { html: false })} total`;
             }
             if (totalPeople > 1) {
                 const bookingTotalPreview = totalPerPerson !== null
@@ -1903,6 +1917,8 @@
         pickOccupationPrice,
         calculateSalesTaxes,
         formatTaxRatesLabel,
+        getTaxesAirFeesLabel,
+        getBeforeTaxesLabel,
         buildGhlReservationParams,
         getPaymentTerms,
         getEffectiveFlights,

@@ -244,6 +244,10 @@
     window.SITE_DEFAULT_SHARE_IMAGE = window.SITE_DEFAULT_SHARE_IMAGE
         || 'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
 
+    /** Libellés affichés — taxes + frais aériens (GHL : taxes_amount) */
+    window.TAXES_AIR_FEES_LABEL = 'Taxes et frais aériens';
+    window.BEFORE_TAXES_AIR_FEES_LABEL = 'Avant taxes et frais aériens';
+
     /** URL publique de la boutique (iframe + liens directs) */
     window.BOUTIQUE_BASE_URL = 'https://promofiesta.roymarketing.ca';
 
@@ -297,9 +301,9 @@
         { key: 'deposit_amount', label: 'Dépôt requis ($ / pers.)' },
         { key: 'occupation', label: 'Occupation — libellé (Occ. double, etc.)' },
         { key: 'occupation_label', label: 'Occupation — libellé' },
-        { key: 'selected_price', label: 'Prix sélectionné — avant taxes ($ / pers.)' },
-        { key: 'selected_taxes', label: 'Taxes / pers. pour l\'occupation choisie ($)' },
-        { key: 'selected_total', label: 'Total par personne avant taxes + taxes ($ / pers.)' },
+        { key: 'selected_price', label: 'Prix sélectionné — avant taxes et frais aériens ($ / pers.)' },
+        { key: 'selected_taxes', label: 'Taxes et frais aériens / pers. pour l\'occupation choisie ($)' },
+        { key: 'selected_total', label: 'Total par personne (forfait + taxes et frais aériens) ($ / pers.)' },
         { key: 'nombre_personnes', label: 'Nombre total de voyageurs' },
         { key: 'nombre_adultes', label: 'Nombre d\'adultes' },
         { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants 2-12 ans' },
@@ -308,11 +312,11 @@
         { key: 'depot_total', label: 'Dépôt total (dépôt × nb personnes)' },
         { key: 'prix_adulte_unitaire', label: 'Prix unitaire adulte ($)' },
         { key: 'prix_enfant_2_12_unitaire', label: 'Prix unitaire enfant 2-12 ($)' },
-        { key: 'prix_total_avant_taxes', label: 'Prix total avant taxes ($) — « prix sans taxe »' },
-        { key: 'taxes_total', label: 'Taxes totales ($) — taxes × nb personnes' },
-        { key: 'taxes_total1', label: 'Alias taxes totales (formulaire client)' },
-        { key: 'taxes_par_personne', label: 'Taxes / pers. (occupation choisie)' },
-        { key: 'prix_total', label: 'Prix total avec taxes ($)' },
+        { key: 'prix_total_avant_taxes', label: 'Prix total avant taxes et frais aériens ($)' },
+        { key: 'taxes_total', label: 'Taxes et frais aériens totaux ($) — montant × nb personnes' },
+        { key: 'taxes_total1', label: 'Alias taxes et frais aériens totaux (formulaire client)' },
+        { key: 'taxes_par_personne', label: 'Taxes et frais aériens / pers. (occupation choisie)' },
+        { key: 'prix_total', label: 'Prix total avec taxes et frais aériens ($)' },
         { key: 'total', label: 'Alias prix total (même que prix_total)' },
         { key: 'pricing_summary', label: 'Résumé texte du calcul (courriel)' },
         { key: 'price_double', label: 'Tarif — occ. double ($ / pers.)' },
