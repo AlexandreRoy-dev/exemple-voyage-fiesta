@@ -588,23 +588,35 @@
 
             if (breakdown?.useComponentPricing) {
                 if (breakdown.adults > 0) {
-                    pushRow(`Adulte${breakdown.adults > 1 ? 's' : ''} (${breakdown.adults})`, breakdown.adultUnitPrice);
-                    if (breakdown.totalTaxes !== null) {
-                        pushRow(`${TAX_LABEL_PP()} (adulte)`, breakdown.totalTaxes);
-                    }
+                    pushRow(
+                        `${breakdown.adults} adulte${breakdown.adults > 1 ? 's' : ''}`,
+                        breakdown.adultUnitPrice
+                    );
                 }
-                (breakdown.child212Lines || []).forEach(line => {
-                    pushRow(line.label, line.unitPrice, { perChild: true });
-                    if (line.taxesPerPerson !== null) {
-                        pushRow(`${TAX_LABEL_PP()} (${line.label.toLowerCase()})`, line.taxesPerPerson);
+
+                const pushChildBandGroups = (lines, bandLabel) => {
+                    if (!lines?.length) return;
+                    const groups = [];
+                    for (const line of lines) {
+                        const existing = groups.find(g => g.unitPrice === line.unitPrice);
+                        if (existing) existing.count += 1;
+                        else groups.push({ count: 1, unitPrice: line.unitPrice });
                     }
-                });
-                (breakdown.child1317Lines || []).forEach(line => {
-                    pushRow(line.label, line.unitPrice, { perChild: true });
-                    if (line.taxesPerPerson !== null) {
-                        pushRow(`${TAX_LABEL_PP()} (${line.label.toLowerCase()})`, line.taxesPerPerson);
-                    }
-                });
+                    groups.forEach(group => {
+                        pushRow(`${bandLabel} (${group.count})`, group.unitPrice, { perChild: true });
+                    });
+                };
+
+                pushChildBandGroups(breakdown.child212Lines, 'Enfants 2-12 ans');
+                pushChildBandGroups(breakdown.child1317Lines, 'Enfants 13-17 ans');
+
+                if (breakdown.bookingTaxes != null && breakdown.totalPeople > 0) {
+                    pushRow(
+                        `${TAX_LABEL()} (${breakdown.totalPeople} pers.)`,
+                        breakdown.bookingTaxes,
+                        { perPerson: false, className: 'pt-1 border-t border-gray-100' }
+                    );
+                }
             } else if (breakdown) {
                 pushRow(BEFORE_TAX_LABEL_PP(), breakdown.totalBeforeTaxes);
                 if (breakdown.totalTaxes !== null) {
@@ -627,7 +639,8 @@
                 pushRow(BEFORE_TAX_LABEL_PP(), row.price);
             }
 
-            const hasBookingTotal = breakdown?.totalPeople > 1 && breakdown?.bookingTotalWithTaxes != null;
+            const hasBookingTotal = breakdown?.bookingTotalWithTaxes != null
+                && (breakdown?.totalPeople > 1 || breakdown?.useComponentPricing);
             const footerLabel = hasBookingTotal
                 ? `Forfait ${breakdown.totalPeople} pers.`
                 : (breakdown?.totalWithTaxes != null || row.totalWithTaxes != null ? 'Total / pers.' : 'Prix / pers.');
