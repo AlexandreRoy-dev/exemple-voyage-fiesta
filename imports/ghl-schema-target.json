@@ -1,0 +1,279 @@
+{
+  "schemaKey": "custom_objects.voyages",
+  "id": "6a38414086948d9f84c5e440",
+  "fields": [
+    {
+      "key": "custom_objects.voyages.forfaits",
+      "label": "forfaits",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.statut",
+      "label": "Statut",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "actif",
+        "inactif"
+      ]
+    },
+    {
+      "key": "custom_objects.voyages.destination",
+      "label": "Destination",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.etoiles",
+      "label": "Étoiles",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.fournisseur",
+      "label": "Fournisseur",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "sunwing"
+      ]
+    },
+    {
+      "key": "custom_objects.voyages.taxes_par_personne",
+      "label": "Taxes et frais aériens ($ / pers.)",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.aroport_de_retour",
+      "label": "Aéroport de retour",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.inventaire",
+      "label": "Inventaire",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.pays",
+      "label": "Pays",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.catgorie_de_chambre",
+      "label": "Catégorie de chambre",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.transporteur",
+      "label": "Transporteur",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "westjet"
+      ]
+    },
+    {
+      "key": "custom_objects.voyages.rabais_aubaines_express",
+      "label": "Rabais Aubaines Express",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.vol_aller_numero",
+      "label": "Vol aller numéro",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.lien_fiche_fournisseur",
+      "label": "Lien fiche fournisseur",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.date_de_dpart",
+      "label": "Date de départ",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.type_de_forfait",
+      "label": "Type de forfait",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "toutinclus",
+        "europen"
+      ]
+    },
+    {
+      "key": "custom_objects.voyages.depot_par_personne",
+      "label": "Dépôt requis ($ / pers.)",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.vol_aller_heure_dpart",
+      "label": "Vol aller -heure départ",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.dure_nuits",
+      "label": "Durée (nuits)",
+      "type": "NUMERICAL",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.description_hotel",
+      "label": "Description_Hôtel",
+      "type": "LARGE_TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.prix_occ_double",
+      "label": "Prix occ. double",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.vol_retour_numero",
+      "label": "Vol retour -numéro",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.fin_promo_top_chrono",
+      "label": "Fin promo top chrono",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.critres",
+      "label": "critères",
+      "type": "MULTIPLE_OPTIONS",
+      "required": false,
+      "options": [
+        "sur_la_plage"
+      ]
+    },
+    {
+      "key": "custom_objects.voyages.vol_retour_heure_dpart",
+      "label": "Vol retour -heure départ",
+      "type": "TEXT",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.date_paiement_final",
+      "label": "Date paiement final",
+      "type": "DATE",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.prix_occ_triple",
+      "label": "Prix occ. triple",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.photo_principale",
+      "label": "Photo principale",
+      "type": "FILE_UPLOAD",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.aroport_de_dpart",
+      "label": "Aéroport de départ",
+      "type": "SINGLE_OPTIONS",
+      "required": false,
+      "options": [
+        "montral_yul"
+      ]
+    },
+    {
+      "key": "custom_objects.voyages.prix_occ_simple",
+      "label": "Prix occ. simple",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.photos_extra",
+      "label": "Photos extra",
+      "type": "FILE_UPLOAD",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.prix_occ_quad",
+      "label": "Prix occ. quad",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.enfant_2_ans_et_moins",
+      "label": "Enfant 2 ans et moins",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.1er_enfant_212_ans",
+      "label": "1er enfant 2-12 ans",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.2e_enfant_212_ans",
+      "label": "2e enfant 2-12 ans",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.1er_enfant_1317_ans",
+      "label": "1er enfant 13-17 ans",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    },
+    {
+      "key": "custom_objects.voyages.2e_enfant_1317_ans",
+      "label": "2e enfant 13-17 ans",
+      "type": "MONETORY",
+      "required": false,
+      "options": []
+    }
+  ]
+}
