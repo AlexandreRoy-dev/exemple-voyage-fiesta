@@ -217,6 +217,26 @@
             taxesKeys: ['taxesOccDouble2Child', 'taxes_occ_double_2_child']
         },
         {
+            id: 'double_1_child_1317',
+            label: 'Occ. double + 1 enfant (13-17 ans)',
+            hint: '2 adultes + 1 adolescent (13-17 ans au retour) — prix par personne',
+            adults: 2,
+            children212: 0,
+            children1317: 1,
+            priceKeys: ['priceOccDouble1Child1317', 'price_occ_double_1_child_13_17'],
+            taxesKeys: ['taxesOccDouble1Child1317', 'taxes_occ_double_1_child_13_17']
+        },
+        {
+            id: 'double_2_child_1317',
+            label: 'Occ. double + 2 enfants (13-17 ans)',
+            hint: '2 adultes + 2 adolescents (13-17 ans au retour) — prix par personne',
+            adults: 2,
+            children212: 0,
+            children1317: 2,
+            priceKeys: ['priceOccDouble2Child1317', 'price_occ_double_2_child_13_17'],
+            taxesKeys: ['taxesOccDouble2Child1317', 'taxes_occ_double_2_child_13_17']
+        },
+        {
             id: 'simple',
             label: 'Occ. simple',
             hint: '1 adulte — prix par personne, avant taxes',
@@ -235,6 +255,16 @@
             children1317: 0,
             priceKeys: ['priceOccSimple1Child', 'price_occ_simple_1_child'],
             taxesKeys: ['taxesOccSimple1Child', 'taxes_occ_simple_1_child']
+        },
+        {
+            id: 'simple_1_child_1317',
+            label: 'Occ. simple + 1 enfant (13-17 ans)',
+            hint: '1 adulte + 1 adolescent (13-17 ans au retour) — prix par personne',
+            adults: 1,
+            children212: 0,
+            children1317: 1,
+            priceKeys: ['priceOccSimple1Child1317', 'price_occ_simple_1_child_13_17'],
+            taxesKeys: ['taxesOccSimple1Child1317', 'taxes_occ_simple_1_child_13_17']
         },
         {
             id: 'triple',
@@ -275,7 +305,18 @@
     /** GHL met parfois le prix double+1 enfant dans price_occ_simple_1_child. */
     function normalizeOccupationPriceFields(product) {
         const p = { ...product };
+        const avgPerPerson = (total, people) => {
+            if (!Number.isFinite(total) || people <= 0) return null;
+            return Math.round((total / people) * 100) / 100;
+        };
+
         const doublePrice = optionalPrice(p.price);
+        const simplePrice = optionalPrice(p.priceOccSimple ?? p.price_occ_simple);
+        const child212 = optionalPrice(p.priceChild212 ?? p.price_child_2_12);
+        const child212b = optionalPrice(p.priceChild212_2 ?? p.prix_2e_enfant_2_12);
+        const child1317 = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
+        const child1317b = optionalPrice(p.priceChild1317_2 ?? p.prix_2e_enfant_13_17);
+
         const double1 = optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child);
         const simple1 = optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child);
 
@@ -284,6 +325,32 @@
             p.priceOccSimple1Child = null;
             p.price_occ_double_1_child = simple1;
             p.price_occ_simple_1_child = null;
+        }
+
+        if (optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child) === null
+            && doublePrice !== null && child212 !== null) {
+            p.priceOccDouble1Child = avgPerPerson(2 * doublePrice + child212, 3);
+        }
+        if (optionalPrice(p.priceOccDouble2Child ?? p.price_occ_double_2_child) === null
+            && doublePrice !== null && child212 !== null && child212b !== null) {
+            p.priceOccDouble2Child = avgPerPerson(2 * doublePrice + child212 + child212b, 4);
+        }
+        if (optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child) === null
+            && simplePrice !== null && child212 !== null) {
+            p.priceOccSimple1Child = avgPerPerson(simplePrice + child212, 2);
+        }
+
+        if (optionalPrice(p.priceOccDouble1Child1317 ?? p.price_occ_double_1_child_13_17) === null
+            && doublePrice !== null && child1317 !== null) {
+            p.priceOccDouble1Child1317 = avgPerPerson(2 * doublePrice + child1317, 3);
+        }
+        if (optionalPrice(p.priceOccDouble2Child1317 ?? p.price_occ_double_2_child_13_17) === null
+            && doublePrice !== null && child1317 !== null && child1317b !== null) {
+            p.priceOccDouble2Child1317 = avgPerPerson(2 * doublePrice + child1317 + child1317b, 4);
+        }
+        if (optionalPrice(p.priceOccSimple1Child1317 ?? p.price_occ_simple_1_child_13_17) === null
+            && simplePrice !== null && child1317 !== null) {
+            p.priceOccSimple1Child1317 = avgPerPerson(simplePrice + child1317, 2);
         }
 
         return p;
@@ -299,10 +366,16 @@
             taxes_occ_double_1_child: null,
             taxesOccDouble2Child: null,
             taxes_occ_double_2_child: null,
+            taxesOccDouble1Child1317: null,
+            taxes_occ_double_1_child_13_17: null,
+            taxesOccDouble2Child1317: null,
+            taxes_occ_double_2_child_13_17: null,
             taxesOccSimple: null,
             taxes_occ_simple: null,
             taxesOccSimple1Child: null,
             taxes_occ_simple_1_child: null,
+            taxesOccSimple1Child1317: null,
+            taxes_occ_simple_1_child_13_17: null,
             taxesOccTriple: null,
             taxes_occ_triple: null,
             taxesOccQuad: null,
@@ -605,8 +678,11 @@
         set('price_double', pickOccupationPrice(p, ['price', 'price_occ_double']));
         set('price_double_1_child', pickOccupationPrice(p, ['priceOccDouble1Child', 'price_occ_double_1_child']));
         set('price_double_2_child', pickOccupationPrice(p, ['priceOccDouble2Child', 'price_occ_double_2_child']));
+        set('price_double_1_child_13_17', pickOccupationPrice(p, ['priceOccDouble1Child1317', 'price_occ_double_1_child_13_17']));
+        set('price_double_2_child_13_17', pickOccupationPrice(p, ['priceOccDouble2Child1317', 'price_occ_double_2_child_13_17']));
         set('price_simple', pickOccupationPrice(p, ['priceOccSimple', 'price_occ_simple']));
         set('price_simple_1_child', pickOccupationPrice(p, ['priceOccSimple1Child', 'price_occ_simple_1_child']));
+        set('price_simple_1_child_13_17', pickOccupationPrice(p, ['priceOccSimple1Child1317', 'price_occ_simple_1_child_13_17']));
         set('price_triple', pickOccupationPrice(p, ['priceOccTriple', 'price_occ_triple']));
         set('price_quad', pickOccupationPrice(p, ['priceOccQuad', 'price_occ_quad']));
         set('price_autres', pickOccupationPrice(p, ['priceAutres', 'price_autres', 'price_occ_autres']));
@@ -888,14 +964,20 @@
             priceOccTriple: optionalPrice(p.priceOccTriple ?? p.price_occ_triple),
             priceOccDouble1Child: optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child),
             priceOccDouble2Child: optionalPrice(p.priceOccDouble2Child ?? p.price_occ_double_2_child),
+            priceOccDouble1Child1317: optionalPrice(p.priceOccDouble1Child1317 ?? p.price_occ_double_1_child_13_17),
+            priceOccDouble2Child1317: optionalPrice(p.priceOccDouble2Child1317 ?? p.price_occ_double_2_child_13_17),
             priceOccSimple1Child: optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child),
+            priceOccSimple1Child1317: optionalPrice(p.priceOccSimple1Child1317 ?? p.price_occ_simple_1_child_13_17),
             priceOccQuad: optionalPrice(p.priceOccQuad ?? p.price_occ_quad),
             priceAutres: optionalPrice(p.priceAutres ?? p.price_autres ?? p.price_occ_autres),
             taxesOccDouble: optionalPrice(p.taxesOccDouble ?? p.taxes_occ_double),
             taxesOccDouble1Child: optionalPrice(p.taxesOccDouble1Child ?? p.taxes_occ_double_1_child),
             taxesOccDouble2Child: optionalPrice(p.taxesOccDouble2Child ?? p.taxes_occ_double_2_child),
+            taxesOccDouble1Child1317: optionalPrice(p.taxesOccDouble1Child1317 ?? p.taxes_occ_double_1_child_13_17),
+            taxesOccDouble2Child1317: optionalPrice(p.taxesOccDouble2Child1317 ?? p.taxes_occ_double_2_child_13_17),
             taxesOccSimple: optionalPrice(p.taxesOccSimple ?? p.taxes_occ_simple),
             taxesOccSimple1Child: optionalPrice(p.taxesOccSimple1Child ?? p.taxes_occ_simple_1_child),
+            taxesOccSimple1Child1317: optionalPrice(p.taxesOccSimple1Child1317 ?? p.taxes_occ_simple_1_child_13_17),
             taxesOccTriple: optionalPrice(p.taxesOccTriple ?? p.taxes_occ_triple),
             taxesOccQuad: optionalPrice(p.taxesOccQuad ?? p.taxes_occ_quad),
             taxesOccAutres: optionalPrice(p.taxesOccAutres ?? p.taxes_occ_autres),

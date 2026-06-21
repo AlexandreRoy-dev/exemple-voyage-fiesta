@@ -191,6 +191,10 @@ function computeOccupationPerPersonPrices(props) {
     pickProp(props, 'prix_1er_enfant_2_12', 'price_child_2_12', 'priceChild212')
   );
   const enfant2 = optionalPrice(pickProp(props, 'prix_2e_enfant_2_12'));
+  const enfant1317_1 = optionalPrice(
+    pickProp(props, 'prix_1er_enfant_13_17', 'price_child_13_17', 'priceChild1317')
+  );
+  const enfant1317_2 = optionalPrice(pickProp(props, 'prix_2e_enfant_13_17'));
 
   let priceOccDouble1Child = optionalPrice(
     pick(props, 'price_occ_double_1_child', 'priceOccDouble1Child', 'price_double_1_child')
@@ -200,6 +204,15 @@ function computeOccupationPerPersonPrices(props) {
   );
   let priceOccSimple1Child = optionalPrice(
     pick(props, 'price_occ_simple_1_child', 'priceOccSimple1Child', 'price_simple_1_child')
+  );
+  let priceOccDouble1Child1317 = optionalPrice(
+    pick(props, 'price_occ_double_1_child_13_17', 'priceOccDouble1Child1317')
+  );
+  let priceOccDouble2Child1317 = optionalPrice(
+    pick(props, 'price_occ_double_2_child_13_17', 'priceOccDouble2Child1317')
+  );
+  let priceOccSimple1Child1317 = optionalPrice(
+    pick(props, 'price_occ_simple_1_child_13_17', 'priceOccSimple1Child1317')
   );
 
   if (priceOccDouble1Child === null && prixDouble !== null && enfant1 !== null) {
@@ -211,6 +224,15 @@ function computeOccupationPerPersonPrices(props) {
   if (priceOccSimple1Child === null && prixSimple !== null && enfant1 !== null) {
     priceOccSimple1Child = avg(prixSimple + enfant1, 2);
   }
+  if (priceOccDouble1Child1317 === null && prixDouble !== null && enfant1317_1 !== null) {
+    priceOccDouble1Child1317 = avg(2 * prixDouble + enfant1317_1, 3);
+  }
+  if (priceOccDouble2Child1317 === null && prixDouble !== null && enfant1317_1 !== null && enfant1317_2 !== null) {
+    priceOccDouble2Child1317 = avg(2 * prixDouble + enfant1317_1 + enfant1317_2, 4);
+  }
+  if (priceOccSimple1Child1317 === null && prixSimple !== null && enfant1317_1 !== null) {
+    priceOccSimple1Child1317 = avg(prixSimple + enfant1317_1, 2);
+  }
 
   return {
     prixDouble,
@@ -220,10 +242,11 @@ function computeOccupationPerPersonPrices(props) {
     priceOccDouble1Child,
     priceOccDouble2Child,
     priceOccSimple1Child,
+    priceOccDouble1Child1317,
+    priceOccDouble2Child1317,
+    priceOccSimple1Child1317,
     priceChild212: enfant1,
-    priceChild1317: optionalPrice(
-      pickProp(props, 'prix_1er_enfant_13_17', 'price_child_13_17', 'priceChild1317')
-    ),
+    priceChild1317: enfant1317_1,
     priceChild2Minus: optionalPrice(pickProp(props, 'prix_enfant_2_moins'))
   };
 }
@@ -838,7 +861,10 @@ async function mapRecord(record, apiKey, manifest, slug) {
     priceOccTriple: occ.prixTriple,
     priceOccDouble1Child: occ.priceOccDouble1Child,
     priceOccDouble2Child: occ.priceOccDouble2Child,
+    priceOccDouble1Child1317: occ.priceOccDouble1Child1317,
+    priceOccDouble2Child1317: occ.priceOccDouble2Child1317,
     priceOccSimple1Child: occ.priceOccSimple1Child,
+    priceOccSimple1Child1317: occ.priceOccSimple1Child1317,
     priceOccQuad: occ.prixQuad,
     priceAutres: optionalPrice(pick(props, 'price_autres', 'priceAutres', 'price_occ_autres')),
     ...taxFields,
