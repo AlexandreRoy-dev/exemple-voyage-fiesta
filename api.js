@@ -136,6 +136,19 @@
         return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
     }
 
+    /** Montants taxes — conserve les centimes (ex. 265,50 $ / pers.). */
+    function optionalTaxAmount(value) {
+        value = unwrapFieldValue(value);
+        if (value === undefined || value === null || value === '') return null;
+        if (typeof value === 'string') {
+            const cleaned = value.replace(/\s/g, '').replace(/\$/g, '').replace(',', '.');
+            const n = Number(cleaned);
+            return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+        }
+        const n = Number(value);
+        return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+    }
+
     function normalizeExternalUrl(value) {
         const raw = unwrapFieldValue(value);
         const url = raw === undefined || raw === null ? '' : String(raw).trim();
@@ -256,7 +269,7 @@
     ];
 
     function pickOccupationTaxPerPerson(p) {
-        return optionalPrice(p.taxesAmount ?? p.taxes_amount);
+        return optionalTaxAmount(p.taxesAmount ?? p.taxes_amount);
     }
 
     function getOccupationDef(occupationId) {
@@ -279,7 +292,7 @@
         if (perPerson !== null) {
             return {
                 taxesPerPerson: perPerson,
-                totalTaxes: Math.round(perPerson * peopleCount)
+                totalTaxes: Math.round(perPerson * peopleCount * 100) / 100
             };
         }
 
@@ -647,9 +660,16 @@
     }
 
     function formatMoney(amount) {
-        const n = Math.round(Number(amount));
+        const n = Number(amount);
         if (!Number.isFinite(n)) return '';
-        return n.toLocaleString('fr-CA') + '\u00a0$';
+        const rounded = Math.round(n * 100) / 100;
+        if (rounded % 1 !== 0) {
+            return rounded.toLocaleString('fr-CA', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }) + '\u00a0$';
+        }
+        return Math.round(rounded).toLocaleString('fr-CA') + '\u00a0$';
     }
 
     /** Red card incentive — rabais, prix barré, financement optionnel */

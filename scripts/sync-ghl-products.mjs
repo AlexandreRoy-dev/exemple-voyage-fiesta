@@ -71,6 +71,52 @@ function optionalPrice(value) {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
 }
 
+function optionalTaxAmount(value) {
+  value = unwrapFieldValue(value);
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/\s/g, '').replace(/\$/g, '').replace(',', '.');
+    const n = Number(cleaned);
+    return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+  }
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+}
+
+/** taxes_amount ($/pers.) prime — legacy taxes_occ_* ignorés quand présent. */
+function applyTaxFields(props) {
+  const taxesAmount = optionalTaxAmount(pick(props, 'taxes_amount', 'taxesAmount'));
+  const legacy = taxesAmount === null
+    ? {
+        taxesOccDouble: optionalPrice(pick(props, 'taxes_occ_double', 'taxesOccDouble')),
+        taxesOccDouble1Child: optionalPrice(
+          pick(props, 'taxes_occ_double_1_child', 'taxesOccDouble1Child')
+        ),
+        taxesOccDouble2Child: optionalPrice(
+          pick(props, 'taxes_occ_double_2_child', 'taxesOccDouble2Child')
+        ),
+        taxesOccSimple: optionalPrice(pick(props, 'taxes_occ_simple', 'taxesOccSimple')),
+        taxesOccSimple1Child: optionalPrice(
+          pick(props, 'taxes_occ_simple_1_child', 'taxesOccSimple1Child')
+        ),
+        taxesOccTriple: optionalPrice(pick(props, 'taxes_occ_triple', 'taxesOccTriple')),
+        taxesOccQuad: optionalPrice(pick(props, 'taxes_occ_quad', 'taxesOccQuad')),
+        taxesOccAutres: optionalPrice(pick(props, 'taxes_occ_autres', 'taxesOccAutres'))
+      }
+    : {
+        taxesOccDouble: null,
+        taxesOccDouble1Child: null,
+        taxesOccDouble2Child: null,
+        taxesOccSimple: null,
+        taxesOccSimple1Child: null,
+        taxesOccTriple: null,
+        taxesOccQuad: null,
+        taxesOccAutres: null
+      };
+
+  return { taxesAmount, ...legacy };
+}
+
 function toNumber(value, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -550,6 +596,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
     manifest
   });
   const images = uniqueImagePaths([img], [imgRoom], [imgExtra], galleryPaths);
+  const taxFields = applyTaxFields(props);
 
   return {
     id: record.id || pick(props, 'id') || resolvedSlug,
@@ -584,15 +631,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
     ),
     priceOccQuad: optionalPrice(pick(props, 'price_occ_quad', 'priceOccQuad')),
     priceAutres: optionalPrice(pick(props, 'price_autres', 'priceAutres', 'price_occ_autres')),
-    taxesAmount: optionalPrice(pick(props, 'taxes_amount', 'taxesAmount')),
-    taxesOccDouble: optionalPrice(pick(props, 'taxes_occ_double', 'taxesOccDouble')),
-    taxesOccDouble1Child: optionalPrice(pick(props, 'taxes_occ_double_1_child', 'taxesOccDouble1Child')),
-    taxesOccDouble2Child: optionalPrice(pick(props, 'taxes_occ_double_2_child', 'taxesOccDouble2Child')),
-    taxesOccSimple: optionalPrice(pick(props, 'taxes_occ_simple', 'taxesOccSimple')),
-    taxesOccSimple1Child: optionalPrice(pick(props, 'taxes_occ_simple_1_child', 'taxesOccSimple1Child')),
-    taxesOccTriple: optionalPrice(pick(props, 'taxes_occ_triple', 'taxesOccTriple')),
-    taxesOccQuad: optionalPrice(pick(props, 'taxes_occ_quad', 'taxesOccQuad')),
-    taxesOccAutres: optionalPrice(pick(props, 'taxes_occ_autres', 'taxesOccAutres')),
+    ...taxFields,
     priceOriginal: optionalPrice(pick(props, 'price_original', 'priceOriginal', 'prix_regulier')),
     discountAmount: optionalPrice(pick(props, 'discount_amount', 'discountAmount', 'rabais')),
     financingMonthly: optionalPrice(
