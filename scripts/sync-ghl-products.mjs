@@ -216,23 +216,27 @@ function computeOccupationPerPersonPrices(props) {
     pick(props, 'price_occ_simple_1_child_13_17', 'priceOccSimple1Child1317')
   );
 
-  if (priceOccDouble1Child === null && prixDouble !== null && enfant1 !== null) {
-    priceOccDouble1Child = avg(2 * prixDouble + enfant1, 3);
-  }
-  if (priceOccDouble2Child === null && prixDouble !== null && enfant1 !== null && enfant2 !== null) {
-    priceOccDouble2Child = avg(2 * prixDouble + enfant1 + enfant2, 4);
-  }
-  if (priceOccSimple1Child === null && prixSimple !== null && enfant1 !== null) {
-    priceOccSimple1Child = avg(prixSimple + enfant1, 2);
-  }
-  if (priceOccDouble1Child1317 === null && prixDouble !== null && enfant1317_1 !== null) {
-    priceOccDouble1Child1317 = avg(2 * prixDouble + enfant1317_1, 3);
-  }
-  if (priceOccDouble2Child1317 === null && prixDouble !== null && enfant1317_1 !== null && enfant1317_2 !== null) {
-    priceOccDouble2Child1317 = avg(2 * prixDouble + enfant1317_1 + enfant1317_2, 4);
-  }
-  if (priceOccSimple1Child1317 === null && prixSimple !== null && enfant1317_1 !== null) {
-    priceOccSimple1Child1317 = avg(prixSimple + enfant1317_1, 2);
+  // Tarifs enfant unitaires → le site compose adulte + nb enfants; ne pas générer les occ. « + enfant ».
+  const hasChildUnitPricing = enfant1 !== null || enfant1317_1 !== null;
+  if (!hasChildUnitPricing) {
+    if (priceOccDouble1Child === null && prixDouble !== null && enfant1 !== null) {
+      priceOccDouble1Child = avg(2 * prixDouble + enfant1, 3);
+    }
+    if (priceOccDouble2Child === null && prixDouble !== null && enfant1 !== null && enfant2 !== null) {
+      priceOccDouble2Child = avg(2 * prixDouble + enfant1 + enfant2, 4);
+    }
+    if (priceOccSimple1Child === null && prixSimple !== null && enfant1 !== null) {
+      priceOccSimple1Child = avg(prixSimple + enfant1, 2);
+    }
+    if (priceOccDouble1Child1317 === null && prixDouble !== null && enfant1317_1 !== null) {
+      priceOccDouble1Child1317 = avg(2 * prixDouble + enfant1317_1, 3);
+    }
+    if (priceOccDouble2Child1317 === null && prixDouble !== null && enfant1317_1 !== null && enfant1317_2 !== null) {
+      priceOccDouble2Child1317 = avg(2 * prixDouble + enfant1317_1 + enfant1317_2, 4);
+    }
+    if (priceOccSimple1Child1317 === null && prixSimple !== null && enfant1317_1 !== null) {
+      priceOccSimple1Child1317 = avg(prixSimple + enfant1317_1, 2);
+    }
   }
 
   return {

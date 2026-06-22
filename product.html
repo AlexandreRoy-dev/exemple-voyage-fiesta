@@ -168,7 +168,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=23"></script>
-    <script src="api.js?v=66"></script>
+    <script src="api.js?v=67"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -689,55 +689,86 @@
             ).join('');
         }
 
-        function buildChildPriceHintLine(label, unitPrice, taxes) {
+        function buildUnitPriceLineHtml(label, unitPrice, taxes, options = {}) {
             if (unitPrice == null) return '';
-            const priceHtml = VoyageFiestaAPI.formatMoneyPerChild(unitPrice);
-            const taxHtml = taxes != null
-                ? `<span class="block text-[11px] text-gray-500 tabular-nums mt-0.5">+ ${VoyageFiestaAPI.formatMoneyPerPerson(taxes)} ${TAX_LABEL().toLowerCase()}</span>`
-                : '';
-            return `<li class="flex items-start gap-2.5">
-                <i class="fa-solid fa-child text-brand-blue text-xs mt-0.5 shrink-0" aria-hidden="true"></i>
-                <div class="min-w-0 flex-1 leading-snug">
-                    <span>${escapeHtml(label)}&nbsp;: <strong class="text-brand-blue tabular-nums">${priceHtml}</strong></span>
-                    ${taxHtml}
-                </div>
+            const perChild = options.perChild === true;
+            const fmt = perChild ? VoyageFiestaAPI.formatMoneyPerChild : VoyageFiestaAPI.formatMoneyPerPerson;
+            const taxLower = TAX_LABEL().toLowerCase();
+            const parts = [`<strong class="text-brand-blue tabular-nums">${fmt(unitPrice)}</strong>`];
+            if (taxes != null) {
+                parts.push(`<span class="text-gray-500">+ ${VoyageFiestaAPI.formatMoneyPerPerson(taxes)} ${taxLower}</span>`);
+                parts.push(`<span class="font-semibold text-gray-800">= ${fmt(unitPrice + taxes)}</span>`);
+            }
+            return `<li class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between py-2.5 border-b border-amber-100/80 last:border-0">
+                <span class="text-sm font-medium text-gray-800">${escapeHtml(label)}</span>
+                <span class="text-sm tabular-nums text-left sm:text-right leading-snug">${parts.join(' ')}</span>
             </li>`;
+        }
+
+        function buildUnitPricePanelHtml(p) {
+            if (!VoyageFiestaAPI.productHasChildUnitPricing(p)) return '';
+
+            const info = VoyageFiestaAPI.getChildPricingInfo(p);
+            const taxes = p.taxesAmount ?? null;
+            const lines = [];
+
+            VoyageFiestaAPI.getOccupationPrices(p)
+                .filter(row => !row.isChildOccupation)
+                .forEach(row => {
+                    lines.push(buildUnitPriceLineHtml(
+                        row.label,
+                        row.price,
+                        row.taxesPerPerson ?? row.taxes
+                    ));
+                });
+
+            if (info.has212) {
+                lines.push(buildUnitPriceLineHtml(
+                    VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212),
+                    info.child212First,
+                    taxes,
+                    { perChild: true }
+                ));
+                if (info.hasSecond212) {
+                    lines.push(buildUnitPriceLineHtml(
+                        VoyageFiestaAPI.getChildPriceLabel('212', 1, true),
+                        info.child212Second,
+                        taxes,
+                        { perChild: true }
+                    ));
+                }
+            }
+            if (info.has1317) {
+                lines.push(buildUnitPriceLineHtml(
+                    VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317),
+                    info.child1317First,
+                    taxes,
+                    { perChild: true }
+                ));
+                if (info.hasSecond1317) {
+                    lines.push(buildUnitPriceLineHtml(
+                        VoyageFiestaAPI.getChildPriceLabel('1317', 1, true),
+                        info.child1317Second,
+                        taxes,
+                        { perChild: true }
+                    ));
+                }
+            }
+
+            if (!lines.length) return '';
+
+            return `
+                <div class="rounded-xl border border-amber-200 bg-amber-50/90 px-4 py-3 mb-4">
+                    <p class="text-xs font-bold text-amber-950 uppercase tracking-tighter mb-1">Tarifs unitaires</p>
+                    <p class="text-[10px] text-amber-900/70 mb-2">Montant avant taxes + taxes et frais aériens, par adulte ou par enfant.</p>
+                    <ul>${lines.join('')}</ul>
+                </div>`;
         }
 
         function buildChildSelectorHtml(p) {
             if (!VoyageFiestaAPI.productHasChildUnitPricing(p)) return '';
 
             const info = VoyageFiestaAPI.getChildPricingInfo(p);
-            const taxes = p.taxesAmount ?? null;
-            const hints = [];
-            if (info.has212) {
-                hints.push(buildChildPriceHintLine(
-                    VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212),
-                    info.child212First,
-                    taxes
-                ));
-                if (info.hasSecond212) {
-                    hints.push(buildChildPriceHintLine(
-                        VoyageFiestaAPI.getChildPriceLabel('212', 1, true),
-                        info.child212Second,
-                        taxes
-                    ));
-                }
-            }
-            if (info.has1317) {
-                hints.push(buildChildPriceHintLine(
-                    VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317),
-                    info.child1317First,
-                    taxes
-                ));
-                if (info.hasSecond1317) {
-                    hints.push(buildChildPriceHintLine(
-                        VoyageFiestaAPI.getChildPriceLabel('1317', 1, true),
-                        info.child1317Second,
-                        taxes
-                    ));
-                }
-            }
 
             const blocks = [];
             if (info.has212) {
@@ -763,7 +794,6 @@
                 <div id="child-picker" class="mt-4 pt-4 border-t border-gray-100 space-y-4">
                     <p class="text-xs font-bold text-gray-600 uppercase tracking-tighter">Nombre d'enfants</p>
                     <div class="grid sm:grid-cols-2 gap-3">${blocks.join('')}</div>
-                    ${hints.length ? `<ul class="space-y-2.5 text-xs text-gray-600 bg-brand-light/60 rounded-lg px-3 py-3 border border-blue-100">${hints.join('')}</ul>` : ''}
                 </div>`;
         }
 
@@ -839,46 +869,6 @@
                     </tr>
                 `).join('');
 
-                let childRowsHtml = '';
-                if (childInfo) {
-                    const childRows = [];
-                    if (childInfo.has212) {
-                        childRows.push([
-                            VoyageFiestaAPI.formatChildTableLabelHtml('212', 0, childInfo.hasSecond212),
-                            childInfo.child212First
-                        ]);
-                        if (childInfo.hasSecond212) {
-                            childRows.push([
-                                VoyageFiestaAPI.formatChildTableLabelHtml('212', 1, true),
-                                childInfo.child212Second
-                            ]);
-                        }
-                    }
-                    if (childInfo.has1317) {
-                        childRows.push([
-                            VoyageFiestaAPI.formatChildTableLabelHtml('1317', 0, childInfo.hasSecond1317),
-                            childInfo.child1317First
-                        ]);
-                        if (childInfo.hasSecond1317) {
-                            childRows.push([
-                                VoyageFiestaAPI.formatChildTableLabelHtml('1317', 1, true),
-                                childInfo.child1317Second
-                            ]);
-                        }
-                    }
-                    childRowsHtml = childRows.map(([label, price]) => {
-                        const taxes = p.taxesAmount ?? null;
-                        const total = taxes != null ? price + taxes : null;
-                        return `
-                            <tr class="border-b border-gray-100 last:border-0 bg-brand-light/40">
-                                <td class="py-2.5 pr-2 text-sm text-gray-700 leading-snug">${label}</td>
-                                <td class="py-2.5 px-2 text-sm text-right text-gray-800">${VoyageFiestaAPI.formatMoneyPerChild(price)}</td>
-                                <td class="py-2.5 px-2 text-sm text-right text-gray-600">${taxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(taxes) : '—'}</td>
-                                <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue">${total != null ? VoyageFiestaAPI.formatMoneyPerChild(total) : '—'}</td>
-                            </tr>`;
-                    }).join('');
-                }
-
                 tableHtml = `
                     <div class="overflow-x-auto -mx-1 px-1 mb-4">
                         <table class="w-full text-left min-w-[18rem]">
@@ -890,10 +880,11 @@
                                     <th class="pb-2 font-bold text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody>${tableRows}${childRowsHtml}</tbody>
+                            <tbody>${tableRows}</tbody>
                         </table>
                     </div>
-                    <p class="text-[10px] text-gray-500 mb-4 italic">${childInfo ? 'Tarifs adultes / pers. · tarifs enfants / enfant, avant taxes et frais aériens.' : 'Tarifs par personne par occupation, avant taxes et frais aériens.'}</p>`;
+                    ${buildUnitPricePanelHtml(p)}
+                    <p class="text-[10px] text-gray-500 mb-4 italic">${childInfo ? 'Occ. adultes ci-dessus · tarifs enfants dans la section jaune.' : 'Tarifs par personne par occupation, avant taxes et frais aériens.'}</p>`;
             }
 
             return headerHtml + tableHtml + buildOccupationSelectionHtml(p, isSoldOut);
