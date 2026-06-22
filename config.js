@@ -248,7 +248,7 @@
     window.TAXES_AIR_FEES_LABEL = 'Taxes et frais aériens';
     window.BEFORE_TAXES_AIR_FEES_LABEL = 'Avant taxes et frais aériens';
 
-    /** Nombre max d'enfants sélectionnables par tranche (2-12 et 13-17) */
+    /** Nombre max d'enfants sélectionnables (sélecteur unique — tous âges) */
     window.MAX_CHILD_COUNT_SELECT = 3;
 
     /** Nombre max d'adultes sélectionnables (forfaits avec tarif enfant) */
@@ -304,7 +304,7 @@
         { key: 'selected_total', label: 'Total par personne (forfait + taxes et frais aériens) ($ / pers.)' },
         { key: 'nombre_personnes', label: 'Nombre total de voyageurs' },
         { key: 'nombre_adultes', label: 'Nombre d\'adultes' },
-        { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants (total — Query Key GHL inchangé)' },
+        { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants — total tous âges (Query Key GHL : nombre_enfants_2_12)' },
         { key: 'depot_par_personne', label: 'Dépôt par personne ($)' },
         { key: 'depot_total', label: 'Dépôt total (dépôt × nb personnes)' },
         { key: 'prix_adulte_unitaire', label: 'Prix unitaire adulte ($)' },

@@ -573,8 +573,15 @@
         return labels[n] || 'Occ. double';
     }
 
-    /** Libellé enfant — sans « 1er » s'il n'y a qu'un seul tarif enfant pour la tranche. */
-    function getChildPriceLabel(band, childIndex, hasSecondPrice) {
+    /** Libellé enfant — tranche d'âge optionnelle (grille fournisseur). generic=true : pas de mention 2-12 / 13-17. */
+    function getChildPriceLabel(band, childIndex, hasSecondPrice, options) {
+        const generic = options && options.generic;
+        if (generic) {
+            if (childIndex === 0 && !hasSecondPrice) return 'Enfant';
+            const ordinals = ['1er', '2e', '3e', '4e'];
+            const ordinal = ordinals[childIndex] || `${childIndex + 1}e`;
+            return `${ordinal} enfant`;
+        }
         const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
         if (childIndex === 0 && !hasSecondPrice) return `Enfant (${ageLabel})`;
         const ordinals = ['1er', '2e', '3e', '4e'];
@@ -582,9 +589,9 @@
         return `${ordinal} enfant (${ageLabel})`;
     }
 
-    /** Libellé tableau tarifs — tranche d'âge sur la ligne suivante. */
-    function formatChildTableLabelHtml(band, childIndex, hasSecondPrice) {
-        const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
+    /** Libellé tableau tarifs — tranche d'âge sur la ligne suivante (sauf generic). */
+    function formatChildTableLabelHtml(band, childIndex, hasSecondPrice, options) {
+        const generic = options && options.generic;
         let main;
         if (childIndex === 0 && !hasSecondPrice) {
             main = 'Enfant';
@@ -592,6 +599,8 @@
             const ordinals = ['1er', '2e', '3e', '4e'];
             main = `${ordinals[childIndex] || `${childIndex + 1}e`} enfant`;
         }
+        if (generic) return main;
+        const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
         return `${main}<br><span class="text-gray-500 text-xs leading-tight">(${ageLabel})</span>`;
     }
 
@@ -887,7 +896,7 @@
             child212Lines.push({
                 index: i + 1,
                 band: '212',
-                label: getChildPriceLabel('212', i, childInfo.hasSecond212),
+                label: getChildPriceLabel('212', i, childInfo.hasSecond212, { generic: useComponentPricing }),
                 unitPrice: unit,
                 taxesPerPerson: taxesPerPerson,
                 totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
@@ -901,7 +910,7 @@
             child1317Lines.push({
                 index: i + 1,
                 band: '1317',
-                label: getChildPriceLabel('1317', i, childInfo.hasSecond1317),
+                label: getChildPriceLabel('1317', i, childInfo.hasSecond1317, { generic: useComponentPricing }),
                 unitPrice: unit,
                 taxesPerPerson: taxesPerPerson,
                 totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
@@ -1035,6 +1044,7 @@
             set('occupation_label', breakdown.bookingLabel);
         }
         if (breakdown) {
+            // Query Key GHL « nombre_enfants_2_12 » = total enfants (tous âges), nom historique inchangé.
             const totalEnfants = (breakdown.children212 ?? 0) + (breakdown.children1317 ?? 0);
             set('nombre_personnes', breakdown.totalPeople);
             set('nombre_adultes', breakdown.adults);
