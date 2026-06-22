@@ -1,0 +1,797 @@
+{
+  "migratedAt": "2026-06-21T20:40:04.610Z",
+  "sourceSchemaKey": "custom_objects.forfaits_voyage",
+  "targetSchemaKey": "custom_objects.voyages",
+  "mode": "dry-run",
+  "records": [
+    {
+      "sourceId": "6a36ea1d4628451f5df9f994",
+      "sourceName": "SONESTA MAHO BEACH RESORT AND CASINO",
+      "properties": {
+        "name": "SONESTA MAHO BEACH RESORT AND CASINO",
+        "statut": "actif",
+        "inventaire": 1,
+        "identifiant_url": "SONESTA-MAHO-BEACH-10-17-DEC",
+        "lien_fiche_fournisseur": "https://www.sunwing.ca/fr/hotel/st-maarten/saint-martin/sonesta-maho-beach-resort-casino-and-spa",
+        "destination": "Saint-Martin",
+        "region_promo": "sud",
+        "pays": "St Martin",
+        "date_depart": "2026-12-10",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-09-01",
+        "date_paiement_final": "2026-09-15",
+        "aeroport_depart": "Montréal (YUL)",
+        "etoiles": 4,
+        "categorie_chambre": "CHAMBRE DELUXE",
+        "type_forfait": "TOUT INCLUS",
+        "description_hotel": "Sonesta Maho Beach Resort, Casino & Spa – Séjour tout inclus à Saint-Martin\n\nSitué au cœur du secteur animé de Maho à Saint-Martin, le Sonesta Maho Beach Resort, Casino & Spa est une excellente option pour les familles et les couples qui souhaitent combiner plage, divertissement et découvertes locales.\n\nÀ quelques pas des boutiques, restaurants et de la vie nocturne, le complexe offre un accès rapide à la célèbre plage de Maho ainsi qu'à plusieurs installations adaptées à tous les âges. Les enfants profiteront du club jeunesse et des jeux d'eau, tandis que les adultes pourront relaxer à la piscine avec bar ou sur la plage.\n\nPlusieurs restaurants proposent une variété de saveurs internationales et caribéennes, alors que le populaire Casino Royale, situé à proximité, ajoute une touche de divertissement en soirée.\n Points forts\n\n* Emplacement au cœur de Maho\n* Près des boutiques, restaurants et bars\n* Accès à la célèbre plage de Maho\n* Club enfants et jeux d'eau\n* Piscine avec bar\n* Casino à proximité\n* Idéal pour les familles et les couples\n\nLe Sonesta Maho Beach Resort offre un séjour dynamique dans l'une des destinations les plus populaires de Saint-Martin.\nConsultez le lien ci-dessous pour tous les détails",
+        "criteres": [
+          "tout_inclus_allinclusive"
+        ],
+        "tags_seo": "#SUD #STMARTIN #SONESTAMAHOBEACH",
+        "fournisseur": "sunwing",
+        "transporteur": "WESTJET",
+        "prix_occ_double": 1658,
+        "taxes_par_personne": 120,
+        "rabais": 497,
+        "depot_par_personne": 200,
+        "vol_aller_numero": "WS2950",
+        "vol_aller_heure_depart": "08:30",
+        "vol_aller_heure_arrivee": "14:35",
+        "vol_retour_numero": "WS2951",
+        "vol_retour_heure_depart": "15:25",
+        "vol_retour_heure_arrivee": "19:50",
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 106346,
+              "name": "SONESTA MAHO BEACH RESORT AERIAL.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36ea1d4628451f5df9f994/c0d9c1b2-72fc-4de2-a31f-dbaa809712c9.jpg"
+          }
+        ],
+        "photo_extra": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 172342,
+              "name": "SONESTA MAHO BEACH RESORT AERIAL-2.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36ea1d4628451f5df9f994/ec6b3add-bdf6-4baa-a767-4c86fb4b528f.jpg"
+          },
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 171949,
+              "name": "SONESTA MAHO BEACH RESORT LOUNDGE.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36ea1d4628451f5df9f994/ce539ff8-0c1a-411b-af7c-8aef1f1033d5.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"taxes_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"depot_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_extra\" absente du schéma cible — retirée à l'apply"
+      ]
+    },
+    {
+      "sourceId": "6a36e13862065c34b74d6991",
+      "sourceName": "ROYALTON SPLASH PUNTA CANA",
+      "properties": {
+        "name": "ROYALTON SPLASH PUNTA CANA",
+        "statut": "actif",
+        "inventaire": 14,
+        "identifiant_url": "ROYALTON-SPLASH-PUJ-22-29-JANVIER",
+        "lien_fiche_fournisseur": "https://www.sunwing.ca/en/hotel/dominican-republic/punta-cana/royalton-splash-punta-cana-an-autograph-collection-all-inclusive-resort-and-casino",
+        "destination": "Punta Cana",
+        "region_promo": "sud",
+        "pays": "République Dominicaine",
+        "date_depart": "2027-01-22",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-08-14",
+        "date_paiement_final": "2026-10-15",
+        "aeroport_depart": "Montréal (YUL)",
+        "etoiles": 5,
+        "categorie_chambre": "Chambre Luxueuse",
+        "type_forfait": "Tout-inclus",
+        "description_hotel": "## Royalton Splash Punta Cana – Vacances familiales tout inclus\n\nLe Royalton Splash Punta Cana est un complexe tout inclus conçu pour les familles qui souhaitent profiter d'un séjour rempli d'activités en République dominicaine. Situé près de la magnifique plage de Bávaro, l'hôtel offre un accès facile au soleil, à la mer et à une foule de divertissements.\n\nVéritable paradis pour les enfants, le complexe possède l'un des plus grands parcs aquatiques de la région avec plusieurs glissades, une piscine à vagues et des jeux d'eau adaptés aux plus jeunes. Les enfants et adolescents pourront également participer aux activités du club jeunesse pendant que les parents profitent des piscines ou de la plage.\n\nLes vacanciers bénéficient également d'avantages supplémentaires grâce à l'accès à certaines installations du Royalton Punta Cana voisin, incluant la plage, certains restaurants et le casino.\n\nPour les repas, plusieurs restaurants proposent une sélection de saveurs internationales, de spécialités mexicaines et de fruits de mer. Les chambres spacieuses et confortables complètent parfaitement l'expérience, avec la possibilité d'ajouter les privilèges exclusifs du Diamond Club™.\n\n### Points forts\n\n* Parc aquatique spectaculaire avec glissades et piscine à vagues\n* Accès à certaines installations du Royalton Punta Cana\n* À proximité de la plage de Bávaro\n* Activités pour enfants et adolescents\n* Plusieurs restaurants et bars\n* Option Diamond Club™\n* Excellent choix pour les familles\n\nLe Royalton Splash Punta Cana est une destination idéale pour des vacances en famille alliant détente, plaisir aquatique et formule tout inclus.\nConsultez le lien ci-dessous pour tous les détails.",
+        "criteres": [
+          "familial",
+          "tout_inclus_allinclusive",
+          "vol_direct_sans_escale"
+        ],
+        "tags_seo": "#SUD #PUNTACANA #HOTELFAMILLE",
+        "fournisseur": "sunwing",
+        "transporteur": "WESTJET",
+        "prix_occ_double": 1568,
+        "taxes_par_personne": 370,
+        "rabais": 287,
+        "depot_par_personne": 200,
+        "vol_aller_numero": "WS2916",
+        "vol_aller_heure_depart": "08:15",
+        "vol_aller_heure_arrivee": "15:10",
+        "vol_retour_numero": "WS2903",
+        "vol_retour_heure_depart": "15:10",
+        "vol_retour_heure_arrivee": "19:05",
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 633351,
+              "name": "royalton splash punta cana-3.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36e13862065c34b74d6991/8fd29d95-0a0c-4d96-890c-3a82880e4616.jpg"
+          }
+        ],
+        "photo_extra": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 493167,
+              "name": "royalton splash punta cana-2.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36e13862065c34b74d6991/60db44d6-7558-4fb8-9a00-71550c5a45e2.jpg"
+          },
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 74851,
+              "name": "004.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36e13862065c34b74d6991/20594b0b-5add-445d-b2ad-1bc327eb8500.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "price_occ_double_1_child (2656) ne permet pas de dériver l'enfant — vérifier manuellement",
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"taxes_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"depot_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_extra\" absente du schéma cible — retirée à l'apply"
+      ]
+    },
+    {
+      "sourceId": "6a36d84e9d7d5307d2a8ff25",
+      "sourceName": "RIU PLAYA BLANCA",
+      "properties": {
+        "name": "RIU PLAYA BLANCA",
+        "statut": "actif",
+        "inventaire": 15,
+        "identifiant_url": "RIU-PLAYA-BLANCA-12-19-FEV",
+        "lien_fiche_fournisseur": "https://www.sunwing.ca/fr/hotel/panama/playa-blanca-playa-bonita/riu-playa-blanca",
+        "destination": "Panama",
+        "region_promo": "sud",
+        "pays": "Panama",
+        "date_depart": "2027-02-12",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-08-20",
+        "date_paiement_final": "2026-11-20",
+        "aeroport_depart": "Montreal (YUL)",
+        "etoiles": 4,
+        "categorie_chambre": "CHAMBRE AVEC VUE TROPICALE",
+        "type_forfait": "TOUT INCLUS",
+        "description_hotel": "Riu Playa Blanca – Tout inclus au Panama\n\nSitué directement sur la magnifique plage de Playa Blanca, le Riu Playa Blanca est un complexe tout inclus idéal pour les voyageurs en quête de soleil, de détente et de divertissement. Grâce à son emplacement à proximité de l'aéroport, vous pourrez passer rapidement de votre vol à la plage.\n\nProfitez de plusieurs piscines avec vue sur l'océan, d'une longue plage de sable et d'un espace aquatique pour enfants comprenant glissades et jeux d'eau. Les plus jeunes apprécieront également les activités offertes au club pour enfants.\n\nCôté gastronomie, plusieurs restaurants proposent des saveurs internationales, des spécialités asiatiques, italiennes et des grillades, sans réservation.\n\n### Points forts\n\n* Situé sur la plage de Playa Blanca\n* À quelques minutes de l'aéroport\n* Piscines avec vue sur la mer\n* Parc aquatique pour enfants\n* Restaurants variés sans réservation\n* Idéal pour les familles et les couples\n\nLe Riu Playa Blanca est l'endroit parfait pour profiter d'un séjour tout inclus au Panama dans un cadre tropical et décontracté.\nConsultez le lien ci-dessous pour tous les détails.",
+        "criteres": [
+          "familial",
+          "tout_inclus_allinclusive"
+        ],
+        "tags_seo": "#SUD #RIU #PANAMA",
+        "fournisseur": "sunwing",
+        "transporteur": "WESTJET",
+        "prix_occ_double": 2038,
+        "rabais": 387,
+        "depot_par_personne": 200,
+        "vol_aller_numero": "WS2986",
+        "vol_aller_heure_depart": "09:00",
+        "vol_aller_heure_arrivee": "15:15",
+        "vol_retour_numero": "WS2987",
+        "vol_retour_heure_depart": "17:20",
+        "vol_retour_heure_arrivee": "23:05",
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 200342,
+              "name": "riu playa blanca aerial.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36d84e9d7d5307d2a8ff25/31a727db-77cb-429a-9ec9-d9d78f49f9fc.jpg"
+          }
+        ],
+        "photo_extra": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 138322,
+              "name": "riu-playa-blanca-poolside-bar-riu.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36d84e9d7d5307d2a8ff25/42b543b2-ffee-4b59-9062-5408637dd3e5.jpg"
+          },
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 90803,
+              "name": "riu-playa-blanca-restaurante-steak.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36d84e9d7d5307d2a8ff25/e4d3b7ce-69da-4471-87dc-96c437198c10.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "taxes_amount absent — legacy taxes_occ_double=250 (vérifier si $/pers. ou total)",
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"depot_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_extra\" absente du schéma cible — retirée à l'apply"
+      ]
+    },
+    {
+      "sourceId": "6a36d033ead11ccf587407d3",
+      "sourceName": "HENRY MORGAN BEACH HOTEL",
+      "properties": {
+        "name": "HENRY MORGAN BEACH HOTEL",
+        "statut": "actif",
+        "inventaire": 15,
+        "identifiant_url": "HENRY-MORGAN-11-18-JAN",
+        "lien_fiche_fournisseur": "https://www.sunwing.ca/fr/hotel/honduras/roatan/henry-morgan-hotel-and-beach-resort",
+        "destination": "Roatan",
+        "region_promo": "sud",
+        "pays": "Honduras",
+        "date_depart": "2027-01-11",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-09-08",
+        "date_paiement_final": "2026-10-28",
+        "aeroport_depart": "Montréal (YUL)",
+        "etoiles": 3.5,
+        "categorie_chambre": "CHAMBRE D'HÔTEL",
+        "type_forfait": "Tout-inclus",
+        "description_hotel": "Henry Morgan Hotel & Beach Resort – Escapade détente à Roatán\n\nNiché sur la magnifique plage de West Bay à Roatán, le Henry Morgan Hotel & Beach Resort est l'endroit idéal pour profiter des eaux cristallines des Caraïbes et de l'atmosphère tropicale de l'île. Réputé pour son accès direct à l'une des plus belles plages du Honduras, ce complexe offre un cadre parfait pour la baignade, la plongée libre et l'exploration des récifs coralliens.\n\nSitué à quelques minutes du secteur animé de West End, l'hôtel permet de découvrir facilement les restaurants, boutiques et la vie nocturne de Roatán. Les amoureux de la nature apprécieront également la proximité du parc Gumbalimba, où il est possible d'observer des paresseux, des singes capucins et d'autres espèces locales dans un environnement naturel préservé.\n\nSur place, profitez d'une variété d'activités, allant des randonnées aux cours de danse, en passant par les sports nautiques et la plongée en apnée. Entre deux aventures, détendez-vous sur la plage de sable blanc, rafraîchissez-vous dans l'une des piscines ou offrez-vous un moment de bien-être au spa ($).\n\nLes restaurants de l'hôtel proposent un mélange de saveurs internationales et de spécialités locales, tandis que les bars et casse-croûtes permettent de profiter pleinement de chaque journée sous le soleil des Caraïbes.\n\nEn soirée, spectacles et animations viennent compléter l'expérience avant de retrouver le confort de votre chambre équipée de toutes les commodités essentielles.\n\nPoints forts :\n\nSitué sur la célèbre plage de West Bay\nAccès à l'un des plus beaux récifs de Roatán\nÀ proximité de West End et du parc Gumbalimba\nIdéal pour la plongée libre et la baignade\nPiscines, spa et activités quotidiennes\nAmbiance conviviale et décontractée\nCliquez sur le lien pour tous les détails",
+        "criteres": [
+          "tranquille__dtente",
+          "directement_sur_la_plage",
+          "tout_inclus_allinclusive"
+        ],
+        "tags_seo": "#SUD #ROATAN #HENRYMORGAN",
+        "fournisseur": "sunwing",
+        "transporteur": "Westjet",
+        "prix_occ_double": 1358,
+        "taxes_par_personne": 300,
+        "rabais": 277,
+        "depot_par_personne": 200,
+        "vol_aller_numero": "WS2926",
+        "vol_aller_heure_depart": "12:00",
+        "vol_aller_heure_arrivee": "16:15",
+        "vol_retour_numero": "WS2927",
+        "vol_retour_heure_depart": "12:35",
+        "vol_retour_heure_arrivee": "18:30",
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 177435,
+              "name": "henry morgn aerial.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36d033ead11ccf587407d3/88170c64-5502-4efa-b59f-90a5733c66ae.jpg"
+          }
+        ],
+        "photo_extra": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 212324,
+              "name": "Henry-Morgan-Resort-Roatan.jpeg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36d033ead11ccf587407d3/e819f2b7-a81f-433a-a2af-97b87cb69c3e.jpeg"
+          },
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 132937,
+              "name": "2931763d.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36d033ead11ccf587407d3/3552985a-1ebd-46b2-a096-b2e74992ada4.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "price_occ_double_1_child (1996) ne permet pas de dériver l'enfant — vérifier manuellement",
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"taxes_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"depot_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_extra\" absente du schéma cible — retirée à l'apply"
+      ]
+    },
+    {
+      "sourceId": "6a36c89065a885178d5968ef",
+      "sourceName": "Melia Cozumel",
+      "properties": {
+        "name": "Melia Cozumel",
+        "statut": "actif",
+        "inventaire": 14,
+        "identifiant_url": "melia-cozumel-7-14-dec-2026",
+        "lien_fiche_fournisseur": "https://revesdesoleil.vacancesaircanada.com/hotel/melia-cozumel",
+        "destination": "Cozumel",
+        "region_promo": "sud",
+        "pays": "Mexique",
+        "date_depart": "2026-12-14",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-08-03",
+        "date_paiement_final": "2026-08-15",
+        "aeroport_depart": "Montréal (YUL)",
+        "etoiles": 4,
+        "categorie_chambre": "Chambre Melia Vue Jardin Tout Compris 1-4 pax total",
+        "type_forfait": "Tout-inclus",
+        "description_hotel": "## Meliá Cozumel – Tout inclus sur une plage paradisiaque de Cozumel\n\nDécouvrez le Meliá Cozumel, un élégant complexe tout inclus situé sur la magnifique île de Cozumel, au Mexique. Bordé par une superbe plage de sable blanc et entouré de jardins tropicaux, l'hôtel se trouve à seulement quelques minutes de l'aéroport, du centre-ville et des principales attractions de l'île.\n\nParfait pour les couples et les familles, le complexe propose des chambres confortables avec vue sur les jardins ou la mer. Pour une expérience encore plus exclusive, la section The Level offre des services privilégiés, des espaces réservés, un salon privé et des attentions personnalisées.\n\nProfitez de la plage de Santa Pilar et de ses eaux cristallines grâce aux activités incluses comme le kayak, la planche à pagaie et la plongée avec tuba. L'hôtel dispose également de deux piscines, dont une réservée aux adultes avec vue sur l'océan.\n\nLes vacanciers pourront profiter d'une foule d'activités : tennis, mini-golf, soccer, tir à l'arc, centre de remise en forme et animations quotidiennes. Les enfants de 4 à 12 ans apprécieront le Miniclub et ses nombreuses activités supervisées.\n\nCôté gastronomie, plusieurs restaurants et bars proposent une variété de saveurs internationales, italiennes et mexicaines dans une ambiance conviviale. En soirée, spectacles, musique et divertissements complètent parfaitement l'expérience.\n\n**Points forts :**\n\n* Situé sur l'île de Cozumel\n* À environ 5 km de l'aéroport\n* Plage de sable blanc\n* Formule tout inclus\n* Section The Level avec privilèges exclusifs\n* Activités pour couples et familles\n* Excellent choix de restaurants et de bars\nTout les détails de l'hôtel disponible via ce lien",
+        "criteres": [
+          "tranquille__dtente",
+          "directement_sur_la_plage",
+          "tout_inclus_allinclusive"
+        ],
+        "tags_seo": "#SUD #TOUT_INCLUS #COZUMEL",
+        "fournisseur": "vacances_air_canada",
+        "transporteur": "Air Canada",
+        "prix_occ_double": 1748,
+        "rabais": 151,
+        "depot_par_personne": 200,
+        "vol_aller_numero": "AC2242",
+        "vol_aller_heure_depart": "09:00",
+        "vol_aller_heure_arrivee": "14:00",
+        "vol_retour_numero": "AC2243",
+        "vol_retour_heure_depart": "15:00",
+        "vol_retour_heure_arrivee": "19:10",
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 288005,
+              "name": "melia-cozumel-aerial.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36c89065a885178d5968ef/00d5b600-1750-4781-bb1e-bfdd4321bcf6.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "taxes_amount absent — legacy taxes_occ_double=635.91 (vérifier si $/pers. ou total)",
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"depot_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply"
+      ]
+    },
+    {
+      "sourceId": "6a36c04b34c7613eb3f23d7c",
+      "sourceName": "Sandos Playacar",
+      "properties": {
+        "name": "Sandos Playacar",
+        "statut": "actif",
+        "inventaire": 2,
+        "identifiant_url": "sandos-playacar-jour-de-lan",
+        "lien_fiche_fournisseur": "https://www.transat.com/fr-CA/hotels/sandos-playacar",
+        "destination": "Playacar",
+        "region_promo": "sud",
+        "pays": "Mexique",
+        "date_depart": "2026-12-30",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-09-14",
+        "date_paiement_final": "2026-09-15",
+        "aeroport_depart": "Montréal (YUL)",
+        "etoiles": 4,
+        "categorie_chambre": "Suite Junior Familiale Riviera 2 grands lit",
+        "type_forfait": "Forfait Tout-Inclus",
+        "description_hotel": "Sandos Playacar Beach Resort – Séjour tout inclus à Riviera Maya, Mexique\n\nDécouvrez le charme authentique du Mexique au Sandos Playacar Beach Resort, un magnifique complexe tout inclus situé sur la célèbre plage de Playacar, à quelques minutes de Playa del Carmen et à environ 60 km de Aéroport international de Cancún.\n\nCe vaste complexe 4 étoiles de la Riviera Maya propose une expérience adaptée autant aux familles qu’aux voyageurs en quête de tranquillité grâce à ses sections distinctes pour adultes et pour familles.\n\nHébergement confortable pour tous les types de voyageurs\n\nLes chambres spacieuses du Sandos Playacar sont décorées dans un style inspiré des tropiques mexicains et offrent tout le confort nécessaire pour des vacances réussies. Chaque unité comprend notamment :\n\nBalcon ou terrasse privée\nTélévision à écran plat\nMinibar réapprovisionné régulièrement\nClimatisation\nCoffre-fort\nWi-Fi\n\nLes voyageurs à la recherche d'une expérience plus exclusive apprécieront la section Select Club Adults Only, réservée aux adultes de 18 ans et plus. Située à proximité de la plage, cette section offre plusieurs privilèges, dont :\n\nPiscine réservée aux adultes\nAccès à une plage exclusive\nBars privés\nServices personnalisés\nAmbiance calme et raffinée\n\nLes familles profiteront quant à elles de chambres pouvant accueillir jusqu'à cinq personnes et d'un emplacement privilégié près de la piscine principale et du parc aquatique.\n\nUne des plus belles plages de Riviera Maya\n\nLe Sandos Playacar bénéficie d'un emplacement exceptionnel sur une plage privée de près de 800 mètres de sable blanc bordée de palapas et de chaises longues.\n\nLes vacanciers peuvent profiter de :\n\nPlusieurs piscines réparties sur le site\nPiscines pour enfants\nParc aquatique en bord de mer\nCentre de plongée sous-marine\nAccès direct à la mer des Caraïbes\n\nPour les amateurs d'activités nautiques, plusieurs options sont offertes :\n\nKayak\nPlanche à voile\nPaddleboard\nCatamaran\nSports nautiques non motorisés inclus\n\nDes activités supplémentaires sont également disponibles moyennant supplément, notamment :\n\nJet ski\nParavoile\nKitesurf\nExcursions nautiques\nActivités et divertissements pour toute la famille\n\nLe complexe propose une programmation complète d'activités quotidiennes pour tous les âges.\n\nLes vacanciers peuvent profiter de :\n\nMini-golf\nTennis\nBasketball\nSoccer\nYoga\nSéances d'étirement\nVélo\nCentre d'entraînement\nAnimation en journée et en soirée\n\nLes sentiers aménagés du complexe permettent également d'explorer la végétation luxuriante de la Riviera Maya tout en découvrant des vestiges de la culture maya.\n\nClubs pour enfants et adolescents\n\nLe Sandos Playacar est particulièrement apprécié des familles grâce à ses installations dédiées aux jeunes voyageurs :\n\nMiniclub\n\nPour les enfants de 4 à 10 ans :\n\nJeux supervisés\nActivités créatives\nJeux aquatiques\nAnimation adaptée à leur âge\nClub Ado\n\nPour les jeunes de 11 à 17 ans :\n\nJeux vidéo\nSports\nActivités sociales\nEspaces dédiés aux adolescents\n\nPendant ce temps, les parents peuvent profiter d'un moment de détente au spa ou se rendre au centre de conditionnement physique.\n\nRestaurants et gastronomie\n\nLe Sandos Playacar propose une grande variété d'expériences culinaires avec plusieurs restaurants et bars offrant :\n\nCuisine mexicaine authentique\nSaveurs internationales\nRestaurants à la carte\nBuffets variés\nBars de piscine\nCocktails tropicaux\nCollations en journée\n\nChaque voyageur y trouvera une option correspondant à ses goûts, que ce soit pour un souper romantique ou un repas en famille.\n\nPourquoi choisir le Sandos Playacar ?\n\n✔ Accès à l'une des plus belles plages de Riviera Maya\n✔ Formule tout inclus complète\n✔ Section exclusive réservée aux adultes\n✔ Parc aquatique familial\n✔ Activités pour tous les âges\n✔ Excellente proximité avec Playa del Carmen\n✔ Grande variété de restaurants et de bars\n✔ Idéal pour les couples, familles et groupes\n\nLe Sandos Playacar Beach Resort est une excellente option pour les voyageurs souhaitant combiner détente, plage paradisiaque, activités variées et découverte de la culture mexicaine dans l'une des destinations les plus recherchées du Mexique.",
+        "criteres": [
+          "familial",
+          "directement_sur_la_plage",
+          "tout_inclus_allinclusive"
+        ],
+        "tags_seo": "#SUD #RIVIRAMAYA #SANDOS #TOUT-INCLUS",
+        "fournisseur": "transat",
+        "transporteur": "Transat",
+        "prix_occ_double": 1927.91,
+        "prix_1er_enfant_2_12": 1367.91,
+        "rabais": 1541,
+        "vol_aller_numero": "538",
+        "vol_aller_heure_depart": "07:20",
+        "vol_aller_heure_arrivee": "12:15",
+        "vol_retour_numero": "539",
+        "vol_retour_heure_depart": "13:35",
+        "vol_retour_heure_arrivee": "17:45",
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 422201,
+              "name": "Sandos-Playacar-Aerial-001.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36c04b34c7613eb3f23d7c/19f86262-9a05-4119-ba58-83df7d6a7c69.jpg"
+          }
+        ],
+        "photo_extra": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 409000,
+              "name": "Sandos-Playacar-Aquapark-Oceanfront-001.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36c04b34c7613eb3f23d7c/44f9bb08-3194-4c8f-bd0b-291534052e05.jpg"
+          },
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 436339,
+              "name": "sandos-playacar-resto-grand-buffet-01.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a36c04b34c7613eb3f23d7c/39b0f8c6-e987-489d-aa4c-c6cb7635bc77.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "taxes_amount absent — legacy taxes_occ_double=531.09 (vérifier si $/pers. ou total)",
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_1er_enfant_2_12\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_aller_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_numero\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"vol_retour_heure_arrivee\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_extra\" absente du schéma cible — retirée à l'apply"
+      ]
+    },
+    {
+      "sourceId": "6a35aea92260808c5b8b82c9",
+      "sourceName": "Gran Muthu Runaway Bay Club Caribbean",
+      "properties": {
+        "name": "Gran Muthu Runaway Bay Club Caribbean",
+        "statut": "actif",
+        "inventaire": 15,
+        "identifiant_url": "Gran-Muthu-Runaway-Bay-Montego-Bay",
+        "lien_fiche_fournisseur": "https://www.sunwing.ca/en/hotel/jamaica/jamaica/grand-muthu-runaway-bay-club-caribbean",
+        "destination": "Montego Bay",
+        "region_promo": "sud",
+        "pays": "Jamaïque",
+        "date_depart": "2027-02-25",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-07-25",
+        "date_paiement_final": "2026-12-11",
+        "aeroport_depart": "Montréal (YUL)",
+        "etoiles": 3.5,
+        "categorie_chambre": "Chambre avec vue cour",
+        "type_forfait": "Forfait Tout-Inclus",
+        "description_hotel": "Forfait tout-inclus au Gran Muthu Runaway Bay à Montego Bay, Jamaïque. Séjour de 7 nuits / 8 jours. Vols avec WestJet via Sunwing depuis Montréal (YUL). Occupation triple non disponible à ce tarif. Horaires et numéros de vol à venir.\nPour tout les détails, visiter:",
+        "criteres": [
+          "tout_inclus_allinclusive",
+          "directement_sur_la_plage"
+        ],
+        "tags_seo": "#SUD|#JAMAIQUE|#MONTEGO_BAY|#SUNWING",
+        "fournisseur": "sunwing",
+        "transporteur": "WestJet",
+        "prix_occ_double": 1518,
+        "prix_occ_simple": 2208,
+        "prix_1er_enfant_2_12": 1148,
+        "taxes_par_personne": 390,
+        "rabais": 647,
+        "depot_par_personne": 200,
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 348276,
+              "name": "GRAN MUTHU RUNAWAY BAY PLAGE.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a35aea92260808c5b8b82c9/f52ee776-4f97-493c-849f-4e2d187e4515.jpg"
+          }
+        ],
+        "photo_chambre": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 204236,
+              "name": "GRAND MUTHU RUNAWAY BAY RESTAURANT.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a35aea92260808c5b8b82c9/b3f7e93b-60ea-4b9c-a0cf-e31554cfd76b.jpg"
+          }
+        ],
+        "photo_extra": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 456081,
+              "name": "GRAN MUTHU RUNAWAY BAY PISCINE.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a35aea92260808c5b8b82c9/1661a380-d5a8-4b86-9365-00bf8ba2a0f9.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_simple\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_1er_enfant_2_12\" absente du schéma cible — retirée à l'apply",
+        "Key \"taxes_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"depot_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_extra\" absente du schéma cible — retirée à l'apply"
+      ]
+    },
+    {
+      "sourceId": "6a35adb70ab1013d3542fa97",
+      "sourceName": "Viva Fortuna Beach by Wyndham",
+      "properties": {
+        "name": "Viva Fortuna Beach by Wyndham",
+        "statut": "actif",
+        "inventaire": 8,
+        "identifiant_url": "Viva-Fortuna-Beach-Freeport",
+        "lien_fiche_fournisseur": "https://www.sunwing.ca/fr/hotel/bahamas/grand-bahama/viva-fortuna-beach-by-wyndham?",
+        "destination": "Freeport",
+        "region_promo": "sud",
+        "pays": "Bahamas",
+        "date_depart": "2027-03-27",
+        "duree_nuits": 7,
+        "date_fin_promo": "2026-09-12",
+        "date_paiement_final": "2027-01-11",
+        "aeroport_depart": "Montréal (YUL)",
+        "etoiles": 3.5,
+        "categorie_chambre": "Chambre Supérieur",
+        "type_forfait": "Forfait Tout-Inclus",
+        "description_hotel": "Forfait tout-inclus au Viva Fortuna Beach by Wyndham à Freeport, Bahamas. Séjour de 7 nuits / 8 jours au cœur des Bahamas. Vols avec WestJet via Sunwing depuis Montréal (YUL). Horaires et numéros de vol à venir.",
+        "criteres": [
+          "tout_inclus_allinclusive",
+          "directement_sur_la_plage"
+        ],
+        "tags_seo": "#SUD|#BAHAMAS|#FREEPORT",
+        "fournisseur": "sunwing",
+        "transporteur": "WestJet",
+        "prix_occ_double": 2099,
+        "prix_1er_enfant_2_12": 998,
+        "prix_1er_enfant_13_17": 1198,
+        "taxes_par_personne": 240,
+        "rabais": 716,
+        "depot_par_personne": 200,
+        "photo_principale": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 418871,
+              "name": "VIVA WYNDHAM FORTUNA BEACH BAHAMAS PLAGE.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a35adb70ab1013d3542fa97/e0a7fcc5-7d59-4708-817c-e1e835607ffb.jpg"
+          }
+        ],
+        "photo_chambre": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 183155,
+              "name": "VIVA WYNDHAM FORTUNA BEACH BAHAMAS BUFFET.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a35adb70ab1013d3542fa97/9a832b24-49a3-433b-a3de-6d49e87b8e7a.jpg"
+          }
+        ],
+        "photo_extra": [
+          {
+            "meta": {
+              "extension": ".jpg",
+              "size": 186765,
+              "name": "VIVA WYNDHAM FORTUNA BEACH BAHAMAS PISCINE.jpg"
+            },
+            "url": "https://msgsndr-private.storage.googleapis.com/location/V90iyFBbBrCg3tpctRjc/custom-Field/6a35adb70ab1013d3542fa97/2b3843ff-46d5-42eb-ae60-90334a25d71d.jpg"
+          }
+        ]
+      },
+      "warnings": [
+        "Key \"statut\" absente du schéma cible — retirée à l'apply",
+        "Key \"inventaire\" absente du schéma cible — retirée à l'apply",
+        "Key \"identifiant_url\" absente du schéma cible — retirée à l'apply",
+        "Key \"lien_fiche_fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"destination\" absente du schéma cible — retirée à l'apply",
+        "Key \"region_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"pays\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"duree_nuits\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_fin_promo\" absente du schéma cible — retirée à l'apply",
+        "Key \"date_paiement_final\" absente du schéma cible — retirée à l'apply",
+        "Key \"aeroport_depart\" absente du schéma cible — retirée à l'apply",
+        "Key \"etoiles\" absente du schéma cible — retirée à l'apply",
+        "Key \"categorie_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"type_forfait\" absente du schéma cible — retirée à l'apply",
+        "Key \"description_hotel\" absente du schéma cible — retirée à l'apply",
+        "Key \"criteres\" absente du schéma cible — retirée à l'apply",
+        "Key \"tags_seo\" absente du schéma cible — retirée à l'apply",
+        "Key \"fournisseur\" absente du schéma cible — retirée à l'apply",
+        "Key \"transporteur\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_occ_double\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_1er_enfant_2_12\" absente du schéma cible — retirée à l'apply",
+        "Key \"prix_1er_enfant_13_17\" absente du schéma cible — retirée à l'apply",
+        "Key \"taxes_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"rabais\" absente du schéma cible — retirée à l'apply",
+        "Key \"depot_par_personne\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_principale\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_chambre\" absente du schéma cible — retirée à l'apply",
+        "Key \"photo_extra\" absente du schéma cible — retirée à l'apply"
+      ]
+    }
+  ]
+}

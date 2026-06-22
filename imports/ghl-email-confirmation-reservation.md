@@ -1,42 +1,57 @@
-# Courriel confirmation — champs du formulaire actuel
+# Courriel confirmation — Voyage Fiesta (juin 2026)
 
-Correspondance avec votre formulaire GHL (sans le slug).
+> **Statut :** template prêt — automation GHL **pas encore configurée**.
 
-| Label dans le formulaire | Query Key recommandée | Merge field (insérer via picker) |
-|--------------------------|----------------------|----------------------------------|
+Correspondance formulaire ↔ Contact custom fields ↔ merge tags courriel.
+
+---
+
+## Champs cachés formulaire (Query Key = clé exacte)
+
+| Label GHL suggéré | Query Key | Merge field courriel |
+|-------------------|-----------|----------------------|
 | Nom du forfait | `forfait_name` | `{{contact.custom.forfait_name}}` |
-| occupation | `occupation` | `{{contact.custom.occupation}}` |
-| nombre_personnes | `nombre_personnes` | `{{contact.custom.nombre_personnes}}` |
-| nombre_adultes | `nombre_adultes` | `{{contact.custom.nombre_adultes}}` |
-| nombre_enfants_2_12 | `nombre_enfants_2_12` | `{{contact.custom.nombre_enfants_2_12}}` |
-| prix_total_avant_taxe | `prix_total_avant_taxe` | `{{contact.custom.prix_total_avant_taxe}}` |
-| taxes_total1 | `taxes_total1` | **Total taxes pour le groupe** (ex. 480 $ pour occ. double = 2 × 240 $) |
-| taxes_par_personne | `taxes_par_personne` | 240 $ / pers. (optionnel) |
-| Dépôt/pers | `depot_par_personne` | `{{contact.custom.depot_par_personne}}` |
-| dépôt total | `depot_total` | `{{contact.custom.depot_total}}` |
-| date de paiement | `final_payment_date` | `{{contact.custom.final_payment_date}}` |
+| Occupation | `occupation` | `{{contact.custom.occupation}}` |
+| Nombre de passagers | `nombre_personnes` | `{{contact.custom.nombre_personnes}}` |
+| Adultes | `nombre_adultes` | `{{contact.custom.nombre_adultes}}` |
+| Enfants 2-12 ans | `nombre_enfants_2_12` | `{{contact.custom.nombre_enfants_2_12}}` |
+| Enfants 13-17 ans | `nombre_enfants_13_17` | `{{contact.custom.nombre_enfants_13_17}}` |
+| Prix avant taxes (groupe) | `prix_total_avant_taxe` | `{{contact.custom.prix_total_avant_taxe}}` |
+| Taxes total (groupe) | `taxes_total1` | `{{contact.custom.taxes_total1}}` |
+| Taxes / passager | `taxes_par_personne` | `{{contact.custom.taxes_par_personne}}` |
+| Dépôt / passager | `depot_par_personne` | `{{contact.custom.depot_par_personne}}` |
+| **Dépôt total** | `depot_total` | `{{contact.custom.depot_total}}` |
+| Total forfait | `prix_total` | `{{contact.custom.prix_total}}` |
+| Date paiement final | `final_payment_date` | `{{contact.custom.final_payment_date}}` |
 | Sommaire | `pricing_summary` | `{{contact.custom.pricing_summary}}` |
-| Prénom | (standard) | `{{contact.first_name}}` |
-| Nom de famille | (standard) | `{{contact.last_name}}` |
-| Courriel | (standard) | `{{contact.email}}` |
-| Téléphone | (standard) | `{{contact.phone}}` |
 
-> **Important :** utilisez toujours le bouton **Insert Custom Value** dans GHL — la syntaxe exacte peut varier (`{{contact.custom.xxx}}` ou `{{contact.xxx}}`).
+Standards contact : `{{contact.first_name}}`, `{{contact.last_name}}`, `{{contact.email}}`, `{{contact.phone}}`
 
-> **Prefill site :** le site envoie `prix_total_avant_taxes`, `taxes_total` et `pricing_summary`. Si vos Query Keys diffèrent (`prix_total_avant_taxe`, `taxes_total1`, `Sommaire`), renommez les champs dans GHL **ou** alignez les Query Keys sur celles du site.
+> Utilisez **Insert Custom Value** dans GHL — la syntaxe peut varier.
+
+> Le site envoie aussi `prix_total_avant_taxes`, `taxes_total`, `sommaire` (alias) — optionnels si vous n’utilisez que les clés du tableau.
+
+---
+
+## Exemple valeurs — Melia Cozumel, 5 passagers
+
+| Clé | Valeur |
+|-----|--------|
+| forfait_name | Melia Cozumel |
+| occupation | Occ. double + 3 enfants (2-12 ans) |
+| nombre_personnes | 5 |
+| nombre_adultes | 2 |
+| nombre_enfants_2_12 | 3 |
+| depot_par_personne | 200 |
+| **depot_total** | **1000** |
+| prix_total | 6792.55 |
 
 ---
 
 ## Objet
 
 ```
-Confirmation de votre demande — {{contact.custom.forfait_name}} | Aubaines Express Voyage
-```
-
-Version sans custom field dans l'objet (si erreur) :
-
-```
-Confirmation de votre demande | Aubaines Express Voyage
+Confirmation de votre demande — {{contact.custom.forfait_name}} | Voyage Fiesta
 ```
 
 ---
@@ -46,7 +61,7 @@ Confirmation de votre demande | Aubaines Express Voyage
 ```
 Bonjour {{contact.first_name}},
 
-Merci d'avoir choisi Aubaines Express Voyage pour votre prochain séjour. Nous avons bien reçu votre demande de réservation et un conseiller vous contactera sous peu pour la confirmer.
+Merci d'avoir choisi Voyage Fiesta pour votre prochain séjour. Nous avons bien reçu votre demande de réservation et un conseiller vous contactera sous peu pour la confirmer.
 
 ──────────────────────
 VOTRE FORFAIT
@@ -56,12 +71,13 @@ Hôtel : {{contact.custom.forfait_name}}
 Occupation : {{contact.custom.occupation}}
 
 ──────────────────────
-VOYAGEURS
+PASSAGERS
 ──────────────────────
 
 Adultes : {{contact.custom.nombre_adultes}}
 Enfants (2-12 ans) : {{contact.custom.nombre_enfants_2_12}}
-Total voyageurs : {{contact.custom.nombre_personnes}}
+Enfants (13-17 ans) : {{contact.custom.nombre_enfants_13_17}}
+Total passagers : {{contact.custom.nombre_personnes}}
 
 ──────────────────────
 TARIFICATION ESTIMÉE (sujet à confirmation)
@@ -69,15 +85,16 @@ TARIFICATION ESTIMÉE (sujet à confirmation)
 
 {{contact.custom.pricing_summary}}
 
-Prix avant taxes : {{contact.custom.prix_total_avant_taxe}} $
-Taxes et frais aériens : {{contact.custom.taxes_total1}} $
+Prix avant taxes et frais aériens : {{contact.custom.prix_total_avant_taxe}} $
+Taxes et frais aériens (total) : {{contact.custom.taxes_total1}} $
+Total forfait : {{contact.custom.prix_total}} $
 
 ──────────────────────
 MODALITÉS DE PAIEMENT
 ──────────────────────
 
-Dépôt requis : {{contact.custom.depot_par_personne}} $ / personne
-DÉPÔT TOTAL : {{contact.custom.depot_total}} $
+Dépôt requis : {{contact.custom.depot_par_personne}} $ / passager
+DÉPÔT TOTAL À PAYER : {{contact.custom.depot_total}} $
 Paiement final au plus tard le : {{contact.custom.final_payment_date}}
 
 ──────────────────────
@@ -93,7 +110,7 @@ PROCHAINES ÉTAPES
 ──────────────────────
 
 1. Un conseiller vous contactera par téléphone ou courriel.
-2. Le dépôt sera requis pour bloquer votre place.
+2. Le dépôt de {{contact.custom.depot_total}} $ sera requis pour bloquer votre place.
 3. Le solde devra être payé au plus tard le {{contact.custom.final_payment_date}}.
 4. Les horaires de vol définitifs vous seront transmis une fois confirmés.
 
@@ -103,34 +120,34 @@ Des questions? Répondez directement à ce courriel.
 
 Bonne journée,
 
-L'équipe Aubaines Express Voyage
-Voyage Fiesta
+L'équipe Voyage Fiesta
 ```
 
 ---
 
-## Si « Sommaire » a une autre clé
+## Automation GHL
 
-Si le champ s'appelle `sommaire` dans GHL (et non `pricing_summary`), remplacez la ligne par :
-
-```
-{{contact.custom.sommaire}}
-```
+1. **Trigger :** Form submitted → formulaire Réservation de forfait
+2. **Action :** Send Email (template ci-dessus)
+3. **(Optionnel)** Notification interne conseiller
+4. **(Optionnel)** Paiement : montant = `depot_total`
 
 ---
 
-## Custom fields Contact à créer (minimum)
+## Custom fields Contact minimum
 
-Créez ces champs dans **Settings → Custom Fields → Contact**, puis mappez-les dans le formulaire :
+1. forfait_name
+2. occupation
+3. nombre_personnes
+4. nombre_adultes
+5. nombre_enfants_2_12
+6. nombre_enfants_13_17
+7. prix_total_avant_taxe
+8. taxes_total1
+9. depot_par_personne
+10. depot_total
+11. prix_total
+12. final_payment_date
+13. pricing_summary
 
-1. `forfait_name`
-2. `occupation`
-3. `nombre_personnes`
-4. `nombre_adultes`
-5. `nombre_enfants_2_12`
-6. `prix_total_avant_taxe`
-7. `taxes_total1`
-8. `depot_par_personne`
-9. `depot_total`
-10. `final_payment_date`
-11. `pricing_summary` (ou `sommaire` — même clé que la Query Key du champ Sommaire)
+Voir aussi `config.js` → `GHL_FORM_IFRAME_KEYS` et `GHL_FORM_HIDDEN_FIELDS`.

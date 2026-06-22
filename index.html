@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Promotions - Voyage Fiesta</title>
+    <meta name="description" content="Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Voyage Fiesta">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:title" content="Promotions - Voyage Fiesta">
+    <meta property="og:description" content="Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.">
+    <meta property="og:url" content="https://promofiesta.roymarketing.ca/">
+    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta property="og:image:alt" content="Voyage Fiesta">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Promotions - Voyage Fiesta">
+    <meta name="twitter:description" content="Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.">
+    <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -85,9 +98,15 @@
         </div>
     </section>
 
-    <main class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8 flex-grow">
-        
-        <aside class="filters-sidebar w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-6 h-fit lg:sticky lg:z-30 lg:self-start">
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <nav class="text-xs text-gray-500 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
+            <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
+            <span aria-hidden="true">/</span>
+            <span class="text-brand-blue font-semibold">Promotions</span>
+        </nav>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+        <aside class="filters-sidebar w-full lg:w-1/4 bg-white rounded-xl shadow-lg p-6 h-fit lg:sticky lg:z-30 lg:self-start shrink-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-xl font-bold text-brand-blue"><i class="fa-solid fa-filter mr-2"></i>Filtres</h2>
                 <button id="reset-filters" class="text-sm text-gray-500 hover:text-brand-orange underline">Réinitialiser</button>
@@ -124,7 +143,7 @@
             <div class="mb-2" id="filter-airports-wrap"></div>
         </aside>
 
-        <section class="w-full lg:w-3/4 relative z-0">
+        <section class="w-full lg:flex-1 min-w-0 relative z-0">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800"><span id="result-count">0</span> Forfaits trouvés</h2>
                 <select id="sort-products" class="border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
@@ -150,11 +169,12 @@
                 <p class="text-sm">Veuillez réessayer plus tard.</p>
             </div>
         </section>
+        </div>
 
     </main>
 
-    <script src="config.js?v=13"></script>
-    <script src="api.js?v=39"></script>
+    <script src="config.js?v=23"></script>
+    <script src="api.js?v=71"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -254,18 +274,14 @@
                 cb.addEventListener('change', () => {
                     updateDropdownLabel(dropdown);
                     applyFilters();
+                    if (inputClass === 'filter-destination') {
+                        closeAllDropdowns();
+                    }
                 });
             });
         }
 
         function buildFilterUI() {
-            buildSearchableMultiSelect({
-                containerId: 'filter-destinations-wrap',
-                label: 'Destinations',
-                options: FILTER_DESTINATIONS,
-                inputClass: 'filter-destination',
-                defaultLabel: 'Toutes les destinations'
-            });
             buildSearchableMultiSelect({
                 containerId: 'filter-criteria-wrap',
                 label: 'Critères',
@@ -287,6 +303,17 @@
                 if (!e.target.closest('.filter-dropdown')) {
                     closeAllDropdowns();
                 }
+            });
+        }
+
+        function buildDestinationFilter(productList) {
+            const options = VoyageFiestaAPI.getDestinationFilterOptions(productList);
+            buildSearchableMultiSelect({
+                containerId: 'filter-destinations-wrap',
+                label: 'Destinations',
+                options,
+                inputClass: 'filter-destination',
+                defaultLabel: 'Toutes les destinations'
             });
         }
 
@@ -337,17 +364,17 @@
 
             return `
                 <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
-                    <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)}</p>
+                    <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)} par passager</p>
                     <p class="mt-0.5">
-                        <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoney(inc.strikePrice)}</span>
-                        <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoney(inc.price)}</span>
+                        <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice, { suffixClass: 'text-[0.72em] font-normal opacity-90 whitespace-nowrap' })}</span>
+                        <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoneyPerPerson(inc.price, { suffixClass: 'text-sm font-normal opacity-90 whitespace-nowrap' })}</span>
                     </p>
                     ${financingHtml}
                 </div>`;
         }
 
         function renderSupplierChip(p) {
-            const label = VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+            const label = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
             const logo = VoyageFiestaAPI.getSupplierLogo(p.supplier);
             if (logo) {
                 return `<span class="inline-flex items-center gap-1.5 bg-white text-gray-700 text-xs px-2 py-1.5 rounded border border-gray-200 mb-1 mr-1" title="${escapeHtml(label)}">
@@ -400,7 +427,7 @@
                     : listingPrice
                         ? `<div>
                             <p class="text-xs text-gray-500 mb-1">${escapeHtml(listingPrice.label)} · à partir de</p>
-                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoney(listingPrice.amount)}</p>
+                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(listingPrice.amount)}</p>
                        </div>`
                         : `<div>
                             <p class="text-xs text-gray-500 mb-1">Occ. double</p>
@@ -433,15 +460,21 @@
                                 <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Aubaines Express Voyage se termine dans :</span>
                                 <div class="text-lg font-bold text-red-600 timer-box" data-end="${endMs}">Calcul...</div>
                             </div>
-                            <div class="flex items-end justify-between gap-3">
+                            <div class="flex items-end justify-between gap-3 flex-wrap">
                                 ${priceFooterHtml}
-                                <div class="flex flex-col sm:flex-row gap-2">
-                                    <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
-                                        <i class="fa-solid fa-circle-info mr-1"></i> Détail
-                                    </a>
-                                    ${isSoldOut
-                                        ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">Complet</span>`
-                                        : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
+                                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                                    <div class="flex items-center justify-between sm:justify-end gap-2" onclick="event.stopPropagation()">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Partager</span>
+                                        ${VoyageFiestaAPI.renderSocialShareButtonsHtml(p, { compact: true })}
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row gap-2">
+                                        <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
+                                            <i class="fa-solid fa-circle-info mr-1"></i> Détail
+                                        </a>
+                                        ${isSoldOut
+                                            ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">Complet</span>`
+                                            : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -449,6 +482,9 @@
                 container.appendChild(card);
             });
 
+            VoyageFiestaAPI.bindSocialShare(container, slug =>
+                filteredData.find(item => item.slug === slug)
+            );
             updateTimers();
         }
 
@@ -526,15 +562,36 @@
 
         setInterval(updateTimers, 1000);
 
+        function applyDestinationFromUrl() {
+            const dest = new URLSearchParams(window.location.search).get('destination');
+            if (!dest) return;
+
+            const wanted = VoyageFiestaAPI.normalizeDestinationKey(dest);
+            if (!wanted) return;
+
+            document.querySelectorAll('.filter-destination').forEach(cb => {
+                cb.checked = cb.value === wanted
+                    || VoyageFiestaAPI.normalizeDestinationKey(cb.value) === wanted;
+            });
+            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+                if (dropdown.querySelector('.filter-destination')) {
+                    updateDropdownLabel(dropdown);
+                }
+            });
+        }
+
         async function init() {
+            VoyageFiestaAPI.applySocialMetaTags(VoyageFiestaAPI.buildListingSharePayload());
             buildFilterUI();
             document.getElementById('loading-state').classList.remove('hidden');
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('error-state').classList.add('hidden');
             try {
                 products = await VoyageFiestaAPI.fetchProducts();
+                buildDestinationFilter(products);
                 buildSupplierFilter(products);
                 buildDepartureDateFilter(products);
+                applyDestinationFromUrl();
                 if (!products.length) {
                     document.getElementById('empty-state').classList.remove('hidden');
                     document.getElementById('result-count').innerText = '0';

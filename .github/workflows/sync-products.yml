@@ -42,9 +42,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add products.json assets/forfaits/
+          git add products.json assets/forfaits/ share/
           if git diff --staged --quiet; then
-            echo "No changes to products.json or images"
+            echo "No changes to products.json, share pages or images"
             exit 0
           fi
 
@@ -55,7 +55,7 @@ jobs:
           if ! git merge origin/main --no-edit -X ours; then
             echo "Merge conflict — keeping synced products.json and images"
             git checkout --ours products.json
-            git add products.json assets/forfaits/
+            git add products.json assets/forfaits/ share/
             git commit --no-edit
           fi
 

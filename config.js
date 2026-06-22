@@ -15,9 +15,24 @@
         vacances_transat: 'Vacances Transat'
     };
 
+    /** Compagnies aériennes — clé normalisée (slug GHL) → nom affiché */
+    window.CARRIER_LABELS = {
+        air_canada: 'Air Canada',
+        westjet: 'WestJet',
+        westjet_quebec: 'WestJet',
+        sunwing: 'Sunwing Airlines',
+        transat: 'Air Transat'
+    };
+
     /** Alias clé normalisée → clé utilisée dans SUPPLIER_LOGOS */
     window.SUPPLIER_LOGO_KEY_ALIASES = {
         westjet: 'westjet_quebec'
+    };
+
+    /** Alias compagnie aérienne → clé logo (assets/suppliers/) */
+    window.CARRIER_LOGO_KEY_ALIASES = {
+        westjet: 'westjet_quebec',
+        westjet_quebec: 'westjet_quebec'
     };
 
     /** Logos fournisseurs / compagnies — clé normalisée → chemin relatif (assets/suppliers/) */
@@ -97,6 +112,7 @@
         'New York',
         'Nice',
         'Orlando',
+        'Panama',
         'Paris',
         'Phuket',
         'Prague',
@@ -105,6 +121,7 @@
         'Québec',
         'Rio de Janeiro',
         'Riviera Maya',
+        'Roatan',
         'Rome',
         'Saint-Barthélemy',
         'Saint-Martin',
@@ -129,7 +146,15 @@
         jamaïque: 'Jamaïque',
         jamaque: 'Jamaïque',
         jamaique: 'Jamaïque',
-        saintelucie: 'Sainte-Lucie'
+        saintelucie: 'Sainte-Lucie',
+        panama: 'Panama',
+        roatan: 'Roatan',
+        saintmartin: 'Saint-Martin',
+        st_martin: 'Saint-Martin',
+        playacar: 'Riviera Maya',
+        freeport: 'Bahamas',
+        republique_dominicaine: 'Punta Cana',
+        cozumel: 'Cozumel'
     };
 
     /** Critères (boutique filter) — labels + GHL keys from field `criteria` */
@@ -197,11 +222,34 @@
         'Vancouver (YVR)'
     ];
 
+    /** Clés option GHL → libellé affiché (doit correspondre à FILTER_AIRPORTS) */
+    window.AIRPORT_LABELS = {
+        montral_yul: 'Montréal (YUL)',
+        qubec_yqb: 'Québec (YQB)',
+        ottawa_yow: 'Ottawa (YOW)',
+        toronto_yyz: 'Toronto (YYZ)',
+        halifax_yhz: 'Halifax (YHZ)',
+        vancouver_yvr: 'Vancouver (YVR)'
+    };
+
     /** Hotel star filter options (supports half stars) */
     window.FILTER_STAR_OPTIONS = [3, 3.5, 4, 4.5, 5];
 
     /** Static product feed — synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
+
+    window.SITE_NAME = window.SITE_NAME || 'Voyage Fiesta';
+    window.SITE_DEFAULT_DESCRIPTION = window.SITE_DEFAULT_DESCRIPTION
+        || 'Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.';
+    window.SITE_DEFAULT_SHARE_IMAGE = window.SITE_DEFAULT_SHARE_IMAGE
+        || 'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
+
+    /** Libellés affichés — taxes + frais aériens (GHL : taxes_amount) */
+    window.TAXES_AIR_FEES_LABEL = 'Taxes et frais aériens';
+    window.BEFORE_TAXES_AIR_FEES_LABEL = 'Avant taxes et frais aériens';
+
+    /** Nombre max d'enfants sélectionnables par tranche (2-12 et 13-17) */
+    window.MAX_CHILD_COUNT_SELECT = 4;
 
     /** URL publique de la boutique (iframe + liens directs) */
     window.BOUTIQUE_BASE_URL = 'https://promofiesta.roymarketing.ca';
@@ -256,9 +304,9 @@
         { key: 'deposit_amount', label: 'Dépôt requis ($ / pers.)' },
         { key: 'occupation', label: 'Occupation — libellé (Occ. double, etc.)' },
         { key: 'occupation_label', label: 'Occupation — libellé' },
-        { key: 'selected_price', label: 'Prix sélectionné — avant taxes ($ / pers.)' },
-        { key: 'selected_taxes', label: 'Taxes / pers. pour l\'occupation choisie ($)' },
-        { key: 'selected_total', label: 'Total par personne avant taxes + taxes ($ / pers.)' },
+        { key: 'selected_price', label: 'Prix sélectionné — avant taxes et frais aériens ($ / pers.)' },
+        { key: 'selected_taxes', label: 'Taxes et frais aériens / pers. pour l\'occupation choisie ($)' },
+        { key: 'selected_total', label: 'Total par personne (forfait + taxes et frais aériens) ($ / pers.)' },
         { key: 'nombre_personnes', label: 'Nombre total de voyageurs' },
         { key: 'nombre_adultes', label: 'Nombre d\'adultes' },
         { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants 2-12 ans' },
@@ -267,11 +315,11 @@
         { key: 'depot_total', label: 'Dépôt total (dépôt × nb personnes)' },
         { key: 'prix_adulte_unitaire', label: 'Prix unitaire adulte ($)' },
         { key: 'prix_enfant_2_12_unitaire', label: 'Prix unitaire enfant 2-12 ($)' },
-        { key: 'prix_total_avant_taxes', label: 'Prix total avant taxes ($) — « prix sans taxe »' },
-        { key: 'taxes_total', label: 'Taxes totales ($) — taxes × nb personnes' },
-        { key: 'taxes_total1', label: 'Alias taxes totales (formulaire client)' },
-        { key: 'taxes_par_personne', label: 'Taxes / pers. (occupation choisie)' },
-        { key: 'prix_total', label: 'Prix total avec taxes ($)' },
+        { key: 'prix_total_avant_taxes', label: 'Prix total avant taxes et frais aériens ($)' },
+        { key: 'taxes_total', label: 'Taxes et frais aériens totaux ($) — montant × nb personnes' },
+        { key: 'taxes_total1', label: 'Alias taxes et frais aériens totaux (formulaire client)' },
+        { key: 'taxes_par_personne', label: 'Taxes et frais aériens / pers. (occupation choisie)' },
+        { key: 'prix_total', label: 'Prix total avec taxes et frais aériens ($)' },
         { key: 'total', label: 'Alias prix total (même que prix_total)' },
         { key: 'pricing_summary', label: 'Résumé texte du calcul (courriel)' },
         { key: 'price_double', label: 'Tarif — occ. double ($ / pers.)' },
@@ -284,7 +332,6 @@
         { key: 'price_autres', label: 'Tarif — autres ($ / pers.)' },
         { key: 'price_child_2_12', label: 'Réf. enfant 2-12 ans seul ($ / pers.) — optionnel' },
         { key: 'price_child_13_17', label: 'Réf. enfant 13-17 ans seul ($ / pers.) — optionnel' },
-        { key: 'price_original', label: 'Prix internet ($ / pers.)' },
         { key: 'supplier', label: 'Fournisseur' },
         { key: 'carrier', label: 'Transporteur' },
         { key: 'room_category', label: 'Catégorie de chambre' },
