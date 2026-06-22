@@ -494,13 +494,14 @@
         const has1317Price = child1317First !== null;
         return {
             has212,
-            /** Afficher le sélecteur 13-17 (tarif dédié ou repli sur 2-12). */
-            has1317: has1317Price || has212,
+            has1317: has1317Price,
             has1317Price,
+            hasKids: has212 || has1317Price,
             hasSecond212: child212Second !== null,
             hasSecond1317: child1317Second !== null,
             max212: has212 ? maxChild : 0,
-            max1317: (has1317Price || has212) ? maxChild : 0,
+            max1317: has1317Price ? maxChild : 0,
+            maxKids: (has212 || has1317Price) ? maxChild : 0,
             child212First,
             child212Second,
             child1317First,
@@ -510,7 +511,7 @@
 
     function productHasChildUnitPricing(p) {
         const info = getChildPricingInfo(p);
-        return info.has212 || info.has1317;
+        return info.hasKids;
     }
 
     /** Alias utilisé par product.html pour l'en-tête « Tarifs par passager ». */
@@ -535,6 +536,23 @@
             return info.child1317Second ?? info.child1317First;
         }
         return getChild212UnitPrice(p, index);
+    }
+
+    /** Tarif enfant pour le sélecteur unique — 2-12 prioritaire, repli 13-17. */
+    function getChildUnitPrice(p, index) {
+        const info = getChildPricingInfo(p);
+        if (index < 0) return null;
+        if (info.child212First !== null) {
+            if (index === 0) return info.child212First;
+            if (index === 1 && info.child212Second !== null) return info.child212Second;
+            return info.child212Second ?? info.child212First;
+        }
+        if (info.child1317First !== null) {
+            if (index === 0) return info.child1317First;
+            if (index === 1 && info.child1317Second !== null) return info.child1317Second;
+            return info.child1317Second ?? info.child1317First;
+        }
+        return null;
     }
 
     function getComponentAdultUnitRow(p) {
@@ -580,7 +598,7 @@
     function sumChildUnitPrices(p, children212, children1317) {
         let total = 0;
         for (let i = 0; i < children212; i++) {
-            const price = getChild212UnitPrice(p, i);
+            const price = getChildUnitPrice(p, i);
             if (price === null) return null;
             total += price;
         }
@@ -864,7 +882,7 @@
 
         const child212Lines = [];
         for (let i = 0; i < children212; i++) {
-            const unit = getChild212UnitPrice(p, i);
+            const unit = getChildUnitPrice(p, i);
             if (unit === null) return null;
             child212Lines.push({
                 index: i + 1,
@@ -2120,6 +2138,7 @@
         getChildPricingInfo,
         productHasChildUnitPricing,
         productSupportsKidsPricing,
+        getChildUnitPrice,
         getChildPriceLabel,
         formatChildTableLabelHtml,
         getLowestOccupationRow,

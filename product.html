@@ -168,7 +168,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=25"></script>
-    <script src="api.js?v=74"></script>
+    <script src="api.js?v=75"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -603,8 +603,7 @@
                     info.child212First,
                     true
                 );
-            }
-            if (info.has1317) {
+            } else if (info.has1317Price) {
                 pushRow(
                     `${escapeHtml(VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317))}`,
                     info.child1317First,
@@ -638,10 +637,11 @@
                 const overrides = {
                     adults: Number(adultsEl.value) || 2
                 };
-                const kids212 = document.getElementById('passenger-kids-212');
-                const kids1317 = document.getElementById('passenger-kids-1317');
-                if (kids212) overrides.children212 = Number(kids212.value) || 0;
-                if (kids1317) overrides.children1317 = Number(kids1317.value) || 0;
+                const kidsEl = document.getElementById('passenger-kids');
+                if (kidsEl) {
+                    overrides.children212 = Number(kidsEl.value) || 0;
+                    overrides.children1317 = 0;
+                }
                 return overrides;
             }
 
@@ -676,47 +676,27 @@
             }
 
             let kidsHtml = '';
-            if (childInfo.has212) {
-                const kid212Options = [];
-                for (let n = 0; n <= childInfo.max212; n++) {
-                    kid212Options.push(
+            if (childInfo.hasKids) {
+                const kidOptions = [];
+                for (let n = 0; n <= childInfo.maxKids; n++) {
+                    kidOptions.push(
                         `<option value="${n}"${n === 0 ? ' selected' : ''}>${n} enfant${n > 1 ? 's' : ''}</option>`
                     );
                 }
-                kidsHtml += `
+                kidsHtml = `
                     <div>
-                        <label for="passenger-kids-212" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">
+                        <label for="passenger-kids" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">
                             Enfants
                         </label>
-                        <select id="passenger-kids-212" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''}>
-                            ${kid212Options.join('')}
+                        <select id="passenger-kids" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''}>
+                            ${kidOptions.join('')}
                         </select>
                     </div>`;
             }
 
-            if (childInfo.has1317) {
-                const kid1317Options = [];
-                for (let n = 0; n <= childInfo.max1317; n++) {
-                    kid1317Options.push(
-                        `<option value="${n}"${n === 0 ? ' selected' : ''}>${n} enfant${n > 1 ? 's' : ''}</option>`
-                    );
-                }
-                kidsHtml += `
-                    <div>
-                        <label for="passenger-kids-1317" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">
-                            Enfants (13-17 ans)
-                        </label>
-                        <select id="passenger-kids-1317" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''}>
-                            ${kid1317Options.join('')}
-                        </select>
-                    </div>`;
-            }
-
-            const travelerGridClass = childInfo.has212 && childInfo.has1317
-                ? 'grid grid-cols-1 sm:grid-cols-3 gap-3'
-                : (childInfo.has212 || childInfo.has1317)
-                    ? 'grid grid-cols-1 sm:grid-cols-2 gap-3'
-                    : 'grid grid-cols-1 gap-3';
+            const travelerGridClass = childInfo.hasKids
+                ? 'grid grid-cols-1 sm:grid-cols-2 gap-3'
+                : 'grid grid-cols-1 gap-3';
 
             return `
                 <div class="space-y-3" id="occupation-picker" aria-labelledby="occupation-picker-label">
@@ -800,10 +780,10 @@
                 : '';
 
             if (breakdown?.useComponentPricing && depositAmount !== null) {
-                const forfaitHtml = breakdown.bookingTotalWithTaxes != null ? `
-                    <div class="px-4 py-2.5 flex items-baseline justify-between gap-4 border-t border-gray-100 text-sm text-gray-600">
-                        <span>Forfait · ${escapeHtml(breakdown.bookingLabel || summaryTitle)}</span>
-                        <span class="font-medium tabular-nums">${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)}</span>
+                const forfaitLabel = breakdown.bookingLabel || summaryTitle;
+                const forfaitHtml = forfaitLabel ? `
+                    <div class="px-4 py-2.5 border-t border-gray-100 text-sm text-gray-600">
+                        <span>Forfait · ${escapeHtml(forfaitLabel)}</span>
                     </div>` : '';
 
                 return `
@@ -1260,7 +1240,7 @@
             const depositSelect = document.getElementById('deposit-people-count');
             if (depositSelect) depositSelect.addEventListener('change', updateSelection);
 
-            ['passenger-adults', 'passenger-kids-212', 'passenger-kids-1317'].forEach(id => {
+            ['passenger-adults', 'passenger-kids'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('change', updateSelection);
             });
