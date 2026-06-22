@@ -508,6 +508,11 @@
         return info.has212 || info.has1317;
     }
 
+    /** Alias utilisé par product.html pour l'en-tête « Tarifs par passager ». */
+    function productSupportsKidsPricing(p) {
+        return productHasChildUnitPricing(p);
+    }
+
     function getChild212UnitPrice(p, index) {
         const info = getChildPricingInfo(p);
         if (info.child212First === null || index < 0) return null;
@@ -2078,6 +2083,7 @@
         splitPeopleCountForComponentPricing,
         getChildPricingInfo,
         productHasChildUnitPricing,
+        productSupportsKidsPricing,
         getChildPriceLabel,
         formatChildTableLabelHtml,
         getLowestOccupationRow,
