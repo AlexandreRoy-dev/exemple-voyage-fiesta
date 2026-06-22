@@ -184,9 +184,11 @@
         return `TPS ${tpsPct} % + TVQ ${tvqPct} %`;
     }
 
+    const PER_PASSENGER_SUFFIX = '/ pass.';
+
     function getTaxesAirFeesLabel(options = {}) {
         const base = window.TAXES_AIR_FEES_LABEL || 'Taxes et frais aériens';
-        if (options.perPerson) return `${base} / pers.`;
+        if (options.perPerson) return `${base} ${PER_PASSENGER_SUFFIX}`;
         if (options.enSus) return `${base} en sus`;
         if (options.inclus) return `${base} inclus`;
         return base;
@@ -194,15 +196,20 @@
 
     function getBeforeTaxesLabel(options = {}) {
         const base = window.BEFORE_TAXES_AIR_FEES_LABEL || 'Avant taxes et frais aériens';
-        if (options.perPerson) return `${base} / pers.`;
+        if (options.perPerson) return `${base} ${PER_PASSENGER_SUFFIX}`;
         return base;
+    }
+
+    function formatPassengerCountLabel(count) {
+        const n = Number(count) || 0;
+        return `${n} passager${n > 1 ? 's' : ''}`;
     }
 
     const OCCUPATION_DEFS = [
         {
             id: 'double',
             label: 'Occ. double',
-            hint: '2 adultes — prix par personne, avant taxes et frais aériens',
+            hint: '2 adultes — prix par passager, avant taxes et frais aériens',
             primary: true,
             adults: 2,
             children212: 0,
@@ -213,7 +220,7 @@
         {
             id: 'double_1_child',
             label: 'Occ. double + 1 enfant (2-12 ans)',
-            hint: '2 adultes + 1 enfant (2-12 ans au retour) — prix par personne',
+            hint: '2 adultes + 1 enfant (2-12 ans au retour) — prix par passager',
             adults: 2,
             children212: 1,
             children1317: 0,
@@ -223,7 +230,7 @@
         {
             id: 'double_2_child',
             label: 'Occ. double + 2 enfants (2-12 ans)',
-            hint: '2 adultes + 2 enfants (2-12 ans au retour) — prix par personne',
+            hint: '2 adultes + 2 enfants (2-12 ans au retour) — prix par passager',
             adults: 2,
             children212: 2,
             children1317: 0,
@@ -233,7 +240,7 @@
         {
             id: 'double_1_child_1317',
             label: 'Occ. double + 1 enfant (13-17 ans)',
-            hint: '2 adultes + 1 adolescent (13-17 ans au retour) — prix par personne',
+            hint: '2 adultes + 1 adolescent (13-17 ans au retour) — prix par passager',
             adults: 2,
             children212: 0,
             children1317: 1,
@@ -243,7 +250,7 @@
         {
             id: 'double_2_child_1317',
             label: 'Occ. double + 2 enfants (13-17 ans)',
-            hint: '2 adultes + 2 adolescents (13-17 ans au retour) — prix par personne',
+            hint: '2 adultes + 2 adolescents (13-17 ans au retour) — prix par passager',
             adults: 2,
             children212: 0,
             children1317: 2,
@@ -253,7 +260,7 @@
         {
             id: 'simple',
             label: 'Occ. simple',
-            hint: '1 adulte — prix par personne, avant taxes et frais aériens',
+            hint: '1 adulte — prix par passager, avant taxes et frais aériens',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -263,7 +270,7 @@
         {
             id: 'simple_1_child',
             label: 'Occ. simple + 1 enfant (2-12 ans)',
-            hint: '1 adulte + 1 enfant (2-12 ans au retour) — prix par personne',
+            hint: '1 adulte + 1 enfant (2-12 ans au retour) — prix par passager',
             adults: 1,
             children212: 1,
             children1317: 0,
@@ -273,7 +280,7 @@
         {
             id: 'simple_1_child_1317',
             label: 'Occ. simple + 1 enfant (13-17 ans)',
-            hint: '1 adulte + 1 adolescent (13-17 ans au retour) — prix par personne',
+            hint: '1 adulte + 1 adolescent (13-17 ans au retour) — prix par passager',
             adults: 1,
             children212: 0,
             children1317: 1,
@@ -283,7 +290,7 @@
         {
             id: 'triple',
             label: 'Occ. triple',
-            hint: '3 adultes — prix par personne, avant taxes et frais aériens',
+            hint: '3 adultes — prix par passager, avant taxes et frais aériens',
             adults: 3,
             children212: 0,
             children1317: 0,
@@ -293,7 +300,7 @@
         {
             id: 'quad',
             label: 'Occ. quad',
-            hint: '4 adultes — prix par personne, avant taxes et frais aériens',
+            hint: '4 adultes — prix par passager, avant taxes et frais aériens',
             adults: 4,
             children212: 0,
             children1317: 0,
@@ -303,7 +310,7 @@
         {
             id: 'autres',
             label: 'Autres',
-            hint: 'Autre configuration — prix par personne, avant taxes et frais aériens',
+            hint: 'Autre configuration — prix par passager, avant taxes et frais aériens',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -461,7 +468,7 @@
         }
 
         if (isChildOccupationDef(def) && totalPeople > 0) {
-            return `${def.label} · ${totalPeople} pers.`;
+            return `${def.label} · ${formatPassengerCountLabel(totalPeople)}`;
         }
 
         return def.label;
@@ -822,7 +829,7 @@
                 const bookingTotalPreview = taxesPerPerson !== null
                     ? roundMoney(bookingBeforeTaxes + (taxesPerPerson * totalPeople))
                     : bookingBeforeTaxes;
-                pricingSummary += ` · forfait ${totalPeople} pers. : ${formatMoney(bookingTotalPreview)}`;
+                pricingSummary += ` · forfait ${formatPassengerCountLabel(totalPeople)} : ${formatMoney(bookingTotalPreview)}`;
             }
         } else {
             pricePerPerson = adultUnitPrice;
@@ -838,7 +845,7 @@
                 const bookingTotalPreview = totalPerPerson !== null
                     ? roundMoney(totalPerPerson * totalPeople)
                     : bookingBeforeTaxes;
-                pricingSummary += ` · forfait ${totalPeople} pers. : ${formatMoney(bookingTotalPreview)}`;
+                pricingSummary += ` · forfait ${formatPassengerCountLabel(totalPeople)} : ${formatMoney(bookingTotalPreview)}`;
             }
         }
 
@@ -1072,9 +1079,9 @@
     function formatMoneyPerPerson(amount, options = {}) {
         const formatted = formatMoney(amount);
         if (!formatted) return '';
-        if (options.html === false) return `${formatted} / pers.`;
+        if (options.html === false) return `${formatted} ${PER_PASSENGER_SUFFIX}`;
         const suffixClass = options.suffixClass || 'text-[0.72em] font-normal text-gray-500 whitespace-nowrap';
-        return `${formatted}<span class="${suffixClass}"> / pers.</span>`;
+        return `${formatted}<span class="${suffixClass}"> ${PER_PASSENGER_SUFFIX}</span>`;
     }
 
     function formatMoneyPerChild(amount, options = {}) {
@@ -2040,6 +2047,7 @@
         getIncentive,
         formatMoney,
         formatMoneyPerPerson,
+        formatPassengerCountLabel,
         formatMoneyPerChild,
         formatFlightDate,
         formatFlightTime,

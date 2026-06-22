@@ -61,7 +61,7 @@ export function buildShareDescription(product) {
   if (product.country && product.country !== destination) parts.push(product.country);
   if (product.durationNights) parts.push(`${product.durationNights} nuits`);
   if (product.price != null) {
-    parts.push(`à partir de ${formatMoney(product.price)}/pers.`);
+    parts.push(`à partir de ${formatMoney(product.price)}/pass.`);
   }
   return parts.filter(Boolean).join(' · ') || 'Forfait voyage tout inclus — Voyage Fiesta';
 }

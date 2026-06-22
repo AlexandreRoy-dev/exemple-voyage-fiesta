@@ -168,13 +168,13 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=23"></script>
-    <script src="api.js?v=70"></script>
+    <script src="api.js?v=71"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
         const BEFORE_TAX_LABEL = () => VoyageFiestaAPI.getBeforeTaxesLabel();
         const BEFORE_TAX_LABEL_PP = () => VoyageFiestaAPI.getBeforeTaxesLabel({ perPerson: true });
-        const PRICING_LEGAL_NOTE = () => `Tarifs par personne · le total inclut ${TAX_LABEL().toLowerCase()}.`;
+        const PRICING_LEGAL_NOTE = () => `Tarifs par passager · le total inclut ${TAX_LABEL().toLowerCase()}.`;
 
         const criteriaIcons = {
             pour_adultes_18: 'fa-cocktail',
@@ -543,7 +543,7 @@
 
             const parts = [];
             if (terms.deposit !== null) {
-                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-hand-holding-dollar text-brand-orange text-xs mt-0.5"></i> Dépôt de <strong>${VoyageFiestaAPI.formatMoney(terms.deposit)}</strong> par personne requis</li>`);
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-hand-holding-dollar text-brand-orange text-xs mt-0.5"></i> Dépôt de <strong>${VoyageFiestaAPI.formatMoney(terms.deposit)}</strong> par passager requis</li>`);
             }
             if (terms.finalPaymentDate) {
                 parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-calendar-check text-brand-blue text-xs mt-0.5"></i> Paiement final : <strong>${VoyageFiestaAPI.formatDepartureDate(terms.finalPaymentDate)}</strong></li>`);
@@ -657,7 +657,7 @@
             const range = VoyageFiestaAPI.getDepositPeopleRange(p);
             const options = [];
             for (let count = range.min; count <= range.max; count++) {
-                options.push(`<option value="${count}">${count} personne${count > 1 ? 's' : ''}</option>`);
+                options.push(`<option value="${count}">${VoyageFiestaAPI.formatPassengerCountLabel(count)}</option>`);
             }
             options.push('<option value="autres">Autres (nous vous contacterons)</option>');
             return options.join('');
@@ -666,24 +666,24 @@
         function buildDepositSelectionHtml(p, isSoldOut) {
             const depositPerPerson = VoyageFiestaAPI.getDepositPerPerson(p);
             const depositNote = depositPerPerson
-                ? `Dépôt de ${VoyageFiestaAPI.formatMoney(depositPerPerson)} par personne.`
+                ? `Dépôt de ${VoyageFiestaAPI.formatMoney(depositPerPerson)} par passager.`
                 : '';
 
             return `
                 <div class="space-y-3" id="occupation-picker" aria-labelledby="occupation-picker-label">
                     <p id="occupation-picker-label" class="text-xs font-bold text-gray-600 uppercase tracking-tighter">
-                        Nombre de personnes <span class="text-brand-orange">*</span>
+                        Nombre de passagers <span class="text-brand-orange">*</span>
                     </p>
                     ${depositNote ? `<p class="text-[11px] text-gray-500 leading-snug">${depositNote}</p>` : ''}
                     <label class="block">
-                        <span class="sr-only">Nombre de personnes pour le dépôt</span>
+                        <span class="sr-only">Nombre de passagers pour le dépôt</span>
                         <select id="deposit-people-count" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''} required>
                             <option value="">Choisir…</option>
                             ${buildDepositPeopleOptionsHtml(p)}
                         </select>
                     </label>
                     <p id="occupation-required-hint" class="text-xs text-brand-orange font-medium leading-relaxed">
-                        <i class="fa-solid fa-circle-info mr-1"></i> Indiquez combien de personnes voyagent pour calculer le dépôt.
+                        <i class="fa-solid fa-circle-info mr-1"></i> Indiquez combien de passagers voyagent pour calculer le dépôt.
                     </p>
                     <div id="occupation-summary" class="hidden"></div>
                 </div>`;
@@ -723,7 +723,7 @@
                     pushRow(TAX_LABEL_PP(), breakdown.totalTaxes);
                 }
                 if (breakdown.totalWithTaxes != null) {
-                    pushRow('Total / pers.', breakdown.totalWithTaxes, {
+                    pushRow('Total / pass.', breakdown.totalWithTaxes, {
                         className: 'pt-1 border-t border-gray-100',
                         labelClass: 'text-gray-600 font-medium'
                     });
@@ -731,7 +731,7 @@
             } else if (row.totalWithTaxes != null) {
                 pushRow(BEFORE_TAX_LABEL_PP(), row.price);
                 if (row.taxes != null) pushRow(TAX_LABEL_PP(), row.taxes);
-                pushRow('Total / pers.', row.totalWithTaxes, {
+                pushRow('Total / pass.', row.totalWithTaxes, {
                     className: 'pt-1 border-t border-gray-100',
                     labelClass: 'text-gray-600 font-medium'
                 });
@@ -741,7 +741,7 @@
 
             const depositAmount = breakdown?.totalDeposit ?? null;
             const summaryTitle = breakdown?.useComponentPricing && breakdown.totalPeople
-                ? `${breakdown.totalPeople} personne${breakdown.totalPeople > 1 ? 's' : ''}`
+                ? VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)
                 : (breakdown?.bookingLabel || row?.label || '');
             const detailHtml = rows.length
                 ? `<div class="px-4 py-3 space-y-2 border-b border-gray-100">${rows.join('')}</div>`
@@ -750,7 +750,7 @@
             if (breakdown?.useComponentPricing && depositAmount !== null) {
                 const forfaitHtml = breakdown.bookingTotalWithTaxes != null ? `
                     <div class="px-4 py-2.5 flex items-baseline justify-between gap-4 border-t border-gray-100 text-sm text-gray-600">
-                        <span>Forfait ${breakdown.totalPeople} pers.</span>
+                        <span>Forfait ${VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)}</span>
                         <span class="font-medium tabular-nums">${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)}</span>
                     </div>` : '';
 
@@ -771,8 +771,8 @@
             const hasBookingTotal = breakdown?.bookingTotalWithTaxes != null
                 && (breakdown?.totalPeople > 1 || breakdown?.useComponentPricing);
             const footerLabel = hasBookingTotal
-                ? `Forfait ${breakdown.totalPeople} pers.`
-                : (breakdown?.totalWithTaxes != null || row?.totalWithTaxes != null ? 'Total / pers.' : 'Prix / pers.');
+                ? `Forfait ${VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)}`
+                : (breakdown?.totalWithTaxes != null || row?.totalWithTaxes != null ? 'Total / pass.' : 'Prix / pass.');
             const footerAmount = hasBookingTotal
                 ? breakdown.bookingTotalWithTaxes
                 : (breakdown?.totalWithTaxes ?? row?.totalWithTaxes ?? breakdown?.totalBeforeTaxes ?? row?.price);
@@ -847,7 +847,7 @@
             if (incentive) {
                 headerHtml = `
                     <div class="mb-4 p-3 rounded-lg bg-brand-light border border-blue-100 text-sm">
-                        <p class="text-red-600 font-bold"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)} par personne</p>
+                        <p class="text-red-600 font-bold"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)} par passager</p>
                     </div>`;
             }
 
