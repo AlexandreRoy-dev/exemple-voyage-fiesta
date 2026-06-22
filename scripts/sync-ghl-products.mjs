@@ -41,6 +41,58 @@ function pick(props, ...keys) {
   return undefined;
 }
 
+function pickUnwrapped(props, ...keys) {
+  for (const key of keys) {
+    const val = unwrapFieldValue(props[key]);
+    if (val !== undefined && val !== null && val !== '') {
+      const text = String(val).trim();
+      if (text) return text;
+    }
+  }
+  return '';
+}
+
+const PLACEHOLDER_PRODUCT_NAMES = new Set([
+  'forfait sans nom',
+  'forfait',
+  'sans nom',
+  'untitled',
+  'sans titre'
+]);
+
+function isPlaceholderProductName(name) {
+  const normalized = String(name || '').trim().toLowerCase();
+  return !normalized || PLACEHOLDER_PRODUCT_NAMES.has(normalized);
+}
+
+/** Nom affiché — déballage GHL { value: "..." } + repli sub_dest / destination. */
+function resolveProductName(props) {
+  const name = pickUnwrapped(
+    props,
+    'name',
+    'title',
+    'forfait_name',
+    'hotel_name',
+    'nom',
+    'nom_du_forfait'
+  );
+  if (!isPlaceholderProductName(name)) return name;
+
+  const subDest = pickUnwrapped(props, 'sub_dest', 'subDest', 'sub_destination', 'city');
+  if (subDest) return subDest;
+
+  const dest = pickUnwrapped(props, 'destination1', 'destination', 'dest_destination');
+  if (dest) return dest;
+
+  return '';
+}
+
+function isFallbackSlug(slug) {
+  const s = String(slug || '').trim().toLowerCase();
+  return /^forfait(?:-sans-nom)?(?:-\d+)?$/.test(s)
+    || /^object(?:-object)?(?:-\d+)?$/.test(s);
+}
+
 function unwrapFieldValue(value) {
   if (value === undefined || value === null || value === '') return value;
   if (typeof value === 'object' && !Array.isArray(value)) {
@@ -176,7 +228,40 @@ function loadPreviousSlugById() {
   }
 }
 
-/** Slug URL stable par enregistrement GHL; dérivé du nom si absent, suffixe -2, -3 si collision. */
+function buildAutoSlugBase(name, departureDateIso) {
+  const namePart = normalizeSlug(name) || 'forfait';
+  if (!departureDateIso) return namePart;
+  const d = new Date(departureDateIso);
+  if (Number.isNaN(d.getTime())) return namePart;
+  return `${namePart}-${d.toISOString().slice(0, 10)}`;
+}
+
+/** Slug canonique : nom (ou sub_dest) + date de départ YYYY-MM-DD. */
+function buildAutoSlugFromProps(props, departureDateIso, recordId = '') {
+  let name = resolveProductName(props);
+  if (isPlaceholderProductName(name) && recordId) {
+    name = `forfait-${recordId.slice(-8).toLowerCase()}`;
+  }
+  if (isPlaceholderProductName(name)) name = 'forfait';
+  return buildAutoSlugBase(name, departureDateIso);
+}
+
+function reserveUniqueSlug(raw, used, { fromName = false } = {}) {
+  let base = fromName
+    ? normalizeSlug(raw)
+    : (normalizeExplicitSlug(raw) || normalizeSlug(raw));
+  if (!base) base = 'forfait';
+  let candidate = base;
+  let suffix = 2;
+  while (used.has(candidate.toLowerCase())) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+  used.add(candidate.toLowerCase());
+  return candidate;
+}
+
+/** Slug URL stable par enregistrement GHL; nom + departure_date; suffixe -2 si collision. */
 function assignSlugs(records, previousSlugById = {}) {
   const used = new Set();
   const assignments = new Map();
@@ -187,51 +272,35 @@ function assignSlugs(records, previousSlugById = {}) {
     const idA = getRecordId(a, propsA);
     const idB = getRecordId(b, propsB);
     if (idA && idB) return idA.localeCompare(idB);
-    const nameA = pick(propsA, 'name', 'title', 'forfait_name') || '';
-    const nameB = pick(propsB, 'name', 'title', 'forfait_name') || '';
+    const nameA = resolveProductName(propsA) || '';
+    const nameB = resolveProductName(propsB) || '';
     return nameA.localeCompare(nameB, 'fr');
   });
-
-  const reserveSlug = (raw, { fromName = false } = {}) => {
-    let base = fromName
-      ? normalizeSlug(raw)
-      : (normalizeExplicitSlug(raw) || normalizeSlug(raw));
-    let candidate = base;
-    let suffix = 2;
-    while (used.has(candidate.toLowerCase())) {
-      candidate = `${base}-${suffix}`;
-      suffix += 1;
-    }
-    used.add(candidate.toLowerCase());
-    return candidate;
-  };
 
   for (const record of sorted) {
     const props = record.properties || record.fields || record;
     const recordId = getRecordId(record, props);
-    const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
     const departureDate = normalizeDateField(
       pick(props, 'departure_date', 'departureDate', 'date_de_depart', 'dateDepart')
     );
-    const mapKey = recordId || `__name__:${normalizeSlug(name)}`;
+    const mapKey = recordId || `__name__:${normalizeSlug(resolveProductName(props) || 'unknown')}`;
+    const ideal = buildAutoSlugFromProps(props, departureDate, recordId);
+    const previous = recordId ? previousSlugById[recordId] : '';
 
-    if (recordId && previousSlugById[recordId]) {
-      assignments.set(mapKey, reserveSlug(previousSlugById[recordId]));
+    if (previous && !isFallbackSlug(previous) && previous.toLowerCase() === ideal.toLowerCase()) {
+      assignments.set(mapKey, reserveUniqueSlug(previous, used));
       continue;
     }
 
-    assignments.set(mapKey, reserveSlug(buildAutoSlugBase(name, departureDate)));
+    if (previous && !isFallbackSlug(previous) && isFallbackSlug(ideal)) {
+      assignments.set(mapKey, reserveUniqueSlug(previous, used));
+      continue;
+    }
+
+    assignments.set(mapKey, reserveUniqueSlug(ideal, used, { fromName: true }));
   }
 
   return assignments;
-}
-
-function buildAutoSlugBase(name, departureDateIso) {
-  const namePart = normalizeSlug(name) || 'forfait';
-  if (!departureDateIso) return namePart;
-  const d = new Date(departureDateIso);
-  if (Number.isNaN(d.getTime())) return namePart;
-  return `${namePart}-${d.toISOString().slice(0, 10)}`;
 }
 
 /** Correct known GHL destination slug typos → canonical value */
@@ -489,7 +558,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
   const state = normalizeState(pick(props, 'state', 'status'));
   const active = state;
 
-  const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
+  const name = resolveProductName(props) || 'Forfait sans nom';
   const subDest = pick(props, 'sub_dest', 'subDest', 'sub_destination', 'city') || '';
   const durationNights = toNumber(pick(props, 'duration_nights', 'durationNights'), 7);
   const departureDate = normalizeDateField(
@@ -497,7 +566,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
   );
   const resolvedSlug = slug
     ? (normalizeExplicitSlug(slug) || normalizeSlug(slug))
-    : buildAutoSlugBase(name, departureDate);
+    : buildAutoSlugFromProps(props, departureDate, getRecordId(record, props));
   const destination1 = normalizeDestination1(
     pick(props, 'destination1', 'destination', 'dest_destination') || subDest
   );
@@ -693,7 +762,7 @@ async function main() {
   for (const record of records) {
     const props = record.properties || record.fields || record;
     const recordId = getRecordId(record, props);
-    const name = pick(props, 'name', 'title', 'forfait_name') || 'Forfait sans nom';
+    const name = resolveProductName(props) || 'Forfait sans nom';
     const mapKey = recordId || `__name__:${normalizeSlug(name)}`;
     const slug = slugAssignments.get(mapKey) || normalizeSlug(name);
     const product = await mapRecord(record, apiKey, manifest, slug);
@@ -719,7 +788,58 @@ async function main() {
   console.log(`  complet_sold_out: ${products.filter(p => p.active === 'complet_sold_out').length}`);
 }
 
-main().catch(err => {
-  console.error('Sync failed:', err.message);
-  process.exit(1);
-});
+/** Répare products.json local — slugs nom-date, sans forfait-sans-nom-* */
+function repairProductsJsonSlugs() {
+  if (!existsSync(OUTPUT)) {
+    console.error(`Missing ${OUTPUT}`);
+    process.exit(1);
+  }
+
+  const data = JSON.parse(readFileSync(OUTPUT, 'utf8'));
+  const products = data.products || [];
+  const used = new Set();
+  const sorted = [...products].sort((a, b) => String(a.id || a.slug).localeCompare(String(b.id || b.slug)));
+  let changed = 0;
+
+  for (const product of sorted) {
+    const props = {
+      name: product.name,
+      sub_dest: product.subDest,
+      subDest: product.subDest,
+      destination1: product.destination1 ?? product.destination,
+      destination: product.destination,
+      departure_date: product.departureDate,
+      id: product.id
+    };
+    const departureDate = normalizeDateField(product.departureDate);
+    const ideal = buildAutoSlugFromProps(props, departureDate, product.id || '');
+    const previous = product.slug || '';
+    let slug;
+
+    if (previous && !isFallbackSlug(previous) && previous.toLowerCase() === ideal.toLowerCase()) {
+      slug = reserveUniqueSlug(previous, used);
+    } else {
+      slug = reserveUniqueSlug(ideal, used, { fromName: true });
+    }
+
+    if (previous !== slug) {
+      console.log(`  ${previous || '(vide)'} → ${slug}`);
+      product.slug = slug;
+      changed += 1;
+    }
+  }
+
+  data.products = sorted;
+  data.updatedAt = new Date().toISOString();
+  writeFileSync(OUTPUT, JSON.stringify(data, null, 2) + '\n', 'utf8');
+  console.log(`Repaired ${changed} slug(s) in ${OUTPUT}`);
+}
+
+if (process.argv.includes('--repair-slugs')) {
+  repairProductsJsonSlugs();
+} else {
+  main().catch(err => {
+    console.error('Sync failed:', err.message);
+    process.exit(1);
+  });
+}
