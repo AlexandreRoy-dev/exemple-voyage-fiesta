@@ -563,15 +563,49 @@
 
     function buildBookingOccupationLabel(def, children212, children1317) {
         if (!def) return '';
-        const parts = [];
-        if (children212 > 0) {
-            parts.push(`${children212} enfant${children212 > 1 ? 's' : ''} (2-12 ans)`);
+        const c212 = children212 ?? 0;
+        const c1317 = children1317 ?? 0;
+        if (!c212 && !c1317) return def.label;
+        if (c1317 && !c212) {
+            return `${def.label} et ${c1317} enfant${c1317 > 1 ? 's' : ''} (13-17 ans)`;
         }
-        if (children1317 > 0) {
-            parts.push(`${children1317} enfant${children1317 > 1 ? 's' : ''} (13-17 ans)`);
+        if (c212 && !c1317) {
+            return `${def.label} et ${c212} enfant${c212 > 1 ? 's' : ''}`;
         }
-        if (!parts.length) return def.label;
-        return `${def.label} + ${parts.join(' + ')}`;
+        const totalKids = c212 + c1317;
+        return `${def.label} et ${totalKids} enfants`;
+    }
+
+    function getOccupationIdForAdultCount(adults, p) {
+        const n = clampInt(adults, { min: 1, max: window.MAX_ADULT_COUNT_SELECT ?? 5 });
+        const map = [
+            { count: 1, id: 'simple' },
+            { count: 2, id: 'double' },
+            { count: 3, id: 'triple' },
+            { count: 4, id: 'quad' },
+            { count: 5, id: 'autres' }
+        ];
+        const preferred = map.find(entry => entry.count === n)?.id ?? 'double';
+        if (p && getSelectedOccupationRow(p, preferred)) return preferred;
+        for (const entry of [...map].reverse()) {
+            if (getSelectedOccupationRow(p, entry.id)) return entry.id;
+        }
+        return preferred;
+    }
+
+    function getMaxAdultCount(p) {
+        const map = [
+            { count: 1, id: 'simple' },
+            { count: 2, id: 'double' },
+            { count: 3, id: 'triple' },
+            { count: 4, id: 'quad' },
+            { count: 5, id: 'autres' }
+        ];
+        let max = 1;
+        for (const entry of map) {
+            if (getSelectedOccupationRow(p, entry.id)) max = entry.count;
+        }
+        return Math.min(max, window.MAX_ADULT_COUNT_SELECT ?? 5);
     }
 
     /** taxes_amount = $ / pers. — affiché tel quel (sans × nb voyageurs). */
@@ -741,15 +775,28 @@
             };
         }
 
-        const def = getOccupationDef(occupationId);
-        const row = getSelectedOccupationRow(p, occupationId);
+        let def = getOccupationDef(occupationId);
+        let row = getSelectedOccupationRow(p, occupationId);
         if (!def || !row) return null;
 
         const childInfo = getChildPricingInfo(p);
         const useComponentPricing = productHasChildUnitPricing(p) && !isChildOccupationDef(def);
         const roundMoney = (value) => Math.round(value * 100) / 100;
 
-        const adults = def.adults ?? 0;
+        let adults;
+        if (useComponentPricing && overrides && overrides.adults !== undefined) {
+            adults = clampInt(overrides.adults, { min: 1, max: getMaxAdultCount(p) });
+            const adultOccId = getOccupationIdForAdultCount(adults, p);
+            const adultDef = getOccupationDef(adultOccId);
+            const adultRow = getSelectedOccupationRow(p, adultOccId);
+            if (adultDef && adultRow) {
+                def = adultDef;
+                row = adultRow;
+            }
+        } else {
+            adults = def.adults ?? 0;
+        }
+
         let children212;
         let children1317;
 
@@ -908,17 +955,9 @@
 
         let breakdown;
         let row;
-        let occupationId;
-
-        if (occupationIdOrPassengers && typeof occupationIdOrPassengers === 'object') {
-            breakdown = getPassengerPricingBreakdown(p, occupationIdOrPassengers);
-            occupationId = breakdown?.occupationId ?? null;
-            row = occupationId ? getSelectedOccupationRow(p, occupationId) : null;
-        } else {
-            occupationId = occupationIdOrPassengers;
-            row = getSelectedOccupationRow(p, occupationId);
-            breakdown = getOccupationPricingBreakdown(p, occupationId, overrides);
-        }
+        let occupationId = occupationIdOrPassengers;
+        row = getSelectedOccupationRow(p, occupationId);
+        breakdown = getOccupationPricingBreakdown(p, occupationId, overrides);
 
         // Champs du formulaire GHL — en premier (URL iframe limitée)
         set('forfait_name', p.name);
@@ -2047,6 +2086,8 @@
         getSelectedOccupationRow,
         getOccupationPricingBreakdown,
         buildBookingOccupationLabel,
+        getOccupationIdForAdultCount,
+        getMaxAdultCount,
         pickOccupationPrice,
         calculateSalesTaxes,
         formatTaxRatesLabel,

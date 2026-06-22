@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-06-22T02:03:26.035Z",
+  "updatedAt": "2026-06-22T02:30:00.000Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
   "products": [
     {
       "id": "6a3853dee9ffbb79894d9ed5",
-      "slug": "forfait-sans-nom-6",
+      "slug": "gran-muthu-runaway-bay-club-caribbean-2027-02-25",
       "name": "Gran Muthu Runaway Bay Club Caribbean",
       "state": "actif",
       "active": "actif",
@@ -92,7 +92,7 @@
     },
     {
       "id": "6a3853de3468e0295c7be776",
-      "slug": "forfait-sans-nom-5",
+      "slug": "henry-morgan-beach-hotel-2027-01-11",
       "name": "HENRY MORGAN BEACH HOTEL",
       "state": "actif",
       "active": "actif",
@@ -178,7 +178,7 @@
     },
     {
       "id": "6a3853dcc9025e2db441d210",
-      "slug": "forfait-sans-nom-3",
+      "slug": "melia-cozumel-2026-12-14",
       "name": "Melia Cozumel",
       "state": "actif",
       "active": "actif",
@@ -263,7 +263,7 @@
     },
     {
       "id": "6a3853dbe8091c1fb4e3838c",
-      "slug": "forfait-sans-nom-2",
+      "slug": "riu-playa-blanca-2027-02-12",
       "name": "RIU PLAYA BLANCA",
       "state": "actif",
       "active": "actif",
@@ -349,7 +349,7 @@
     },
     {
       "id": "6a3853db445438e1255349fa",
-      "slug": "forfait-sans-nom",
+      "slug": "royalton-splash-punta-cana-2027-01-22",
       "name": "ROYALTON SPLASH PUNTA CANA",
       "state": "actif",
       "active": "actif",
@@ -435,7 +435,7 @@
     },
     {
       "id": "6a3853df000845089f58d058",
-      "slug": "forfait-sans-nom-7",
+      "slug": "sandos-playacar-2026-12-30",
       "name": "Sandos Playacar",
       "state": "actif",
       "active": "actif",
@@ -523,7 +523,7 @@
     },
     {
       "id": "6a3853e02ecfdb75b2e4c3bc",
-      "slug": "forfait-sans-nom-8",
+      "slug": "sonesta-maho-beach-resort-and-casino-2026-12-10",
       "name": "SONESTA MAHO BEACH RESORT AND CASINO",
       "state": "actif",
       "active": "actif",
@@ -609,7 +609,7 @@
     },
     {
       "id": "6a3853dd3452b20f5e0fdd63",
-      "slug": "forfait-sans-nom-4",
+      "slug": "viva-fortuna-beach-by-wyndham-2027-03-27",
       "name": "Viva Fortuna Beach by Wyndham",
       "state": "actif",
       "active": "actif",
