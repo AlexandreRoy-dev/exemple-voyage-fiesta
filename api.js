@@ -1018,7 +1018,8 @@
         row = getSelectedOccupationRow(p, occupationId);
         breakdown = getOccupationPricingBreakdown(p, occupationId, overrides);
 
-        // Champs du formulaire GHL — en premier (URL iframe limitée)
+        // Champs du formulaire GHL — Query Keys = config.js → GHL_FORM_IFRAME_KEYS
+        set('forfait_slug', p.slug);
         set('forfait_name', p.name);
         if (row) {
             const bookingLabel = breakdown?.bookingLabel || row.label;
@@ -1034,10 +1035,10 @@
             set('occupation_label', breakdown.bookingLabel);
         }
         if (breakdown) {
+            const totalEnfants = (breakdown.children212 ?? 0) + (breakdown.children1317 ?? 0);
             set('nombre_personnes', breakdown.totalPeople);
             set('nombre_adultes', breakdown.adults);
-            set('nombre_enfants_2_12', breakdown.children212);
-            set('nombre_enfants_13_17', breakdown.children1317);
+            set('nombre_enfants_2_12', totalEnfants);
             set('prix_total_avant_taxe', breakdown.bookingBeforeTaxes);
             set('prix_total_avant_taxes', breakdown.bookingBeforeTaxes);
             set('taxes_total1', breakdown.bookingTaxes);
@@ -1052,11 +1053,10 @@
             set('pricing_summary', breakdown.pricingSummary);
             set('sommaire', breakdown.pricingSummary);
         }
-        set('final_payment_date', formatDepartureDate(p.finalPaymentDate));
+        set('final_payment_date', formatGhlFormDate(p.finalPaymentDate));
         set('deposit_amount', optionalPrice(p.depositAmount ?? p.deposit_amount));
 
-        // Contexte étendu (exclu de l'iframe si GHL_FORM_IFRAME_KEYS est défini)
-        set('forfait_slug', p.slug);
+        // Contexte étendu (hors iframe si GHL_FORM_IFRAME_KEYS est défini)
         set('destination', p.destination || p.destination1 || p.subDest);
         set('sub_destination', p.subDest);
         set('country', p.country);
@@ -1846,6 +1846,16 @@
             year: 'numeric',
             timeZone: 'UTC'
         });
+    }
+
+    /** Date pour champs GHL (type Date) — JJ/MM/AAAA */
+    function formatGhlFormDate(value) {
+        if (!value) return null;
+        const d = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(d.getTime())) return null;
+        const dd = String(d.getUTCDate()).padStart(2, '0');
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getUTCFullYear()}`;
     }
 
     function departureDateSortKey(product) {

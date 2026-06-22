@@ -268,27 +268,19 @@
     window.GHL_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/V5DftNAy6QDV4X64bYzV';
 
     /**
-     * Query Keys envoyés à l'iframe GHL uniquement (évite URL trop longue → taxes_total1 coupé).
-     * Doit correspondre aux champs cachés du formulaire.
+     * Query Keys envoyés à l'iframe GHL — doivent correspondre aux champs cachés du formulaire.
+     * nombre_enfants_2_12 = nombre total d'enfants (sélecteur unique sur le site).
      */
     window.GHL_FORM_IFRAME_KEYS = [
+        'forfait_slug',
         'forfait_name',
-        'occupation',
+        'depot_total',
         'nombre_personnes',
         'nombre_adultes',
         'nombre_enfants_2_12',
-        'nombre_enfants_13_17',
-        'prix_total_avant_taxe',
-        'taxes_total1',
-        'taxes_par_personne',
-        'tax_child_2_12',
-        'tax_child_13_17',
-        'depot_par_personne',
-        'depot_total',
+        'occupation',
         'final_payment_date',
-        'pricing_summary',
-        'sommaire',
-        'prix_total'
+        'sommaire'
     ];
 
     /**
@@ -312,8 +304,7 @@
         { key: 'selected_total', label: 'Total par personne (forfait + taxes et frais aériens) ($ / pers.)' },
         { key: 'nombre_personnes', label: 'Nombre total de voyageurs' },
         { key: 'nombre_adultes', label: 'Nombre d\'adultes' },
-        { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants 2-12 ans' },
-        { key: 'nombre_enfants_13_17', label: 'Nombre d\'enfants 13-17 ans' },
+        { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants (total — Query Key GHL inchangé)' },
         { key: 'depot_par_personne', label: 'Dépôt par personne ($)' },
         { key: 'depot_total', label: 'Dépôt total (dépôt × nb personnes)' },
         { key: 'prix_adulte_unitaire', label: 'Prix unitaire adulte ($)' },
