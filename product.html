@@ -19,7 +19,7 @@
     <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -167,8 +167,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=23"></script>
-    <script src="api.js?v=71"></script>
+    <script src="config.js?v=28"></script>
+    <script src="api.js?v=79"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -599,14 +599,13 @@
             }
             if (info.has212) {
                 pushRow(
-                    `${escapeHtml(VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212))}`,
+                    `${escapeHtml(VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212, { generic: true }))}`,
                     info.child212First,
                     true
                 );
-            }
-            if (info.has1317) {
+            } else if (info.has1317Price) {
                 pushRow(
-                    `${escapeHtml(VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317))}`,
+                    `${escapeHtml(VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317, { generic: true }))}`,
                     info.child1317First,
                     true
                 );
@@ -633,6 +632,19 @@
         }
 
         function getBookingSelectionOverrides() {
+            const adultsEl = document.getElementById('passenger-adults');
+            if (adultsEl) {
+                const overrides = {
+                    adults: Number(adultsEl.value) || 2
+                };
+                const kidsEl = document.getElementById('passenger-kids');
+                if (kidsEl) {
+                    overrides.children212 = Number(kidsEl.value) || 0;
+                    overrides.children1317 = 0;
+                }
+                return overrides;
+            }
+
             const select = document.getElementById('deposit-people-count');
             if (select) {
                 if (select.value === 'autres') return { isAutres: true };
@@ -644,47 +656,66 @@
                 );
             }
 
-            if (!document.getElementById('child-picker')) return null;
-            const c212 = document.getElementById('child-count-212');
-            const c1317 = document.getElementById('child-count-1317');
-            return {
-                children212: c212 ? Number(c212.value) || 0 : 0,
-                children1317: c1317 ? Number(c1317.value) || 0 : 0
-            };
+            return null;
         }
 
-        function buildDepositPeopleOptionsHtml(p) {
-            const range = VoyageFiestaAPI.getDepositPeopleRange(p);
-            const options = [];
-            for (let count = range.min; count <= range.max; count++) {
-                options.push(`<option value="${count}">${VoyageFiestaAPI.formatPassengerCountLabel(count)}</option>`);
-            }
-            options.push('<option value="autres">Autres (nous vous contacterons)</option>');
-            return options.join('');
-        }
-
-        function buildDepositSelectionHtml(p, isSoldOut) {
+        function buildAdultChildSelectionHtml(p, isSoldOut) {
+            const childInfo = VoyageFiestaAPI.getChildPricingInfo(p);
+            const maxAdults = VoyageFiestaAPI.getMaxAdultCount(p);
+            const defaultAdults = maxAdults >= 2 ? 2 : 1;
             const depositPerPerson = VoyageFiestaAPI.getDepositPerPerson(p);
             const depositNote = depositPerPerson
                 ? `Dépôt de ${VoyageFiestaAPI.formatMoney(depositPerPerson)} par passager.`
                 : '';
 
+            const adultOptions = [];
+            for (let n = 1; n <= maxAdults; n++) {
+                adultOptions.push(
+                    `<option value="${n}"${n === defaultAdults ? ' selected' : ''}>${n} adulte${n > 1 ? 's' : ''}</option>`
+                );
+            }
+
+            let kidsHtml = '';
+            if (childInfo.hasKids) {
+                const kidOptions = [];
+                for (let n = 0; n <= childInfo.maxKids; n++) {
+                    kidOptions.push(
+                        `<option value="${n}"${n === 0 ? ' selected' : ''}>${n} enfant${n > 1 ? 's' : ''}</option>`
+                    );
+                }
+                kidsHtml = `
+                    <div>
+                        <label for="passenger-kids" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">
+                            Enfants
+                        </label>
+                        <select id="passenger-kids" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''}>
+                            ${kidOptions.join('')}
+                        </select>
+                    </div>`;
+            }
+
+            const travelerGridClass = childInfo.hasKids
+                ? 'grid grid-cols-1 sm:grid-cols-2 gap-3'
+                : 'grid grid-cols-1 gap-3';
+
             return `
                 <div class="space-y-3" id="occupation-picker" aria-labelledby="occupation-picker-label">
                     <p id="occupation-picker-label" class="text-xs font-bold text-gray-600 uppercase tracking-tighter">
-                        Nombre de passagers <span class="text-brand-orange">*</span>
+                        Voyageurs <span class="text-brand-orange">*</span>
                     </p>
                     ${depositNote ? `<p class="text-[11px] text-gray-500 leading-snug">${depositNote}</p>` : ''}
-                    <label class="block">
-                        <span class="sr-only">Nombre de passagers pour le dépôt</span>
-                        <select id="deposit-people-count" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''} required>
-                            <option value="">Choisir…</option>
-                            ${buildDepositPeopleOptionsHtml(p)}
-                        </select>
-                    </label>
-                    <p id="occupation-required-hint" class="text-xs text-brand-orange font-medium leading-relaxed">
-                        <i class="fa-solid fa-circle-info mr-1"></i> Indiquez combien de passagers voyagent pour calculer le dépôt.
-                    </p>
+                    <div class="${travelerGridClass}">
+                        <div>
+                            <label for="passenger-adults" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">
+                                Adultes
+                            </label>
+                            <select id="passenger-adults" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''} required>
+                                ${adultOptions.join('')}
+                            </select>
+                        </div>
+                        ${kidsHtml}
+                    </div>
+                    <p class="text-[10px] text-gray-500 italic">Le total du forfait se calcule selon votre sélection ci-dessus.</p>
                     <div id="occupation-summary" class="hidden"></div>
                 </div>`;
         }
@@ -740,18 +771,19 @@
             }
 
             const depositAmount = breakdown?.totalDeposit ?? null;
-            const summaryTitle = breakdown?.useComponentPricing && breakdown.totalPeople
-                ? VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)
-                : (breakdown?.bookingLabel || row?.label || '');
+            const summaryTitle = breakdown?.bookingLabel
+                || (breakdown?.useComponentPricing && breakdown.totalPeople
+                    ? VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)
+                    : (row?.label || ''));
             const detailHtml = rows.length
                 ? `<div class="px-4 py-3 space-y-2 border-b border-gray-100">${rows.join('')}</div>`
                 : '';
 
             if (breakdown?.useComponentPricing && depositAmount !== null) {
-                const forfaitHtml = breakdown.bookingTotalWithTaxes != null ? `
-                    <div class="px-4 py-2.5 flex items-baseline justify-between gap-4 border-t border-gray-100 text-sm text-gray-600">
-                        <span>Forfait ${VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)}</span>
-                        <span class="font-medium tabular-nums">${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)}</span>
+                const forfaitLabel = breakdown.bookingLabel || summaryTitle;
+                const forfaitHtml = forfaitLabel ? `
+                    <div class="px-4 py-2.5 border-t border-gray-100 text-sm text-gray-600">
+                        <span>Forfait · ${escapeHtml(forfaitLabel)}</span>
                     </div>` : '';
 
                 return `
@@ -769,9 +801,9 @@
             }
 
             const hasBookingTotal = breakdown?.bookingTotalWithTaxes != null
-                && (breakdown?.totalPeople > 1 || breakdown?.useComponentPricing);
+                && (breakdown?.useComponentPricing || breakdown?.totalPeople > 1);
             const footerLabel = hasBookingTotal
-                ? `Forfait ${VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)}`
+                ? `Forfait · ${breakdown.bookingLabel || summaryTitle}`
                 : (breakdown?.totalWithTaxes != null || row?.totalWithTaxes != null ? 'Total / pass.' : 'Prix / pass.');
             const footerAmount = hasBookingTotal
                 ? breakdown.bookingTotalWithTaxes
@@ -801,7 +833,7 @@
 
         function buildOccupationSelectionHtml(p, isSoldOut) {
             if (VoyageFiestaAPI.productHasChildUnitPricing(p)) {
-                return buildDepositSelectionHtml(p, isSoldOut);
+                return buildAdultChildSelectionHtml(p, isSoldOut);
             }
 
             const rows = VoyageFiestaAPI.getOccupationPrices(p);
@@ -1048,15 +1080,15 @@
                                 ${paymentTermsHtml}
 
                                 <div class="space-y-4 mb-6 sm:mb-8">
-                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">Tarifs par occ.</h4>
+                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">${VoyageFiestaAPI.productSupportsKidsPricing(p) ? 'Tarifs par passager' : 'Tarifs par occ.'}</h4>
                                     ${occupationHtml}
                                 </div>
 
                                 ${isSoldOut
                                     ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">COMPLET</button>
                                        <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
-                                    : `<button type="button" id="open-reservation" disabled class="w-full bg-gray-300 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed opacity-60 text-lg transition-all">RÉSERVER MAINTENANT</button>
-                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4">Sélectionnez une occupation ci-dessus, puis réservez. En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>`}
+                                    : `<button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 text-lg transition-all">RÉSERVER MAINTENANT</button>
+                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4">En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>`}
                             </div>
                         </div>
 
@@ -1096,108 +1128,49 @@
 
                 ${seoSectionHtml}`;
 
-            startCountdown(p.endDate);
+            startCountdown(new Date(p.endDate));
             bindProductTabs();
             bindGalleryViewer(gallery, p.name);
-            bindOccupationSelection(p);
+            bindPassengerSelection(p);
             bindReservationModal(p);
             VoyageFiestaAPI.bindSocialShare(document.getElementById('product-content'), () => p);
         }
 
+        function setButtonEnabled(enabled) {
+            const openBtn = document.getElementById('open-reservation');
+            if (!openBtn) return;
+            openBtn.disabled = !enabled;
+            openBtn.classList.toggle('opacity-50', !enabled);
+            openBtn.classList.toggle('cursor-not-allowed', !enabled);
+            openBtn.classList.toggle('hover:bg-brand-blue', enabled);
+            openBtn.classList.toggle('hover:scale-[1.02]', enabled);
+            openBtn.classList.toggle('active:scale-95', enabled);
+        }
+
         function getSelectedOccupationId() {
+            const adultsEl = document.getElementById('passenger-adults');
+            if (adultsEl && window.__activeProduct) {
+                const adults = Number(adultsEl.value) || 2;
+                return VoyageFiestaAPI.getOccupationIdForAdultCount(adults, window.__activeProduct);
+            }
+
             const select = document.getElementById('deposit-people-count');
             if (select) {
                 if (!select.value) return null;
                 return select.value === 'autres' ? 'autres' : 'double';
             }
+
             const radio = document.querySelector('input[name="occ"]:checked');
             return radio ? radio.value : null;
         }
 
-        function syncOccupationVisuals() {
-            document.querySelectorAll('.occupation-option').forEach(label => {
-                const input = label.querySelector('input[name="occ"], input[name="deposit-group"]');
-                label.classList.toggle('is-selected', Boolean(input?.checked));
-                if (input) label.setAttribute('aria-checked', input.checked ? 'true' : 'false');
-            });
-        }
+        function hasValidBookingSelection() {
+            if (document.getElementById('passenger-adults')) return true;
 
-        function bindOccupationSelection(p) {
-            const openBtn = document.getElementById('open-reservation');
-            if (!openBtn || VoyageFiestaAPI.isSoldOut(p)) return;
+            const select = document.getElementById('deposit-people-count');
+            if (select) return Boolean(select.value);
 
-            const hint = document.getElementById('occupation-required-hint');
-            const summary = document.getElementById('occupation-summary');
-            const picker = document.getElementById('occupation-picker');
-
-            function setButtonEnabled(enabled) {
-                openBtn.disabled = !enabled;
-                openBtn.classList.toggle('bg-brand-orange', enabled);
-                openBtn.classList.toggle('hover:bg-brand-blue', enabled);
-                openBtn.classList.toggle('hover:scale-[1.02]', enabled);
-                openBtn.classList.toggle('active:scale-95', enabled);
-                openBtn.classList.toggle('bg-gray-300', !enabled);
-                openBtn.classList.toggle('cursor-not-allowed', !enabled);
-                openBtn.classList.toggle('opacity-60', !enabled);
-            }
-
-            window.__activeProduct = p;
-
-            function updateSelection() {
-                syncOccupationVisuals();
-                const occupationId = getSelectedOccupationId();
-                const overrides = getBookingSelectionOverrides();
-                const row = occupationId && occupationId !== 'autres'
-                    ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
-                    : null;
-                const hasSelection = Boolean(occupationId);
-
-                setButtonEnabled(hasSelection);
-                if (hint) hint.classList.toggle('hidden', hasSelection);
-
-                if (summary) {
-                    if (hasSelection) {
-                        const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
-                        summary.classList.remove('hidden');
-                        summary.innerHTML = renderOccupationSummaryCard(row, breakdown);
-                    } else {
-                        summary.classList.add('hidden');
-                        summary.textContent = '';
-                    }
-                }
-            }
-
-            const depositSelect = document.getElementById('deposit-people-count');
-            if (depositSelect) {
-                depositSelect.addEventListener('change', updateSelection);
-            }
-
-            document.querySelectorAll('input[name="occ"]').forEach(input => {
-                input.addEventListener('change', updateSelection);
-                input.addEventListener('input', updateSelection);
-            });
-
-            document.querySelectorAll('.child-count-select').forEach(select => {
-                select.addEventListener('change', updateSelection);
-            });
-
-            document.querySelectorAll('.occupation-option').forEach(label => {
-                label.addEventListener('click', () => {
-                    requestAnimationFrame(updateSelection);
-                });
-            });
-
-            if (picker) {
-                picker.addEventListener('keydown', (e) => {
-                    if (e.key !== 'Enter' && e.key !== ' ') return;
-                    const label = e.target.closest('.occupation-option');
-                    if (!label) return;
-                    e.preventDefault();
-                    label.click();
-                });
-            }
-
-            updateSelection();
+            return Boolean(document.querySelector('input[name="occ"]:checked'));
         }
 
         function buildGhlIframeSrc(p) {
@@ -1218,6 +1191,67 @@
             return GHL_FORM_EMBED_URL + sep + params.toString();
         }
 
+        function syncOccupationVisuals() {
+            document.querySelectorAll('.occupation-option').forEach(label => {
+                const input = label.querySelector('input[name="occ"], input[name="deposit-group"]');
+                label.classList.toggle('is-selected', Boolean(input?.checked));
+                if (input) label.setAttribute('aria-checked', input.checked ? 'true' : 'false');
+            });
+        }
+
+        function bindPassengerSelection(p) {
+            const openBtn = document.getElementById('open-reservation');
+            if (!openBtn || VoyageFiestaAPI.isSoldOut(p)) return;
+
+            window.__activeProduct = p;
+
+            const hint = document.getElementById('occupation-required-hint');
+            const summary = document.getElementById('occupation-summary');
+
+            function updateSelection() {
+                syncOccupationVisuals();
+                const occupationId = getSelectedOccupationId();
+                const overrides = getBookingSelectionOverrides();
+                const hasSelection = hasValidBookingSelection();
+
+                setButtonEnabled(hasSelection);
+                if (hint) hint.classList.toggle('hidden', hasSelection);
+
+                if (summary) {
+                    if (hasSelection && occupationId) {
+                        const row = occupationId !== 'autres'
+                            ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
+                            : null;
+                        const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
+                        if (breakdown) {
+                            summary.classList.remove('hidden');
+                            summary.innerHTML = renderOccupationSummaryCard(row, breakdown);
+                        } else {
+                            summary.classList.add('hidden');
+                            summary.innerHTML = '';
+                        }
+                    } else {
+                        summary.classList.add('hidden');
+                        summary.innerHTML = '';
+                    }
+                }
+            }
+
+            const depositSelect = document.getElementById('deposit-people-count');
+            if (depositSelect) depositSelect.addEventListener('change', updateSelection);
+
+            ['passenger-adults', 'passenger-kids'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', updateSelection);
+            });
+
+            document.querySelectorAll('input[name="occ"]').forEach(input => {
+                input.addEventListener('change', updateSelection);
+            });
+
+            updateSelection();
+        }
+
         function bindReservationModal(p) {
             const modal = document.getElementById('reservation-modal');
             const openBtn = document.getElementById('open-reservation');
@@ -1228,11 +1262,13 @@
             const placeholder = document.getElementById('ghl-form-placeholder');
 
             function openModal() {
-                const occupationId = getSelectedOccupationId();
-                if (!occupationId) return;
+                if (!hasValidBookingSelection()) return;
 
-                const row = VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId);
+                const occupationId = getSelectedOccupationId();
                 const overrides = getBookingSelectionOverrides();
+                const row = occupationId && occupationId !== 'autres'
+                    ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
+                    : null;
                 const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
                 const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
                 const bookingLabel = breakdown?.bookingLabel || row?.label || '';
@@ -1272,8 +1308,13 @@
 
         function startCountdown(endDate) {
             const display = document.getElementById('countdown');
+            const end = endDate instanceof Date ? endDate : new Date(endDate);
+            if (Number.isNaN(end.getTime())) {
+                display.textContent = 'OFFRE TERMINÉE';
+                return;
+            }
             function tick() {
-                const ms = endDate.getTime() - Date.now();
+                const ms = end.getTime() - Date.now();
                 if (ms <= 0) {
                     display.textContent = 'OFFRE TERMINÉE';
                     return;

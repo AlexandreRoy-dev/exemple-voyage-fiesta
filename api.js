@@ -489,13 +489,19 @@
         const child212Second = optionalPrice(p.priceChild212_2 ?? p.prix_2e_enfant_2_12);
         const child1317First = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
         const child1317Second = optionalPrice(p.priceChild1317_2 ?? p.prix_2e_enfant_13_17);
+        const maxChild = clampInt(window.MAX_CHILD_COUNT_SELECT ?? 3, { min: 1, max: 9 });
+        const has212 = child212First !== null;
+        const has1317Price = child1317First !== null;
         return {
-            has212: child212First !== null,
-            has1317: child1317First !== null,
+            has212,
+            has1317: has1317Price,
+            has1317Price,
+            hasKids: has212 || has1317Price,
             hasSecond212: child212Second !== null,
             hasSecond1317: child1317Second !== null,
-            max212: child212First === null ? 0 : clampInt(window.MAX_CHILD_COUNT_SELECT ?? 4, { min: 1, max: 9 }),
-            max1317: child1317First === null ? 0 : clampInt(window.MAX_CHILD_COUNT_SELECT ?? 4, { min: 1, max: 9 }),
+            max212: has212 ? maxChild : 0,
+            max1317: has1317Price ? maxChild : 0,
+            maxKids: (has212 || has1317Price) ? maxChild : 0,
             child212First,
             child212Second,
             child1317First,
@@ -505,7 +511,12 @@
 
     function productHasChildUnitPricing(p) {
         const info = getChildPricingInfo(p);
-        return info.has212 || info.has1317;
+        return info.hasKids;
+    }
+
+    /** Alias utilisé par product.html pour l'en-tête « Tarifs par passager ». */
+    function productSupportsKidsPricing(p) {
+        return productHasChildUnitPricing(p);
     }
 
     function getChild212UnitPrice(p, index) {
@@ -518,14 +529,59 @@
 
     function getChild1317UnitPrice(p, index) {
         const info = getChildPricingInfo(p);
-        if (info.child1317First === null || index < 0) return null;
-        if (index === 0) return info.child1317First;
-        if (index === 1 && info.child1317Second !== null) return info.child1317Second;
-        return info.child1317Second ?? info.child1317First;
+        if (index < 0) return null;
+        if (info.child1317First !== null) {
+            if (index === 0) return info.child1317First;
+            if (index === 1 && info.child1317Second !== null) return info.child1317Second;
+            return info.child1317Second ?? info.child1317First;
+        }
+        return getChild212UnitPrice(p, index);
     }
 
-    /** Libellé enfant — sans « 1er » s'il n'y a qu'un seul tarif enfant pour la tranche. */
-    function getChildPriceLabel(band, childIndex, hasSecondPrice) {
+    /** Tarif enfant pour le sélecteur unique — 2-12 prioritaire, repli 13-17. */
+    function getChildUnitPrice(p, index) {
+        const info = getChildPricingInfo(p);
+        if (index < 0) return null;
+        if (info.child212First !== null) {
+            if (index === 0) return info.child212First;
+            if (index === 1 && info.child212Second !== null) return info.child212Second;
+            return info.child212Second ?? info.child212First;
+        }
+        if (info.child1317First !== null) {
+            if (index === 0) return info.child1317First;
+            if (index === 1 && info.child1317Second !== null) return info.child1317Second;
+            return info.child1317Second ?? info.child1317First;
+        }
+        return null;
+    }
+
+    function getComponentAdultUnitRow(p) {
+        return getSelectedOccupationRow(p, 'double')
+            || getOccupationPrices(p).find(r => !r.isChildOccupation)
+            || null;
+    }
+
+    function getAdultOccupationLabel(adults) {
+        const labels = {
+            1: 'Occ. simple',
+            2: 'Occ. double',
+            3: 'Occ. triple',
+            4: 'Occ. quad',
+            5: 'Autres'
+        };
+        const n = clampInt(adults, { min: 1, max: window.MAX_ADULT_COUNT_SELECT ?? 5 });
+        return labels[n] || 'Occ. double';
+    }
+
+    /** Libellé enfant — tranche d'âge optionnelle (grille fournisseur). generic=true : pas de mention 2-12 / 13-17. */
+    function getChildPriceLabel(band, childIndex, hasSecondPrice, options) {
+        const generic = options && options.generic;
+        if (generic) {
+            if (childIndex === 0 && !hasSecondPrice) return 'Enfant';
+            const ordinals = ['1er', '2e', '3e', '4e'];
+            const ordinal = ordinals[childIndex] || `${childIndex + 1}e`;
+            return `${ordinal} enfant`;
+        }
         const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
         if (childIndex === 0 && !hasSecondPrice) return `Enfant (${ageLabel})`;
         const ordinals = ['1er', '2e', '3e', '4e'];
@@ -533,9 +589,9 @@
         return `${ordinal} enfant (${ageLabel})`;
     }
 
-    /** Libellé tableau tarifs — tranche d'âge sur la ligne suivante. */
-    function formatChildTableLabelHtml(band, childIndex, hasSecondPrice) {
-        const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
+    /** Libellé tableau tarifs — tranche d'âge sur la ligne suivante (sauf generic). */
+    function formatChildTableLabelHtml(band, childIndex, hasSecondPrice, options) {
+        const generic = options && options.generic;
         let main;
         if (childIndex === 0 && !hasSecondPrice) {
             main = 'Enfant';
@@ -543,13 +599,15 @@
             const ordinals = ['1er', '2e', '3e', '4e'];
             main = `${ordinals[childIndex] || `${childIndex + 1}e`} enfant`;
         }
+        if (generic) return main;
+        const ageLabel = band === '1317' ? '13-17 ans' : '2-12 ans';
         return `${main}<br><span class="text-gray-500 text-xs leading-tight">(${ageLabel})</span>`;
     }
 
     function sumChildUnitPrices(p, children212, children1317) {
         let total = 0;
         for (let i = 0; i < children212; i++) {
-            const price = getChild212UnitPrice(p, i);
+            const price = getChildUnitPrice(p, i);
             if (price === null) return null;
             total += price;
         }
@@ -561,17 +619,54 @@
         return total;
     }
 
-    function buildBookingOccupationLabel(def, children212, children1317) {
-        if (!def) return '';
-        const parts = [];
-        if (children212 > 0) {
-            parts.push(`${children212} enfant${children212 > 1 ? 's' : ''} (2-12 ans)`);
+    function buildBookingOccupationLabel(def, children212, children1317, adults) {
+        const c212 = children212 ?? 0;
+        const c1317 = children1317 ?? 0;
+        const totalKids = c212 + c1317;
+        const occLabel = adults !== undefined && adults !== null
+            ? getAdultOccupationLabel(adults)
+            : (def?.label || 'Occ. double');
+
+        if (!totalKids) return occLabel;
+        return `${occLabel} et ${totalKids} enfant${totalKids > 1 ? 's' : ''}`;
+    }
+
+    function getOccupationIdForAdultCount(adults, p) {
+        const n = clampInt(adults, { min: 1, max: window.MAX_ADULT_COUNT_SELECT ?? 5 });
+        const map = [
+            { count: 1, id: 'simple' },
+            { count: 2, id: 'double' },
+            { count: 3, id: 'triple' },
+            { count: 4, id: 'quad' },
+            { count: 5, id: 'autres' }
+        ];
+        const preferred = map.find(entry => entry.count === n)?.id ?? 'double';
+        if (p && getSelectedOccupationRow(p, preferred)) return preferred;
+        for (const entry of [...map].reverse()) {
+            if (getSelectedOccupationRow(p, entry.id)) return entry.id;
         }
-        if (children1317 > 0) {
-            parts.push(`${children1317} enfant${children1317 > 1 ? 's' : ''} (13-17 ans)`);
+        return preferred;
+    }
+
+    function getMaxAdultCount(p) {
+        if (productHasChildUnitPricing(p)) {
+            return getComponentAdultUnitRow(p)
+                ? Math.min(window.MAX_ADULT_COUNT_SELECT ?? 5, 5)
+                : 1;
         }
-        if (!parts.length) return def.label;
-        return `${def.label} + ${parts.join(' + ')}`;
+
+        const map = [
+            { count: 1, id: 'simple' },
+            { count: 2, id: 'double' },
+            { count: 3, id: 'triple' },
+            { count: 4, id: 'quad' },
+            { count: 5, id: 'autres' }
+        ];
+        let max = 1;
+        for (const entry of map) {
+            if (getSelectedOccupationRow(p, entry.id)) max = entry.count;
+        }
+        return Math.min(max, window.MAX_ADULT_COUNT_SELECT ?? 5);
     }
 
     /** taxes_amount = $ / pers. — affiché tel quel (sans × nb voyageurs). */
@@ -741,15 +836,35 @@
             };
         }
 
-        const def = getOccupationDef(occupationId);
-        const row = getSelectedOccupationRow(p, occupationId);
+        let def = getOccupationDef(occupationId);
+        let row = getSelectedOccupationRow(p, occupationId);
         if (!def || !row) return null;
 
         const childInfo = getChildPricingInfo(p);
         const useComponentPricing = productHasChildUnitPricing(p) && !isChildOccupationDef(def);
         const roundMoney = (value) => Math.round(value * 100) / 100;
 
-        const adults = def.adults ?? 0;
+        let adults;
+        if (useComponentPricing && overrides && overrides.adults !== undefined) {
+            adults = clampInt(overrides.adults, { min: 1, max: getMaxAdultCount(p) });
+            const doubleRow = getComponentAdultUnitRow(p);
+            const doubleDef = getOccupationDef('double');
+            if (doubleRow && doubleDef) {
+                def = doubleDef;
+                row = doubleRow;
+            } else {
+                const adultOccId = getOccupationIdForAdultCount(adults, p);
+                const adultDef = getOccupationDef(adultOccId);
+                const adultRow = getSelectedOccupationRow(p, adultOccId);
+                if (adultDef && adultRow) {
+                    def = adultDef;
+                    row = adultRow;
+                }
+            }
+        } else {
+            adults = def.adults ?? 0;
+        }
+
         let children212;
         let children1317;
 
@@ -772,16 +887,16 @@
         const totalPeople = adults + children212 + children1317;
         const adultUnitPrice = row.pricePerPerson ?? row.price;
         const taxesPerPerson = row.taxesPerPerson ?? row.taxes ?? pickOccupationTaxPerPerson(p);
-        const bookingLabel = buildBookingOccupationLabel(def, children212, children1317);
+        const bookingLabel = buildBookingOccupationLabel(def, children212, children1317, useComponentPricing ? adults : undefined);
 
         const child212Lines = [];
         for (let i = 0; i < children212; i++) {
-            const unit = getChild212UnitPrice(p, i);
+            const unit = getChildUnitPrice(p, i);
             if (unit === null) return null;
             child212Lines.push({
                 index: i + 1,
                 band: '212',
-                label: getChildPriceLabel('212', i, childInfo.hasSecond212),
+                label: getChildPriceLabel('212', i, childInfo.hasSecond212, { generic: useComponentPricing }),
                 unitPrice: unit,
                 taxesPerPerson: taxesPerPerson,
                 totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
@@ -795,7 +910,7 @@
             child1317Lines.push({
                 index: i + 1,
                 band: '1317',
-                label: getChildPriceLabel('1317', i, childInfo.hasSecond1317),
+                label: getChildPriceLabel('1317', i, childInfo.hasSecond1317, { generic: useComponentPricing }),
                 unitPrice: unit,
                 taxesPerPerson: taxesPerPerson,
                 totalWithTaxes: taxesPerPerson !== null ? unit + taxesPerPerson : null
@@ -899,23 +1014,27 @@
     }
 
     /** URL params → champs cachés GHL (Query Key identique au nom du paramètre) */
-    function buildGhlReservationParams(p, occupationId, overrides) {
+    function buildGhlReservationParams(p, occupationIdOrPassengers, overrides) {
         const params = {};
         const set = (key, value) => {
             if (value === undefined || value === null || value === '') return;
             params[key] = String(value);
         };
 
-        const row = getSelectedOccupationRow(p, occupationId);
-        const breakdown = getOccupationPricingBreakdown(p, occupationId, overrides);
+        let breakdown;
+        let row;
+        let occupationId = occupationIdOrPassengers;
+        row = getSelectedOccupationRow(p, occupationId);
+        breakdown = getOccupationPricingBreakdown(p, occupationId, overrides);
 
-        // Champs du formulaire GHL — en premier (URL iframe limitée)
+        // Champs du formulaire GHL — Query Keys = config.js → GHL_FORM_IFRAME_KEYS
+        set('forfait_slug', p.slug);
         set('forfait_name', p.name);
         if (row) {
-            const occupationLabel = breakdown?.bookingLabel || row.label;
-            set('occupation', occupationLabel);
+            const bookingLabel = breakdown?.bookingLabel || row.label;
+            set('occupation', bookingLabel);
             set('occupation_code', row.id);
-            set('occupation_label', occupationLabel);
+            set('occupation_label', bookingLabel);
             set('selected_price', breakdown?.adultUnitPrice ?? row.pricePerPerson ?? row.price);
             set('selected_taxes', breakdown?.taxesPerPerson ?? row.taxesPerPerson ?? row.taxes);
             set('selected_total', breakdown?.totalWithTaxes ?? row.totalPerPerson ?? row.totalWithTaxes);
@@ -925,10 +1044,11 @@
             set('occupation_label', breakdown.bookingLabel);
         }
         if (breakdown) {
+            // Query Key GHL « nombre_enfants_2_12 » = total enfants (tous âges), nom historique inchangé.
+            const totalEnfants = (breakdown.children212 ?? 0) + (breakdown.children1317 ?? 0);
             set('nombre_personnes', breakdown.totalPeople);
             set('nombre_adultes', breakdown.adults);
-            set('nombre_enfants_2_12', breakdown.children212);
-            set('nombre_enfants_13_17', breakdown.children1317);
+            set('nombre_enfants_2_12', totalEnfants);
             set('prix_total_avant_taxe', breakdown.bookingBeforeTaxes);
             set('prix_total_avant_taxes', breakdown.bookingBeforeTaxes);
             set('taxes_total1', breakdown.bookingTaxes);
@@ -943,11 +1063,10 @@
             set('pricing_summary', breakdown.pricingSummary);
             set('sommaire', breakdown.pricingSummary);
         }
-        set('final_payment_date', formatDepartureDate(p.finalPaymentDate));
+        set('final_payment_date', formatGhlFormDate(p.finalPaymentDate));
         set('deposit_amount', optionalPrice(p.depositAmount ?? p.deposit_amount));
 
-        // Contexte étendu (exclu de l'iframe si GHL_FORM_IFRAME_KEYS est défini)
-        set('forfait_slug', p.slug);
+        // Contexte étendu (hors iframe si GHL_FORM_IFRAME_KEYS est défini)
         set('destination', p.destination || p.destination1 || p.subDest);
         set('sub_destination', p.subDest);
         set('country', p.country);
@@ -1739,6 +1858,16 @@
         });
     }
 
+    /** Date pour champs GHL (type Date) — JJ/MM/AAAA */
+    function formatGhlFormDate(value) {
+        if (!value) return null;
+        const d = value instanceof Date ? value : new Date(value);
+        if (Number.isNaN(d.getTime())) return null;
+        const dd = String(d.getUTCDate()).padStart(2, '0');
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}/${d.getUTCFullYear()}`;
+    }
+
     function departureDateSortKey(product) {
         if (!product.departureDate) return Number.POSITIVE_INFINITY;
         const t = product.departureDate instanceof Date
@@ -1818,6 +1947,15 @@
         return `${getSiteBaseUrl().replace(/\/$/, '')}/share/${encodeURIComponent(slug)}.html`;
     }
 
+    function buildProductShareTitle(p) {
+        const name = String(p?.name || window.SITE_NAME || 'Voyage Fiesta').trim();
+        const discount = optionalPrice(p?.discountAmount ?? p?.discount_amount ?? p?.rabais);
+        if (discount !== null && discount > 0) {
+            return `${name} - ${formatMoney(discount)} de rabais`;
+        }
+        return name;
+    }
+
     function buildProductShareDescription(p) {
         const parts = [];
         const destination = p.destinationLabel || p.destination || p.subDest;
@@ -1832,7 +1970,7 @@
     }
 
     function buildProductSharePayload(p) {
-        const title = `${p.name} | ${window.SITE_NAME || 'Voyage Fiesta'}`;
+        const title = buildProductShareTitle(p);
         return {
             url: getProductShareUrl(p),
             title,
@@ -1874,6 +2012,7 @@
         setDocumentMeta('property', 'og:description', payload.description);
         setDocumentMeta('property', 'og:url', payload.url);
         setDocumentMeta('property', 'og:image', payload.image);
+        setDocumentMeta('property', 'og:image:secure_url', payload.image);
         setDocumentMeta('property', 'og:image:alt', payload.imageAlt || payload.title);
         setDocumentMeta('name', 'twitter:card', 'summary_large_image');
         setDocumentMeta('name', 'twitter:title', payload.title);
@@ -1919,6 +2058,14 @@
         showShareToast._timer = setTimeout(() => toast.classList.add('opacity-0'), 2200);
     }
 
+    function renderSocialShareIcon(platform, compact) {
+        if (platform.id === 'x') {
+            const sizeClass = compact ? 'w-3 h-3' : 'w-3.5 h-3.5';
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="${sizeClass}" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
+        }
+        return `<i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i>`;
+    }
+
     function renderSocialShareButtonsHtml(p, options = {}) {
         const payload = buildProductSharePayload(p);
         const compact = options.compact === true;
@@ -1943,10 +2090,10 @@
         const buttons = platforms.map(platform => {
             const title = escapeShareAttr(platform.label);
             if (platform.action === 'copy' || platform.action === 'native') {
-                return `<button type="button" class="${btnClass}" data-share-action="${platform.action}" data-share-slug="${slug}" aria-label="${title}" title="${title}"><i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i></button>`;
+                return `<button type="button" class="${btnClass}" data-share-action="${platform.action}" data-share-slug="${slug}" aria-label="${title}" title="${title}">${renderSocialShareIcon(platform, compact)}</button>`;
             }
             const href = escapeShareAttr(getSocialShareHref(platform.id, payload));
-            return `<a href="${href}" class="${btnClass}" target="_blank" rel="noopener noreferrer" aria-label="${title}" title="${title}" data-share-link="1"><i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i></a>`;
+            return `<a href="${href}" class="${btnClass}" target="_blank" rel="noopener noreferrer" aria-label="${title}" title="${title}" data-share-link="1">${renderSocialShareIcon(platform, compact)}</a>`;
         }).join('');
 
         const labelHtml = compact
@@ -2028,6 +2175,8 @@
         splitPeopleCountForComponentPricing,
         getChildPricingInfo,
         productHasChildUnitPricing,
+        productSupportsKidsPricing,
+        getChildUnitPrice,
         getChildPriceLabel,
         formatChildTableLabelHtml,
         getLowestOccupationRow,
@@ -2036,6 +2185,10 @@
         getSelectedOccupationRow,
         getOccupationPricingBreakdown,
         buildBookingOccupationLabel,
+        getAdultOccupationLabel,
+        getComponentAdultUnitRow,
+        getOccupationIdForAdultCount,
+        getMaxAdultCount,
         pickOccupationPrice,
         calculateSalesTaxes,
         formatTaxRatesLabel,
@@ -2085,6 +2238,7 @@
         resolveAbsoluteUrl,
         getProductShareImage,
         getProductShareUrl,
+        buildProductShareTitle,
         buildProductSharePayload,
         buildListingSharePayload,
         applySocialMetaTags,

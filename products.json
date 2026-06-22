@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-06-21T23:21:19.371Z",
+  "updatedAt": "2026-06-22T21:14:05.093Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
   "products": [
     {
       "id": "6a3853dee9ffbb79894d9ed5",
-      "slug": "forfait-sans-nom-6",
+      "slug": "gran-muthu-runaway-bay-club-caribbean-2027-02-25",
       "name": "Gran Muthu Runaway Bay Club Caribbean",
       "state": "actif",
       "active": "actif",
@@ -81,18 +81,18 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-6-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-6-extra.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-6-extra.jpg",
+      "img": "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-img.jpg",
+      "imgRoom": "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg",
+      "imgExtra": "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-6-img.jpg",
-        "assets/forfaits/forfait-sans-nom-6-extra.jpg"
+        "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-img.jpg",
+        "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg"
       ],
       "seoTags": []
     },
     {
       "id": "6a3853de3468e0295c7be776",
-      "slug": "forfait-sans-nom-5",
+      "slug": "henry-morgan-beach-hotel-2027-01-11",
       "name": "HENRY MORGAN BEACH HOTEL",
       "state": "actif",
       "active": "actif",
@@ -167,18 +167,18 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-5-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-5-extra.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-5-extra.jpg",
+      "img": "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-img.jpg",
+      "imgRoom": "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-extra.jpg",
+      "imgExtra": "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-extra.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-5-img.jpg",
-        "assets/forfaits/forfait-sans-nom-5-extra.jpg"
+        "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-img.jpg",
+        "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-extra.jpg"
       ],
       "seoTags": []
     },
     {
       "id": "6a3853dcc9025e2db441d210",
-      "slug": "forfait-sans-nom-3",
+      "slug": "melia-cozumel-2026-12-14",
       "name": "Melia Cozumel",
       "state": "actif",
       "active": "actif",
@@ -253,17 +253,17 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-3-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-3-img.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-3-img.jpg",
+      "img": "assets/forfaits/melia-cozumel-2026-12-14-img.jpg",
+      "imgRoom": "assets/forfaits/melia-cozumel-2026-12-14-img.jpg",
+      "imgExtra": "assets/forfaits/melia-cozumel-2026-12-14-img.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-3-img.jpg"
+        "assets/forfaits/melia-cozumel-2026-12-14-img.jpg"
       ],
       "seoTags": []
     },
     {
       "id": "6a3853dbe8091c1fb4e3838c",
-      "slug": "forfait-sans-nom-2",
+      "slug": "riu-playa-blanca-2027-02-12",
       "name": "RIU PLAYA BLANCA",
       "state": "actif",
       "active": "actif",
@@ -338,18 +338,18 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-2-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-2-extra.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-2-extra.jpg",
+      "img": "assets/forfaits/riu-playa-blanca-2027-02-12-img.jpg",
+      "imgRoom": "assets/forfaits/riu-playa-blanca-2027-02-12-extra.jpg",
+      "imgExtra": "assets/forfaits/riu-playa-blanca-2027-02-12-extra.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-2-img.jpg",
-        "assets/forfaits/forfait-sans-nom-2-extra.jpg"
+        "assets/forfaits/riu-playa-blanca-2027-02-12-img.jpg",
+        "assets/forfaits/riu-playa-blanca-2027-02-12-extra.jpg"
       ],
       "seoTags": []
     },
     {
       "id": "6a3853db445438e1255349fa",
-      "slug": "forfait-sans-nom",
+      "slug": "royalton-splash-punta-cana-2027-01-22",
       "name": "ROYALTON SPLASH PUNTA CANA",
       "state": "actif",
       "active": "actif",
@@ -424,18 +424,18 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-extra.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-extra.jpg",
+      "img": "assets/forfaits/royalton-splash-punta-cana-2027-01-22-img.jpg",
+      "imgRoom": "assets/forfaits/royalton-splash-punta-cana-2027-01-22-extra.jpg",
+      "imgExtra": "assets/forfaits/royalton-splash-punta-cana-2027-01-22-extra.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-img.jpg",
-        "assets/forfaits/forfait-sans-nom-extra.jpg"
+        "assets/forfaits/royalton-splash-punta-cana-2027-01-22-img.jpg",
+        "assets/forfaits/royalton-splash-punta-cana-2027-01-22-extra.jpg"
       ],
       "seoTags": []
     },
     {
       "id": "6a3853df000845089f58d058",
-      "slug": "forfait-sans-nom-7",
+      "slug": "sandos-playacar-2026-12-30",
       "name": "Sandos Playacar",
       "state": "actif",
       "active": "actif",
@@ -512,18 +512,18 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-7-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-7-extra.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-7-extra.jpg",
+      "img": "assets/forfaits/sandos-playacar-2026-12-30-img.jpg",
+      "imgRoom": "assets/forfaits/sandos-playacar-2026-12-30-extra.jpg",
+      "imgExtra": "assets/forfaits/sandos-playacar-2026-12-30-extra.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-7-img.jpg",
-        "assets/forfaits/forfait-sans-nom-7-extra.jpg"
+        "assets/forfaits/sandos-playacar-2026-12-30-img.jpg",
+        "assets/forfaits/sandos-playacar-2026-12-30-extra.jpg"
       ],
       "seoTags": []
     },
     {
       "id": "6a3853e02ecfdb75b2e4c3bc",
-      "slug": "forfait-sans-nom-8",
+      "slug": "sonesta-maho-beach-resort-and-casino-2026-12-10",
       "name": "SONESTA MAHO BEACH RESORT AND CASINO",
       "state": "actif",
       "active": "actif",
@@ -598,18 +598,18 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-8-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-8-extra.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-8-extra.jpg",
+      "img": "assets/forfaits/sonesta-maho-beach-resort-and-casino-2026-12-10-img.jpg",
+      "imgRoom": "assets/forfaits/sonesta-maho-beach-resort-and-casino-2026-12-10-extra.jpg",
+      "imgExtra": "assets/forfaits/sonesta-maho-beach-resort-and-casino-2026-12-10-extra.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-8-img.jpg",
-        "assets/forfaits/forfait-sans-nom-8-extra.jpg"
+        "assets/forfaits/sonesta-maho-beach-resort-and-casino-2026-12-10-img.jpg",
+        "assets/forfaits/sonesta-maho-beach-resort-and-casino-2026-12-10-extra.jpg"
       ],
       "seoTags": []
     },
     {
       "id": "6a3853dd3452b20f5e0fdd63",
-      "slug": "forfait-sans-nom-4",
+      "slug": "viva-fortuna-beach-by-wyndham-2027-03-27",
       "name": "Viva Fortuna Beach by Wyndham",
       "state": "actif",
       "active": "actif",
@@ -686,12 +686,12 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/forfait-sans-nom-4-img.jpg",
-      "imgRoom": "assets/forfaits/forfait-sans-nom-4-extra.jpg",
-      "imgExtra": "assets/forfaits/forfait-sans-nom-4-extra.jpg",
+      "img": "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-img.jpg",
+      "imgRoom": "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-extra.jpg",
+      "imgExtra": "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-extra.jpg",
       "images": [
-        "assets/forfaits/forfait-sans-nom-4-img.jpg",
-        "assets/forfaits/forfait-sans-nom-4-extra.jpg"
+        "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-img.jpg",
+        "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-extra.jpg"
       ],
       "seoTags": []
     }
