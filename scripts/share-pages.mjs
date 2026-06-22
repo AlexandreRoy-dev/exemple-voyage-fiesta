@@ -65,7 +65,7 @@ export function buildShareTitle(product) {
   const discount = Number(raw);
   if (Number.isFinite(discount) && discount > 0) {
     const amount = formatMoney(discount);
-    return `${name} — ${amount} de rabais`;
+    return `${name} - ${amount} de rabais`;
   }
   return name;
 }
