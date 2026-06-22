@@ -168,7 +168,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=23"></script>
-    <script src="api.js?v=67"></script>
+    <script src="api.js?v=68"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -557,23 +557,46 @@
                 </div>`;
         }
 
-        function renderOccupationPriceStack(row, isSoldOut) {
+        function renderOccupationPriceStack(row, isSoldOut, options = {}) {
+            if (options.hidePrice) return '';
             const priceClass = isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue';
-            if (row.totalWithTaxes != null) {
-                const detail = row.taxes != null
-                    ? `<span>${VoyageFiestaAPI.formatMoneyPerPerson(row.price)}</span><span class="text-gray-300 mx-1">·</span><span>${VoyageFiestaAPI.formatMoneyPerPerson(row.taxes)} ${TAX_LABEL().toLowerCase()}</span>`
-                    : `<span>${VoyageFiestaAPI.getTaxesAirFeesLabel({ inclus: true }).toLowerCase()}</span>`;
-                return `
-                    <span class="occupation-price-stack text-left sm:text-right shrink-0 sm:pl-2 pl-8">
-                        <span class="price-main block text-base font-bold ${priceClass} leading-none">${VoyageFiestaAPI.formatMoneyPerPerson(row.totalWithTaxes)}</span>
-                        <span class="block text-[11px] text-gray-500 mt-1 leading-tight tabular-nums">${detail}</span>
-                    </span>`;
-            }
+            const amount = row.totalWithTaxes ?? row.price;
+            if (amount == null) return '';
             return `
                 <span class="occupation-price-stack text-left sm:text-right shrink-0 sm:pl-2 pl-8">
-                    <span class="price-main block text-base font-bold ${priceClass} leading-none">${VoyageFiestaAPI.formatMoneyPerPerson(row.price)}</span>
-                    ${row.taxes != null ? `<span class="block text-[11px] text-gray-500 mt-1 leading-tight tabular-nums">+ ${VoyageFiestaAPI.formatMoneyPerPerson(row.taxes)} ${TAX_LABEL().toLowerCase()}</span>` : ''}
+                    <span class="price-main block text-base font-bold ${priceClass} leading-none tabular-nums">${VoyageFiestaAPI.formatMoneyPerPerson(amount)}</span>
                 </span>`;
+        }
+
+        function buildChildUnitTableRows(p, childInfo) {
+            if (!childInfo) return '';
+            const taxes = p.taxesAmount ?? null;
+            const childRows = [];
+
+            if (childInfo.has212) {
+                childRows.push(['212', 0, childInfo.hasSecond212, childInfo.child212First]);
+                if (childInfo.hasSecond212) {
+                    childRows.push(['212', 1, true, childInfo.child212Second]);
+                }
+            }
+            if (childInfo.has1317) {
+                childRows.push(['1317', 0, childInfo.hasSecond1317, childInfo.child1317First]);
+                if (childInfo.hasSecond1317) {
+                    childRows.push(['1317', 1, true, childInfo.child1317Second]);
+                }
+            }
+
+            return childRows.map(([band, index, hasSecond, price]) => {
+                const label = VoyageFiestaAPI.formatChildTableLabelHtml(band, index, hasSecond);
+                const total = taxes != null ? price + taxes : null;
+                return `
+                    <tr class="border-b border-gray-100 last:border-0">
+                        <td class="py-2.5 pr-2 text-sm text-gray-700 leading-snug">${label}</td>
+                        <td class="py-2.5 px-2 text-sm text-right text-gray-800">${VoyageFiestaAPI.formatMoneyPerChild(price)}</td>
+                        <td class="py-2.5 px-2 text-sm text-right text-gray-600">${taxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(taxes) : '—'}</td>
+                        <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue">${total != null ? VoyageFiestaAPI.formatMoneyPerChild(total) : '—'}</td>
+                    </tr>`;
+            }).join('');
         }
 
         function renderOccupationSummaryCard(row, breakdown) {
@@ -593,36 +616,7 @@
             };
 
             if (breakdown?.useComponentPricing) {
-                if (breakdown.adults > 0) {
-                    pushRow(
-                        `${breakdown.adults} adulte${breakdown.adults > 1 ? 's' : ''}`,
-                        breakdown.adultUnitPrice
-                    );
-                }
-
-                const pushChildBandGroups = (lines, bandLabel) => {
-                    if (!lines?.length) return;
-                    const groups = [];
-                    for (const line of lines) {
-                        const existing = groups.find(g => g.unitPrice === line.unitPrice);
-                        if (existing) existing.count += 1;
-                        else groups.push({ count: 1, unitPrice: line.unitPrice });
-                    }
-                    groups.forEach(group => {
-                        pushRow(`${bandLabel} (${group.count})`, group.unitPrice, { perChild: true });
-                    });
-                };
-
-                pushChildBandGroups(breakdown.child212Lines, 'Enfants 2-12 ans');
-                pushChildBandGroups(breakdown.child1317Lines, 'Enfants 13-17 ans');
-
-                if (breakdown.bookingTaxes != null && breakdown.totalPeople > 0) {
-                    pushRow(
-                        `${TAX_LABEL()} (${breakdown.totalPeople} pers.)`,
-                        breakdown.bookingTaxes,
-                        { perPerson: false, className: 'pt-1 border-t border-gray-100' }
-                    );
-                }
+                // Détail ligne par ligne masqué — le tableau tarifaire couvre l'obligation d'affichage.
             } else if (breakdown) {
                 pushRow(BEFORE_TAX_LABEL_PP(), breakdown.totalBeforeTaxes);
                 if (breakdown.totalTaxes !== null) {
@@ -684,93 +678,20 @@
         }
 
         function buildChildCountOptions(max) {
-            return Array.from({ length: max + 1 }, (_, value) =>
-                `<option value="${value}">${value}</option>`
-            ).join('');
-        }
-
-        function buildUnitPriceLineHtml(label, unitPrice, taxes, options = {}) {
-            if (unitPrice == null) return '';
-            const perChild = options.perChild === true;
-            const fmt = perChild ? VoyageFiestaAPI.formatMoneyPerChild : VoyageFiestaAPI.formatMoneyPerPerson;
-            const taxLower = TAX_LABEL().toLowerCase();
-            const parts = [`<strong class="text-brand-blue tabular-nums">${fmt(unitPrice)}</strong>`];
-            if (taxes != null) {
-                parts.push(`<span class="text-gray-500">+ ${VoyageFiestaAPI.formatMoneyPerPerson(taxes)} ${taxLower}</span>`);
-                parts.push(`<span class="font-semibold text-gray-800">= ${fmt(unitPrice + taxes)}</span>`);
-            }
-            return `<li class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between py-2.5 border-b border-amber-100/80 last:border-0">
-                <span class="text-sm font-medium text-gray-800">${escapeHtml(label)}</span>
-                <span class="text-sm tabular-nums text-left sm:text-right leading-snug">${parts.join(' ')}</span>
-            </li>`;
-        }
-
-        function buildUnitPricePanelHtml(p) {
-            if (!VoyageFiestaAPI.productHasChildUnitPricing(p)) return '';
-
-            const info = VoyageFiestaAPI.getChildPricingInfo(p);
-            const taxes = p.taxesAmount ?? null;
-            const lines = [];
-
-            VoyageFiestaAPI.getOccupationPrices(p)
-                .filter(row => !row.isChildOccupation)
-                .forEach(row => {
-                    lines.push(buildUnitPriceLineHtml(
-                        row.label,
-                        row.price,
-                        row.taxesPerPerson ?? row.taxes
-                    ));
-                });
-
-            if (info.has212) {
-                lines.push(buildUnitPriceLineHtml(
-                    VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212),
-                    info.child212First,
-                    taxes,
-                    { perChild: true }
-                ));
-                if (info.hasSecond212) {
-                    lines.push(buildUnitPriceLineHtml(
-                        VoyageFiestaAPI.getChildPriceLabel('212', 1, true),
-                        info.child212Second,
-                        taxes,
-                        { perChild: true }
-                    ));
-                }
-            }
-            if (info.has1317) {
-                lines.push(buildUnitPriceLineHtml(
-                    VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317),
-                    info.child1317First,
-                    taxes,
-                    { perChild: true }
-                ));
-                if (info.hasSecond1317) {
-                    lines.push(buildUnitPriceLineHtml(
-                        VoyageFiestaAPI.getChildPriceLabel('1317', 1, true),
-                        info.child1317Second,
-                        taxes,
-                        { perChild: true }
-                    ));
-                }
-            }
-
-            if (!lines.length) return '';
-
-            return `
-                <div class="rounded-xl border border-amber-200 bg-amber-50/90 px-4 py-3 mb-4">
-                    <p class="text-xs font-bold text-amber-950 uppercase tracking-tighter mb-1">Tarifs unitaires</p>
-                    <p class="text-[10px] text-amber-900/70 mb-2">Montant avant taxes + taxes et frais aériens, par adulte ou par enfant.</p>
-                    <ul>${lines.join('')}</ul>
-                </div>`;
+            return Array.from({ length: max + 1 }, (_, value) => {
+                const label = value === 0
+                    ? 'Aucun'
+                    : `${value} enfant${value > 1 ? 's' : ''}`;
+                return `<option value="${value}">${label}</option>`;
+            }).join('');
         }
 
         function buildChildSelectorHtml(p) {
             if (!VoyageFiestaAPI.productHasChildUnitPricing(p)) return '';
 
             const info = VoyageFiestaAPI.getChildPricingInfo(p);
-
             const blocks = [];
+
             if (info.has212) {
                 blocks.push(`
                     <label class="block">
@@ -791,8 +712,7 @@
             }
 
             return `
-                <div id="child-picker" class="mt-4 pt-4 border-t border-gray-100 space-y-4">
-                    <p class="text-xs font-bold text-gray-600 uppercase tracking-tighter">Nombre d'enfants</p>
+                <div id="child-picker" class="mt-2 space-y-3">
                     <div class="grid sm:grid-cols-2 gap-3">${blocks.join('')}</div>
                 </div>`;
         }
@@ -813,26 +733,46 @@
                 return `<p class="text-sm text-gray-500 italic">Tarifs sur demande.</p>`;
             }
 
-            return `
-                <div class="space-y-3" id="occupation-picker" role="radiogroup" aria-labelledby="occupation-picker-label">
-                    <p id="occupation-picker-label" class="text-xs font-bold text-gray-600 uppercase tracking-tighter">
-                        Choisissez votre occ. <span class="text-brand-orange">*</span>
-                    </p>
-                    ${rows.map(row => `
-                        <label class="occupation-option relative rounded-xl border border-gray-200 transition-colors active:scale-[0.99] ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}">
-                            <input type="radio" name="occ" value="${row.id}" class="occupation-radio" ${isSoldOut ? 'disabled' : ''} required>
-                            <span class="occupation-option-body flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full pointer-events-none">
-                                <span class="flex items-center gap-3 min-w-0 pr-2">
-                                    <span class="occupation-option-indicator" aria-hidden="true"></span>
-                                    <span class="text-sm font-medium text-gray-700 leading-snug">${row.label}</span>
-                                </span>
-                                ${renderOccupationPriceStack(row, isSoldOut)}
+            const componentMode = VoyageFiestaAPI.productHasChildUnitPricing(p);
+            const adultRows = rows.filter(row => !row.isChildOccupation);
+            const pickerRows = componentMode ? adultRows : rows;
+            const singleAdultOcc = componentMode && adultRows.length === 1;
+            const hidePickerPrices = componentMode;
+
+            let occupationFieldsHtml = '';
+            if (singleAdultOcc) {
+                occupationFieldsHtml = `
+                    <input type="hidden" name="occ" value="${adultRows[0].id}">
+                    <p class="text-sm text-gray-700">${escapeHtml(VoyageFiestaAPI.getOccupationPickerLabel(adultRows[0].id, p))}</p>`;
+            } else {
+                occupationFieldsHtml = pickerRows.map(row => `
+                    <label class="occupation-option relative rounded-xl border border-gray-200 transition-colors active:scale-[0.99] ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}">
+                        <input type="radio" name="occ" value="${row.id}" class="occupation-radio" ${isSoldOut ? 'disabled' : ''} required>
+                        <span class="occupation-option-body flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full pointer-events-none">
+                            <span class="flex items-center gap-3 min-w-0 pr-2">
+                                <span class="occupation-option-indicator" aria-hidden="true"></span>
+                                <span class="text-sm font-medium text-gray-700 leading-snug">${escapeHtml(VoyageFiestaAPI.getOccupationPickerLabel(row.id, p))}</span>
                             </span>
-                        </label>
-                    `).join('')}
+                            ${renderOccupationPriceStack(row, isSoldOut, { hidePrice: hidePickerPrices })}
+                        </span>
+                    </label>
+                `).join('');
+            }
+
+            const pickerTitle = componentMode
+                ? (singleAdultOcc ? 'Voyageurs' : 'Occupation adulte')
+                : 'Choisissez votre occ.';
+
+            return `
+                <div class="space-y-3" id="occupation-picker" role="${singleAdultOcc ? 'group' : 'radiogroup'}" aria-labelledby="occupation-picker-label">
+                    <p id="occupation-picker-label" class="text-xs font-bold text-gray-600 uppercase tracking-tighter">
+                        ${pickerTitle} <span class="text-brand-orange">*</span>
+                    </p>
+                    ${occupationFieldsHtml}
+                    ${singleAdultOcc ? '' : `
                     <p id="occupation-required-hint" class="text-xs text-brand-orange font-medium pt-1 leading-relaxed">
                         <i class="fa-solid fa-circle-info mr-1"></i> Touchez une option ci-dessus avant de réserver.
-                    </p>
+                    </p>`}
                     ${buildChildSelectorHtml(p)}
                     <div id="occupation-summary" class="hidden"></div>
                 </div>`;
@@ -880,11 +820,10 @@
                                     <th class="pb-2 font-bold text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody>${tableRows}</tbody>
+                            <tbody>${tableRows}${buildChildUnitTableRows(p, childInfo)}</tbody>
                         </table>
                     </div>
-                    ${buildUnitPricePanelHtml(p)}
-                    <p class="text-[10px] text-gray-500 mb-4 italic">${childInfo ? 'Occ. adultes ci-dessus · tarifs enfants dans la section jaune.' : 'Tarifs par personne par occupation, avant taxes et frais aériens.'}</p>`;
+                    <p class="text-[10px] text-gray-500 mb-4 italic">Tarifs par adulte ou par enfant · ${TAX_LABEL().toLowerCase()} indiqués séparément.</p>`;
             }
 
             return headerHtml + tableHtml + buildOccupationSelectionHtml(p, isSoldOut);
@@ -1107,6 +1046,8 @@
         }
 
         function getSelectedOccupationId() {
+            const hidden = document.querySelector('input[type="hidden"][name="occ"]');
+            if (hidden) return hidden.value;
             const radio = document.querySelector('input[name="occ"]:checked');
             return radio ? radio.value : null;
         }

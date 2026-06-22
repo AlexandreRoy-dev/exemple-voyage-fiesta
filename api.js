@@ -399,8 +399,26 @@
         };
     }
 
-    function getOccupationDef(occupationId) {
-        return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
+    function getOccupationPickerLabel(occupationId, p) {
+        const def = getOccupationDef(occupationId);
+        if (!def) return String(occupationId || '');
+
+        const adults = def.adults ?? 0;
+        const children212 = def.children212 ?? 0;
+        const children1317 = def.children1317 ?? 0;
+        const totalPeople = adults + children212 + children1317;
+
+        if (productHasChildUnitPricing(p) && !isChildOccupationDef(def)) {
+            return adults > 0
+                ? `${def.label} · ${adults} adulte${adults > 1 ? 's' : ''}`
+                : def.label;
+        }
+
+        if (isChildOccupationDef(def) && totalPeople > 0) {
+            return `${def.label} · ${totalPeople} pers.`;
+        }
+
+        return def.label;
     }
 
     function getOccupationPeopleCount(def) {
@@ -1928,6 +1946,8 @@
         getCriteriaLabel,
         productHasCriterion,
         getOccupationPrices,
+        getOccupationDef,
+        getOccupationPickerLabel,
         getChildPricingInfo,
         productHasChildUnitPricing,
         getChildPriceLabel,
