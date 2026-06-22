@@ -1712,10 +1712,17 @@
         return window.SITE_DEFAULT_SHARE_IMAGE || resolveAbsoluteUrl(PLACEHOLDER_IMG);
     }
 
-    function getProductShareUrl(p) {
+    function getProductPageUrl(p) {
         const slug = String(p?.slug || '').trim();
         if (!slug) return getSiteBaseUrl();
         return `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`;
+    }
+
+    /** Static share page — crawlers (Facebook) read OG tags here, not product.html JS. */
+    function getProductShareUrl(p) {
+        const slug = String(p?.slug || '').trim();
+        if (!slug) return getSiteBaseUrl();
+        return `${getSiteBaseUrl().replace(/\/$/, '')}/share/${encodeURIComponent(slug)}.html`;
     }
 
     function buildProductShareDescription(p) {

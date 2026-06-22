@@ -14,6 +14,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pickVoyagesUnwrapped, pickRecordName, formatAeroportLabel } from './ghl-voyages-fields.mjs';
+import { writeSharePages } from './share-pages.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -1011,6 +1012,8 @@ async function main() {
   console.log(`Wrote ${products.length} product(s) to ${OUTPUT}`);
   console.log(`  actif: ${products.filter(p => p.active === 'actif').length}`);
   console.log(`  complet_sold_out: ${products.filter(p => p.active === 'complet_sold_out').length}`);
+
+  writeSharePages(products);
 }
 
 main().catch(err => {
