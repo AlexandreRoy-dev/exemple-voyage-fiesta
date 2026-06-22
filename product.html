@@ -109,15 +109,20 @@
             }
         }
         html.embed-mode .product-countdown-bar { display: none; }
+
+        @media (max-width: 1023px) {
+            .flight-leg-grid { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+            .flight-leg-center { min-width: 0; }
+        }
     </style>
     <script src="embed.js"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans product-has-booking">
 
     <div class="product-countdown-bar bg-red-600 text-white py-2 overflow-hidden">
-        <div class="container mx-auto px-4 flex justify-center items-center gap-4">
+        <div class="container mx-auto px-4 flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-center">
             <span class="font-bold animate-pulse text-sm md:text-base">🔥 OFFRE AUBAINES EXPRESS VOYAGE :</span>
-            <div id="countdown" class="font-mono font-bold text-lg tracking-tighter">00j 00h 00m 00s</div>
+            <div id="countdown" class="font-mono font-bold text-lg tracking-tighter shrink-0">00j 00h 00m 00s</div>
         </div>
     </div>
 
@@ -477,13 +482,13 @@
             return `
                 <div class="border border-gray-200 rounded-lg overflow-hidden mb-4 last:mb-0">
                     <div class="bg-brand-blue text-white text-xs font-bold tracking-widest px-4 py-2 uppercase">${label}</div>
-                    <div class="grid grid-cols-[1fr_auto_1fr] gap-2 items-center px-4 py-5 bg-white">
-                        <div class="text-left">
-                            <p class="font-bold text-brand-blue text-sm leading-tight">${leg.from || '—'}</p>
+                    <div class="flight-leg-grid grid grid-cols-[1fr_auto_1fr] gap-2 items-center px-3 sm:px-4 py-5 bg-white min-w-0">
+                        <div class="text-left min-w-0">
+                            <p class="font-bold text-brand-blue text-sm leading-tight break-words">${leg.from || '—'}</p>
                             ${departDate ? `<p class="text-xs text-gray-600 mt-1">${departDate}</p>` : ''}
                             <p class="text-sm font-semibold text-gray-800 mt-0.5">${departTime}</p>
                         </div>
-                        <div class="text-center px-2 min-w-[7rem]">
+                        <div class="flight-leg-center text-center px-1 sm:px-2 min-w-0 sm:min-w-[5.5rem] shrink-0">
                             ${airlineHtml}
                             <div class="flex items-center gap-1 text-brand-blue">
                                 <span class="flex-1 h-px bg-brand-blue/40"></span>
@@ -492,8 +497,8 @@
                             </div>
                             ${leg.number ? `<p class="text-xs font-bold text-brand-blue mt-2">${leg.number}</p>` : `<p class="text-xs text-gray-500 mt-2 italic">${VoyageFiestaAPI.formatFlightNumber(leg.number)}</p>`}
                         </div>
-                        <div class="text-right">
-                            <p class="font-bold text-brand-blue text-sm leading-tight">${leg.to || '—'}</p>
+                        <div class="text-right min-w-0">
+                            <p class="font-bold text-brand-blue text-sm leading-tight break-words">${leg.to || '—'}</p>
                             ${arriveDate ? `<p class="text-xs text-gray-600 mt-1">${arriveDate}</p>` : ''}
                             <p class="text-sm font-semibold text-gray-800 mt-0.5">${arriveTime}</p>
                         </div>
@@ -616,8 +621,8 @@
 
         function buildComponentUnitPriceTableHtml(p) {
             return `
-                <div class="overflow-x-auto -mx-1 px-1 mb-4">
-                    <table class="w-full text-left min-w-[18rem]">
+                <div class="overflow-x-auto max-w-full mb-4">
+                    <table class="w-full text-left min-w-0 sm:min-w-[18rem]">
                         <thead>
                             <tr class="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-200">
                                 <th class="pb-2 font-bold">Tarif</th>
@@ -900,8 +905,8 @@
                     `).join('');
 
                     tableHtml = `
-                        <div class="overflow-x-auto -mx-1 px-1 mb-4">
-                            <table class="w-full text-left min-w-[18rem]">
+                        <div class="overflow-x-auto max-w-full mb-4">
+                            <table class="w-full text-left min-w-0 sm:min-w-[18rem]">
                                 <thead>
                                     <tr class="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-200">
                                         <th class="pb-2 font-bold">Occ.</th>
@@ -1096,9 +1101,9 @@
                             ${flightsHtml}
 
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="product-tabs">
-                                <div class="flex border-b">
-                                    <button type="button" data-product-tab="package" class="px-6 py-4 tab-active">${escapeHtml(packageTabLabel)}</button>
-                                    <button type="button" data-product-tab="hotel" class="px-6 py-4 product-tab">Détails de l'hôtel</button>
+                                <div class="flex flex-wrap border-b">
+                                    <button type="button" data-product-tab="package" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base tab-active">${escapeHtml(packageTabLabel)}</button>
+                                    <button type="button" data-product-tab="hotel" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base product-tab">Détails de l'hôtel</button>
                                 </div>
                                 <div class="p-6" data-product-panel="package">
                                     <div class="grid md:grid-cols-2 gap-8">

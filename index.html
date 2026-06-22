@@ -86,6 +86,10 @@
 
         html.embed-mode .boutique-hero { display: none; }
         html.embed-mode main { padding-top: 1rem; }
+
+        @media (max-width: 1023px) {
+            .filters-sidebar { max-width: 100%; }
+        }
     </style>
     <script src="embed.js"></script>
 </head>
@@ -144,9 +148,9 @@
         </aside>
 
         <section class="w-full lg:flex-1 min-w-0 relative z-0">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800"><span id="result-count">0</span> Forfaits trouvés</h2>
-                <select id="sort-products" class="border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 min-w-0">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 min-w-0"><span id="result-count">0</span> Forfaits trouvés</h2>
+                <select id="sort-products" class="w-full sm:w-auto shrink-0 border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
                     <option value="price-asc">Trier par : Prix (Bas vers Haut)</option>
                     <option value="price-desc">Trier par : Prix (Haut vers Bas)</option>
                     <option value="departure-asc">Trier par : Date de départ</option>
@@ -445,9 +449,9 @@
                         </div>
                     </a>
                     <div class="p-5 flex-grow flex flex-col">
-                        <div class="flex items-center justify-between mb-3 text-sm text-gray-500">
-                            <span class="font-medium text-brand-blue"><i class="fa-solid fa-location-dot mr-1"></i> ${p.destinationLabel || p.destination}${p.country ? `, ${p.country}` : ''}</span>
-                            <span>${p.durationNights} nuits</span>
+                        <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-3 text-sm text-gray-500 min-w-0">
+                            <span class="font-medium text-brand-blue min-w-0 break-words"><i class="fa-solid fa-location-dot mr-1"></i> ${p.destinationLabel || p.destination}${p.country ? `, ${p.country}` : ''}</span>
+                            <span class="shrink-0">${p.durationNights} nuits</span>
                         </div>
                         <div class="mb-4">
                             ${renderSupplierChip(p)}
