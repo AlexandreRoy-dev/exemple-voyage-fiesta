@@ -399,6 +399,79 @@
         };
     }
 
+    function getOccupationDef(occupationId) {
+        return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
+    }
+
+    function getDepositPerPerson(p) {
+        return optionalPrice(p.depositAmount ?? p.deposit_amount);
+    }
+
+    function buildDepositGroupLabel(adults, children212, children1317) {
+        const total = adults + children212 + children1317;
+        if (children212 === 0 && children1317 === 0) {
+            return `Occ. double · ${adults} adulte${adults > 1 ? 's' : ''}`;
+        }
+        let label = 'Occ. double';
+        if (children212 > 0) {
+            label += ` + ${children212} enfant${children212 > 1 ? 's' : ''} (2-12 ans)`;
+        }
+        if (children1317 > 0) {
+            label += ` + ${children1317} enfant${children1317 > 1 ? 's' : ''} (13-17 ans)`;
+        }
+        return `${label} · ${total} pers.`;
+    }
+
+    /** Options voyageurs — sert au calcul du dépôt (dépôt × nb personnes). */
+    function getDepositGroupOptions(p) {
+        if (!productHasChildUnitPricing(p)) return [];
+
+        const info = getChildPricingInfo(p);
+        const depositPerPerson = getDepositPerPerson(p);
+        const adults = getOccupationDef('double')?.adults ?? 2;
+        const roundMoney = (value) => Math.round(value * 100) / 100;
+        const options = [];
+
+        const pushOption = (children212, children1317) => {
+            const totalPeople = adults + children212 + children1317;
+            options.push({
+                id: `double_${children212}_${children1317}`,
+                occupationId: 'double',
+                adults,
+                children212,
+                children1317,
+                totalPeople,
+                label: buildDepositGroupLabel(adults, children212, children1317),
+                depositTotal: depositPerPerson !== null
+                    ? roundMoney(depositPerPerson * totalPeople)
+                    : null
+            });
+        };
+
+        if (info.has212) {
+            for (let c212 = 0; c212 <= info.max212; c212++) {
+                pushOption(c212, 0);
+            }
+        } else if (info.has1317) {
+            for (let c1317 = 0; c1317 <= info.max1317; c1317++) {
+                pushOption(0, c1317);
+            }
+        } else {
+            pushOption(0, 0);
+        }
+
+        options.push({
+            id: 'autres',
+            occupationId: 'autres',
+            isAutres: true,
+            label: 'Autres (nous vous contacterons)',
+            totalPeople: null,
+            depositTotal: null
+        });
+
+        return options;
+    }
+
     function getOccupationPickerLabel(occupationId, p) {
         const def = getOccupationDef(occupationId);
         if (!def) return String(occupationId || '');
@@ -670,6 +743,24 @@
      * Détail tarifaire — adulte / pers. + enfant / enfant; totaux = somme des composantes.
      */
     function getOccupationPricingBreakdown(p, occupationId, overrides) {
+        if (occupationId === 'autres') {
+            return {
+                adults: 0,
+                children212: 0,
+                children1317: 0,
+                totalPeople: 0,
+                bookingLabel: 'Autres (nous vous contacterons)',
+                bookingBeforeTaxes: null,
+                bookingTaxes: null,
+                bookingTotalWithTaxes: null,
+                totalDeposit: null,
+                depositPerPerson: getDepositPerPerson(p),
+                pricingSummary: 'Configuration sur mesure — nous vous contacterons.',
+                useComponentPricing: true,
+                isAutres: true
+            };
+        }
+
         const def = getOccupationDef(occupationId);
         const row = getSelectedOccupationRow(p, occupationId);
         if (!def || !row) return null;
@@ -848,6 +939,10 @@
             set('selected_price', breakdown?.adultUnitPrice ?? row.pricePerPerson ?? row.price);
             set('selected_taxes', breakdown?.taxesPerPerson ?? row.taxesPerPerson ?? row.taxes);
             set('selected_total', breakdown?.totalWithTaxes ?? row.totalPerPerson ?? row.totalWithTaxes);
+        } else if (breakdown?.isAutres) {
+            set('occupation', breakdown.bookingLabel);
+            set('occupation_code', 'autres');
+            set('occupation_label', breakdown.bookingLabel);
         }
         if (breakdown) {
             set('nombre_personnes', breakdown.totalPeople);
@@ -1948,6 +2043,9 @@
         getOccupationPrices,
         getOccupationDef,
         getOccupationPickerLabel,
+        getDepositGroupOptions,
+        getDepositPerPerson,
+        buildDepositGroupLabel,
         getChildPricingInfo,
         productHasChildUnitPricing,
         getChildPriceLabel,
