@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const SHARE_DIR = resolve(ROOT, 'share');
 
-export const SITE_BASE = (process.env.BOUTIQUE_BASE_URL || 'https://promofiesta.roymarketing.ca').replace(/\/$/, '');
+export const SITE_BASE = (process.env.BOUTIQUE_BASE_URL || 'https://aubaineexpress.voyagefiesta.ca').replace(/\/$/, '');
 export const DEFAULT_SHARE_IMAGE =
   'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
 
