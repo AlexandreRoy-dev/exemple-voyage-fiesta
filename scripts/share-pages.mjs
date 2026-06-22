@@ -36,7 +36,12 @@ function isPlaceholderImage(src) {
 }
 
 function pickShareImage(product) {
-  const candidates = [product.img, ...(product.images || [])].filter(Boolean);
+  const candidates = [
+    product.img,
+    ...(Array.isArray(product.images) ? product.images : []),
+    product.imgRoom,
+    product.imgExtra
+  ].filter(Boolean);
   for (const candidate of candidates) {
     if (!isPlaceholderImage(candidate)) {
       return resolveSiteUrl(candidate);
@@ -52,6 +57,17 @@ function formatMoney(amount) {
     currency: 'CAD',
     maximumFractionDigits: 0
   }).format(Number(amount));
+}
+
+export function buildShareTitle(product) {
+  const name = String(product.name || 'Voyage Fiesta').trim();
+  const raw = product.discountAmount ?? product.discount_amount ?? product.rabais;
+  const discount = Number(raw);
+  if (Number.isFinite(discount) && discount > 0) {
+    const amount = formatMoney(discount);
+    return `${name} — ${amount} de rabais`;
+  }
+  return name;
 }
 
 export function buildShareDescription(product) {
@@ -70,7 +86,7 @@ export function buildSharePageHtml(product) {
   const slug = String(product.slug || '').trim();
   const productUrl = `${SITE_BASE}/product.html?slug=${encodeURIComponent(slug)}`;
   const shareUrl = `${SITE_BASE}/share/${encodeURIComponent(slug)}.html`;
-  const title = `${product.name} | Voyage Fiesta`;
+  const title = buildShareTitle(product);
   const description = buildShareDescription(product);
   const image = pickShareImage(product);
   const imageAlt = product.name || 'Voyage Fiesta';
@@ -95,9 +111,14 @@ export function buildSharePageHtml(product) {
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
-  <link rel="canonical" href="${escapeHtml(productUrl)}">
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(productUrl)}">
-  <script>location.replace(${JSON.stringify(productUrl)});</script>
+  <link rel="canonical" href="${escapeHtml(shareUrl)}">
+  <script>
+    (function () {
+      var ua = navigator.userAgent || '';
+      var isCrawler = /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Pinterest|Slackbot|WhatsApp|Discordbot/i.test(ua);
+      if (!isCrawler) location.replace(${JSON.stringify(productUrl)});
+    })();
+  </script>
 </head>
 <body>
   <p><a href="${escapeHtml(productUrl)}">Voir le forfait — ${escapeHtml(product.name)}</a></p>

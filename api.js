@@ -1947,6 +1947,15 @@
         return `${getSiteBaseUrl().replace(/\/$/, '')}/share/${encodeURIComponent(slug)}.html`;
     }
 
+    function buildProductShareTitle(p) {
+        const name = String(p?.name || window.SITE_NAME || 'Voyage Fiesta').trim();
+        const discount = optionalPrice(p?.discountAmount ?? p?.discount_amount ?? p?.rabais);
+        if (discount !== null && discount > 0) {
+            return `${name} — ${formatMoney(discount)} de rabais`;
+        }
+        return name;
+    }
+
     function buildProductShareDescription(p) {
         const parts = [];
         const destination = p.destinationLabel || p.destination || p.subDest;
@@ -1961,7 +1970,7 @@
     }
 
     function buildProductSharePayload(p) {
-        const title = `${p.name} | ${window.SITE_NAME || 'Voyage Fiesta'}`;
+        const title = buildProductShareTitle(p);
         return {
             url: getProductShareUrl(p),
             title,
@@ -2003,6 +2012,7 @@
         setDocumentMeta('property', 'og:description', payload.description);
         setDocumentMeta('property', 'og:url', payload.url);
         setDocumentMeta('property', 'og:image', payload.image);
+        setDocumentMeta('property', 'og:image:secure_url', payload.image);
         setDocumentMeta('property', 'og:image:alt', payload.imageAlt || payload.title);
         setDocumentMeta('name', 'twitter:card', 'summary_large_image');
         setDocumentMeta('name', 'twitter:title', payload.title);
@@ -2048,6 +2058,14 @@
         showShareToast._timer = setTimeout(() => toast.classList.add('opacity-0'), 2200);
     }
 
+    function renderSocialShareIcon(platform, compact) {
+        if (platform.id === 'x') {
+            const sizeClass = compact ? 'w-3 h-3' : 'w-3.5 h-3.5';
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="${sizeClass}" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
+        }
+        return `<i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i>`;
+    }
+
     function renderSocialShareButtonsHtml(p, options = {}) {
         const payload = buildProductSharePayload(p);
         const compact = options.compact === true;
@@ -2072,10 +2090,10 @@
         const buttons = platforms.map(platform => {
             const title = escapeShareAttr(platform.label);
             if (platform.action === 'copy' || platform.action === 'native') {
-                return `<button type="button" class="${btnClass}" data-share-action="${platform.action}" data-share-slug="${slug}" aria-label="${title}" title="${title}"><i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i></button>`;
+                return `<button type="button" class="${btnClass}" data-share-action="${platform.action}" data-share-slug="${slug}" aria-label="${title}" title="${title}">${renderSocialShareIcon(platform, compact)}</button>`;
             }
             const href = escapeShareAttr(getSocialShareHref(platform.id, payload));
-            return `<a href="${href}" class="${btnClass}" target="_blank" rel="noopener noreferrer" aria-label="${title}" title="${title}" data-share-link="1"><i class="${platform.icon} ${compact ? 'text-xs' : 'text-sm'}"></i></a>`;
+            return `<a href="${href}" class="${btnClass}" target="_blank" rel="noopener noreferrer" aria-label="${title}" title="${title}" data-share-link="1">${renderSocialShareIcon(platform, compact)}</a>`;
         }).join('');
 
         const labelHtml = compact
@@ -2220,6 +2238,7 @@
         resolveAbsoluteUrl,
         getProductShareImage,
         getProductShareUrl,
+        buildProductShareTitle,
         buildProductSharePayload,
         buildListingSharePayload,
         applySocialMetaTags,
