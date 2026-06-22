@@ -489,13 +489,18 @@
         const child212Second = optionalPrice(p.priceChild212_2 ?? p.prix_2e_enfant_2_12);
         const child1317First = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
         const child1317Second = optionalPrice(p.priceChild1317_2 ?? p.prix_2e_enfant_13_17);
+        const maxChild = clampInt(window.MAX_CHILD_COUNT_SELECT ?? 3, { min: 1, max: 9 });
+        const has212 = child212First !== null;
+        const has1317Price = child1317First !== null;
         return {
-            has212: child212First !== null,
-            has1317: child1317First !== null,
+            has212,
+            /** Afficher le sélecteur 13-17 (tarif dédié ou repli sur 2-12). */
+            has1317: has1317Price || has212,
+            has1317Price,
             hasSecond212: child212Second !== null,
             hasSecond1317: child1317Second !== null,
-            max212: child212First === null ? 0 : clampInt(window.MAX_CHILD_COUNT_SELECT ?? 4, { min: 1, max: 9 }),
-            max1317: child1317First === null ? 0 : clampInt(window.MAX_CHILD_COUNT_SELECT ?? 4, { min: 1, max: 9 }),
+            max212: has212 ? maxChild : 0,
+            max1317: (has1317Price || has212) ? maxChild : 0,
             child212First,
             child212Second,
             child1317First,
@@ -523,10 +528,31 @@
 
     function getChild1317UnitPrice(p, index) {
         const info = getChildPricingInfo(p);
-        if (info.child1317First === null || index < 0) return null;
-        if (index === 0) return info.child1317First;
-        if (index === 1 && info.child1317Second !== null) return info.child1317Second;
-        return info.child1317Second ?? info.child1317First;
+        if (index < 0) return null;
+        if (info.child1317First !== null) {
+            if (index === 0) return info.child1317First;
+            if (index === 1 && info.child1317Second !== null) return info.child1317Second;
+            return info.child1317Second ?? info.child1317First;
+        }
+        return getChild212UnitPrice(p, index);
+    }
+
+    function getComponentAdultUnitRow(p) {
+        return getSelectedOccupationRow(p, 'double')
+            || getOccupationPrices(p).find(r => !r.isChildOccupation)
+            || null;
+    }
+
+    function getAdultOccupationLabel(adults) {
+        const labels = {
+            1: 'Occ. simple',
+            2: 'Occ. double',
+            3: 'Occ. triple',
+            4: 'Occ. quad',
+            5: 'Autres'
+        };
+        const n = clampInt(adults, { min: 1, max: window.MAX_ADULT_COUNT_SELECT ?? 5 });
+        return labels[n] || 'Occ. double';
     }
 
     /** Libellé enfant — sans « 1er » s'il n'y a qu'un seul tarif enfant pour la tranche. */
@@ -566,19 +592,16 @@
         return total;
     }
 
-    function buildBookingOccupationLabel(def, children212, children1317) {
-        if (!def) return '';
+    function buildBookingOccupationLabel(def, children212, children1317, adults) {
         const c212 = children212 ?? 0;
         const c1317 = children1317 ?? 0;
-        if (!c212 && !c1317) return def.label;
-        if (c1317 && !c212) {
-            return `${def.label} et ${c1317} enfant${c1317 > 1 ? 's' : ''} (13-17 ans)`;
-        }
-        if (c212 && !c1317) {
-            return `${def.label} et ${c212} enfant${c212 > 1 ? 's' : ''}`;
-        }
         const totalKids = c212 + c1317;
-        return `${def.label} et ${totalKids} enfants`;
+        const occLabel = adults !== undefined && adults !== null
+            ? getAdultOccupationLabel(adults)
+            : (def?.label || 'Occ. double');
+
+        if (!totalKids) return occLabel;
+        return `${occLabel} et ${totalKids} enfant${totalKids > 1 ? 's' : ''}`;
     }
 
     function getOccupationIdForAdultCount(adults, p) {
@@ -599,6 +622,12 @@
     }
 
     function getMaxAdultCount(p) {
+        if (productHasChildUnitPricing(p)) {
+            return getComponentAdultUnitRow(p)
+                ? Math.min(window.MAX_ADULT_COUNT_SELECT ?? 5, 5)
+                : 1;
+        }
+
         const map = [
             { count: 1, id: 'simple' },
             { count: 2, id: 'double' },
@@ -791,12 +820,19 @@
         let adults;
         if (useComponentPricing && overrides && overrides.adults !== undefined) {
             adults = clampInt(overrides.adults, { min: 1, max: getMaxAdultCount(p) });
-            const adultOccId = getOccupationIdForAdultCount(adults, p);
-            const adultDef = getOccupationDef(adultOccId);
-            const adultRow = getSelectedOccupationRow(p, adultOccId);
-            if (adultDef && adultRow) {
-                def = adultDef;
-                row = adultRow;
+            const doubleRow = getComponentAdultUnitRow(p);
+            const doubleDef = getOccupationDef('double');
+            if (doubleRow && doubleDef) {
+                def = doubleDef;
+                row = doubleRow;
+            } else {
+                const adultOccId = getOccupationIdForAdultCount(adults, p);
+                const adultDef = getOccupationDef(adultOccId);
+                const adultRow = getSelectedOccupationRow(p, adultOccId);
+                if (adultDef && adultRow) {
+                    def = adultDef;
+                    row = adultRow;
+                }
             }
         } else {
             adults = def.adults ?? 0;
@@ -824,7 +860,7 @@
         const totalPeople = adults + children212 + children1317;
         const adultUnitPrice = row.pricePerPerson ?? row.price;
         const taxesPerPerson = row.taxesPerPerson ?? row.taxes ?? pickOccupationTaxPerPerson(p);
-        const bookingLabel = buildBookingOccupationLabel(def, children212, children1317);
+        const bookingLabel = buildBookingOccupationLabel(def, children212, children1317, useComponentPricing ? adults : undefined);
 
         const child212Lines = [];
         for (let i = 0; i < children212; i++) {
@@ -2092,6 +2128,8 @@
         getSelectedOccupationRow,
         getOccupationPricingBreakdown,
         buildBookingOccupationLabel,
+        getAdultOccupationLabel,
+        getComponentAdultUnitRow,
         getOccupationIdForAdultCount,
         getMaxAdultCount,
         pickOccupationPrice,

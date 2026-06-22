@@ -249,7 +249,7 @@
     window.BEFORE_TAXES_AIR_FEES_LABEL = 'Avant taxes et frais aériens';
 
     /** Nombre max d'enfants sélectionnables par tranche (2-12 et 13-17) */
-    window.MAX_CHILD_COUNT_SELECT = 4;
+    window.MAX_CHILD_COUNT_SELECT = 3;
 
     /** Nombre max d'adultes sélectionnables (forfaits avec tarif enfant) */
     window.MAX_ADULT_COUNT_SELECT = 5;
