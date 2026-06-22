@@ -403,73 +403,46 @@
         return OCCUPATION_DEFS.find(d => d.id === occupationId) || null;
     }
 
-    function getDepositPerPerson(p) {
-        return optionalPrice(p.depositAmount ?? p.deposit_amount);
-    }
-
-    function buildDepositGroupLabel(adults, children212, children1317) {
-        const total = adults + children212 + children1317;
-        if (children212 === 0 && children1317 === 0) {
-            return `Occ. double · ${adults} adulte${adults > 1 ? 's' : ''}`;
-        }
-        let label = 'Occ. double';
-        if (children212 > 0) {
-            label += ` + ${children212} enfant${children212 > 1 ? 's' : ''} (2-12 ans)`;
-        }
-        if (children1317 > 0) {
-            label += ` + ${children1317} enfant${children1317 > 1 ? 's' : ''} (13-17 ans)`;
-        }
-        return `${label} · ${total} pers.`;
-    }
-
-    /** Options voyageurs — sert au calcul du dépôt (dépôt × nb personnes). */
-    function getDepositGroupOptions(p) {
-        if (!productHasChildUnitPricing(p)) return [];
-
-        const info = getChildPricingInfo(p);
-        const depositPerPerson = getDepositPerPerson(p);
+    /** Plage de personnes pour le dépôt (occ. double + enfants). */
+    function getDepositPeopleRange(p) {
         const adults = getOccupationDef('double')?.adults ?? 2;
-        const roundMoney = (value) => Math.round(value * 100) / 100;
-        const options = [];
+        if (!productHasChildUnitPricing(p)) {
+            return { min: adults, max: adults, adults };
+        }
+        const info = getChildPricingInfo(p);
+        let maxChildren = 0;
+        if (info.has212) maxChildren += info.max212;
+        if (info.has1317) maxChildren += info.max1317;
+        return { min: adults, max: adults + maxChildren, adults };
+    }
 
-        const pushOption = (children212, children1317) => {
-            const totalPeople = adults + children212 + children1317;
-            options.push({
-                id: `double_${children212}_${children1317}`,
-                occupationId: 'double',
-                adults,
-                children212,
-                children1317,
-                totalPeople,
-                label: buildDepositGroupLabel(adults, children212, children1317),
-                depositTotal: depositPerPerson !== null
-                    ? roundMoney(depositPerPerson * totalPeople)
-                    : null
-            });
-        };
+    /** Répartit le nb total de personnes en adultes + enfants (pour dépôt et formulaire). */
+    function splitPeopleCountForComponentPricing(p, totalPeople) {
+        const info = getChildPricingInfo(p);
+        const adults = getOccupationDef('double')?.adults ?? 2;
+        const safeTotal = clampInt(totalPeople, { min: adults, max: adults + 20 });
+        let childSlots = Math.max(0, safeTotal - adults);
+        let children212 = 0;
+        let children1317 = 0;
 
         if (info.has212) {
-            for (let c212 = 0; c212 <= info.max212; c212++) {
-                pushOption(c212, 0);
-            }
-        } else if (info.has1317) {
-            for (let c1317 = 0; c1317 <= info.max1317; c1317++) {
-                pushOption(0, c1317);
-            }
-        } else {
-            pushOption(0, 0);
+            children212 = Math.min(childSlots, info.max212);
+            childSlots -= children212;
+        }
+        if (info.has1317 && childSlots > 0) {
+            children1317 = Math.min(childSlots, info.max1317);
         }
 
-        options.push({
-            id: 'autres',
-            occupationId: 'autres',
-            isAutres: true,
-            label: 'Autres (nous vous contacterons)',
-            totalPeople: null,
-            depositTotal: null
-        });
+        return {
+            adults,
+            children212,
+            children1317,
+            totalPeople: adults + children212 + children1317
+        };
+    }
 
-        return options;
+    function getDepositPerPerson(p) {
+        return optionalPrice(p.depositAmount ?? p.deposit_amount);
     }
 
     function getOccupationPickerLabel(occupationId, p) {
@@ -2043,9 +2016,9 @@
         getOccupationPrices,
         getOccupationDef,
         getOccupationPickerLabel,
-        getDepositGroupOptions,
         getDepositPerPerson,
-        buildDepositGroupLabel,
+        getDepositPeopleRange,
+        splitPeopleCountForComponentPricing,
         getChildPricingInfo,
         productHasChildUnitPricing,
         getChildPriceLabel,
