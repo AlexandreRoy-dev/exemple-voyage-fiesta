@@ -33,6 +33,24 @@
         document.documentElement.classList.add('embed-mode');
     }
 
+    /** Prevent sideways page scroll on mobile / in iframe embed. */
+    function injectOverflowFixStyles() {
+        if (document.getElementById('vf-overflow-fix')) return;
+        var style = document.createElement('style');
+        style.id = 'vf-overflow-fix';
+        style.textContent = [
+            'html, body { max-width: 100%; overflow-x: clip; }',
+            'img, video, iframe, svg { max-width: 100%; }',
+            'html.embed-mode body { touch-action: pan-y; overscroll-behavior-x: none; }',
+            '@media (max-width: 1023px) {',
+            '  html, body { overflow-x: clip; touch-action: pan-y; overscroll-behavior-x: none; }',
+            '  main, .container, #product-content { max-width: 100%; overflow-x: clip; }',
+            '  .overflow-x-auto { max-width: 100%; -webkit-overflow-scrolling: touch; }',
+            '}'
+        ].join('\n');
+        (document.head || document.documentElement).appendChild(style);
+    }
+
     function patchLinks(root) {
         if (!isEmbedMode()) return;
         (root || document).querySelectorAll('a[href]').forEach(function (a) {
@@ -96,6 +114,7 @@
     };
 
     applyEmbedMode();
+    injectOverflowFixStyles();
 
     function onReady() {
         patchLinks();

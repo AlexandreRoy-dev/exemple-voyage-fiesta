@@ -255,7 +255,7 @@
     window.MAX_ADULT_COUNT_SELECT = 5;
 
     /** URL publique de la boutique (iframe + liens directs) */
-    window.BOUTIQUE_BASE_URL = 'https://promofiesta.roymarketing.ca';
+    window.BOUTIQUE_BASE_URL = 'https://aubaineexpress.voyagefiesta.ca';
 
     /** Chemin liste avec mode intégration (sans bannière hero) */
     window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/index.html?embed=1';
