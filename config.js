@@ -260,6 +260,12 @@
     /** Chemin liste avec mode intégration (sans bannière hero) */
     window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/index.html?embed=1';
 
+    /** Financement — affiché en mode iframe (barre fixe + fiche produit) */
+    window.FINANCING_INFO_LABEL = 'Financement voyage sur demande';
+    window.FINANCING_INFO_LINK_TEXT = 'Demander un financement';
+    /** URL page financement sur le site du client — laisser vide pour note sans lien */
+    window.FINANCING_INFO_URL = '';
+
     /** Taux TPS/TVQ — non utilisés (taxes par occupation dans GHL) */
     window.TAX_TPS_RATE = 0.05;
     window.TAX_TVQ_RATE = 0.09975;
@@ -366,11 +372,16 @@
     /** GHL field: custom_objects.forfaits_voyage.state */
     window.PRODUCT_STATES = {
         ACTIF: 'actif',
+        PRE_VENTE: 'pre_vente',
         BROUILLON: 'brouillon',
         COMPLET: 'complet_sold_out',
         ARCHIVE: 'archiv'
     };
 
-    /** Visible on boutique + indexable for SEO (actif + complet) */
-    window.VISIBLE_STATES = ['actif', 'complet_sold_out'];
+    /** Visible on boutique + indexable for SEO (actif + pré-vente + complet) */
+    window.VISIBLE_STATES = ['actif', 'pre_vente', 'complet_sold_out'];
+
+    /** Bannière statut pré-vente (GHL statut = pré-vente) */
+    window.PRE_SALE_BANNER_TITLE = 'Pré-vente';
+    window.PRE_SALE_BANNER_SUBTITLE = 'Réservez dès maintenant — offre en avant-première';
 })();

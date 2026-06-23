@@ -109,10 +109,48 @@
             }
         }
         html.embed-mode .product-countdown-bar { display: none; }
+
+        html.embed-mode {
+            --embed-chrome-height: 5.75rem;
+            font-size: 106.25%;
+        }
+        html.embed-mode .product-breadcrumb-inline { display: none; }
+        html.embed-mode .embed-chrome {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            background: #ffffff;
+            border-bottom: 2px solid #F26522;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        html.embed-mode .embed-chrome__inner {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0.75rem 1rem;
+        }
+        html.embed-mode .embed-chrome__nav {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.15rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.35rem;
+        }
+        @media (min-width: 1024px) {
+            html.embed-mode .sticky-booking { top: calc(var(--embed-chrome-height) + 0.75rem); }
+        }
     </style>
     <script src="embed.js"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans product-has-booking">
+
+    <header class="embed-chrome hidden" id="embed-chrome" aria-label="Navigation boutique">
+        <div class="embed-chrome__inner">
+            <nav id="embed-breadcrumb" class="embed-chrome__nav" aria-label="Fil d'Ariane"></nav>
+            <div data-embed-financing="1"></div>
+        </div>
+    </header>
 
     <div class="product-countdown-bar bg-red-600 text-white py-2 overflow-hidden">
         <div class="container mx-auto px-4 flex justify-center items-center gap-4">
@@ -167,8 +205,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=28"></script>
-    <script src="api.js?v=79"></script>
+    <script src="config.js?v=30"></script>
+    <script src="api.js?v=81"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -922,6 +960,7 @@
 
         function renderProduct(p) {
             const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
+            const isPreSale = VoyageFiestaAPI.isPreSale(p);
             const days = p.durationNights + 1;
             const occupationHtml = buildOccupationPricesHtml(p, isSoldOut);
             const paymentTermsHtml = buildPaymentTermsHtml(p);
@@ -931,6 +970,10 @@
 
             document.title = `${p.name} - Voyage Fiesta`;
             VoyageFiestaAPI.applySocialMetaTags(VoyageFiestaAPI.buildProductSharePayload(p));
+            if (window.VoyageFiestaEmbed) {
+                VoyageFiestaEmbed.initEmbedChrome();
+                VoyageFiestaEmbed.patchLinks(document.getElementById('embed-chrome'));
+            }
 
             let inventoryHtml = '';
             if (isSoldOut) {
@@ -939,6 +982,8 @@
                         <p class="font-bold text-sm"><i class="fa-solid fa-ban mr-2"></i> Forfait complet</p>
                         <p class="text-[10px] uppercase font-bold">Aucune chambre disponible à ce prix</p>
                     </div>`;
+            } else if (isPreSale) {
+                inventoryHtml = VoyageFiestaAPI.renderPreSaleBannerHtml();
             } else if (p.inventory <= 3) {
                 inventoryHtml = `
                     <div class="bg-orange-50 text-brand-orange border border-orange-100 rounded-lg p-3 text-center mb-6">
@@ -1005,9 +1050,28 @@
             );
             const breadcrumbDestParam = encodeURIComponent(breadcrumbDestKey || p.destinationLabel || p.destination || '');
 
+            const embedBreadcrumbItems = [
+                { label: 'Accueil', href: 'index.html' },
+                { label: 'Promotions', href: 'index.html' }
+            ];
+            if (breadcrumbLocation) {
+                embedBreadcrumbItems.push({
+                    label: breadcrumbLocation,
+                    href: `index.html?destination=${breadcrumbDestParam}`
+                });
+            }
+            embedBreadcrumbItems.push({ label: p.name, current: true });
+
+            const embedBreadcrumbEl = document.getElementById('embed-breadcrumb');
+            if (embedBreadcrumbEl) {
+                embedBreadcrumbEl.innerHTML = VoyageFiestaAPI.renderEmbedBreadcrumbHtml(embedBreadcrumbItems);
+            }
+
+            const financingNoteHtml = VoyageFiestaAPI.renderFinancingNoteHtml({ compact: true, sameTab: true });
+
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">
-                    <nav class="text-xs text-gray-500 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
+                    <nav class="product-breadcrumb-inline text-xs text-gray-500 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
                         <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
                         <span aria-hidden="true">/</span>
                         <a href="index.html" class="hover:underline">Promotions</a>
@@ -1024,6 +1088,7 @@
                                 <div class="flex flex-wrap justify-between items-start gap-4">
                                     <div>
                                         ${isSoldOut ? '<div class="inline-block bg-red-600 text-white font-bold px-3 py-1 rounded text-sm mb-3">COMPLET</div>' : ''}
+                                        ${!isSoldOut && isPreSale ? '<div class="inline-block bg-brand-blue text-white font-bold px-3 py-1 rounded text-sm mb-3 uppercase tracking-wide"><i class="fa-solid fa-clock mr-1.5"></i> Pré-vente</div>' : ''}
                                         <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue">${p.name}</h1>
                                         <div class="flex items-center gap-2 mt-2">
                                             <div class="flex text-yellow-400 text-sm">${renderStars(p.stars)}</div>
@@ -1088,7 +1153,8 @@
                                     ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">COMPLET</button>
                                        <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
                                     : `<button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 text-lg transition-all">RÉSERVER MAINTENANT</button>
-                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4">En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>`}
+                                       <div class="mt-4 px-1">${financingNoteHtml}</div>
+                                       <p class="text-center text-[10px] text-gray-400 mt-3 px-4">En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>`}
                             </div>
                         </div>
 

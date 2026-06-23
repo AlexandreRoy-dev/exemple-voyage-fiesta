@@ -70,11 +70,29 @@
         }, 80);
     }
 
+    function initEmbedChrome() {
+        if (!isEmbedMode()) return;
+        document.querySelectorAll('.embed-chrome').forEach(function (el) {
+            el.classList.remove('hidden');
+            el.removeAttribute('hidden');
+        });
+        document.querySelectorAll('[data-embed-financing]').forEach(function (el) {
+            if (window.VoyageFiestaAPI && typeof window.VoyageFiestaAPI.renderFinancingNoteHtml === 'function') {
+                el.innerHTML = window.VoyageFiestaAPI.renderFinancingNoteHtml({
+                    compact: el.dataset.embedFinancing === 'compact',
+                    sameTab: true
+                });
+            }
+        });
+        notifyParentHeight();
+    }
+
     window.VoyageFiestaEmbed = {
         isEmbedMode: isEmbedMode,
         boutiqueUrl: boutiqueUrl,
         patchLinks: patchLinks,
-        notifyParentHeight: notifyParentHeight
+        notifyParentHeight: notifyParentHeight,
+        initEmbedChrome: initEmbedChrome
     };
 
     applyEmbedMode();
@@ -103,6 +121,9 @@
         onReady();
     }
 
-    window.addEventListener('load', notifyParentHeight);
+    window.addEventListener('load', function () {
+        initEmbedChrome();
+        notifyParentHeight();
+    });
     window.addEventListener('resize', notifyParentHeight);
 })();

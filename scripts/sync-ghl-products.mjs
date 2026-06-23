@@ -24,7 +24,7 @@ const MANIFEST_PATH = resolve(IMAGES_DIR, '.manifest.json');
 const API_BASE = 'https://services.leadconnectorhq.com';
 const PAGE_LIMIT = 100;
 
-const VISIBLE_STATES = new Set(['actif', 'complet_sold_out']);
+const VISIBLE_STATES = new Set(['actif', 'pre_vente', 'complet_sold_out']);
 
 function requireEnv(name) {
  const value = process.env[name];
@@ -564,12 +564,14 @@ function normalizeState(raw) {
 
  if (s === 'inactif' || s === 'inactive') return 'inactif';
  if (s === 'actif' || s === 'active') return 'actif';
+ if (s === 'pre_vente' || s === 'pre-vente' || s === 'prevente') return 'pre_vente';
  if (s === 'brouillon' || s === 'draft') return 'brouillon';
  if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
  if (s === 'archiv' || s === 'archive' || s === 'archivé' || s === 'archivé') return 'archiv';
 
  if (/sold\s*out|complet\s*\(|complet.*sold|épuisé|epuise/.test(s)) return 'complet_sold_out';
  if (/^complet$|complet\s*-/.test(s)) return 'complet_sold_out';
+ if (/pr[eé][\s_-]?vente|pre[\s_]?sale/.test(s)) return 'pre_vente';
  if (/brouillon|draft/.test(s)) return 'brouillon';
  if (/archiv|archive/.test(s)) return 'archiv';
  if (/actif|active|publié|publie/.test(s)) return 'actif';
@@ -1089,6 +1091,7 @@ async function main() {
  writeFileSync(OUTPUT, JSON.stringify(payload, null, 2) + '\n', 'utf8');
  console.log(`Wrote ${products.length} product(s) to ${OUTPUT}`);
  console.log(` actif: ${products.filter(p => p.active === 'actif').length}`);
+ console.log(` pre_vente: ${products.filter(p => p.active === 'pre_vente').length}`);
  console.log(` complet_sold_out: ${products.filter(p => p.active === 'complet_sold_out').length}`);
 
  writeSharePages(products);

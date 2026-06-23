@@ -13,7 +13,7 @@
     function isDetailVisible(p) {
         if (!p) return false;
         const state = normalizeState(p.state, p.active);
-        return state === 'actif' || state === 'complet_sold_out';
+        return state === 'actif' || state === 'pre_vente' || state === 'complet_sold_out';
     }
 
     function rawStateValue(state, legacyActive) {
@@ -33,17 +33,23 @@
         }
 
         if (s === 'actif' || s === 'active') return 'actif';
+        if (s === 'pre_vente' || s === 'pre-vente' || s === 'prevente') return 'pre_vente';
         if (s === 'brouillon' || s === 'draft') return 'brouillon';
         if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
         if (s === 'archiv' || s === 'archive' || s === 'archivé') return 'archiv';
 
         if (/sold\s*out|complet\s*\(|complet.*sold|épuisé|epuise/.test(s)) return 'complet_sold_out';
         if (/^complet$|complet\s*-/.test(s)) return 'complet_sold_out';
+        if (/pr[eé][\s_-]?vente|pre[\s_]?sale/.test(s)) return 'pre_vente';
         if (/brouillon|draft/.test(s)) return 'brouillon';
         if (/archiv|archive/.test(s)) return 'archiv';
         if (/actif|active|publié|publie/.test(s)) return 'actif';
 
         return s.replace(/[^a-z0-9]+/g, '_');
+    }
+
+    function isPreSale(p) {
+        return p && normalizeState(p.state, p.active) === 'pre_vente';
     }
 
     function isSoldOut(p) {
@@ -52,7 +58,35 @@
     }
 
     function isVisibleOnSite(p) {
-        return isActifPackage(p) || normalizeState(p.state, p.active) === 'complet_sold_out';
+        return isActifPackage(p) || isPreSale(p) || normalizeState(p.state, p.active) === 'complet_sold_out';
+    }
+
+    function isBookablePackage(p) {
+        if (!p || isSoldOut(p)) return false;
+        const state = normalizeState(p.state, p.active);
+        return state === 'actif' || state === 'pre_vente';
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function renderPreSaleBannerHtml(options = {}) {
+        const title = window.PRE_SALE_BANNER_TITLE || 'Pré-vente';
+        const subtitle = window.PRE_SALE_BANNER_SUBTITLE || 'Réservez dès maintenant — offre en avant-première';
+        if (options.compact) {
+            return `<div class="absolute top-4 left-4 bg-brand-blue text-white font-bold px-3 py-1.5 rounded shadow-lg z-10 text-sm tracking-wide uppercase">
+                <i class="fa-solid fa-clock mr-1.5" aria-hidden="true"></i>${escapeHtml(title)}
+            </div>`;
+        }
+        return `<div class="bg-blue-50 text-brand-blue border-2 border-brand-blue/30 rounded-lg p-3 text-center mb-6">
+            <p class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-clock mr-2" aria-hidden="true"></i>${escapeHtml(title)}</p>
+            <p class="text-[11px] mt-1 text-gray-600 leading-snug">${escapeHtml(subtitle)}</p>
+        </div>`;
     }
 
     const PLACEHOLDER_IMG =
@@ -1926,6 +1960,33 @@
             .replace(/</g, '&lt;');
     }
 
+    function renderFinancingNoteHtml(options = {}) {
+        const label = window.FINANCING_INFO_LABEL || 'Financement voyage sur demande';
+        const linkText = window.FINANCING_INFO_LINK_TEXT || 'Demander un financement';
+        const url = String(window.FINANCING_INFO_URL || '').trim();
+        const sizeClass = options.compact ? 'text-xs' : 'text-sm';
+        const icon = '<i class="fa-solid fa-hand-holding-dollar text-brand-orange mr-1.5" aria-hidden="true"></i>';
+        if (!url) {
+            return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)}</span></p>`;
+        }
+        const target = options.sameTab ? '' : ' target="_blank" rel="noopener noreferrer"';
+        return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} — <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
+    }
+
+    function renderEmbedBreadcrumbHtml(items) {
+        if (!Array.isArray(items) || !items.length) return '';
+        return items.map((item, index) => {
+            const sep = index > 0
+                ? '<span class="text-gray-300 mx-1.5" aria-hidden="true">/</span>'
+                : '';
+            if (item.current) {
+                return `${sep}<span class="text-brand-blue font-semibold truncate">${escapeHtml(item.label)}</span>`;
+            }
+            const href = item.href || 'index.html';
+            return `${sep}<a href="${escapeShareAttr(href)}" class="text-brand-blue hover:underline shrink-0">${escapeHtml(item.label)}</a>`;
+        }).join('');
+    }
+
     function getProductShareImage(p) {
         const gallery = buildProductGallery(p);
         const imagePath = gallery[0] || normalizeImageSrc(p.img);
@@ -2228,6 +2289,9 @@
         getSupplierFilterOptions,
         isOtherSupplier,
         isSoldOut,
+        isPreSale,
+        isBookablePackage,
+        renderPreSaleBannerHtml,
         isVisibleOnSite,
         isActifPackage,
         isListingVisible,
@@ -2242,6 +2306,8 @@
         buildProductSharePayload,
         buildListingSharePayload,
         applySocialMetaTags,
+        renderFinancingNoteHtml,
+        renderEmbedBreadcrumbHtml,
         getSocialShareHref,
         renderSocialShareButtonsHtml,
         bindSocialShare

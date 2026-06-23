@@ -84,12 +84,64 @@
             .filters-sidebar { top: 1rem; }
         }
 
+        /* Mode iframe (site client) */
+        html.embed-mode {
+            --embed-chrome-height: 5.75rem;
+            font-size: 106.25%;
+        }
         html.embed-mode .boutique-hero { display: none; }
-        html.embed-mode main { padding-top: 1rem; }
+        html.embed-mode main { padding-top: 0.75rem; }
+        html.embed-mode .breadcrumb-inline { display: none; }
+        html.embed-mode .embed-chrome {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            background: #ffffff;
+            border-bottom: 2px solid #F26522;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        html.embed-mode .embed-chrome__inner {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0.75rem 1rem;
+        }
+        html.embed-mode .embed-chrome__nav {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.15rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.35rem;
+        }
+        @media (min-width: 1024px) {
+            html.embed-mode .filters-sidebar {
+                width: 32%;
+                min-width: 18.5rem;
+                top: calc(var(--embed-chrome-height) + 0.75rem);
+                padding: 1.5rem;
+            }
+            html.embed-mode .filters-sidebar h2 { font-size: 1.35rem; }
+            html.embed-mode .filters-sidebar h3 { font-size: 0.95rem; }
+            html.embed-mode .filter-select { font-size: 0.95rem; padding: 0.6rem 0.85rem; }
+        }
+        html.embed-mode #products-container .text-xl { font-size: 1.35rem; }
+        html.embed-mode #result-count { font-size: 1.1em; }
     </style>
     <script src="embed.js"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans flex flex-col min-h-screen">
+
+    <header class="embed-chrome hidden" id="embed-chrome" aria-label="Navigation boutique">
+        <div class="embed-chrome__inner">
+            <nav id="embed-breadcrumb" class="embed-chrome__nav" aria-label="Fil d'Ariane">
+                <a href="index.html" class="text-brand-blue hover:underline shrink-0">Accueil</a>
+                <span class="text-gray-300 mx-1.5" aria-hidden="true">/</span>
+                <span class="text-brand-blue font-semibold">Promotions</span>
+            </nav>
+            <div data-embed-financing="1"></div>
+        </div>
+    </header>
 
     <section class="boutique-hero relative bg-brand-dark">
         <img src="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1920&fit=crop" alt="Destination de rêve" class="w-full h-36 md:h-44 object-cover">
@@ -99,7 +151,7 @@
     </section>
 
     <main class="container mx-auto px-4 py-8 flex-grow">
-        <nav class="text-xs text-gray-500 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
+        <nav class="breadcrumb-inline text-xs text-gray-500 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
             <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
             <span aria-hidden="true">/</span>
             <span class="text-brand-blue font-semibold">Promotions</span>
@@ -173,8 +225,8 @@
 
     </main>
 
-    <script src="config.js?v=28"></script>
-    <script src="api.js?v=79"></script>
+    <script src="config.js?v=30"></script>
+    <script src="api.js?v=81"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -399,10 +451,13 @@
 
             filteredData.forEach(p => {
                 const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
+                const isPreSale = VoyageFiestaAPI.isPreSale(p);
                 let inventoryBadge = '';
 
                 if (isSoldOut) {
                     inventoryBadge = `<div class="absolute top-4 left-4 bg-red-600 text-white font-bold px-3 py-1 rounded shadow-lg z-10 text-sm">COMPLET</div>`;
+                } else if (isPreSale) {
+                    inventoryBadge = VoyageFiestaAPI.renderPreSaleBannerHtml({ compact: true });
                 } else if (p.inventory <= 3) {
                     inventoryBadge = `<div class="absolute top-4 left-4 bg-brand-orange text-white font-bold px-3 py-1 rounded shadow-lg z-10 text-sm">Reste ${p.inventory} chambre(s) à ce prix !</div>`;
                 }
