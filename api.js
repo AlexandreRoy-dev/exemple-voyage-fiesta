@@ -1960,12 +1960,19 @@
             .replace(/</g, '&lt;');
     }
 
+    function isFinancingActive() {
+        return String(window.FINANCING_MODE || 'draft').toLowerCase() === 'active';
+    }
+
     function renderFinancingNoteHtml(options = {}) {
-        const label = window.FINANCING_INFO_LABEL || 'Financement voyage sur demande';
-        const linkText = window.FINANCING_INFO_LINK_TEXT || 'Demander un financement';
-        const url = String(window.FINANCING_INFO_URL || '').trim();
+        const label = window.FINANCING_INFO_LABEL || 'Financement sur demande';
         const sizeClass = options.compact ? 'text-xs' : 'text-sm';
         const icon = '<i class="fa-solid fa-hand-holding-dollar text-brand-orange mr-1.5" aria-hidden="true"></i>';
+        if (!isFinancingActive()) {
+            return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)}</span></p>`;
+        }
+        const linkText = window.FINANCING_INFO_LINK_TEXT || 'Demander un financement';
+        const url = String(window.FINANCING_INFO_URL || '').trim();
         if (!url) {
             return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)}</span></p>`;
         }
@@ -2306,6 +2313,7 @@
         buildProductSharePayload,
         buildListingSharePayload,
         applySocialMetaTags,
+        isFinancingActive,
         renderFinancingNoteHtml,
         renderEmbedBreadcrumbHtml,
         getSocialShareHref,

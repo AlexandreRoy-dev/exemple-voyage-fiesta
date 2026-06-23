@@ -260,10 +260,13 @@
     /** Chemin liste avec mode intégration (sans bannière hero) */
     window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/index.html?embed=1';
 
-    /** Financement — affiché en mode iframe (barre fixe + fiche produit) */
-    window.FINANCING_INFO_LABEL = 'Financement voyage sur demande';
+    /**
+     * Financement — mode brouillon : texte seul, pas de lien ni de $/mois sur les cartes.
+     * Passer à 'active' + FINANCING_INFO_URL pour activer le lien plus tard.
+     */
+    window.FINANCING_MODE = 'draft';
+    window.FINANCING_INFO_LABEL = 'Financement sur demande';
     window.FINANCING_INFO_LINK_TEXT = 'Demander un financement';
-    /** URL page financement sur le site du client — laisser vide pour note sans lien */
     window.FINANCING_INFO_URL = '';
 
     /** Taux TPS/TVQ — non utilisés (taxes par occupation dans GHL) */

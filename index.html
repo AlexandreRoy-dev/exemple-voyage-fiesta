@@ -225,8 +225,8 @@
 
     </main>
 
-    <script src="config.js?v=30"></script>
-    <script src="api.js?v=81"></script>
+    <script src="config.js?v=31"></script>
+    <script src="api.js?v=82"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -407,7 +407,7 @@
         function renderIncentiveBadge(inc) {
             if (!inc) return '';
 
-            const financingHtml = inc.financing
+            const financingHtml = (VoyageFiestaAPI.isFinancingActive && VoyageFiestaAPI.isFinancingActive() && inc.financing)
                 ? `<p class="text-[11px] text-white/95 mt-1.5 leading-tight">
                         ou <span class="underline font-semibold">${VoyageFiestaAPI.formatMoney(inc.financing)}/mois</span>
                         <i class="fa-solid fa-circle-info text-[9px] opacity-80 ml-0.5" title="Financement sujet à approbation de crédit"></i>
