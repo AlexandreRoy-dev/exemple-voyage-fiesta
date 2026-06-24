@@ -122,6 +122,13 @@
         html.embed-mode .embed-breadcrumb-back i {
             font-size: 0.8em;
         }
+        .breadcrumb-back-link {
+            font-size: inherit;
+            font-weight: 600;
+        }
+        .breadcrumb-back-link i {
+            font-size: 0.8em;
+        }
         @media (min-width: 640px) {
             html.embed-mode {
                 --embed-chrome-height: 4.5rem;
@@ -156,10 +163,8 @@
         <div class="embed-chrome__inner">
             <nav id="embed-breadcrumb" class="embed-chrome__nav" aria-label="Fil d'Ariane">
                 <a href="index.html" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
-                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux offres</span>
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
                 </a>
-                <span class="text-gray-300 mx-2" aria-hidden="true">/</span>
-                <span class="text-brand-blue font-semibold">Promotions</span>
             </nav>
         </div>
     </header>
@@ -173,9 +178,9 @@
 
     <main class="container mx-auto px-4 py-8 flex-grow">
         <nav class="breadcrumb-inline text-lg sm:text-xl text-gray-600 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
-            <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
-            <span aria-hidden="true">/</span>
-            <span class="text-brand-blue font-semibold">Promotions</span>
+            <a href="index.html" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
+            </a>
         </nav>
 
         <div class="flex flex-col lg:flex-row gap-8">
@@ -247,7 +252,7 @@
     </main>
 
     <script src="config.js?v=32"></script>
-    <script src="api.js?v=86"></script>
+    <script src="api.js?v=87"></script>
     <script>
         let products = [];
         let activeStars = [];

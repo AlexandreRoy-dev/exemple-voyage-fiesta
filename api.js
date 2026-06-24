@@ -1989,7 +1989,7 @@
 
     function renderEmbedRootLinkHtml(href = 'index.html') {
         return `<a href="${escapeShareAttr(href)}" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
-            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux offres</span>
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
         </a>`;
     }
 
