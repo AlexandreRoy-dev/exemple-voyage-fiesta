@@ -1965,23 +1965,25 @@
     }
 
     function getFinancingApplyUrl() {
-        if (!isFinancingActive()) return '';
         return String(window.FINANCING_INFO_URL || '').trim();
     }
 
     function renderFinancingNoteHtml(options = {}) {
         const label = window.FINANCING_INFO_LABEL || 'Financement sur demande';
         const sizeClass = options.compact ? 'text-sm' : 'text-base';
-        const icon = '<i class="fa-solid fa-hand-holding-dollar text-brand-orange mr-1.5" aria-hidden="true"></i>';
-        if (!isFinancingActive()) {
-            return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)}</span></p>`;
-        }
+        const icon = '<i class="fa-solid fa-hand-holding-dollar text-brand-orange mr-1.5 shrink-0" aria-hidden="true"></i>';
         const linkText = window.FINANCING_INFO_LINK_TEXT || 'Demander un financement';
         const url = getFinancingApplyUrl();
         if (!url) {
             return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)}</span></p>`;
         }
         const target = ' target="_blank" rel="noopener noreferrer"';
+        if (options.stacked) {
+            return `<div class="embed-financing-note ${sizeClass} text-gray-600 leading-snug">
+                <p class="m-0 flex items-start">${icon}<span>${escapeHtml(label)}</span></p>
+                <p class="m-0 mt-1.5 pl-6"><a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></p>
+            </div>`;
+        }
         return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} — <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
     }
 
