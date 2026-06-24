@@ -1,0 +1,197 @@
+================================================================================
+VOYAGE FIESTA — CURSOR SESSION HANDOFF
+================================================================================
+Updated: 2026-06-20 (fin de session — tarifs enfants, dépôt, partage FB, passagers)
+Live:     https://promofiesta.roymarketing.ca
+Repo:     GitHub Pages + GitHub Actions sync GHL (~15 min)
+
+Data flow:
+  GHL Custom Object custom_objects.voyages
+    → scripts/sync-ghl-products.mjs (+ share/*.html)
+    → products.json + assets/forfaits/
+    → api.js → index.html / product.html / thank-you.html
+
+--------------------------------------------------------------------------------
+CACHE-BUST (après deploy — Ctrl+F5)
+--------------------------------------------------------------------------------
+index.html:     config.js?v=23   api.js?v=71
+product.html:   config.js?v=23   api.js?v=71
+thank-you.html: config.js?v=22   api.js?v=64   ← bump si vous touchez api.js
+
+--------------------------------------------------------------------------------
+⚠️  TODO PRIORITAIRE (PAS ENCORE FAIT)
+--------------------------------------------------------------------------------
+
+[ ] FORMULAIRE GHL « Réservation de forfait »
+    → Voir section « FORMULAIRE GHL » ci-dessous (Query Keys exactes)
+    → URL embed dans config.js: GHL_FORM_EMBED_URL
+    → Champs cachés + map vers Custom Fields Contact
+
+[ ] COURRIEL confirmation client
+    → Template: imports/ghl-email-confirmation-reservation.md
+    → Automation: Form submitted → Send Email
+    → Terminologie: passager (pas personne)
+
+[ ] FACEBOOK — rescrape après deploy share/*
+    → https://developers.facebook.com/tools/debug/
+    → Tester: https://promofiesta.roymarketing.ca/share/forfait-sans-nom-3.html
+
+[ ] DEPLOY local → GitHub (si pas poussé)
+    → product.html, index.html, api.js, config.js, products.json, share/, scripts/
+
+[ ] thank-you.html — aligner api.js?v=71 si besoin
+
+--------------------------------------------------------------------------------
+FORMULAIRE GHL — GUIDE RAPIDE (À FAIRE)
+--------------------------------------------------------------------------------
+
+1. Sites → Forms → formulaire existant (ID dans config.js GHL_FORM_EMBED_URL)
+
+2. Champs VISIBLES (client remplit):
+   - Prénom, Nom, Courriel, Téléphone (standards GHL)
+
+3. Champs CACHÉS — Query Key = nom EXACT (Settings champ → Query Key):
+
+   forfait_name
+   occupation
+   nombre_personnes
+   nombre_adultes
+   nombre_enfants_2_12
+   nombre_enfants_13_17
+   prix_total_avant_taxe
+   taxes_total1
+   taxes_par_personne
+   depot_par_personne
+   depot_total          ← MONTANT DÉPÔT À ENCAISSER (plugin paiement)
+   prix_total
+   final_payment_date
+   pricing_summary
+
+   Liste complète iframe: config.js → GHL_FORM_IFRAME_KEYS
+
+4. Settings → Custom Fields → Contact: créer un champ par clé ci-dessus
+   Merge courriel: {{contact.custom.depot_total}} etc. (Insert Custom Value)
+
+5. À la soumission → Rediriger:
+   https://promofiesta.roymarketing.ca/thank-you.html?forfait_slug={{forfait_slug}}
+   (forfait_slug hors iframe pour l'instant — optionnel)
+
+6. TEST: fiche produit → Réserver → vérifier prefill iframe (ex. depot_total=1000 pour 5 pass.)
+
+Exemple Melia Cozumel, 5 passagers:
+  nombre_personnes=5  nombre_adultes=2  nombre_enfants_2_12=3
+  depot_par_personne=200  depot_total=1000
+  prix_total=6792.55  prix_total_avant_taxe=3613  taxes_total1=3179.55
+  occupation=Occ. double + 3 enfants (2-12 ans)
+
+Option « Autres »: occupation=Autres (nous vous contacterons) — montants vides OK.
+
+--------------------------------------------------------------------------------
+COURRIEL CONFIRMATION — À FAIRE
+--------------------------------------------------------------------------------
+Fichier: imports/ghl-email-confirmation-reservation.md (mettre à jour passager)
+Champs clés dans le corps:
+  {{contact.custom.forfait_name}}
+  {{contact.custom.occupation}}
+  {{contact.custom.nombre_personnes}}
+  {{contact.custom.depot_total}}
+  {{contact.custom.prix_total}}
+  {{contact.custom.final_payment_date}}
+
+--------------------------------------------------------------------------------
+RÈGLES SITE (NE PAS CASSER)
+--------------------------------------------------------------------------------
+
+[Tarifs GHL]
+- price (= occ. double) = $ / PASSAGER avant taxes et frais aériens
+- prix_1er_enfant_2_12, prix_1er_enfant_13_17 = $ / ENFANT avant taxes
+- taxes_amount = $ / PASSAGER (× nb passagers pour total taxes groupe)
+- deposit_amount = $ / PASSAGER (× nb passagers = depot_total)
+- discount_amount = rabais $ / PASSAGER (pastille rouge index — manuel GHL)
+
+[Forfaits avec tarifs enfant unitaires — UX actuelle]
+- Tableau haut: Occ. double + Enfant (2-12) + Enfant (13-17) si renseignés
+  Colonnes: Avant taxes | Taxes / pass. | Total (total INCLUT taxes)
+- PAS de lignes « Occ. double + 1 enfant » dans tableau ni picker
+- Bas: menu déroulant « Nombre de passagers » (2 à 6, + Autres)
+- Récap: Dépôt à payer = depot_total (focus client)
+- Sync: si prix enfant unitaire présent, NE PAS générer price_occ_double_1_child
+
+[Terminologie client]
+- passager / passagers (plus « personne »)
+- suffixe prix: / pass. (formatMoneyPerPerson)
+- libellé taxes: TAXES_AIR_FEES_LABEL = « Taxes et frais aériens »
+
+[Listing — carte rouge]
+- Prix = occupation la moins chère (total avec taxes)
+- Rabais: « économisez X $ par passager »
+
+[Partage social Facebook]
+- URL partage: share/{slug}.html (OG tags statiques, pas product.html?slug=)
+- Généré par sync: scripts/share-pages.mjs
+- product.html / index.html: OG par défaut (hero Pexels)
+
+[Vol]
+- Logo = carrier (formatCarrierLabel: air_canada → Air Canada)
+- supplier ≠ carrier (note « via Sunwing » etc.)
+- Numéros flight_out_number / flight_return_number
+
+[Auto GHL — ne pas créer]
+  slug, return_date, location
+
+[Requis GHL voyage]
+  name, state, destination1, sub_dest, country
+  departure_date, duration_nights, end_date, departure_airport
+  supplier, carrier, stars, room_category, inventory, img, forfait_link
+
+--------------------------------------------------------------------------------
+FICHIERS CLÉS
+--------------------------------------------------------------------------------
+config.js          BOUTIQUE_BASE_URL, GHL_FORM_*, TAXES labels, MAX_CHILD_COUNT_SELECT=4
+api.js             pricing, occupations, deposit, share, GHL params (buildGhlReservationParams)
+product.html       fiche + picker passagers + modal iframe GHL
+index.html         liste + partage social
+scripts/sync-ghl-products.mjs   sync GHL → products.json + images + share/
+scripts/share-pages.mjs           HTML OG par forfait
+share/*.html       landing partage Facebook (1 par slug)
+products.json      feed (sync auto — ne pas éditer à la main sauf urgence)
+.github/workflows/sync-products.yml
+
+Imports / docs:
+  imports/ghl-email-confirmation-reservation.md
+  imports/ghl-custom-object-fields-occupations.md
+  README.md
+
+--------------------------------------------------------------------------------
+DEPLOY
+--------------------------------------------------------------------------------
+Push main → GitHub Pages (CNAME: promofiesta.roymarketing.ca)
+Actions secrets: GHL_API_KEY, GHL_LOCATION_ID, GHL_OBJECT_SCHEMA_KEY
+Sync commit: products.json + assets/forfaits/ + share/
+
+Fichiers à uploader si deploy manuel:
+  index.html, product.html, thank-you.html, config.js, api.js, embed.js, share/
+
+--------------------------------------------------------------------------------
+FORFAITS TEST
+--------------------------------------------------------------------------------
+Viva Fortuna (Freeport)     — enfant 2-12 + 13-17, dépôt 200$/pass.
+Melia Cozumel               — air_canada, enfant 2-12
+Gran Muthu                  — double + enfant scenarios
+
+--------------------------------------------------------------------------------
+PROMPT POUR CONTINUER (nouveau PC / nouvelle session Cursor)
+--------------------------------------------------------------------------------
+Continuing Voyage Fiesta. Read @CURSOR-HANDOFF.txt first.
+
+État: site tarifs/dépôt/passagers OK en local; formulaire GHL + courriel PAS faits.
+
+Priorité: [créer formulaire GHL | courriel confirmation | deploy | autre]
+
+Rappels:
+- taxes_amount et deposit_amount = $ / passager
+- depot_total = dépôt × nombre_personnes (menu passagers)
+- Query Keys formulaire = GHL_FORM_IFRAME_KEYS dans config.js
+- Partage FB = URLs share/{slug}.html
+
+================================================================================

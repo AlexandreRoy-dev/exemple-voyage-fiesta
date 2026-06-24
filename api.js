@@ -1964,19 +1964,24 @@
         return String(window.FINANCING_MODE || 'draft').toLowerCase() === 'active';
     }
 
+    function getFinancingApplyUrl() {
+        if (!isFinancingActive()) return '';
+        return String(window.FINANCING_INFO_URL || '').trim();
+    }
+
     function renderFinancingNoteHtml(options = {}) {
         const label = window.FINANCING_INFO_LABEL || 'Financement sur demande';
-        const sizeClass = options.compact ? 'text-xs' : 'text-sm';
+        const sizeClass = options.compact ? 'text-sm' : 'text-base';
         const icon = '<i class="fa-solid fa-hand-holding-dollar text-brand-orange mr-1.5" aria-hidden="true"></i>';
         if (!isFinancingActive()) {
             return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)}</span></p>`;
         }
         const linkText = window.FINANCING_INFO_LINK_TEXT || 'Demander un financement';
-        const url = String(window.FINANCING_INFO_URL || '').trim();
+        const url = getFinancingApplyUrl();
         if (!url) {
             return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)}</span></p>`;
         }
-        const target = options.sameTab ? '' : ' target="_blank" rel="noopener noreferrer"';
+        const target = ' target="_blank" rel="noopener noreferrer"';
         return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} — <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
     }
 
@@ -2314,6 +2319,7 @@
         buildListingSharePayload,
         applySocialMetaTags,
         isFinancingActive,
+        getFinancingApplyUrl,
         renderFinancingNoteHtml,
         renderEmbedBreadcrumbHtml,
         getSocialShareHref,

@@ -114,6 +114,8 @@
             font-weight: 500;
             margin-bottom: 0.35rem;
         }
+        html.embed-mode .embed-financing-note { font-size: 0.9375rem; line-height: 1.4; }
+        html.embed-mode .embed-financing-note { font-size: 0.9375rem; }
         @media (min-width: 1024px) {
             html.embed-mode .filters-sidebar {
                 width: 32%;
@@ -229,8 +231,8 @@
 
     </main>
 
-    <script src="config.js?v=31"></script>
-    <script src="api.js?v=82"></script>
+    <script src="config.js?v=32"></script>
+    <script src="api.js?v=83"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -411,10 +413,15 @@
         function renderIncentiveBadge(inc) {
             if (!inc) return '';
 
+            const financingUrl = VoyageFiestaAPI.getFinancingApplyUrl ? VoyageFiestaAPI.getFinancingApplyUrl() : '';
             const financingHtml = (VoyageFiestaAPI.isFinancingActive && VoyageFiestaAPI.isFinancingActive() && inc.financing)
-                ? `<p class="text-[11px] text-white/95 mt-1.5 leading-tight">
+                ? `<p class="text-xs text-white/95 mt-1.5 leading-tight">
+                        ${financingUrl
+                            ? `<a href="${escapeHtml(financingUrl)}" target="_blank" rel="noopener noreferrer" class="text-white/95 hover:text-white">`
+                            : ''}
                         ou <span class="underline font-semibold">${VoyageFiestaAPI.formatMoney(inc.financing)}/mois</span>
-                        <i class="fa-solid fa-circle-info text-[9px] opacity-80 ml-0.5" title="Financement sujet à approbation de crédit"></i>
+                        <i class="fa-solid fa-circle-info text-[10px] opacity-80 ml-0.5" title="Financement sujet à approbation de crédit"></i>
+                        ${financingUrl ? '</a>' : ''}
                    </p>`
                 : '';
 

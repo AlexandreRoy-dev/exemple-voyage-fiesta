@@ -261,13 +261,12 @@
     window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/index.html?embed=1';
 
     /**
-     * Financement — mode brouillon : texte seul, pas de lien ni de $/mois sur les cartes.
-     * Passer à 'active' + FINANCING_INFO_URL pour activer le lien plus tard.
+     * Financement iFinance — lien actif sur la boutique.
      */
-    window.FINANCING_MODE = 'draft';
+    window.FINANCING_MODE = 'active';
     window.FINANCING_INFO_LABEL = 'Financement sur demande';
     window.FINANCING_INFO_LINK_TEXT = 'Demander un financement';
-    window.FINANCING_INFO_URL = '';
+    window.FINANCING_INFO_URL = 'https://apply.ifinancecanada.com/23359';
 
     /** Taux TPS/TVQ — non utilisés (taxes par occupation dans GHL) */
     window.TAX_TPS_RATE = 0.05;
