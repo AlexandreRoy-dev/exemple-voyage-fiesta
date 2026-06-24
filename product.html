@@ -924,15 +924,21 @@
                 </div>`;
         }
 
+        function buildPricingFinancingHtml() {
+            if (!VoyageFiestaAPI.getFinancingApplyUrl()) return '';
+            return `<div id="booking-financing-note" class="mb-3">${VoyageFiestaAPI.renderFinancingNoteHtml({ stacked: true })}</div>`;
+        }
+
         function buildOccupationPricesHtml(p, isSoldOut) {
             const rows = VoyageFiestaAPI.getOccupationPrices(p);
             if (!rows.length) {
-                return buildOccupationSelectionHtml(p, isSoldOut);
+                return buildPricingFinancingHtml() + buildOccupationSelectionHtml(p, isSoldOut);
             }
 
             const componentMode = VoyageFiestaAPI.productHasChildUnitPricing(p);
             const hasTaxes = rows.some(r => r.taxes != null);
             const incentive = VoyageFiestaAPI.getIncentive(p);
+            const financingBlock = buildPricingFinancingHtml();
 
             let headerHtml = '';
             if (incentive) {
@@ -976,7 +982,7 @@
                 }
             }
 
-            return headerHtml + tableHtml + buildOccupationSelectionHtml(p, isSoldOut);
+            return financingBlock + headerHtml + tableHtml + buildOccupationSelectionHtml(p, isSoldOut);
         }
 
         function renderProduct(p) {
@@ -1088,8 +1094,6 @@
                 embedBreadcrumbEl.innerHTML = VoyageFiestaAPI.renderEmbedBreadcrumbHtml(embedBreadcrumbItems);
             }
 
-            const financingNoteHtml = VoyageFiestaAPI.renderFinancingNoteHtml({ stacked: true });
-
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">
                     <nav class="product-breadcrumb-inline text-lg sm:text-xl text-gray-600 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
@@ -1143,6 +1147,11 @@
                             <div class="bg-white rounded-2xl shadow-xl border-2 ${isSoldOut ? 'border-gray-300 opacity-90' : 'border-brand-blue'} p-4 sm:p-6 sticky-booking" id="booking-panel">
                                 ${inventoryHtml}
 
+                                <div class="space-y-4 mb-6 sm:mb-8">
+                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">${VoyageFiestaAPI.productSupportsKidsPricing(p) ? 'Tarifs par passager' : 'Tarifs par occ.'}</h4>
+                                    ${occupationHtml}
+                                </div>
+
                                 <div class="space-y-4 mb-6 border-b pb-6">
                                     <div class="flex justify-between text-sm gap-3">
                                         <span class="text-gray-500 shrink-0">Date de départ :</span>
@@ -1164,12 +1173,6 @@
                                 </div>
 
                                 ${paymentTermsHtml}
-
-                                <div class="space-y-4 mb-6 sm:mb-8">
-                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">${VoyageFiestaAPI.productSupportsKidsPricing(p) ? 'Tarifs par passager' : 'Tarifs par occ.'}</h4>
-                                    <div id="booking-financing-note" class="mb-1">${financingNoteHtml}</div>
-                                    ${occupationHtml}
-                                </div>
 
                                 ${isSoldOut
                                     ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">COMPLET</button>
