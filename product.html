@@ -111,7 +111,7 @@
         html.embed-mode .product-countdown-bar { display: none; }
 
         html.embed-mode {
-            --embed-chrome-height: 3.25rem;
+            --embed-chrome-height: 4.25rem;
             font-size: 106.25%;
         }
         html.embed-mode .product-breadcrumb-inline { display: none; }
@@ -126,16 +126,32 @@
         html.embed-mode .embed-chrome__inner {
             max-width: 80rem;
             margin: 0 auto;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
         }
         html.embed-mode .embed-chrome__nav {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 0.15rem;
-            font-size: 0.9rem;
+            gap: 0.25rem;
+            font-size: 1.0625rem;
+            line-height: 1.45;
             font-weight: 500;
             margin-bottom: 0;
+        }
+        html.embed-mode .embed-breadcrumb-back {
+            font-size: inherit;
+            font-weight: 600;
+        }
+        html.embed-mode .embed-breadcrumb-back i {
+            font-size: 0.8em;
+        }
+        @media (min-width: 640px) {
+            html.embed-mode {
+                --embed-chrome-height: 4.5rem;
+            }
+            html.embed-mode .embed-chrome__nav {
+                font-size: 1.125rem;
+            }
         }
         #booking-financing-note .embed-financing-note { font-size: 0.9375rem; line-height: 1.45; }
         #booking-financing-note a { font-size: 1rem; }
@@ -147,7 +163,7 @@
             .flight-leg-center { min-width: 0; }
         }
     </style>
-    <script src="embed.js"></script>
+    <script src="embed.js?v=2"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans product-has-booking">
 
@@ -211,7 +227,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=32"></script>
-    <script src="api.js?v=84"></script>
+    <script src="api.js?v=86"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1056,7 +1072,7 @@
             const breadcrumbDestParam = encodeURIComponent(breadcrumbDestKey || p.destinationLabel || p.destination || '');
 
             const embedBreadcrumbItems = [
-                { label: 'Accueil', href: 'index.html' },
+                { back: true, href: 'index.html' },
                 { label: 'Promotions', href: 'index.html' }
             ];
             if (breadcrumbLocation) {
@@ -1076,7 +1092,7 @@
 
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">
-                    <nav class="product-breadcrumb-inline text-base sm:text-lg text-gray-600 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
+                    <nav class="product-breadcrumb-inline text-lg sm:text-xl text-gray-600 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
                         <a href="index.html" class="hover:underline text-brand-blue">Accueil</a>
                         <span aria-hidden="true">/</span>
                         <a href="index.html" class="hover:underline">Promotions</a>

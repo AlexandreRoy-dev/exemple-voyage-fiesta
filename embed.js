@@ -46,9 +46,77 @@
             '  html, body { overflow-x: clip; touch-action: pan-y; overscroll-behavior-x: none; }',
             '  main, .container, #product-content { max-width: 100%; overflow-x: clip; }',
             '  .overflow-x-auto { max-width: 100%; -webkit-overflow-scrolling: touch; }',
+            '}',
+            '#vf-scroll-top {',
+            '  position: fixed;',
+            '  right: 1rem;',
+            '  bottom: max(1rem, env(safe-area-inset-bottom));',
+            '  z-index: 55;',
+            '  display: inline-flex;',
+            '  align-items: center;',
+            '  justify-content: center;',
+            '  gap: 0.35rem;',
+            '  min-width: 2.75rem;',
+            '  height: 2.75rem;',
+            '  padding: 0 0.85rem;',
+            '  border: none;',
+            '  border-radius: 9999px;',
+            '  background: #025091;',
+            '  color: #fff;',
+            '  font: inherit;',
+            '  font-size: 0.8125rem;',
+            '  font-weight: 600;',
+            '  line-height: 1;',
+            '  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);',
+            '  cursor: pointer;',
+            '  opacity: 0;',
+            '  visibility: hidden;',
+            '  transform: translateY(0.5rem);',
+            '  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease, background 0.2s ease;',
+            '  -webkit-tap-highlight-color: transparent;',
+            '}',
+            '#vf-scroll-top.is-visible {',
+            '  opacity: 1;',
+            '  visibility: visible;',
+            '  transform: translateY(0);',
+            '}',
+            '#vf-scroll-top:hover { background: #F26522; }',
+            '#vf-scroll-top i { font-size: 0.95rem; }',
+            '@media (min-width: 640px) {',
+            '  #vf-scroll-top {',
+            '    min-width: 3rem;',
+            '    height: 3rem;',
+            '    font-size: 0.875rem;',
+            '  }',
             '}'
         ].join('\n');
         (document.head || document.documentElement).appendChild(style);
+    }
+
+    function initScrollToTop() {
+        if (document.getElementById('vf-scroll-top')) return;
+        var btn = document.createElement('button');
+        btn.id = 'vf-scroll-top';
+        btn.type = 'button';
+        btn.setAttribute('aria-label', 'Retour en haut de la page');
+        btn.innerHTML = '<i class="fa-solid fa-chevron-up" aria-hidden="true"></i><span class="hidden sm:inline">Haut</span>';
+
+        btn.addEventListener('click', function () {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            notifyParentHeight();
+        });
+
+        var visible = false;
+        function onScroll() {
+            var show = (window.scrollY || document.documentElement.scrollTop) > 280;
+            if (show === visible) return;
+            visible = show;
+            btn.classList.toggle('is-visible', show);
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        document.body.appendChild(btn);
+        onScroll();
     }
 
     function patchLinks(root) {
@@ -118,6 +186,7 @@
 
     function onReady() {
         patchLinks();
+        initScrollToTop();
         notifyParentHeight();
 
         if (isEmbedMode() && typeof MutationObserver !== 'undefined' && document.body) {

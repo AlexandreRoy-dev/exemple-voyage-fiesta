@@ -1987,14 +1987,23 @@
         return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} — <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
     }
 
+    function renderEmbedRootLinkHtml(href = 'index.html') {
+        return `<a href="${escapeShareAttr(href)}" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux offres</span>
+        </a>`;
+    }
+
     function renderEmbedBreadcrumbHtml(items) {
         if (!Array.isArray(items) || !items.length) return '';
         return items.map((item, index) => {
             const sep = index > 0
-                ? '<span class="text-gray-300 mx-1.5" aria-hidden="true">/</span>'
+                ? '<span class="text-gray-300 mx-2" aria-hidden="true">/</span>'
                 : '';
             if (item.current) {
                 return `${sep}<span class="text-brand-blue font-semibold truncate">${escapeHtml(item.label)}</span>`;
+            }
+            if (item.back) {
+                return `${sep}${renderEmbedRootLinkHtml(item.href || 'index.html')}`;
             }
             const href = item.href || 'index.html';
             return `${sep}<a href="${escapeShareAttr(href)}" class="text-brand-blue hover:underline shrink-0">${escapeHtml(item.label)}</a>`;
@@ -2323,6 +2332,7 @@
         isFinancingActive,
         getFinancingApplyUrl,
         renderFinancingNoteHtml,
+        renderEmbedRootLinkHtml,
         renderEmbedBreadcrumbHtml,
         getSocialShareHref,
         renderSocialShareButtonsHtml,
