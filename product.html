@@ -111,7 +111,7 @@
         html.embed-mode .product-countdown-bar { display: none; }
 
         html.embed-mode {
-            --embed-chrome-height: 5.75rem;
+            --embed-chrome-height: 3.25rem;
             font-size: 106.25%;
         }
         html.embed-mode .product-breadcrumb-inline { display: none; }
@@ -135,9 +135,8 @@
             gap: 0.15rem;
             font-size: 0.9rem;
             font-weight: 500;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0;
         }
-        html.embed-mode .embed-financing-note { font-size: 0.9375rem; line-height: 1.4; }
         #booking-financing-note .embed-financing-note { font-size: 0.9375rem; line-height: 1.45; }
         #booking-financing-note a { font-size: 1rem; }
         @media (min-width: 1024px) {
@@ -155,7 +154,6 @@
     <header class="embed-chrome hidden" id="embed-chrome" aria-label="Navigation boutique">
         <div class="embed-chrome__inner">
             <nav id="embed-breadcrumb" class="embed-chrome__nav" aria-label="Fil d'Ariane"></nav>
-            <div data-embed-financing="1"></div>
         </div>
     </header>
 
@@ -1153,6 +1151,7 @@
 
                                 <div class="space-y-4 mb-6 sm:mb-8">
                                     <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">${VoyageFiestaAPI.productSupportsKidsPricing(p) ? 'Tarifs par passager' : 'Tarifs par occ.'}</h4>
+                                    <div id="booking-financing-note" class="mb-1">${financingNoteHtml}</div>
                                     ${occupationHtml}
                                 </div>
 
@@ -1160,7 +1159,6 @@
                                     ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">COMPLET</button>
                                        <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
                                     : `<button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 text-lg transition-all">RÉSERVER MAINTENANT</button>
-                                       <div id="booking-financing-note" class="mt-4 px-1">${financingNoteHtml}</div>
                                        <p class="text-center text-[10px] text-gray-400 mt-3 px-4">En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>`}
                             </div>
                         </div>

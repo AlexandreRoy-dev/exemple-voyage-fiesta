@@ -86,7 +86,7 @@
 
         /* Mode iframe (site client) */
         html.embed-mode {
-            --embed-chrome-height: 5.75rem;
+            --embed-chrome-height: 3.25rem;
             font-size: 106.25%;
         }
         html.embed-mode .boutique-hero { display: none; }
@@ -112,10 +112,8 @@
             gap: 0.15rem;
             font-size: 0.9rem;
             font-weight: 500;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0;
         }
-        html.embed-mode .embed-financing-note { font-size: 0.9375rem; line-height: 1.4; }
-        html.embed-mode .embed-financing-note { font-size: 0.9375rem; }
         @media (min-width: 1024px) {
             html.embed-mode .filters-sidebar {
                 width: 32%;
@@ -145,7 +143,6 @@
                 <span class="text-gray-300 mx-1.5" aria-hidden="true">/</span>
                 <span class="text-brand-blue font-semibold">Promotions</span>
             </nav>
-            <div data-embed-financing="1"></div>
         </div>
     </header>
 
@@ -413,18 +410,6 @@
         function renderIncentiveBadge(inc) {
             if (!inc) return '';
 
-            const financingUrl = VoyageFiestaAPI.getFinancingApplyUrl ? VoyageFiestaAPI.getFinancingApplyUrl() : '';
-            const financingHtml = (VoyageFiestaAPI.isFinancingActive && VoyageFiestaAPI.isFinancingActive() && inc.financing)
-                ? `<p class="text-xs text-white/95 mt-1.5 leading-tight">
-                        ${financingUrl
-                            ? `<a href="${escapeHtml(financingUrl)}" target="_blank" rel="noopener noreferrer" class="text-white/95 hover:text-white">`
-                            : ''}
-                        ou <span class="underline font-semibold">${VoyageFiestaAPI.formatMoney(inc.financing)}/mois</span>
-                        <i class="fa-solid fa-circle-info text-[10px] opacity-80 ml-0.5" title="Financement sujet à approbation de crédit"></i>
-                        ${financingUrl ? '</a>' : ''}
-                   </p>`
-                : '';
-
             return `
                 <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
                     <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)} par passager</p>
@@ -432,7 +417,6 @@
                         <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice, { suffixClass: 'text-[0.72em] font-normal opacity-90 whitespace-nowrap' })}</span>
                         <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoneyPerPerson(inc.price, { suffixClass: 'text-sm font-normal opacity-90 whitespace-nowrap' })}</span>
                     </p>
-                    ${financingHtml}
                 </div>`;
         }
 
