@@ -377,11 +377,14 @@
         PRE_VENTE: 'pre_vente',
         BROUILLON: 'brouillon',
         COMPLET: 'complet_sold_out',
+        VENDU: 'vendu',
         ARCHIVE: 'archiv'
     };
 
-    /** Visible on boutique + indexable for SEO (actif + pré-vente + complet) */
-    window.VISIBLE_STATES = ['actif', 'pre_vente', 'complet_sold_out'];
+    /** Visible on boutique + indexable for SEO (actif + pré-vente + complet + vendu) */
+    window.VISIBLE_STATES = ['actif', 'pre_vente', 'complet_sold_out', 'vendu'];
+
+    window.VENDU_BANNER_TITLE = 'Trop tard, Complet!';
 
     /** Bannière statut pré-vente (GHL statut = pré-vente) */
     window.PRE_SALE_BANNER_TITLE = 'Pré-vente';

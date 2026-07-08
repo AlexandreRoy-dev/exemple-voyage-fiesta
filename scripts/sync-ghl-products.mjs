@@ -24,7 +24,7 @@ const MANIFEST_PATH = resolve(IMAGES_DIR, '.manifest.json');
 const API_BASE = 'https://services.leadconnectorhq.com';
 const PAGE_LIMIT = 100;
 
-const VISIBLE_STATES = new Set(['actif', 'pre_vente', 'complet_sold_out']);
+const VISIBLE_STATES = new Set(['actif', 'pre_vente', 'complet_sold_out', 'vendu']);
 
 function requireEnv(name) {
  const value = process.env[name];
@@ -567,7 +567,10 @@ function normalizeState(raw) {
  if (s === 'pre_vente' || s === 'pre-vente' || s === 'prevente') return 'pre_vente';
  if (s === 'brouillon' || s === 'draft') return 'brouillon';
  if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
+ if (s === 'vendu' || s === 'vendue') return 'vendu';
  if (s === 'archiv' || s === 'archive' || s === 'archivé' || s === 'archivé') return 'archiv';
+
+ if (/^vendu|vendue/.test(s)) return 'vendu';
 
  if (/sold\s*out|complet\s*\(|complet.*sold|épuisé|epuise/.test(s)) return 'complet_sold_out';
  if (/^complet$|complet\s*-/.test(s)) return 'complet_sold_out';
@@ -934,7 +937,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
  durationNights,
  roomCategory: pickProp(props, 'categorie_chambre', 'room_category', 'roomCategory', 'chambre') || '',
  criteria,
- inventory: state === 'complet_sold_out'
+ inventory: state === 'complet_sold_out' || state === 'vendu'
  ? 0
  : toNumber(pickProp(props, 'inventaire', 'inventory', 'stock'), 0),
  price: toNumber(occ.prixDouble ?? pickProp(props, 'prix_occ_double', 'price', 'prix'), 0),

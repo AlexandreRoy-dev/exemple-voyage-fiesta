@@ -251,8 +251,8 @@
 
     </main>
 
-    <script src="config.js?v=32"></script>
-    <script src="api.js?v=87"></script>
+    <script src="config.js?v=33"></script>
+    <script src="api.js?v=88"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -469,10 +469,14 @@
 
             filteredData.forEach(p => {
                 const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
+                const isVendu = VoyageFiestaAPI.isVendu(p);
+                const isUnavailable = VoyageFiestaAPI.isUnavailablePackage(p);
                 const isPreSale = VoyageFiestaAPI.isPreSale(p);
                 let inventoryBadge = '';
 
-                if (isSoldOut) {
+                if (isVendu) {
+                    inventoryBadge = VoyageFiestaAPI.renderVenduBannerHtml({ compact: true });
+                } else if (isSoldOut) {
                     inventoryBadge = `<div class="absolute top-4 left-4 bg-red-600 text-white font-bold px-3 py-1 rounded shadow-lg z-10 text-sm">COMPLET</div>`;
                 } else if (isPreSale) {
                     inventoryBadge = VoyageFiestaAPI.renderPreSaleBannerHtml({ compact: true });
@@ -481,15 +485,15 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isSoldOut ? 'border-red-200' : ''}`;
+                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isUnavailable ? 'border-red-200' : ''}`;
 
                 const productUrl = window.VoyageFiestaEmbed
                     ? window.VoyageFiestaEmbed.boutiqueUrl(`product.html?slug=${encodeURIComponent(p.slug)}`)
                     : `product.html?slug=${encodeURIComponent(p.slug)}`;
                 const endMs = p.endDate instanceof Date ? p.endDate.getTime() : new Date(p.endDate).getTime();
                 const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
-                const departureBadge = departureLabel
-                    ? `<span class="inline-block bg-blue-50 text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-calendar-day mr-1"></i> Départ ${departureLabel}</span>`
+                const departureLine = departureLabel
+                    ? `<p class="mt-1.5 text-base font-bold text-brand-blue leading-snug"><i class="fa-solid fa-calendar-day mr-1.5 text-brand-orange" aria-hidden="true"></i>Départ ${escapeHtml(departureLabel)}</p>`
                     : '';
                 const inc = VoyageFiestaAPI.getIncentive(p);
                 const incentiveBadge = renderIncentiveBadge(inc);
@@ -518,15 +522,15 @@
                         </div>
                     </a>
                     <div class="p-5 flex-grow flex flex-col">
-                        <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mb-3 text-sm text-gray-500 min-w-0">
-                            <span class="font-medium text-brand-blue min-w-0 break-words"><i class="fa-solid fa-location-dot mr-1"></i> ${p.destinationLabel || p.destination}${p.country ? `, ${p.country}` : ''}</span>
-                            <span class="shrink-0">${p.durationNights} nuits</span>
+                        <div class="mb-3 min-w-0">
+                            <p class="font-semibold text-brand-blue text-base leading-snug break-words"><i class="fa-solid fa-location-dot mr-1"></i> ${p.destinationLabel || p.destination}${p.country ? `, ${p.country}` : ''}</p>
+                            ${departureLine}
+                            <p class="mt-1 text-sm text-gray-500">${p.durationNights} nuits</p>
                         </div>
                         <div class="mb-4">
                             ${renderSupplierChip(p)}
                             <span class="inline-block bg-brand-light text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-bed mr-1"></i> ${p.roomCategory}</span>
                             ${p.departureAirport ? `<span class="inline-block bg-orange-50 text-brand-orange text-xs px-2 py-1 rounded border border-orange-100 mb-1"><i class="fa-solid fa-plane-departure mr-1"></i> ${escapeHtml(p.departureAirport)}</span>` : ''}
-                            ${departureBadge}
                         </div>
                         <div class="mt-auto">
                             <div class="bg-red-50 border border-red-100 rounded-lg p-2 mb-4 text-center">
@@ -544,8 +548,8 @@
                                         <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
                                             <i class="fa-solid fa-circle-info mr-1"></i> Détail
                                         </a>
-                                        ${isSoldOut
-                                            ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">Complet</span>`
+                                        ${isUnavailable
+                                            ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">${isVendu ? 'Trop tard, Complet!' : 'Complet'}</span>`
                                             : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
                                     </div>
                                 </div>

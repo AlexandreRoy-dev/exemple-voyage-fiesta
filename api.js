@@ -13,7 +13,7 @@
     function isDetailVisible(p) {
         if (!p) return false;
         const state = normalizeState(p.state, p.active);
-        return state === 'actif' || state === 'pre_vente' || state === 'complet_sold_out';
+        return state === 'actif' || state === 'pre_vente' || state === 'complet_sold_out' || state === 'vendu';
     }
 
     function rawStateValue(state, legacyActive) {
@@ -36,7 +36,10 @@
         if (s === 'pre_vente' || s === 'pre-vente' || s === 'prevente') return 'pre_vente';
         if (s === 'brouillon' || s === 'draft') return 'brouillon';
         if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
+        if (s === 'vendu' || s === 'vendue') return 'vendu';
         if (s === 'archiv' || s === 'archive' || s === 'archivé') return 'archiv';
+
+        if (/^vendu|vendue/.test(s)) return 'vendu';
 
         if (/sold\s*out|complet\s*\(|complet.*sold|épuisé|epuise/.test(s)) return 'complet_sold_out';
         if (/^complet$|complet\s*-/.test(s)) return 'complet_sold_out';
@@ -52,17 +55,26 @@
         return p && normalizeState(p.state, p.active) === 'pre_vente';
     }
 
+    function isVendu(p) {
+        return p && normalizeState(p.state, p.active) === 'vendu';
+    }
+
     function isSoldOut(p) {
         const state = normalizeState(p.state, p.active);
         return state === 'complet_sold_out' || p.inventory === 0;
     }
 
+    function isUnavailablePackage(p) {
+        return isSoldOut(p) || isVendu(p);
+    }
+
     function isVisibleOnSite(p) {
-        return isActifPackage(p) || isPreSale(p) || normalizeState(p.state, p.active) === 'complet_sold_out';
+        const state = normalizeState(p.state, p.active);
+        return isActifPackage(p) || isPreSale(p) || state === 'complet_sold_out' || state === 'vendu';
     }
 
     function isBookablePackage(p) {
-        if (!p || isSoldOut(p)) return false;
+        if (!p || isUnavailablePackage(p)) return false;
         const state = normalizeState(p.state, p.active);
         return state === 'actif' || state === 'pre_vente';
     }
@@ -86,6 +98,18 @@
         return `<div class="bg-blue-50 text-brand-blue border-2 border-brand-blue/30 rounded-lg p-3 text-center mb-6">
             <p class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-clock mr-2" aria-hidden="true"></i>${escapeHtml(title)}</p>
             <p class="text-[11px] mt-1 text-gray-600 leading-snug">${escapeHtml(subtitle)}</p>
+        </div>`;
+    }
+
+    function renderVenduBannerHtml(options = {}) {
+        const title = window.VENDU_BANNER_TITLE || 'Trop tard, Complet!';
+        if (options.compact) {
+            return `<div class="absolute top-4 left-4 bg-red-700 text-white font-bold px-3 py-1.5 rounded shadow-lg z-10 text-sm leading-tight">
+                ${escapeHtml(title)}
+            </div>`;
+        }
+        return `<div class="bg-red-50 text-red-700 border-2 border-red-200 rounded-lg p-3 text-center mb-6">
+            <p class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-ban mr-2" aria-hidden="true"></i>${escapeHtml(title)}</p>
         </div>`;
     }
 
@@ -1449,7 +1473,7 @@
             flights: p.flights || { out: {}, return: {}, airlineLogo: '' },
             stars: normalizeStars(p.stars),
             endDate,
-            inventory: isSoldOut({ ...p, state }) ? 0 : p.inventory,
+            inventory: isUnavailablePackage({ ...p, state }) ? 0 : p.inventory,
             img,
             imgRoom,
             imgExtra,
@@ -2317,9 +2341,12 @@
         getSupplierFilterOptions,
         isOtherSupplier,
         isSoldOut,
+        isVendu,
+        isUnavailablePackage,
         isPreSale,
         isBookablePackage,
         renderPreSaleBannerHtml,
+        renderVenduBannerHtml,
         isVisibleOnSite,
         isActifPackage,
         isListingVisible,
