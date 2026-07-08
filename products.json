@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-24T15:13:11.395Z",
+  "updatedAt": "2026-07-08T00:11:54.275Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -108,7 +108,7 @@
       "durationNights": 7,
       "roomCategory": "CHAMBRE D'HÔTEL",
       "criteria": [],
-      "inventory": 15,
+      "inventory": 14,
       "price": 1358,
       "priceOccSimple": null,
       "priceOccTriple": null,
