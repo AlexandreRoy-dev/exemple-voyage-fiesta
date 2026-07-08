@@ -2034,10 +2034,15 @@
     function buildProductShareTitle(p) {
         const name = String(p?.name || window.SITE_NAME || 'Voyage Fiesta').trim();
         const discount = optionalPrice(p?.discountAmount ?? p?.discount_amount ?? p?.rabais);
+        let title;
         if (discount !== null && discount > 0) {
-            return `${name} - ${formatMoney(discount)} de rabais`;
+            title = `${name} - ${formatMoney(discount)} de rabais`;
+        } else {
+            title = name;
         }
-        return name;
+        const departureLabel = formatDepartureDate(p?.departureDate);
+        if (departureLabel) title += ` · Départ ${departureLabel}`;
+        return title;
     }
 
     function buildProductShareDescription(p) {

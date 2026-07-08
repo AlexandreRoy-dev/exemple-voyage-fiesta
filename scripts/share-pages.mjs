@@ -59,15 +59,33 @@ function formatMoney(amount) {
   }).format(Number(amount));
 }
 
+function formatDepartureDate(value) {
+  if (!value) return null;
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('fr-CA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC'
+  });
+}
+
 export function buildShareTitle(product) {
   const name = String(product.name || 'Voyage Fiesta').trim();
   const raw = product.discountAmount ?? product.discount_amount ?? product.rabais;
   const discount = Number(raw);
+  let title;
   if (Number.isFinite(discount) && discount > 0) {
     const amount = formatMoney(discount);
-    return `${name} - ${amount} de rabais`;
+    title = `${name} - ${amount} de rabais`;
+  } else {
+    title = name;
   }
-  return name;
+  const departureRaw = product.departureDate ?? product.departure_date ?? product.date_de_depart;
+  const departureLabel = formatDepartureDate(departureRaw);
+  if (departureLabel) title += ` · Départ ${departureLabel}`;
+  return title;
 }
 
 export function buildShareDescription(product) {
