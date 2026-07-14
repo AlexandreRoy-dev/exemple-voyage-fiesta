@@ -1,0 +1,130 @@
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f5f5f5; margin:0; padding:0;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+      <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="max-width:600px; width:100%; background-color:#ffffff; border-radius:8px; overflow:hidden; border:1px solid #eeeeee;">
+
+        <tr>
+          <td style="background-color:#ff4e50; padding:22px 28px; text-align:center;">
+            <p style="margin:0; font-family:Georgia,'Times New Roman',serif; font-size:22px; font-weight:400; color:#ffffff; letter-spacing:0.02em;">
+              Mariage Sud
+            </p>
+            <p style="margin:6px 0 0; font-family:Arial,Helvetica,sans-serif; font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.9);">
+              Spécialistes en mariage à destination
+            </p>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:32px 28px 24px; font-family:Arial,Helvetica,sans-serif; color:#666666; font-size:16px; line-height:1.65;">
+
+            <p style="margin:0 0 16px; color:#666666;">Bonjour {{contact.first_name}},</p>
+
+            <p style="margin:0 0 24px; color:#666666;">
+              <strong style="color:#23424c;">Merci pour votre inscription !</strong><br>
+              Votre réservation a bien été enregistrée.
+            </p>
+
+            <p style="margin:0 0 20px; font-size:15px; line-height:1.6; color:#666666;">
+              Voici les instructions selon le mode de paiement choisi lors de votre inscription :
+            </p>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; border-left:4px solid #ff4e50;">
+              <tr>
+                <td style="padding:0 0 0 14px;">
+                  <h3 style="margin:0 0 8px; font-family:Georgia,'Times New Roman',serif; font-size:18px; font-weight:400; color:#23424c;">
+                    Paiement par carte de crédit
+                  </h3>
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:#666666;">
+                    Si vous avez choisi le paiement par carte de crédit, votre conseillère voyage <strong style="color:#23424c;">{{agent.name}}</strong> communiquera avec vous d'ici la date indiquée sur le faire-part de mariage afin de procéder au paiement.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; border-left:4px solid #ff4e50;">
+              <tr>
+                <td style="padding:0 0 0 14px;">
+                  <h3 style="margin:0 0 8px; font-family:Georgia,'Times New Roman',serif; font-size:18px; font-weight:400; color:#23424c;">
+                    Paiement par virement Interac
+                  </h3>
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:#666666;">
+                    Si vous avez choisi le paiement par virement Interac, veuillez effectuer votre virement à l'adresse suivante :<br>
+                    <a href="mailto:{{agent.email}}" style="color:#ff4e50; font-weight:700; text-decoration:none;">{{agent.email}}</a>
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; border-left:4px solid #ff4e50;">
+              <tr>
+                <td style="padding:0 0 0 14px;">
+                  <h3 style="margin:0 0 8px; font-family:Georgia,'Times New Roman',serif; font-size:18px; font-weight:400; color:#23424c;">
+                    Financement
+                  </h3>
+                  <p style="margin:0 0 12px; font-size:15px; line-height:1.6; color:#666666;">
+                    Si vous avez choisi l'option de financement, veuillez compléter votre demande en ligne :<br>
+                    <a href="{{financement_link}}" style="color:#ff4e50; font-weight:700; text-decoration:underline;">Compléter ma demande de financement</a>
+                  </p>
+                  <p style="margin:0; font-size:14px; line-height:1.6; color:#666666;">
+                    Une fois votre demande soumise, merci de transmettre votre numéro de demande iFinance à votre conseillère afin que nous puissions effectuer le suivi de votre dossier.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:24px; border-left:4px solid #ff4e50;">
+              <tr>
+                <td style="padding:0 0 0 14px;">
+                  <h3 style="margin:0 0 8px; font-family:Georgia,'Times New Roman',serif; font-size:18px; font-weight:400; color:#23424c;">
+                    Dépôt via caisse Populaire
+                  </h3>
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:#666666;">
+                    Si vous avez choisi le dépôt via caisse Populaire, prévoyez 24 heures avant la date du paiement et demandez les informations de paiement à <strong style="color:#23424c;">{{agent.name}}</strong> au <a href="mailto:{{agent.email}}" style="color:#ff4e50; font-weight:700; text-decoration:none;">{{agent.email}}</a>.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:0 0 24px; background-color:#f9f9f9; border-radius:6px;">
+              <tr>
+                <td style="padding:16px 18px;">
+                  <h3 style="margin:0 0 10px; font-family:Georgia,'Times New Roman',serif; font-size:17px; font-weight:400; color:#23424c;">
+                    Coordonnées de votre conseillère
+                  </h3>
+                  <p style="margin:0; font-size:15px; line-height:1.7; color:#666666;">
+                    <strong style="color:#23424c;">{{agent.name}}</strong><br>
+                    Téléphone : <a href="tel:{{agent.phone}}" style="color:#ff4e50; text-decoration:none;">{{agent.phone}}</a><br>
+                    Courriel : <a href="mailto:{{agent.email}}" style="color:#ff4e50; text-decoration:none;">{{agent.email}}</a>
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 16px; font-size:15px; line-height:1.6; color:#666666;">
+              Pour toute question concernant votre réservation ou vos modes de paiement, n'hésitez pas à communiquer directement avec votre conseillère.
+            </p>
+
+            <p style="margin:0 0 8px; font-size:15px; line-height:1.6; color:#666666;">
+              Merci de votre confiance et au plaisir de vous accompagner dans votre voyage !
+            </p>
+
+            <p style="margin:24px 0 0; font-size:15px; color:#23424c;">
+              <strong>L'équipe de Mariage Sud</strong>
+            </p>
+
+          </td>
+        </tr>
+
+        <tr>
+          <td style="background-color:#23424c; padding:18px 28px; text-align:center;">
+            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:13px; color:#ffffff;">
+              <a href="https://mariage-sud.com/" style="color:#4fc6a1; text-decoration:none; font-weight:600;">mariage-sud.com</a>
+              &nbsp;·&nbsp; 1-844-535-3838
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>

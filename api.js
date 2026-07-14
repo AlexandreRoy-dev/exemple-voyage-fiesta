@@ -1421,6 +1421,7 @@
             carrier,
             supplierLabel: formatSupplierLabel(supplier),
             carrierLabel: formatCarrierLabel(carrier),
+            promotion: String(p.promotion ?? p.promo ?? '').trim(),
             taxesAmount,
             destLabel: (window.destLabels && window.destLabels[p.destTag])
                 || (p.destTag ? String(p.destTag) : '')

@@ -969,6 +969,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
  taxChild212: optionalPrice(pick(props, 'tax_child_2_12', 'taxChild212')),
  taxChild1317: optionalPrice(pick(props, 'tax_child_13_17', 'taxChild1317')),
  packageType: pickProp(props, 'type_forfait', 'package_type', 'packageType', 'forfait_type') || '',
+ promotion: pickProp(props, 'promotion') || '',
  hotelDescription: pickText(
  props,
  'description_hotel',

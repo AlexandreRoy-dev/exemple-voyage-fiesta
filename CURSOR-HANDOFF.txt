@@ -163,6 +163,13 @@ Imports / docs:
   README.md
 
 --------------------------------------------------------------------------------
+TODO CLIENT (non fait)
+--------------------------------------------------------------------------------
+- Formulaire GHL réservation forfait (champs cachés + Query Keys) — voir config.js GHL_FORM_IFRAME_KEYS
+- Courriel confirmation réservation — imports/ghl-email-confirmation-reservation.md
+- **3 autres formulaires GHL** — répliquer 6 questions (assurance médicale, passeport 6 mois, assurance annulation, nom débourseur, aéroport départ, mode paiement) → voir imports/ghl-forms-questions-a-repliquer.md
+
+--------------------------------------------------------------------------------
 DEPLOY
 --------------------------------------------------------------------------------
 Push main → GitHub Pages (CNAME: promofiesta.roymarketing.ca)
