@@ -286,8 +286,8 @@
      * Legacy keys on passengers 2–5 match the live GHL form as of 2026-07.
      */
     window.GHL_ROOM_FORM_FIELD_MAP = {
-        maries: 'first_name',
         nombre_passagers: 'nombre_passagers',
+        depot: 'depot',
         p1_prenom: 'full_name',
         p1_nom: 'last_name',
         p1_genre: 'genre_p1',

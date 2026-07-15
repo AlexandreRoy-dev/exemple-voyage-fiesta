@@ -215,45 +215,19 @@
             <div class="flex justify-between items-center p-4 border-b shrink-0">
                 <div>
                     <h3 class="font-bold text-brand-blue text-lg">Réserver ce forfait</h3>
-                    <p id="modal-steps" class="text-xs text-gray-500 mt-0.5">Étape 1 sur 2 — Réservation</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Inscription des passagers</p>
                 </div>
                 <button id="close-modal" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
             </div>
             <div class="p-4 overflow-y-auto flex-grow">
                 <p id="modal-product-name" class="text-sm text-gray-600 mb-4 font-medium"></p>
-
-                <!-- Étape 1 : formulaire réservation GHL existant -->
-                <div id="reservation-step-1">
-                    <div id="ghl-form-container" class="min-h-[400px]">
-                        <div id="ghl-form-placeholder" class="text-center py-12 text-gray-400 text-sm border border-dashed rounded-xl">
-                            <i class="fa-solid fa-file-lines text-3xl mb-3"></i>
-                            <p>Le formulaire de réservation est temporairement indisponible.</p>
-                            <p class="mt-2 text-xs">Veuillez nous contacter pour réserver ce forfait.</p>
+                <div id="room-form-modal-root"></div>
+                <div id="room-ghl-handoff" class="hidden mt-4">
+                    <div class="rounded-xl border border-gray-200 overflow-hidden">
+                        <div class="p-3 bg-brand-light text-sm text-gray-600">
+                            Formulaire prérempli : cliquez <strong>Envoyer</strong> ci-dessous pour finaliser.
                         </div>
-                        <iframe id="ghl-form-iframe" class="hidden w-full min-h-[500px] border-0" title="Formulaire de réservation" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation allow-top-navigation-by-user-activation"></iframe>
-                    </div>
-                    <div class="mt-4 flex justify-end">
-                        <button type="button" id="goto-passengers-step" class="bg-brand-blue hover:bg-brand-orange text-white font-semibold py-2.5 px-5 rounded-xl text-sm transition-colors">
-                            Continuer — infos passagers →
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Étape 2 : formulaire natif passagers → autofill GHL chambre -->
-                <div id="reservation-step-2" class="hidden">
-                    <div id="room-form-modal-root"></div>
-                    <div id="room-ghl-handoff" class="hidden mt-4">
-                        <div class="rounded-xl border border-gray-200 overflow-hidden">
-                            <div class="p-3 bg-brand-light text-sm text-gray-600">
-                                Formulaire prérempli — cliquez <strong>Envoyer</strong> ci-dessous pour finaliser.
-                            </div>
-                            <iframe id="ghl-room-iframe" class="w-full min-h-[640px] border-0" title="Inscription chambre GHL"></iframe>
-                        </div>
-                    </div>
-                    <div class="mt-3 flex justify-between gap-2">
-                        <button type="button" id="back-to-reservation-step" class="text-sm font-semibold text-brand-blue hover:text-brand-orange py-2 px-3">
-                            ← Retour
-                        </button>
+                        <iframe id="ghl-room-iframe" class="w-full min-h-[640px] border-0" title="Inscription chambre GHL" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-top-navigation allow-top-navigation-by-user-activation"></iframe>
                     </div>
                 </div>
             </div>
@@ -261,8 +235,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=34"></script>
-    <script src="room-registration.js?v=1"></script>
+    <script src="config.js?v=35"></script>
+    <script src="room-registration.js?v=3"></script>
     <script src="api.js?v=88"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
@@ -1389,44 +1363,50 @@
             if (!openBtn) return;
 
             const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
-            const iframe = document.getElementById('ghl-form-iframe');
-            const placeholder = document.getElementById('ghl-form-placeholder');
-            const step1 = document.getElementById('reservation-step-1');
-            const step2 = document.getElementById('reservation-step-2');
-            const stepsLabel = document.getElementById('modal-steps');
             const roomRoot = document.getElementById('room-form-modal-root');
             const roomHandoff = document.getElementById('room-ghl-handoff');
             const roomIframe = document.getElementById('ghl-room-iframe');
-            let roomMounted = false;
 
-            function showStep(n) {
-                const is1 = n === 1;
-                step1?.classList.toggle('hidden', !is1);
-                step2?.classList.toggle('hidden', is1);
-                if (stepsLabel) {
-                    stepsLabel.textContent = is1
-                        ? 'Étape 1 sur 2 — Réservation'
-                        : 'Étape 2 sur 2 — Infos passagers';
-                }
-            }
-
-            function mountRoomStep() {
+            function openModal() {
+                if (!hasValidBookingSelection()) return;
                 if (!window.RoomRegistration || !roomRoot) return;
-                RoomRegistration.injectStyles();
+
+                const occupationId = getSelectedOccupationId();
                 const overrides = getBookingSelectionOverrides() || {};
+                const row = occupationId && occupationId !== 'autres'
+                    ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
+                    : null;
+                const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
+                const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
+                const bookingLabel = breakdown?.bookingLabel || row?.label || '';
+                const priceLine = breakdown?.bookingTotalWithTaxes != null
+                    ? `${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)} total · ${bookingLabel}`
+                    : (row
+                        ? (row.totalWithTaxes != null
+                            ? `${VoyageFiestaAPI.formatMoneyPerPerson(row.totalWithTaxes, { html: false })} total · ${row.label}`
+                            : `${VoyageFiestaAPI.formatMoneyPerPerson(row.price, { html: false })} · ${row.label}`)
+                        : `${VoyageFiestaAPI.formatMoneyPerPerson(p.price, { html: false })}`);
+
+                document.getElementById('modal-product-name').textContent =
+                    `${p.name} - ${priceLine}${departureText ? ' · Départ ' + departureText : ''} · ${p.departureAirport} · ${supplierLabel}`;
+
                 let adults = Number(overrides.adults);
                 let kids = (Number(overrides.children212) || 0) + (Number(overrides.children1317) || 0);
                 if (overrides.isAutres) {
                     adults = 2;
                     kids = 0;
                 } else if (!Number.isFinite(adults) || adults < 1) {
-                    const total = Number(overrides.totalPeople);
+                    const total = Number(overrides.totalPeople ?? breakdown?.totalPeople);
                     adults = Number.isFinite(total) && total > 0 ? total : 2;
                     kids = 0;
                 }
                 adults = Math.min(5, Math.max(1, adults));
                 kids = Math.min(4, Math.max(0, kids));
 
+                const depositPerPerson = breakdown?.depositPerPerson
+                    ?? VoyageFiestaAPI.getDepositPerPerson(p);
+
+                RoomRegistration.injectStyles();
                 roomHandoff?.classList.add('hidden');
                 if (roomIframe) roomIframe.src = 'about:blank';
                 roomRoot.classList.remove('opacity-60', 'pointer-events-none');
@@ -1435,6 +1415,7 @@
                 RoomRegistration.mountForm(roomRoot, {
                     initialPassengerCount: adults,
                     initialKidsCount: kids,
+                    depositPerPerson,
                     summaryHtml: `<strong>Forfait :</strong> ${document.getElementById('modal-product-name')?.textContent || p.name}`,
                     onSubmit({ ghlUrl }) {
                         const thankYou = typeof buildGhlThankYouUrl === 'function'
@@ -1452,42 +1433,7 @@
                         }
                     }
                 });
-                roomMounted = true;
-            }
 
-            function openModal() {
-                if (!hasValidBookingSelection()) return;
-
-                const occupationId = getSelectedOccupationId();
-                const overrides = getBookingSelectionOverrides();
-                const row = occupationId && occupationId !== 'autres'
-                    ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
-                    : null;
-                const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
-                const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
-                const bookingLabel = breakdown?.bookingLabel || row?.label || '';
-                const priceLine = breakdown?.bookingTotalWithTaxes != null
-                    ? `${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)} total · ${bookingLabel}`
-                    : (row
-                        ? (row.totalWithTaxes != null
-                            ? `${VoyageFiestaAPI.formatMoneyPerPerson(row.totalWithTaxes, { html: false })} total · ${row.label}`
-                            : `${VoyageFiestaAPI.formatMoneyPerPerson(row.price, { html: false })} · ${row.label}`)
-                        : `${VoyageFiestaAPI.formatMoneyPerPerson(p.price, { html: false })}`);
-
-                document.getElementById('modal-product-name').textContent =
-                    `${p.name} — ${priceLine}${departureText ? ' · Départ ' + departureText : ''} · ${p.departureAirport} · ${supplierLabel}`;
-
-                if (GHL_FORM_EMBED_URL) {
-                    iframe.src = buildGhlIframeSrc(p);
-                    iframe.classList.remove('hidden');
-                    placeholder.classList.add('hidden');
-                } else {
-                    iframe.classList.add('hidden');
-                    placeholder.classList.remove('hidden');
-                }
-
-                showStep(1);
-                roomMounted = false;
                 modal.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             }
@@ -1495,21 +1441,12 @@
             function closeModal() {
                 modal.classList.add('hidden');
                 document.body.style.overflow = '';
-                if (iframe) iframe.src = 'about:blank';
                 if (roomIframe) roomIframe.src = 'about:blank';
             }
 
             openBtn.addEventListener('click', openModal);
             document.getElementById('close-modal').addEventListener('click', closeModal);
             document.getElementById('modal-backdrop').addEventListener('click', closeModal);
-
-            document.getElementById('goto-passengers-step')?.addEventListener('click', () => {
-                showStep(2);
-                mountRoomStep();
-            });
-            document.getElementById('back-to-reservation-step')?.addEventListener('click', () => {
-                showStep(1);
-            });
         }
 
         function startCountdown(endDate) {

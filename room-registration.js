@@ -44,7 +44,7 @@
     }
 
     function passengerSlotKeys(index) {
-        const n = index; // 1–5
+        const n = index; // 1-5
         return {
             prenom: `p${n}_prenom`,
             nom: `p${n}_nom`,
@@ -145,13 +145,15 @@
                 <section class="rr-card">
                     <h3 class="rr-card-title">Inscription de chambre</h3>
                     <div class="rr-grid">
-                        <label class="rr-field rr-field-full">
-                            <span>Les mariés</span>
-                            <input class="rr-input" type="text" name="maries" placeholder="Indiquez le nom des mariés">
-                        </label>
                         <label class="rr-field">
                             <span>Nombre de passagers dans la chambre *</span>
                             ${selectHtml('nombre_passagers', countOpts, true, 'Choisissez une option')}
+                        </label>
+                        <label class="rr-field">
+                            <span>Dépôt</span>
+                            <input class="rr-input rr-input-readonly" type="text" name="depot_display" id="rr-depot-display" readonly tabindex="-1" placeholder="-">
+                            <input type="hidden" name="depot" id="rr-depot-value" value="">
+                            <span class="rr-field-hint" id="rr-depot-hint"></span>
                         </label>
                     </div>
                 </section>
@@ -234,10 +236,11 @@
         const fd = new FormData(form);
         const get = (name) => String(fd.get(name) || '').trim();
         const count = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(get('nombre_passagers')) || 1));
+        const depotRaw = get('depot');
 
         const payload = {
-            maries: get('maries'),
             nombre_passagers: String(count),
+            depot: depotRaw,
             address: get('address'),
             city: get('city'),
             postal_code: get('postal_code'),
@@ -290,13 +293,27 @@
         ).join('');
     }
 
+    function formatMoneyCad(amount) {
+        if (amount == null || !Number.isFinite(Number(amount))) return '-';
+        return new Intl.NumberFormat('fr-CA', {
+            style: 'currency',
+            currency: 'CAD',
+            maximumFractionDigits: 2
+        }).format(Number(amount));
+    }
+
     function mountForm(root, options = {}) {
         const {
             initialPassengerCount = 2,
             initialKidsCount = 0,
+            depositPerPerson = null,
             onSubmit,
             summaryHtml = ''
         } = options;
+
+        const perPerson = depositPerPerson != null && Number.isFinite(Number(depositPerPerson))
+            ? Number(depositPerPerson)
+            : null;
 
         root.innerHTML = `
             ${summaryHtml ? `<div class="rr-summary">${summaryHtml}</div>` : ''}
@@ -307,29 +324,66 @@
         const passengersEl = root.querySelector('#rr-passengers');
         const countSelect = form.querySelector('[name="nombre_passagers"]');
         const kidsList = root.querySelector('#rr-kids-list');
+        const depotDisplay = form.querySelector('#rr-depot-display');
+        const depotValue = form.querySelector('#rr-depot-value');
+        const depotHint = form.querySelector('#rr-depot-hint');
         const errorEl = root.querySelector('#rr-form-error');
         let kidSeq = 0;
+
+        function calcPassengerCount() {
+            return Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(countSelect.value) || 1));
+        }
+
+        /** Dépôt = dépôt/pers. × (passagers chambre + lignes enfants) */
+        function updateDepot() {
+            const structured = calcPassengerCount();
+            const kidSlots = form.querySelectorAll('[data-kid-row]').length;
+            const people = structured + kidSlots;
+            if (perPerson == null) {
+                depotDisplay.value = '';
+                depotValue.value = '';
+                if (depotHint) depotHint.textContent = 'Dépôt non défini pour ce forfait.';
+                return;
+            }
+            const total = Math.round(perPerson * people * 100) / 100;
+            depotValue.value = String(total);
+            depotDisplay.value = formatMoneyCad(total);
+            if (depotHint) {
+                depotHint.textContent = `${formatMoneyCad(perPerson)} / pass. × ${people} = ${formatMoneyCad(total)}`;
+            }
+        }
 
         function addKid() {
             kidSeq += 1;
             kidsList.insertAdjacentHTML('beforeend', kidRowHtml(kidSeq));
             const row = kidsList.lastElementChild;
-            row.querySelector('.rr-remove-kid')?.addEventListener('click', () => row.remove());
+            row.querySelector('.rr-remove-kid')?.addEventListener('click', () => {
+                row.remove();
+                updateDepot();
+            });
+            row.querySelectorAll('input, select').forEach(el => {
+                el.addEventListener('input', updateDepot);
+                el.addEventListener('change', updateDepot);
+            });
+            updateDepot();
         }
 
         countSelect.value = String(Math.min(5, Math.max(1, initialPassengerCount)));
         renderPassengerBlocks(passengersEl, countSelect.value);
         countSelect.addEventListener('change', () => {
             renderPassengerBlocks(passengersEl, countSelect.value);
+            updateDepot();
         });
 
         root.querySelector('#rr-add-kid')?.addEventListener('click', addKid);
         for (let i = 0; i < initialKidsCount; i++) addKid();
+        updateDepot();
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             errorEl.classList.add('hidden');
             errorEl.textContent = '';
+            updateDepot();
 
             if (!form.checkValidity()) {
                 form.reportValidity();
@@ -351,10 +405,15 @@
             }
         });
 
-        return { form, rebuildPassengers: (n) => {
-            countSelect.value = String(n);
-            renderPassengerBlocks(passengersEl, n);
-        } };
+        return {
+            form,
+            updateDepot,
+            rebuildPassengers: (n) => {
+                countSelect.value = String(n);
+                renderPassengerBlocks(passengersEl, n);
+                updateDepot();
+            }
+        };
     }
 
     const css = `
@@ -373,6 +432,8 @@
   border: 1px solid #d1d5db; border-radius: 0.65rem; padding: 0.65rem 0.75rem;
   background: #fff; color: #111827; width: 100%;
 }
+.rr-input-readonly { background: #F3F7FA; font-weight: 600; color: #025091; }
+.rr-field-hint { font-size: 0.7rem; font-weight: 500; color: #6b7280; }
 .rr-input:focus, .rr-textarea:focus { outline: 2px solid #02509133; border-color: #025091; }
 .rr-stack { display: flex; flex-direction: column; gap: 0.75rem; }
 .rr-kid-row { position: relative; padding-right: 2rem; }
