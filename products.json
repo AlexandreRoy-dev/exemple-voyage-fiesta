@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-15T21:02:22.616Z",
+  "updatedAt": "2026-07-15T22:13:11.978Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
   "products": [
     {
       "id": "6a3853dee9ffbb79894d9ed5",
-      "slug": "gran-muthu-runaway-bay-club-caribbean-2027-02-25",
-      "name": "Gran Muthu Runaway Bay Club Caribbean",
+      "slug": "grand-muthu-runaway-bay-club-caribbean-2027-02-25",
+      "name": "Grand Muthu Runaway Bay Club Caribbean",
       "state": "actif",
       "active": "actif",
       "destTag": "",
@@ -82,12 +82,12 @@
         },
         "airlineLogo": ""
       },
-      "img": "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-img.jpg",
-      "imgRoom": "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg",
-      "imgExtra": "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg",
+      "img": "assets/forfaits/grand-muthu-runaway-bay-club-caribbean-2027-02-25-img.jpg",
+      "imgRoom": "assets/forfaits/grand-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg",
+      "imgExtra": "assets/forfaits/grand-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg",
       "images": [
-        "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-img.jpg",
-        "assets/forfaits/gran-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg"
+        "assets/forfaits/grand-muthu-runaway-bay-club-caribbean-2027-02-25-img.jpg",
+        "assets/forfaits/grand-muthu-runaway-bay-club-caribbean-2027-02-25-extra.jpg"
       ],
       "seoTags": []
     },
