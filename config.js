@@ -276,6 +276,53 @@
     window.GHL_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/V5DftNAy6QDV4X64bYzV';
 
     /**
+     * GHL — Formulaire d'inscription de chambre (passagers).
+     * Prefill via Query Keys. Dropdowns must have Query Keys set in GHL admin.
+     */
+    window.GHL_ROOM_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/DXJYaNnY1fdP5D1uVr9K';
+
+    /**
+     * Mapping native form fields → GHL Query Keys (data-q).
+     * Legacy keys on passengers 2–5 match the live GHL form as of 2026-07.
+     */
+    window.GHL_ROOM_FORM_FIELD_MAP = {
+        maries: 'first_name',
+        nombre_passagers: 'nombre_passagers',
+        p1_prenom: 'full_name',
+        p1_nom: 'last_name',
+        p1_genre: 'genre_p1',
+        p1_dob: 'date_of_birth',
+        p1_phone: 'phone',
+        p1_email: 'email',
+        p2_prenom: 'single_line_7iny',
+        p2_nom: 'passager_2_prenom_tel_que_sur_le_passeport_4zo_copy',
+        p2_genre: 'genre_p2',
+        p2_dob: 'date_picker_11uc',
+        p2_phone: 'single_line_9roj',
+        p3_prenom: 'passager_2_prenom_tel_que_sur_le_passeport_nnz_copy',
+        p3_nom: 'passager_2_nom_tel_que_sur_le_passeport_tny_copy',
+        p3_genre: 'genre_p3',
+        p3_dob: 'passager_2_date_de_naissance_izy_copy',
+        p4_prenom: 'passager_3_prenom_tel_que_sur_le_passeport_npy_copy',
+        p4_nom: 'passager_3_nom_tel_que_sur_le_passeport_2bd_copy',
+        p4_genre: 'genre_p4',
+        p4_dob: 'passager_3_date_de_naissance_4gb_copy',
+        p5_prenom: 'passager_4_prenom_tel_que_sur_le_passeport_knj_copy',
+        p5_nom: 'passager_4_nom_tel_que_sur_le_passeport_024_copy',
+        p5_genre: 'genre_p5',
+        p5_dob: 'passager_4_date_de_naissance_lib_copy',
+        address: 'address',
+        city: 'city',
+        postal_code: 'postal_code',
+        assurance_medicale: 'assurance_medicale',
+        passeport_valide: 'passeport_valide',
+        assurance_annulation: 'assurance_annulation',
+        payment_responsible: 'single_line_21nm7',
+        notes: 'notes',
+        terms_and_conditions: 'terms_and_conditions'
+    };
+
+    /**
      * Query Keys envoyés à l'iframe GHL — doivent correspondre aux champs cachés du formulaire.
      * nombre_enfants_2_12 = nombre total d'enfants (sélecteur unique sur le site).
      */
