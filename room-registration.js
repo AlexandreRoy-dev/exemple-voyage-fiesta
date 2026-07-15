@@ -100,54 +100,58 @@
             </section>`;
     }
 
-    function kidsSectionHtml() {
-        return `
-            <section class="rr-card" id="rr-kids-section">
-                <div class="rr-card-head">
-                    <h3 class="rr-card-title">Enfants / voyageurs additionnels</h3>
-                    <button type="button" class="rr-btn-secondary" id="rr-add-kid">+ Ajouter</button>
-                </div>
-                <p class="rr-hint">Les enfants et tout voyageur au-delà de 5 sont envoyés dans le champ <strong>notes</strong> de GoHighLevel.</p>
-                <div id="rr-kids-list" class="rr-stack"></div>
-            </section>`;
-    }
-
     function kidRowHtml(i) {
         return `
-            <div class="rr-kid-row rr-grid" data-kid-row>
-                <label class="rr-field">
-                    <span>Prénom</span>
-                    <input class="rr-input" type="text" name="kid_prenom_${i}" placeholder="Prénom">
-                </label>
-                <label class="rr-field">
-                    <span>Nom</span>
-                    <input class="rr-input" type="text" name="kid_nom_${i}" placeholder="Nom">
-                </label>
-                <label class="rr-field">
-                    <span>Genre</span>
-                    ${selectHtml(`kid_genre_${i}`, GENDER_OPTIONS, false, 'Genre')}
-                </label>
-                <label class="rr-field">
-                    <span>Date de naissance</span>
-                    <input class="rr-input" type="date" name="kid_dob_${i}">
-                </label>
-                <button type="button" class="rr-remove-kid" aria-label="Retirer">&times;</button>
+            <div class="rr-kid-row" data-kid-row>
+                <h4 class="rr-kid-title">Enfant ${i}</h4>
+                <div class="rr-grid">
+                    <label class="rr-field">
+                        <span>Prénom *</span>
+                        <input class="rr-input" type="text" name="kid_prenom_${i}" required placeholder="Prénom">
+                    </label>
+                    <label class="rr-field">
+                        <span>Nom *</span>
+                        <input class="rr-input" type="text" name="kid_nom_${i}" required placeholder="Nom">
+                    </label>
+                    <label class="rr-field">
+                        <span>Genre *</span>
+                        ${selectHtml(`kid_genre_${i}`, GENDER_OPTIONS, true, 'Genre')}
+                    </label>
+                    <label class="rr-field">
+                        <span>Date de naissance *</span>
+                        <input class="rr-input" type="date" name="kid_dob_${i}" required>
+                    </label>
+                </div>
             </div>`;
     }
 
-    function formHtml() {
-        const countOpts = [1, 2, 3, 4, 5].map(n => ({
-            value: String(n),
-            label: n === 1 ? '1 passager' : `${n} passagers`
-        }));
+    function kidsSectionHtml(fixedKidsCount) {
+        const n = Math.max(0, Number(fixedKidsCount) || 0);
+        if (n <= 0) return '';
+        const rows = Array.from({ length: n }, (_, i) => kidRowHtml(i + 1)).join('');
+        return `
+            <section class="rr-card" id="rr-kids-section">
+                <h3 class="rr-card-title">Enfants (${n})</h3>
+                <div id="rr-kids-list" class="rr-stack">${rows}</div>
+            </section>`;
+    }
+
+    function formHtml(fixedPassengerCount, fixedKidsCount) {
+        const adults = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(fixedPassengerCount) || 1));
+        const kids = Math.max(0, Number(fixedKidsCount) || 0);
+        const totalPeople = adults + kids;
+        const countLabel = totalPeople === 1 ? '1 passager' : `${totalPeople} passagers`;
         return `
             <form id="room-registration-form" class="rr-form" novalidate>
                 <section class="rr-card">
                     <h3 class="rr-card-title">Inscription de chambre</h3>
                     <div class="rr-grid">
                         <label class="rr-field">
-                            <span>Nombre de passagers dans la chambre *</span>
-                            ${selectHtml('nombre_passagers', countOpts, true, 'Choisissez une option')}
+                            <span>Nombre de passagers dans la chambre</span>
+                            <input class="rr-input rr-input-readonly" type="text" value="${escapeHtml(countLabel)}" readonly tabindex="-1">
+                            <input type="hidden" name="nombre_passagers" value="${totalPeople}">
+                            <input type="hidden" name="nombre_adultes" value="${adults}">
+                            <input type="hidden" name="nombre_enfants" value="${kids}">
                         </label>
                         <label class="rr-field">
                             <span>Dépôt</span>
@@ -159,7 +163,7 @@
                 </section>
 
                 <div id="rr-passengers"></div>
-                ${kidsSectionHtml()}
+                ${kidsSectionHtml(kids)}
 
                 <section class="rr-card">
                     <h3 class="rr-card-title">Facturation & assurances</h3>
@@ -235,7 +239,7 @@
     function formDataToPayload(form) {
         const fd = new FormData(form);
         const get = (name) => String(fd.get(name) || '').trim();
-        const count = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(get('nombre_passagers')) || 1));
+        const count = Math.max(1, Number(get('nombre_passagers')) || 1);
         const depotRaw = get('depot');
 
         const payload = {
@@ -251,7 +255,12 @@
             terms_and_conditions: form.querySelector('[name="terms_and_conditions"]')?.checked ? 'true' : ''
         };
 
-        for (let i = 1; i <= count; i++) {
+        // Structured adult/passenger slots from form (blocks 1..nombre_adultes)
+        const adultSlots = Math.min(
+            MAX_STRUCTURED_PASSENGERS,
+            Math.max(1, Number(get('nombre_adultes')) || count)
+        );
+        for (let i = 1; i <= adultSlots; i++) {
             const keys = passengerSlotKeys(i);
             payload[keys.prenom] = get(keys.prenom);
             payload[keys.nom] = get(keys.nom);
@@ -317,66 +326,43 @@
 
         root.innerHTML = `
             ${summaryHtml ? `<div class="rr-summary">${summaryHtml}</div>` : ''}
-            ${formHtml()}
+            ${formHtml(initialPassengerCount, initialKidsCount)}
         `;
 
         const form = root.querySelector('#room-registration-form');
         const passengersEl = root.querySelector('#rr-passengers');
-        const countSelect = form.querySelector('[name="nombre_passagers"]');
-        const kidsList = root.querySelector('#rr-kids-list');
+        const adultsInput = form.querySelector('[name="nombre_adultes"]');
+        const totalInput = form.querySelector('[name="nombre_passagers"]');
         const depotDisplay = form.querySelector('#rr-depot-display');
         const depotValue = form.querySelector('#rr-depot-value');
         const depotHint = form.querySelector('#rr-depot-hint');
         const errorEl = root.querySelector('#rr-form-error');
-        let kidSeq = 0;
 
-        function calcPassengerCount() {
-            return Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(countSelect.value) || 1));
-        }
+        const adultCount = Math.min(
+            MAX_STRUCTURED_PASSENGERS,
+            Math.max(1, Number(adultsInput?.value) || Number(initialPassengerCount) || 1)
+        );
+        const totalPeople = Math.max(
+            adultCount,
+            Number(totalInput?.value) || (adultCount + Math.max(0, Number(initialKidsCount) || 0))
+        );
 
-        /** Dépôt = dépôt/pers. × (passagers chambre + lignes enfants) */
         function updateDepot() {
-            const structured = calcPassengerCount();
-            const kidSlots = form.querySelectorAll('[data-kid-row]').length;
-            const people = structured + kidSlots;
             if (perPerson == null) {
                 depotDisplay.value = '';
                 depotValue.value = '';
-                if (depotHint) depotHint.textContent = 'Dépôt non défini pour ce forfait.';
+                if (depotHint) depotHint.textContent = '';
                 return;
             }
-            const total = Math.round(perPerson * people * 100) / 100;
+            const total = Math.round(perPerson * totalPeople * 100) / 100;
             depotValue.value = String(total);
             depotDisplay.value = formatMoneyCad(total);
             if (depotHint) {
-                depotHint.textContent = `${formatMoneyCad(perPerson)} / pass. × ${people} = ${formatMoneyCad(total)}`;
+                depotHint.textContent = `${formatMoneyCad(perPerson)} / pass. x ${totalPeople} = ${formatMoneyCad(total)}`;
             }
         }
 
-        function addKid() {
-            kidSeq += 1;
-            kidsList.insertAdjacentHTML('beforeend', kidRowHtml(kidSeq));
-            const row = kidsList.lastElementChild;
-            row.querySelector('.rr-remove-kid')?.addEventListener('click', () => {
-                row.remove();
-                updateDepot();
-            });
-            row.querySelectorAll('input, select').forEach(el => {
-                el.addEventListener('input', updateDepot);
-                el.addEventListener('change', updateDepot);
-            });
-            updateDepot();
-        }
-
-        countSelect.value = String(Math.min(5, Math.max(1, initialPassengerCount)));
-        renderPassengerBlocks(passengersEl, countSelect.value);
-        countSelect.addEventListener('change', () => {
-            renderPassengerBlocks(passengersEl, countSelect.value);
-            updateDepot();
-        });
-
-        root.querySelector('#rr-add-kid')?.addEventListener('click', addKid);
-        for (let i = 0; i < initialKidsCount; i++) addKid();
+        renderPassengerBlocks(passengersEl, adultCount);
         updateDepot();
 
         form.addEventListener('submit', (e) => {
@@ -393,7 +379,7 @@
             const payload = formDataToPayload(form);
             const ghlUrl = buildGhlRoomFormUrl(payload);
             if (!ghlUrl) {
-                errorEl.textContent = 'Configuration GHL manquante (GHL_ROOM_FORM_EMBED_URL).';
+                errorEl.textContent = 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.';
                 errorEl.classList.remove('hidden');
                 return;
             }
@@ -407,12 +393,7 @@
 
         return {
             form,
-            updateDepot,
-            rebuildPassengers: (n) => {
-                countSelect.value = String(n);
-                renderPassengerBlocks(passengersEl, n);
-                updateDepot();
-            }
+            updateDepot
         };
     }
 
@@ -436,12 +417,9 @@
 .rr-field-hint { font-size: 0.7rem; font-weight: 500; color: #6b7280; }
 .rr-input:focus, .rr-textarea:focus { outline: 2px solid #02509133; border-color: #025091; }
 .rr-stack { display: flex; flex-direction: column; gap: 0.75rem; }
-.rr-kid-row { position: relative; padding-right: 2rem; }
-.rr-remove-kid {
-  position: absolute; right: 0; top: 1.5rem;
-  width: 1.75rem; height: 1.75rem; border-radius: 999px;
-  border: 1px solid #e5e7eb; background: #fff; color: #6b7280; cursor: pointer; font-size: 1.1rem; line-height: 1;
-}
+.rr-kid-row { padding-top: 0.25rem; }
+.rr-kid-title { font-size: 0.9rem; font-weight: 700; color: #025091; margin: 0 0 0.65rem; }
+.rr-remove-kid { display: none; }
 .rr-check { display: flex; gap: 0.65rem; align-items: flex-start; font-size: 0.8rem; color: #374151; line-height: 1.45; font-weight: 500; }
 .rr-check input { margin-top: 0.2rem; accent-color: #F26522; }
 .rr-actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding-top: 0.25rem; }
