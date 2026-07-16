@@ -1316,9 +1316,8 @@
 
         const strikeBeforeTaxes = doubleBeforeTaxes + discount;
         const strikePrice = doubleTaxes !== null ? strikeBeforeTaxes + doubleTaxes : strikeBeforeTaxes;
-        const financing = optionalPrice(
-            p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel
-        );
+        const financing = getFinancingMonthlyAmount(price)
+            ?? optionalPrice(p.financingMonthly ?? p.financing_monthly ?? p.financement_mensuel);
 
         return {
             price,
@@ -2023,8 +2022,67 @@
         return String(window.FINANCING_MODE || 'draft').toLowerCase() === 'active';
     }
 
+    function getFinancingMonths() {
+        const n = Number(window.FINANCING_MONTHS);
+        return Number.isFinite(n) && n > 0 ? n : 60;
+    }
+
     function getFinancingApplyUrl() {
         return String(window.FINANCING_INFO_URL || '').trim();
+    }
+
+    function getFinancingStarNote() {
+        return String(
+            window.FINANCING_STAR_NOTE ||
+            `* Financement calculé sur ${getFinancingMonths()} mois (prix total par passager ÷ ${getFinancingMonths()}). Sous réserve d’approbation.`
+        ).trim();
+    }
+
+    /** Mensualité = prix total / passager ÷ N mois. */
+    function getFinancingMonthlyAmount(totalPerPassenger) {
+        const total = optionalPrice(totalPerPassenger);
+        if (total === null) return null;
+        return Math.round((total / getFinancingMonths()) * 100) / 100;
+    }
+
+    function getListingFinancingMonthly(p) {
+        const listing = getListingDisplayPrice(p);
+        if (!listing?.amount) return null;
+        return getFinancingMonthlyAmount(listing.amount);
+    }
+
+    /**
+     * « Financement à partir de XX $/mois* »
+     * @param {number|null} totalOrMonthly - total / pass. (default) or monthly if options.amountIsMonthly
+     */
+    function renderFinancingFromPriceHtml(totalOrMonthly, options = {}) {
+        if (!isFinancingActive()) return '';
+        const monthly = options.amountIsMonthly
+            ? optionalPrice(totalOrMonthly)
+            : getFinancingMonthlyAmount(totalOrMonthly);
+        if (monthly === null) return '';
+
+        const label = window.FINANCING_FROM_LABEL || 'Financement à partir de';
+        const money = formatMoney(monthly);
+        if (!money) return '';
+        const sizeClass = options.compact
+            ? 'text-xs text-gray-600'
+            : (options.sizeClass || 'text-sm text-gray-600');
+        const strongClass = options.strongClass || 'font-semibold text-gray-800';
+        const star = options.hideStar ? '' : '<span aria-hidden="true">*</span>';
+        const starSr = options.hideStar ? '' : '<span class="sr-only"> (voir note de bas de page)</span>';
+
+        return `<p class="financing-from ${sizeClass} leading-snug m-0 ${options.className || ''}">
+            <span>${escapeHtml(label)} </span><span class="${strongClass} tabular-nums">${money}</span><span> / mois${star}</span>${starSr}
+        </p>`;
+    }
+
+    function renderFinancingStarNoteHtml(options = {}) {
+        if (!isFinancingActive()) return '';
+        const note = getFinancingStarNote();
+        if (!note) return '';
+        const sizeClass = options.compact ? 'text-[10px]' : 'text-xs';
+        return `<p class="financing-star-note ${sizeClass} text-gray-500 leading-snug m-0 ${options.className || ''}">${escapeHtml(note)}</p>`;
     }
 
     function renderFinancingNoteHtml(options = {}) {
@@ -2397,7 +2455,13 @@
         buildListingSharePayload,
         applySocialMetaTags,
         isFinancingActive,
+        getFinancingMonths,
         getFinancingApplyUrl,
+        getFinancingStarNote,
+        getFinancingMonthlyAmount,
+        getListingFinancingMonthly,
+        renderFinancingFromPriceHtml,
+        renderFinancingStarNoteHtml,
         renderFinancingNoteHtml,
         renderEmbedRootLinkHtml,
         renderEmbedBreadcrumbHtml,

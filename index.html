@@ -233,6 +233,7 @@
             
             <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             </div>
+            <p id="financing-star-note" class="mt-4 text-xs text-gray-500 leading-snug hidden"></p>
             <div id="loading-state" class="hidden col-span-full text-center py-16 text-gray-500">
                 <i class="fa-solid fa-spinner fa-spin text-3xl text-brand-blue mb-4"></i>
                 <p>Chargement des forfaits...</p>
@@ -251,8 +252,8 @@
 
     </main>
 
-    <script src="config.js?v=39"></script>
-    <script src="api.js?v=90"></script>
+    <script src="config.js?v=44"></script>
+    <script src="api.js?v=91"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -432,6 +433,9 @@
 
         function renderIncentiveBadge(inc) {
             if (!inc) return '';
+            const financingHtml = inc.financing != null
+                ? `<p class="mt-1 text-[10px] font-medium opacity-95 leading-tight">Financement à partir de ${VoyageFiestaAPI.formatMoney(inc.financing)} / mois*</p>`
+                : '';
 
             return `
                 <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
@@ -440,6 +444,7 @@
                         <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice, { suffixClass: 'text-[0.72em] font-normal opacity-90 whitespace-nowrap' })}</span>
                         <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoneyPerPerson(inc.price, { suffixClass: 'text-sm font-normal opacity-90 whitespace-nowrap' })}</span>
                     </p>
+                    ${financingHtml}
                 </div>`;
         }
 
@@ -499,12 +504,22 @@
                 const incentiveBadge = renderIncentiveBadge(inc);
                 const hasIncentive = Boolean(incentiveBadge);
                 const listingPrice = VoyageFiestaAPI.getListingDisplayPrice(p);
+                const financingLine = listingPrice
+                    ? VoyageFiestaAPI.renderFinancingFromPriceHtml(listingPrice.amount, {
+                        compact: true,
+                        className: 'mt-1'
+                    })
+                    : '';
                 const priceFooterHtml = hasIncentive
-                    ? `<p class="text-xs text-gray-500">${escapeHtml(inc.occupationLabel || listingPrice?.label || 'Occ. double')} · à partir de</p>`
+                    ? `<div>
+                            <p class="text-xs text-gray-500">${escapeHtml(inc.occupationLabel || listingPrice?.label || 'Occ. double')} · à partir de</p>
+                            ${financingLine}
+                       </div>`
                     : listingPrice
                         ? `<div>
                             <p class="text-xs text-gray-500 mb-1">${escapeHtml(listingPrice.label)} · à partir de</p>
                             <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(listingPrice.amount)}</p>
+                            ${financingLine}
                        </div>`
                         : `<div>
                             <p class="text-xs text-gray-500 mb-1">Occ. double</p>
@@ -564,6 +579,18 @@
                 filteredData.find(item => item.slug === slug)
             );
             updateTimers();
+
+            const starNote = document.getElementById('financing-star-note');
+            if (starNote) {
+                const noteHtml = VoyageFiestaAPI.renderFinancingStarNoteHtml();
+                if (noteHtml && filteredData.length) {
+                    starNote.innerHTML = noteHtml;
+                    starNote.classList.remove('hidden');
+                } else {
+                    starNote.innerHTML = '';
+                    starNote.classList.add('hidden');
+                }
+            }
         }
 
         function sortProducts(list) {

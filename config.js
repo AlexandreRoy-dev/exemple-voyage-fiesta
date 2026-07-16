@@ -266,11 +266,16 @@
 
     /**
      * Financement iFinance — lien actif sur la boutique.
+     * Mensualité affichée = prix total / passager ÷ FINANCING_MONTHS (avec *).
      */
     window.FINANCING_MODE = 'active';
+    window.FINANCING_MONTHS = 60;
     window.FINANCING_INFO_LABEL = 'Financement sur demande';
+    window.FINANCING_FROM_LABEL = 'Financement à partir de';
     window.FINANCING_INFO_LINK_TEXT = 'Demander un financement';
     window.FINANCING_INFO_URL = 'https://apply.ifinancecanada.com/23359';
+    window.FINANCING_STAR_NOTE =
+        '* Financement calculé sur 60 mois (prix total par passager ÷ 60). Sous réserve d’approbation.';
 
     /** Taux TPS/TVQ — non utilisés (taxes par occupation dans GHL) */
     window.TAX_TPS_RATE = 0.05;
