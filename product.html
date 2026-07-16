@@ -231,8 +231,8 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=42"></script>
-    <script src="room-registration.js?v=14"></script>
+    <script src="config.js?v=43"></script>
+    <script src="room-registration.js?v=15"></script>
     <script src="api.js?v=90"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
@@ -1422,16 +1422,36 @@
                 roomRoot.classList.remove('opacity-60', 'pointer-events-none', 'hidden');
                 roomRoot.innerHTML = '';
 
+                const bookingContext = VoyageFiestaAPI.buildGhlReservationParams(
+                    p,
+                    occupationId,
+                    overrides
+                ) || {};
+
                 RoomRegistration.mountForm(roomRoot, {
                     initialPassengerCount: adults,
                     initialKidsCount: kids,
                     depositPerPerson,
-                    pricingSummary: breakdown?.pricingSummary || '',
+                    pricingSummary: breakdown?.pricingSummary || bookingContext.sommaire || '',
                     summaryHtml: `<strong>Forfait :</strong> ${document.getElementById('modal-product-name')?.textContent || p.name}`,
                     async onSubmit({ payload }) {
                         const thankYou = typeof buildGhlThankYouUrl === 'function'
                             ? buildGhlThankYouUrl(p.slug)
                             : 'thank-you.html';
+
+                        // Merge trip/pricing context so GHL custom fields + email merge tags fill in
+                        const merged = {
+                            ...bookingContext,
+                            ...payload,
+                            forfait_slug: bookingContext.forfait_slug || p.slug,
+                            forfait_name: bookingContext.forfait_name || p.name,
+                            depot_total: payload.depot || bookingContext.depot_total,
+                            nombre_personnes: payload.nombre_passagers || bookingContext.nombre_personnes,
+                            nombre_adultes: bookingContext.nombre_adultes || String(adults),
+                            nombre_enfants_2_12: bookingContext.nombre_enfants_2_12 || String(kids),
+                            occupation: bookingContext.occupation || bookingLabel,
+                            sommaire: payload.sommaire || bookingContext.sommaire || breakdown?.pricingSummary || ''
+                        };
 
                         roomRoot.classList.add('hidden');
                         if (submitStatusText) {
@@ -1441,7 +1461,7 @@
 
                         try {
                             await RoomRegistration.submitGhlRoomForm({
-                                payload,
+                                payload: merged,
                                 redirectUrl: thankYou
                             });
                         } catch (err) {
