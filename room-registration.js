@@ -146,7 +146,7 @@
                 <input type="hidden" name="nombre_adultes" value="${adults}">
                 <input type="hidden" name="nombre_enfants" value="${kids}">
 
-                <div id="rr-step-1" data-rr-step="1">
+                <div id="rr-step-1" class="rr-step" data-rr-step="1">
                     <p class="rr-step-label">Étape 1 sur 2 - Vos coordonnées</p>
 
                     <section class="rr-card">
@@ -182,10 +182,10 @@
                     </section>
 
                     <section class="rr-card">
-                        <h3 class="rr-card-title">Facturation & assurances</h3>
+                        <h3 class="rr-card-title">Adresse de facturation</h3>
                         <div class="rr-grid">
                             <label class="rr-field rr-field-full">
-                                <span>Adresse civique de facturation du passager principal *</span>
+                                <span>Adresse civique du passager principal *</span>
                                 <input class="rr-input" type="text" name="address" required autocomplete="street-address" placeholder="Entrez l'adresse civique">
                             </label>
                             <label class="rr-field">
@@ -196,8 +196,14 @@
                                 <span>Code postal *</span>
                                 <input class="rr-input" type="text" name="postal_code" required autocomplete="postal-code" placeholder="Entrez le code postal">
                             </label>
-                            <label class="rr-field rr-field-full">
-                                <span>Tous les voyageurs inscrits sont-ils couverts par une assurance voyage incluant les soins médicaux d'urgence ? *</span>
+                        </div>
+                    </section>
+
+                    <section class="rr-card">
+                        <h3 class="rr-card-title">Assurances & documents</h3>
+                        <div class="rr-stack-fields">
+                            <label class="rr-field">
+                                <span>Tous les voyageurs sont-ils couverts par une assurance voyage incluant les soins médicaux d'urgence ? *</span>
                                 ${selectHtml('assurance_medicale', YES_NO, true)}
                             </label>
                             <label class="rr-field">
@@ -208,18 +214,24 @@
                                 <span>Désirez-vous une assurance voyage Annulation ? *</span>
                                 ${selectHtml('assurance_annulation', YES_NO, true)}
                             </label>
-                            <label class="rr-field rr-field-full">
+                        </div>
+                    </section>
+
+                    <section class="rr-card">
+                        <h3 class="rr-card-title">Paiement & suite</h3>
+                        <div class="rr-stack-fields">
+                            <label class="rr-field">
                                 <span>Responsable du paiement *</span>
                                 <input class="rr-input" type="text" name="payment_responsible" required placeholder="Nom complet">
                             </label>
-                            <label class="rr-field rr-field-full">
+                            <label class="rr-field">
                                 <span>Souhaitez-vous inscrire les informations des passagers maintenant ? *</span>
                                 ${selectHtml('infopassager', INFO_PASSAGER_OPTIONS, true, 'Choisissez une option')}
                             </label>
                         </div>
                     </section>
 
-                    <section class="rr-card">
+                    <section class="rr-card rr-card-terms">
                         <label class="rr-check">
                             <input type="checkbox" name="terms_and_conditions" value="true" required>
                             <span>J'ai lu et j'accepte les termes et conditions du document 001-554 et je confirme que toutes les informations fournies sont exactes.</span>
@@ -232,12 +244,12 @@
                     </div>
                 </div>
 
-                <div id="rr-step-2" data-rr-step="2" class="hidden">
+                <div id="rr-step-2" class="rr-step hidden" data-rr-step="2">
                     <p class="rr-step-label">Étape 2 sur 2 - Informations des passagers</p>
-                    <div id="rr-passengers"></div>
+                    <div id="rr-passengers" class="rr-stack"></div>
                     ${kidsSectionHtml(kids)}
                     <section class="rr-card">
-                        <label class="rr-field rr-field-full">
+                        <label class="rr-field">
                             <span>Notes additionnelles</span>
                             <textarea class="rr-input rr-textarea" name="notes_extra" rows="3" placeholder="Infos supplémentaires (optionnel)"></textarea>
                         </label>
@@ -544,103 +556,118 @@
     }
 
     const css = `
-.rr-form { display: flex; flex-direction: column; gap: 1.5rem; }
+.rr-form { display: flex; flex-direction: column; gap: 0; }
+.rr-step { display: flex; flex-direction: column; gap: 1.75rem; }
 .rr-step-label {
   font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   color: #F26522; margin: 0;
 }
 .rr-summary {
   background: #F3F7FA; border: 1px solid #dbe7f0; border-radius: 0.75rem;
-  padding: 1rem 1.15rem; font-size: 0.875rem; color: #374151; line-height: 1.5;
+  padding: 1.1rem 1.25rem; font-size: 0.875rem; color: #374151; line-height: 1.55;
+  margin-bottom: 1.75rem;
 }
 .rr-card {
-  background: #F3F7FA; border: 1px solid #e5e7eb; border-radius: 0.75rem;
-  padding: 1.35rem 1.35rem 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
+  padding: 1.75rem 1.75rem 1.85rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+.rr-card-terms { padding: 1.35rem 1.5rem; background: #F3F7FA; }
 .rr-card-title {
-  font-size: 0.95rem; font-weight: 700; color: #025091;
-  margin: 0 0 1.15rem; padding-bottom: 0.65rem;
-  border-bottom: 1px solid #dbe7f0;
+  font-size: 1.05rem; font-weight: 700; color: #025091;
+  margin: 0 0 1.5rem; padding-bottom: 0.85rem;
+  border-bottom: 1px solid #edf2f7;
 }
 .rr-hint {
   font-size: 0.8rem; font-weight: 500; color: #6b7280;
-  margin: -0.5rem 0 1rem; line-height: 1.45;
+  margin: -0.65rem 0 1.35rem; line-height: 1.5;
 }
 .rr-grid {
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 1.15rem 1rem;
+  column-gap: 1.25rem; row-gap: 1.65rem;
+}
+.rr-stack-fields {
+  display: flex; flex-direction: column; gap: 1.65rem;
 }
 .rr-field {
-  display: flex; flex-direction: column; gap: 0.5rem;
-  font-size: 0.8rem; font-weight: 600; color: #374151;
-  line-height: 1.35;
+  display: flex; flex-direction: column; gap: 0.7rem;
+  font-size: 0.875rem; font-weight: 600; color: #374151;
+  line-height: 1.45;
 }
 .rr-field-full { grid-column: 1 / -1; }
 .rr-input, .rr-textarea {
-  font-family: inherit; font-size: 0.9rem; font-weight: 500;
-  border: 1px solid #e5e7eb; border-radius: 0.75rem;
-  padding: 0.8rem 0.95rem; background: #fff; color: #1f2937; width: 100%;
+  font-family: inherit; font-size: 0.95rem; font-weight: 500;
+  border: 1px solid #d1d5db; border-radius: 0.75rem;
+  padding: 0.95rem 1.05rem; background: #fff; color: #1f2937; width: 100%;
+  min-height: 3.1rem; line-height: 1.4;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.rr-textarea { min-height: 5.5rem; resize: vertical; line-height: 1.5; }
+select.rr-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1.4.6 6 5.2 10.6.6 12 2 6 8 0 2z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1.05rem center;
+  padding-right: 2.5rem;
+}
+.rr-textarea { min-height: 6rem; resize: vertical; line-height: 1.55; }
 .rr-input-readonly {
-  background: #fff; font-weight: 600; color: #025091;
+  background: #F3F7FA; font-weight: 600; color: #025091;
   border-color: #dbe7f0;
 }
 .rr-field-hint {
-  font-size: 0.75rem; font-weight: 500;
-  color: #6b7280; line-height: 1.35;
+  font-size: 0.8rem; font-weight: 500;
+  color: #6b7280; line-height: 1.4; margin-top: 0.15rem;
 }
 .rr-input:focus, .rr-textarea:focus {
   outline: none; border-color: #025091;
   box-shadow: 0 0 0 3px rgba(2, 80, 145, 0.15);
 }
 .rr-input::placeholder, .rr-textarea::placeholder { color: #9ca3af; font-weight: 400; }
-.rr-stack { display: flex; flex-direction: column; gap: 1.25rem; }
+.rr-stack { display: flex; flex-direction: column; gap: 1.75rem; }
 .rr-kid-row {
-  background: #fff; border: 1px solid #e5e7eb; border-radius: 0.65rem;
-  padding: 1rem 1.1rem;
+  background: #F3F7FA; border: 1px solid #e5e7eb; border-radius: 0.85rem;
+  padding: 1.35rem 1.4rem;
 }
 .rr-kid-title {
-  font-size: 0.85rem; font-weight: 700; color: #025091;
-  margin: 0 0 0.85rem; letter-spacing: normal; text-transform: none;
+  font-size: 0.95rem; font-weight: 700; color: #025091;
+  margin: 0 0 1.15rem;
 }
 .rr-check {
-  display: flex; gap: 0.75rem; align-items: flex-start;
-  font-size: 0.85rem; color: #374151; line-height: 1.5; font-weight: 500;
+  display: flex; gap: 0.9rem; align-items: flex-start;
+  font-size: 0.9rem; color: #374151; line-height: 1.55; font-weight: 500;
 }
 .rr-check input {
-  margin-top: 0.2rem; width: 1.1rem; height: 1.1rem; flex-shrink: 0;
+  margin-top: 0.2rem; width: 1.15rem; height: 1.15rem; flex-shrink: 0;
   accent-color: #F26522;
 }
 .rr-actions {
-  display: flex; justify-content: flex-end; gap: 0.75rem;
-  padding-top: 0.35rem;
+  display: flex; justify-content: flex-end; gap: 0.85rem;
+  padding-top: 0.5rem; padding-bottom: 0.25rem;
 }
 .rr-actions-split { justify-content: space-between; }
 .rr-btn-primary {
   background: #F26522; color: #fff; font-weight: 600; border: 0;
-  border-radius: 0.65rem; padding: 0.9rem 1.5rem; cursor: pointer;
+  border-radius: 0.65rem; padding: 1rem 1.65rem; cursor: pointer;
   font-size: 0.95rem; font-family: inherit;
   transition: background-color 0.15s ease;
 }
 .rr-btn-primary:hover { background: #025091; }
 .rr-btn-secondary {
   background: #fff; color: #025091; border: 1px solid #c5d5e3;
-  border-radius: 0.65rem; padding: 0.85rem 1.25rem; font-size: 0.9rem;
+  border-radius: 0.65rem; padding: 0.95rem 1.35rem; font-size: 0.9rem;
   font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .rr-btn-secondary:hover { background: #F3F7FA; border-color: #025091; }
 .rr-error {
   color: #b91c1c; font-size: 0.875rem; background: #fef2f2;
-  border: 1px solid #fecaca; border-radius: 0.65rem; padding: 0.85rem 1rem;
-  line-height: 1.4;
+  border: 1px solid #fecaca; border-radius: 0.65rem; padding: 1rem 1.1rem;
+  line-height: 1.45;
 }
 .rr-error.hidden, .hidden { display: none !important; }
 @media (max-width: 640px) {
-  .rr-grid { grid-template-columns: 1fr; gap: 1rem; }
-  .rr-card { padding: 1.15rem; }
+  .rr-grid { grid-template-columns: 1fr; column-gap: 0; row-gap: 1.4rem; }
+  .rr-card { padding: 1.35rem 1.25rem 1.5rem; }
+  .rr-step { gap: 1.4rem; }
   .rr-actions, .rr-actions-split { flex-direction: column-reverse; }
   .rr-btn-primary, .rr-btn-secondary { width: 100%; text-align: center; }
 }
