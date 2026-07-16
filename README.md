@@ -56,13 +56,22 @@ node scripts/sync-ghl-products.mjs
 
 | Fichier | Rôle |
 |---------|------|
-| `config.js` | URL JSON + listes de filtres + URL formulaire GHL |
+| `config.js` | URL JSON + listes de filtres + URL API réservation |
 | `api.js` | Fetch `products.json`, filtres |
 | `products.json` | Données live (généré par GitHub Actions) |
 | `scripts/sync-ghl-products.mjs` | Script de sync GHL → JSON |
+| `workers/submit-reservation/` | Cloudflare Worker : form → GHL Contacts API |
 | `.github/workflows/sync-products.yml` | Workflow planifié |
 | `index.html` | Liste + filtres boutique |
-| `product.html` | Fiche produit + modal réservation GHL |
+| `product.html` | Fiche produit + modal réservation (API, sans iframe) |
+
+## Réservation sans iframe GHL
+
+Le formulaire natif envoie les données à un **Cloudflare Worker**, qui crée le contact via l’API GHL (token serveur). Voir [`workers/submit-reservation/README.md`](workers/submit-reservation/README.md).
+
+1. Déployer le worker + secrets `GHL_API_KEY` / `GHL_LOCATION_ID`
+2. Coller l’URL dans `config.js` → `GHL_RESERVATION_API_URL`
+3. Dans GHL : workflow sur tag `reservation-site` (ou contact créé)
 
 ## Champs GHL → JSON (Custom Object)
 

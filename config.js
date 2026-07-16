@@ -26,7 +26,11 @@
 
     /** Alias clé normalisée → clé utilisée dans SUPPLIER_LOGOS */
     window.SUPPLIER_LOGO_KEY_ALIASES = {
-        westjet: 'westjet_quebec'
+        westjet: 'westjet_quebec',
+        vacances_air_canada: 'air_canada',
+        vacances_sunwing: 'sunwing',
+        vacances_transat: 'transat',
+        vacances_westjet_quebec: 'westjet_quebec'
     };
 
     /** Alias compagnie aérienne → clé logo (assets/suppliers/) */
@@ -280,9 +284,13 @@
      * Prefill via Query Keys. Dropdowns must have Query Keys set in GHL admin.
      */
     window.GHL_ROOM_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/DXJYaNnY1fdP5D1uVr9K';
-    /** Location ID public (aussi dans products.json) — utilisé pour la soumission auto du formulaire */
+    /** Location ID public (aussi dans products.json) */
     window.GHL_LOCATION_ID = 'V90iyFBbBrCg3tpctRjc';
-    window.GHL_ROOM_FORM_SUBMIT_URL = 'https://backend.leadconnectorhq.com/forms/submit';
+    /**
+     * API réservation (OVH VPS, même machine que DuProprio).
+     * Crée le contact GHL sans iframe. Ne jamais y mettre le PIT.
+     */
+    window.GHL_RESERVATION_API_URL = 'http://158.69.1.173:3847/';
 
     /**
      * Mapping native form fields → GHL Query Keys (data-q).

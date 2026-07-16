@@ -1584,20 +1584,6 @@
         const raw = String(supplier).trim();
         if (!raw) return '';
 
-        const labels = window.SUPPLIER_LABELS || {};
-        for (const [key, label] of Object.entries(labels)) {
-            if (raw === key || raw.toLowerCase() === key || raw === label) {
-                return key;
-            }
-        }
-
-        const slug = raw
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '_')
-            .replace(/^_|_$/g, '');
-
         const aliases = {
             vacances_sunwing: 'sunwing',
             sunwing_vacations: 'sunwing',
@@ -1611,6 +1597,20 @@
             vacances_transat: 'transat',
             transat_vacations: 'transat'
         };
+
+        const labels = window.SUPPLIER_LABELS || {};
+        for (const [key, label] of Object.entries(labels)) {
+            if (raw === key || raw.toLowerCase() === key || raw === label) {
+                return aliases[key] || key;
+            }
+        }
+
+        const slug = raw
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_|_$/g, '');
 
         return aliases[slug] || slug;
     }

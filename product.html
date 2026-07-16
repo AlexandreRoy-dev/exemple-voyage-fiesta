@@ -231,9 +231,9 @@
     </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=38"></script>
-    <script src="room-registration.js?v=12"></script>
-    <script src="api.js?v=89"></script>
+    <script src="config.js?v=41"></script>
+    <script src="room-registration.js?v=14"></script>
+    <script src="api.js?v=90"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1434,7 +1434,9 @@
                             : 'thank-you.html';
 
                         roomRoot.classList.add('hidden');
-                        if (submitStatusText) submitStatusText.textContent = 'Envoi de votre demande…';
+                        if (submitStatusText) {
+                            submitStatusText.textContent = 'Envoi de votre demande…';
+                        }
                         submitStatus?.classList.remove('hidden');
 
                         try {
@@ -1442,9 +1444,6 @@
                                 payload,
                                 redirectUrl: thankYou
                             });
-                            if (submitStatusText) {
-                                submitStatusText.textContent = 'Demande envoyée. Redirection…';
-                            }
                         } catch (err) {
                             roomRoot.classList.remove('hidden');
                             submitStatus?.classList.add('hidden');

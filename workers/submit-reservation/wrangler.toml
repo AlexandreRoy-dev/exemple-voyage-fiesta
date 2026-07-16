@@ -1,0 +1,13 @@
+name = "voyage-fiesta-submit-reservation"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# After deploy, set:
+#   npx wrangler secret put GHL_API_KEY
+#   npx wrangler secret put GHL_LOCATION_ID
+#
+# Optional:
+#   npx wrangler secret put CUSTOM_FIELD_MAP
+#   (JSON mapping payload keys → GHL custom field IDs)
+#
+# Then put the worker URL in config.js → GHL_RESERVATION_API_URL

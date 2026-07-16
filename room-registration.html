@@ -42,8 +42,8 @@
         </div>
     </main>
 
-    <script src="config.js?v=38"></script>
-    <script src="room-registration.js?v=12"></script>
+    <script src="config.js?v=41"></script>
+    <script src="room-registration.js?v=14"></script>
     <script>
         (function () {
             RoomRegistration.injectStyles();
@@ -71,7 +71,6 @@
                             payload,
                             redirectUrl: thankYou
                         });
-                        if (submitStatusText) submitStatusText.textContent = 'Demande envoyée. Redirection…';
                     } catch (err) {
                         formRoot.classList.remove('hidden');
                         submitStatus.classList.add('hidden');
