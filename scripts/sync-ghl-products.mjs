@@ -709,14 +709,14 @@ function normalizeUploadList(value) {
  return [value];
 }
 
-async function mirrorGalleryImages({ apiKey, slug, uploadValue, manifest }) {
+async function mirrorGalleryImages({ apiKey, slug, uploadValue, manifest, fieldPrefix = 'gallery' }) {
  const paths = [];
  const items = normalizeUploadList(uploadValue);
  for (let i = 0; i < items.length; i++) {
  const path = await mirrorImageField({
  apiKey,
  slug,
- field: `gallery-${i + 1}`,
+ field: `${fieldPrefix}-${i + 1}`,
  uploadValue: items[i],
  manifest
  });
@@ -888,9 +888,11 @@ async function mapRecord(record, apiKey, manifest, slug) {
  const location = pick(props, 'location', 'address', 'adresse') || buildLocationText(subDest, country);
 
  const imgUpload = pickProp(props, 'photo_principale', 'img', 'image', 'main_image', 'photo');
+ // photos_extra is a multi-file GHL field (room + extras, etc.)
  const imgExtraUpload = pickProp(
  props,
  'photo_extra',
+ 'photos_extra',
  'img_extra',
  'imgExtra',
  'extra_image',
@@ -919,21 +921,35 @@ async function mapRecord(record, apiKey, manifest, slug) {
  urlOverride: pick(props, 'img_url', 'image_url'),
  manifest
  });
- const imgExtra = await mirrorImageField({
+ const extraPaths = await mirrorGalleryImages({
  apiKey,
  slug: resolvedSlug,
- field: 'extra',
  uploadValue: imgExtraUpload,
- urlOverride: pick(props, 'img_extra_url'),
+ manifest,
+ fieldPrefix: 'extra'
+ });
+ // Legacy single override URL → append if not already mirrored
+ const extraUrlOverride = pick(props, 'img_extra_url');
+ if (extraUrlOverride) {
+ const overridePath = await mirrorImageField({
+ apiKey,
+ slug: resolvedSlug,
+ field: 'extra-url',
+ uploadValue: null,
+ urlOverride: extraUrlOverride,
  manifest
  });
+ if (overridePath && !extraPaths.includes(overridePath)) extraPaths.push(overridePath);
+ }
+ const imgExtra = extraPaths[0] || '';
+ const imgRoom = extraPaths[1] || extraPaths[0] || '';
  const galleryPaths = await mirrorGalleryImages({
  apiKey,
  slug: resolvedSlug,
  uploadValue: imgGalleryUpload,
  manifest
  });
- const images = uniqueImagePaths([img], [imgExtra], galleryPaths);
+ const images = uniqueImagePaths([img], extraPaths, galleryPaths);
 
  return {
  id: record.id || pick(props, 'id') || resolvedSlug,
@@ -1008,7 +1024,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
  destination: destinationLabel || subDest
  }),
  img,
- imgRoom: imgExtra || img,
+ imgRoom: imgRoom || imgExtra || img,
  imgExtra: imgExtra || img,
  images,
  seoTags

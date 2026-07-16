@@ -231,7 +231,7 @@ export function formatPropertiesForGhlApi(logicalProps) {
       continue;
     }
     if (key === 'photo_principale' || key === 'photos_extra') {
-      if (Array.isArray(value)) out[key] = key === 'photos_extra' ? value.slice(0, 1) : value;
+      if (Array.isArray(value)) out[key] = value;
       else if (value?.url) out[key] = [value];
       continue;
     }
