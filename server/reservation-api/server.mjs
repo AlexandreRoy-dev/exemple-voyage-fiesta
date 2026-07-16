@@ -206,6 +206,21 @@ function normalizeDateFr(value) {
   return `${m[3]}-${mo}-${d}`;
 }
 
+/** Long French date for email merge tags (GHL DATE fields render in English). */
+function formatFrenchLongDate(value) {
+  const iso = normalizeDateFr(value);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return String(value || '').trim();
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (Number.isNaN(dt.getTime())) return iso;
+  return new Intl.DateTimeFormat('fr-CA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }).format(dt);
+}
+
 function normalizeFieldValue(fieldKey, value) {
   if (value === undefined || value === null || value === '') return '';
   const str = String(value).trim();
@@ -311,6 +326,16 @@ function buildCustomFields(payload) {
   }
   if (!byKey.has('nombre_de_passagers') && payload.nombre_personnes) {
     put('nombre_de_passagers', payload.nombre_personnes);
+  }
+
+  // French text date for confirmation emails (DATE fields render as English in GHL)
+  const paymentRaw =
+    payload.paiement_final ||
+    payload.final_payment_date ||
+    payload.date_de_paiement ||
+    '';
+  if (paymentRaw) {
+    put('paiement_final', formatFrenchLongDate(paymentRaw));
   }
 
   // Enrich notes custom field with structured note if empty

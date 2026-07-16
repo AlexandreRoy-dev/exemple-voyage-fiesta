@@ -17,7 +17,7 @@ Correspondance formulaire ↔ Contact custom fields ↔ merge tags courriel.
 | nombre_adultes | `nombre_adultes` | `{{contact.custom.nombre_adultes}}` |
 | Enfants (total, tous âges) | `nombre_enfants_2_12` | `{{contact.custom.nombre_enfants_2_12}}` |
 | occupation | `occupation` | `{{contact.custom.occupation}}` |
-| date de paiement | `final_payment_date` | `{{contact.custom.final_payment_date}}` |
+| date de paiement (texte FR) | `paiement_final` | `{{contact.custom.paiement_final}}` — ex. `15 août 2026` (ne pas utiliser le champ DATE : GHL l’affiche en anglais) |
 | Sommaire | `sommaire` | `{{contact.custom.sommaire}}` |
 
 Standards contact : `{{contact.first_name}}`, `{{contact.last_name}}`, `{{contact.email}}`, `{{contact.phone}}`
