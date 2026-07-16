@@ -2,8 +2,9 @@
  * Formulaire d'inscription de chambre (natif) → autofill GHL
  * Form: https://api.leadconnectorhq.com/widget/form/DXJYaNnY1fdP5D1uVr9K
  *
- * Étape 1 : contact + dépôt + facturation/assurances + question infopassager
- * Étape 2 : infos passagers (seulement si Oui)
+ * Étape 1 : contact + dépôt (obligatoire)
+ * Étape 2 : facturation & assurances (obligatoire)
+ * Étape 3 : infos passagers (optionnel)
  */
 (function (global) {
     'use strict';
@@ -17,10 +18,6 @@
     const YES_NO = [
         { value: 'Oui', label: 'Oui' },
         { value: 'Non', label: 'Non' }
-    ];
-    const INFO_PASSAGER_OPTIONS = [
-        { value: 'Oui', label: 'Oui' },
-        { value: 'Remplir plus tard', label: 'Remplir plus tard' }
     ];
 
     function getMap() {
@@ -64,6 +61,24 @@
         const opts = [`<option value="">${escapeHtml(placeholder || 'Choisissez une option')}</option>`]
             .concat(options.map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`));
         return `<select name="${escapeHtml(name)}" class="rr-input" ${required ? 'required' : ''}>${opts.join('')}</select>`;
+    }
+
+    function progressHtml(activeStep) {
+        const steps = [
+            { n: 1, label: 'Coordonnées' },
+            { n: 2, label: 'Assurances' },
+            { n: 3, label: 'Passagers' }
+        ];
+        return `
+            <nav class="rr-progress" aria-label="Progression">
+                ${steps.map((s, i) => `
+                    <div class="rr-progress-item${s.n === activeStep ? ' is-active' : ''}${s.n < activeStep ? ' is-done' : ''}" data-progress="${s.n}">
+                        <span class="rr-progress-num">${s.n}</span>
+                        <span class="rr-progress-label">${escapeHtml(s.label)}</span>
+                    </div>
+                    ${i < steps.length - 1 ? '<span class="rr-progress-line" aria-hidden="true"></span>' : ''}
+                `).join('')}
+            </nav>`;
     }
 
     function passengerBlockHtml(index, { required, isPrincipal }) {
@@ -145,12 +160,15 @@
                 <input type="hidden" name="nombre_passagers" value="${totalPeople}">
                 <input type="hidden" name="nombre_adultes" value="${adults}">
                 <input type="hidden" name="nombre_enfants" value="${kids}">
+                <input type="hidden" name="infopassager" id="rr-infopassager" value="Remplir plus tard">
+
+                <div id="rr-progress-root">${progressHtml(1)}</div>
 
                 <div id="rr-step-1" class="rr-step" data-rr-step="1">
-                    <p class="rr-step-label">Étape 1 sur 2 - Vos coordonnées</p>
+                    <p class="rr-step-lead">Vos coordonnées pour démarrer la réservation.</p>
 
                     <section class="rr-card">
-                        <h3 class="rr-card-title">Contact</h3>
+                        <h3 class="rr-card-title">Vos coordonnées</h3>
                         <div class="rr-grid">
                             <label class="rr-field">
                                 <span>Prénom *</span>
@@ -180,6 +198,22 @@
                             </label>
                         </div>
                     </section>
+
+                    <section class="rr-card rr-card-terms">
+                        <label class="rr-check">
+                            <input type="checkbox" name="terms_and_conditions" value="true" required>
+                            <span>J'ai lu et j'accepte les termes et conditions du document 001-554 et je confirme que toutes les informations fournies sont exactes.</span>
+                        </label>
+                    </section>
+
+                    <p id="rr-form-error-1" class="rr-error hidden" role="alert"></p>
+                    <div class="rr-actions">
+                        <button type="button" class="rr-btn-primary" id="rr-step1-next">Continuer</button>
+                    </div>
+                </div>
+
+                <div id="rr-step-2" class="rr-step hidden" data-rr-step="2">
+                    <p class="rr-step-lead">Facturation et assurances. Après cette étape, vous pouvez réserver tout de suite ou ajouter les passagers.</p>
 
                     <section class="rr-card">
                         <h3 class="rr-card-title">Adresse de facturation</h3>
@@ -214,38 +248,24 @@
                                 <span>Désirez-vous une assurance voyage Annulation ? *</span>
                                 ${selectHtml('assurance_annulation', YES_NO, true)}
                             </label>
-                        </div>
-                    </section>
-
-                    <section class="rr-card">
-                        <h3 class="rr-card-title">Paiement & suite</h3>
-                        <div class="rr-stack-fields">
                             <label class="rr-field">
                                 <span>Responsable du paiement *</span>
                                 <input class="rr-input" type="text" name="payment_responsible" required placeholder="Nom complet">
                             </label>
-                            <label class="rr-field">
-                                <span>Souhaitez-vous inscrire les informations des passagers maintenant ? *</span>
-                                ${selectHtml('infopassager', INFO_PASSAGER_OPTIONS, true, 'Choisissez une option')}
-                            </label>
                         </div>
                     </section>
 
-                    <section class="rr-card rr-card-terms">
-                        <label class="rr-check">
-                            <input type="checkbox" name="terms_and_conditions" value="true" required>
-                            <span>J'ai lu et j'accepte les termes et conditions du document 001-554 et je confirme que toutes les informations fournies sont exactes.</span>
-                        </label>
-                    </section>
-
-                    <p id="rr-form-error" class="rr-error hidden" role="alert"></p>
-                    <div class="rr-actions">
-                        <button type="button" class="rr-btn-primary" id="rr-step1-next">Continuer</button>
+                    <p id="rr-form-error-2" class="rr-error hidden" role="alert"></p>
+                    <div class="rr-actions rr-actions-stack">
+                        <button type="button" class="rr-btn-primary" id="rr-step2-next">Continuer vers les passagers</button>
+                        <button type="button" class="rr-btn-ghost" id="rr-step2-reserve">Réserver maintenant</button>
+                        <p class="rr-actions-hint">Les étapes 1 et 2 suffisent pour réserver. Les infos passagers peuvent être ajoutées plus tard.</p>
+                        <button type="button" class="rr-btn-secondary" id="rr-step2-back">Retour</button>
                     </div>
                 </div>
 
-                <div id="rr-step-2" class="rr-step hidden" data-rr-step="2">
-                    <p class="rr-step-label">Étape 2 sur 2 - Informations des passagers</p>
+                <div id="rr-step-3" class="rr-step hidden" data-rr-step="3">
+                    <p class="rr-step-lead">Renseignez chaque passager tel qu'indiqué sur le passeport.</p>
                     <div id="rr-passengers" class="rr-stack"></div>
                     ${kidsSectionHtml(kids)}
                     <section class="rr-card">
@@ -254,9 +274,9 @@
                             <textarea class="rr-input rr-textarea" name="notes_extra" rows="3" placeholder="Infos supplémentaires (optionnel)"></textarea>
                         </label>
                     </section>
-                    <p id="rr-form-error-2" class="rr-error hidden" role="alert"></p>
+                    <p id="rr-form-error-3" class="rr-error hidden" role="alert"></p>
                     <div class="rr-actions rr-actions-split">
-                        <button type="button" class="rr-btn-secondary" id="rr-step2-back">Retour</button>
+                        <button type="button" class="rr-btn-secondary" id="rr-step3-back">Retour</button>
                         <button type="submit" class="rr-btn-primary" id="rr-submit">Envoyer la demande</button>
                     </div>
                 </div>
@@ -282,7 +302,7 @@
         return lines.join('\n');
     }
 
-    function formDataToPayload(form, { includePassengers }) {
+    function formDataToPayload(form, { includePassengers, completedStep }) {
         const fd = new FormData(form);
         const get = (name) => String(fd.get(name) || '').trim();
         const count = Math.max(1, Number(get('nombre_passagers')) || 1);
@@ -300,10 +320,15 @@
             assurance_medicale: get('assurance_medicale'),
             passeport_valide: get('passeport_valide'),
             assurance_annulation: get('assurance_annulation'),
-            payment_responsible: get('payment_responsible'),
-            infopassager: get('infopassager'),
+            payment_responsible: get('payment_responsible') || `${get('contact_prenom')} ${get('contact_nom')}`.trim(),
+            infopassager: includePassengers ? 'Oui' : 'Remplir plus tard',
             terms_and_conditions: form.querySelector('[name="terms_and_conditions"]')?.checked ? 'true' : ''
         };
+
+        const noteParts = [];
+        if (!includePassengers) {
+            noteParts.push('Infos passagers : à remplir plus tard');
+        }
 
         if (includePassengers) {
             const adultSlots = Math.min(
@@ -326,15 +351,12 @@
                 }
             }
             const kidsNotes = collectKidsNotes(form);
-            const extra = get('notes_extra');
-            payload.notes = [kidsNotes, extra].filter(Boolean).join('\n\n');
-        } else {
-            const extra = get('notes_extra');
-            payload.notes = [
-                'Infos passagers : à remplir plus tard',
-                extra
-            ].filter(Boolean).join('\n\n');
+            if (kidsNotes) noteParts.push(kidsNotes);
         }
+
+        const extra = get('notes_extra');
+        if (extra) noteParts.push(extra);
+        payload.notes = noteParts.filter(Boolean).join('\n\n');
 
         return payload;
     }
@@ -409,16 +431,19 @@
         `;
 
         const form = root.querySelector('#room-registration-form');
-        const step1 = form.querySelector('#rr-step-1');
-        const step2 = form.querySelector('#rr-step-2');
+        const progressRoot = form.querySelector('#rr-progress-root');
+        const stepEls = {
+            1: form.querySelector('#rr-step-1'),
+            2: form.querySelector('#rr-step-2'),
+            3: form.querySelector('#rr-step-3')
+        };
         const passengersEl = form.querySelector('#rr-passengers');
         const adultsInput = form.querySelector('[name="nombre_adultes"]');
         const totalInput = form.querySelector('[name="nombre_passagers"]');
         const depotDisplay = form.querySelector('#rr-depot-display');
         const depotValue = form.querySelector('#rr-depot-value');
         const depotHint = form.querySelector('#rr-depot-hint');
-        const errorEl = form.querySelector('#rr-form-error');
-        const errorEl2 = form.querySelector('#rr-form-error-2');
+        const infoPassagerInput = form.querySelector('#rr-infopassager');
 
         const adultCount = Math.min(
             MAX_STRUCTURED_PASSENGERS,
@@ -432,7 +457,26 @@
         let currentStep = 1;
         let passengersRendered = false;
 
+        function errorEl(step) {
+            return form.querySelector(`#rr-form-error-${step}`);
+        }
+
+        function clearError(step) {
+            const el = errorEl(step);
+            if (!el) return;
+            el.classList.add('hidden');
+            el.textContent = '';
+        }
+
+        function showError(step, message) {
+            const el = errorEl(step);
+            if (!el) return;
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+
         function updateDepot() {
+            if (!depotDisplay || !depotValue) return;
             if (perPerson == null) {
                 depotDisplay.value = '';
                 depotValue.value = '';
@@ -447,17 +491,36 @@
             }
         }
 
+        function updateProgress(n) {
+            if (progressRoot) progressRoot.innerHTML = progressHtml(n);
+        }
+
         function showStep(n) {
             currentStep = n;
-            const is1 = n === 1;
-            step1.classList.toggle('hidden', !is1);
-            step2.classList.toggle('hidden', is1);
-            setStepRequired(step1, is1);
-            setStepRequired(step2, !is1);
+            [1, 2, 3].forEach(i => {
+                const el = stepEls[i];
+                if (!el) return;
+                const active = i === n;
+                el.classList.toggle('hidden', !active);
+                setStepRequired(el, active);
+            });
+            updateProgress(n);
             if (typeof onStepChange === 'function') onStepChange(n);
-            if (!is1) {
-                step2.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            stepEls[n]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function validateStep(n) {
+            clearError(n);
+            const stepEl = stepEls[n];
+            if (!stepEl) return false;
+            const fields = stepEl.querySelectorAll('input, select, textarea');
+            for (const el of fields) {
+                if (!el.checkValidity()) {
+                    el.reportValidity();
+                    return false;
+                }
             }
+            return true;
         }
 
         function ensurePassengersRendered() {
@@ -472,32 +535,20 @@
             passengersRendered = true;
         }
 
-        function validateStep1() {
-            errorEl.classList.add('hidden');
-            errorEl.textContent = '';
-            const fields = step1.querySelectorAll('input, select, textarea');
-            for (const el of fields) {
-                if (!el.checkValidity()) {
-                    el.reportValidity();
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function doSubmit(includePassengers) {
+        function doSubmit({ includePassengers, completedStep }) {
             updateDepot();
-            const payload = formDataToPayload(form, { includePassengers });
+            if (infoPassagerInput) {
+                infoPassagerInput.value = includePassengers ? 'Oui' : 'Remplir plus tard';
+            }
+            const payload = formDataToPayload(form, { includePassengers, completedStep });
             if (pricingSummary) payload.sommaire = pricingSummary;
             const ghlUrl = buildGhlRoomFormUrl(payload);
             if (!ghlUrl) {
-                const err = includePassengers ? errorEl2 : errorEl;
-                err.textContent = 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.';
-                err.classList.remove('hidden');
+                showError(currentStep, 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.');
                 return;
             }
             if (typeof onSubmit === 'function') {
-                onSubmit({ payload, ghlUrl, form, includePassengers });
+                onSubmit({ payload, ghlUrl, form, includePassengers, completedStep });
             } else {
                 window.location.href = ghlUrl;
             }
@@ -506,46 +557,36 @@
         updateDepot();
         showStep(1);
 
-        const step1NextBtn = form.querySelector('#rr-step1-next');
-        const infoPassagerSelect = form.querySelector('[name="infopassager"]');
-
-        function syncStep1ButtonLabel() {
-            if (!step1NextBtn) return;
-            step1NextBtn.textContent = infoPassagerSelect?.value === 'Remplir plus tard'
-                ? 'Envoyer la demande'
-                : 'Continuer';
-        }
-
-        infoPassagerSelect?.addEventListener('change', syncStep1ButtonLabel);
-        syncStep1ButtonLabel();
-
-        step1NextBtn?.addEventListener('click', () => {
-            if (!validateStep1()) return;
-            const choice = infoPassagerSelect?.value;
-            if (choice === 'Oui') {
-                ensurePassengersRendered();
-                showStep(2);
-                return;
+        form.querySelector('#rr-step1-next')?.addEventListener('click', () => {
+            if (!validateStep(1)) return;
+            const pay = form.querySelector('[name="payment_responsible"]');
+            if (pay && !pay.value.trim()) {
+                const p = form.querySelector('[name="contact_prenom"]')?.value || '';
+                const n = form.querySelector('[name="contact_nom"]')?.value || '';
+                pay.value = `${p} ${n}`.trim();
             }
-            doSubmit(false);
+            showStep(2);
         });
 
-        form.querySelector('#rr-step2-back')?.addEventListener('click', () => {
-            showStep(1);
+        form.querySelector('#rr-step2-next')?.addEventListener('click', () => {
+            if (!validateStep(2)) return;
+            ensurePassengersRendered();
+            showStep(3);
         });
+
+        form.querySelector('#rr-step2-reserve')?.addEventListener('click', () => {
+            if (!validateStep(2)) return;
+            doSubmit({ includePassengers: false, completedStep: 2 });
+        });
+
+        form.querySelector('#rr-step2-back')?.addEventListener('click', () => showStep(1));
+        form.querySelector('#rr-step3-back')?.addEventListener('click', () => showStep(2));
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            if (errorEl2) {
-                errorEl2.classList.add('hidden');
-                errorEl2.textContent = '';
-            }
-            if (currentStep !== 2) return;
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-            doSubmit(true);
+            if (currentStep !== 3) return;
+            if (!validateStep(3)) return;
+            doSubmit({ includePassengers: true, completedStep: 3 });
         });
 
         return {
@@ -558,14 +599,43 @@
     const css = `
 .rr-form { display: flex; flex-direction: column; gap: 0; }
 .rr-step { display: flex; flex-direction: column; gap: 1.75rem; }
-.rr-step-label {
-  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: #F26522; margin: 0;
+.rr-step-lead {
+  margin: 0; font-size: 0.9rem; font-weight: 500; color: #4b5563; line-height: 1.5;
+}
+.rr-progress {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.35rem; margin-bottom: 1.75rem; padding: 0.25rem 0;
+}
+.rr-progress-item {
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  flex: 0 0 auto; min-width: 4.5rem; opacity: 0.45;
+}
+.rr-progress-item.is-active, .rr-progress-item.is-done { opacity: 1; }
+.rr-progress-num {
+  width: 2rem; height: 2rem; border-radius: 9999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; background: #e5e7eb; color: #6b7280;
+}
+.rr-progress-item.is-active .rr-progress-num {
+  background: #F26522; color: #fff;
+}
+.rr-progress-item.is-done .rr-progress-num {
+  background: #025091; color: #fff;
+}
+.rr-progress-label {
+  font-size: 0.7rem; font-weight: 600; color: #6b7280; text-align: center;
+  letter-spacing: 0.02em;
+}
+.rr-progress-item.is-active .rr-progress-label { color: #F26522; }
+.rr-progress-item.is-done .rr-progress-label { color: #025091; }
+.rr-progress-line {
+  flex: 1 1 auto; height: 2px; background: #e5e7eb; margin: 0 0.15rem 1.1rem;
+  align-self: center;
 }
 .rr-summary {
   background: #F3F7FA; border: 1px solid #dbe7f0; border-radius: 0.75rem;
   padding: 1.1rem 1.25rem; font-size: 0.875rem; color: #374151; line-height: 1.55;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 .rr-card {
   background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
@@ -585,9 +655,7 @@
   display: grid; grid-template-columns: 1fr 1fr;
   column-gap: 1.25rem; row-gap: 1.65rem;
 }
-.rr-stack-fields {
-  display: flex; flex-direction: column; gap: 1.65rem;
-}
+.rr-stack-fields { display: flex; flex-direction: column; gap: 1.65rem; }
 .rr-field {
   display: flex; flex-direction: column; gap: 0.7rem;
   font-size: 0.875rem; font-weight: 600; color: #374151;
@@ -640,10 +708,16 @@ select.rr-input {
   accent-color: #F26522;
 }
 .rr-actions {
-  display: flex; justify-content: flex-end; gap: 0.85rem;
-  padding-top: 0.5rem; padding-bottom: 0.25rem;
+  display: flex; justify-content: flex-end; align-items: center; gap: 0.85rem;
+  padding-top: 0.35rem; padding-bottom: 0.25rem; flex-wrap: wrap;
 }
 .rr-actions-split { justify-content: space-between; }
+.rr-actions-stack {
+  flex-direction: column; align-items: stretch; gap: 0.75rem;
+}
+.rr-actions-hint {
+  margin: 0.15rem 0 0; font-size: 0.8rem; color: #6b7280; text-align: center; line-height: 1.4;
+}
 .rr-btn-primary {
   background: #F26522; color: #fff; font-weight: 600; border: 0;
   border-radius: 0.65rem; padding: 1rem 1.65rem; cursor: pointer;
@@ -658,6 +732,13 @@ select.rr-input {
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .rr-btn-secondary:hover { background: #F3F7FA; border-color: #025091; }
+.rr-btn-ghost {
+  background: transparent; color: #025091; border: 0;
+  border-radius: 0.65rem; padding: 0.85rem 1rem; font-size: 0.9rem;
+  font-weight: 600; cursor: pointer; font-family: inherit;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.rr-btn-ghost:hover { color: #F26522; }
 .rr-error {
   color: #b91c1c; font-size: 0.875rem; background: #fef2f2;
   border: 1px solid #fecaca; border-radius: 0.65rem; padding: 1rem 1.1rem;
@@ -668,7 +749,8 @@ select.rr-input {
   .rr-grid { grid-template-columns: 1fr; column-gap: 0; row-gap: 1.4rem; }
   .rr-card { padding: 1.35rem 1.25rem 1.5rem; }
   .rr-step { gap: 1.4rem; }
-  .rr-actions, .rr-actions-split { flex-direction: column-reverse; }
+  .rr-progress-label { font-size: 0.65rem; }
+  .rr-actions-split { flex-direction: column-reverse; }
   .rr-btn-primary, .rr-btn-secondary { width: 100%; text-align: center; }
 }
 `;
