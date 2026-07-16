@@ -280,6 +280,9 @@
      * Prefill via Query Keys. Dropdowns must have Query Keys set in GHL admin.
      */
     window.GHL_ROOM_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/DXJYaNnY1fdP5D1uVr9K';
+    /** Location ID public (aussi dans products.json) — utilisé pour la soumission auto du formulaire */
+    window.GHL_LOCATION_ID = 'V90iyFBbBrCg3tpctRjc';
+    window.GHL_ROOM_FORM_SUBMIT_URL = 'https://backend.leadconnectorhq.com/forms/submit';
 
     /**
      * Mapping native form fields → GHL Query Keys (data-q).

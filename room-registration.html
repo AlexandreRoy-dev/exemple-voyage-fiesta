@@ -36,20 +36,14 @@
 
     <main class="max-w-2xl mx-auto px-4 py-8">
         <div id="room-form-root"></div>
-
-        <div id="ghl-handoff" class="hidden mt-6">
-            <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                <div class="p-4 border-b bg-brand-light">
-                    <h2 class="font-bold text-brand-blue">Confirmation</h2>
-                    <p class="text-sm text-gray-600 mt-1">Vérifiez les informations préremplies, puis cliquez <strong>Envoyer</strong> dans le formulaire ci-dessous.</p>
-                </div>
-                <iframe id="ghl-room-iframe" class="w-full min-h-[720px] border-0" title="Formulaire GHL inscription chambre"></iframe>
-            </div>
+        <div id="room-submit-status" class="hidden mt-6 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+            <p id="room-submit-status-text" class="font-medium text-brand-blue">Envoi de votre demande…</p>
+            <p class="text-sm text-gray-500 mt-2">Veuillez patienter quelques secondes.</p>
         </div>
     </main>
 
-    <script src="config.js?v=37"></script>
-    <script src="room-registration.js?v=11"></script>
+    <script src="config.js?v=38"></script>
+    <script src="room-registration.js?v=12"></script>
     <script>
         (function () {
             RoomRegistration.injectStyles();
@@ -57,23 +51,34 @@
             const adults = Number(params.get('adults') || params.get('nombre_passagers') || 2) || 2;
             const kids = Number(params.get('kids') || params.get('enfants') || 0) || 0;
             const depositPerPerson = params.get('depot_par_personne') || params.get('deposit') || null;
+            const formRoot = document.getElementById('room-form-root');
+            const submitStatus = document.getElementById('room-submit-status');
+            const submitStatusText = document.getElementById('room-submit-status-text');
 
-            RoomRegistration.mountForm(document.getElementById('room-form-root'), {
+            RoomRegistration.mountForm(formRoot, {
                 initialPassengerCount: Math.min(5, Math.max(1, adults)),
                 initialKidsCount: Math.min(4, Math.max(0, kids)),
                 depositPerPerson: depositPerPerson != null ? Number(depositPerPerson) : null,
-                onSubmit({ ghlUrl }) {
-                    const handoff = document.getElementById('ghl-handoff');
-                    const iframe = document.getElementById('ghl-room-iframe');
+                async onSubmit({ payload }) {
                     const thankYou = typeof buildGhlThankYouUrl === 'function'
                         ? buildGhlThankYouUrl(params.get('forfait_slug') || '')
                         : 'thank-you.html';
-                    const url = new URL(ghlUrl);
-                    if (thankYou) url.searchParams.set('redirect_url', thankYou);
-                    iframe.src = url.toString();
-                    handoff.classList.remove('hidden');
-                    handoff.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    document.getElementById('room-form-root').classList.add('opacity-60', 'pointer-events-none');
+                    formRoot.classList.add('hidden');
+                    if (submitStatusText) submitStatusText.textContent = 'Envoi de votre demande…';
+                    submitStatus.classList.remove('hidden');
+                    try {
+                        await RoomRegistration.submitGhlRoomForm({
+                            payload,
+                            redirectUrl: thankYou
+                        });
+                        if (submitStatusText) submitStatusText.textContent = 'Demande envoyée. Redirection…';
+                    } catch (err) {
+                        formRoot.classList.remove('hidden');
+                        submitStatus.classList.add('hidden');
+                        alert(err?.message
+                            ? `Impossible d'envoyer la demande : ${err.message}`
+                            : 'Impossible d\'envoyer la demande. Veuillez réessayer.');
+                    }
                 }
             });
         })();

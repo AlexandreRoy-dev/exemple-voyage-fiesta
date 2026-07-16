@@ -28,6 +28,117 @@
         return global.GHL_ROOM_FORM_EMBED_URL || '';
     }
 
+    function getRoomFormId() {
+        const url = getEmbedUrl();
+        if (!url) return '';
+        try {
+            const parts = new URL(url).pathname.split('/').filter(Boolean);
+            return parts[parts.length - 1] || '';
+        } catch (_) {
+            return '';
+        }
+    }
+
+    function payloadToGhlFields(payload) {
+        const map = getMap();
+        const fields = {};
+        Object.entries(payload || {}).forEach(([nativeKey, value]) => {
+            if (value === undefined || value === null || value === '') return;
+            const q = map[nativeKey] || nativeKey;
+            fields[q] = String(value);
+        });
+        return fields;
+    }
+
+    /**
+     * Soumet le formulaire GHL sans étape iframe / clic Envoyer.
+     * Utilise l'endpoint public de soumission GHL, puis redirige vers thank-you.
+     */
+    async function submitGhlRoomForm({ payload, redirectUrl } = {}) {
+        const formId = getRoomFormId();
+        if (!formId) {
+            throw new Error('Identifiant du formulaire manquant.');
+        }
+
+        const fields = payloadToGhlFields(payload);
+        const formDataJson = {
+            formId,
+            ...fields,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Toronto'
+        };
+
+        if (global.GHL_LOCATION_ID) {
+            formDataJson.location_id = global.GHL_LOCATION_ID;
+        }
+        if (redirectUrl) {
+            formDataJson.redirectUrl = redirectUrl;
+        }
+
+        const submitUrl = global.GHL_ROOM_FORM_SUBMIT_URL
+            || 'https://backend.leadconnectorhq.com/forms/submit';
+
+        const body = new FormData();
+        body.set('formData', JSON.stringify(formDataJson));
+
+        let res;
+        try {
+            res = await fetch(submitUrl, {
+                method: 'POST',
+                body,
+                credentials: 'omit'
+            });
+        } catch (networkErr) {
+            // CORS / réseau : repli via POST navigateur (quitte la page)
+            postFormNavigate(submitUrl, { formData: JSON.stringify(formDataJson) });
+            return { ok: true, navigated: true };
+        }
+
+        if (!res.ok) {
+            let detail = '';
+            try {
+                const errJson = await res.json();
+                detail = errJson?.message || errJson?.error || '';
+            } catch (_) {
+                /* ignore */
+            }
+            throw new Error(detail || `Envoi refusé (${res.status}).`);
+        }
+
+        let result = null;
+        try {
+            result = await res.json();
+        } catch (_) {
+            result = null;
+        }
+
+        const nextUrl = redirectUrl
+            || result?.redirectUrl
+            || result?.redirect_url
+            || '';
+        if (nextUrl) {
+            window.location.href = nextUrl;
+            return { ok: true, redirected: true, result };
+        }
+
+        return { ok: true, result };
+    }
+
+    function postFormNavigate(actionUrl, fields) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = actionUrl;
+        form.style.display = 'none';
+        Object.entries(fields || {}).forEach(([name, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+    }
+
     function escapeHtml(str) {
         return String(str ?? '')
             .replace(/&/g, '&amp;')
@@ -542,16 +653,20 @@
             }
             const payload = formDataToPayload(form, { includePassengers, completedStep });
             if (pricingSummary) payload.sommaire = pricingSummary;
-            const ghlUrl = buildGhlRoomFormUrl(payload);
-            if (!ghlUrl) {
-                showError(currentStep, 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.');
+
+            if (typeof onSubmit === 'function') {
+                onSubmit({ payload, form, includePassengers, completedStep });
                 return;
             }
-            if (typeof onSubmit === 'function') {
-                onSubmit({ payload, ghlUrl, form, includePassengers, completedStep });
-            } else {
-                window.location.href = ghlUrl;
-            }
+
+            const thankYou = typeof global.buildGhlThankYouUrl === 'function'
+                ? global.buildGhlThankYouUrl('')
+                : 'thank-you.html';
+
+            submitGhlRoomForm({ payload, redirectUrl: thankYou }).catch((err) => {
+                showError(currentStep, err?.message
+                    || 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.');
+            });
         }
 
         updateDepot();
@@ -770,6 +885,8 @@ select.rr-input {
         mountForm,
         formHtml,
         buildGhlRoomFormUrl,
+        submitGhlRoomForm,
+        payloadToGhlFields,
         formDataToPayload,
         formatDobForGhl,
         injectStyles,
