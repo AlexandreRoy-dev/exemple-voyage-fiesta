@@ -2024,7 +2024,14 @@
 
     function getFinancingMonths() {
         const n = Number(window.FINANCING_MONTHS);
-        return Number.isFinite(n) && n > 0 ? n : 60;
+        return Number.isFinite(n) && n > 0 ? n : 36;
+    }
+
+    /** Diviseur utilisé pour le montant affiché (peut différer de FINANCING_MONTHS). */
+    function getFinancingDivisor() {
+        const n = Number(window.FINANCING_DIVISOR);
+        if (Number.isFinite(n) && n > 0) return n;
+        return getFinancingMonths();
     }
 
     function getFinancingApplyUrl() {
@@ -2032,17 +2039,18 @@
     }
 
     function getFinancingStarNote() {
+        const months = getFinancingMonths();
         return String(
             window.FINANCING_STAR_NOTE ||
-            `* Financement calculé sur ${getFinancingMonths()} mois (prix total par passager ÷ ${getFinancingMonths()}). Sous réserve d’approbation.`
+            `* Financement sur ${months} mois (à partir du prix total par passager). Sous réserve d’approbation.`
         ).trim();
     }
 
-    /** Mensualité = prix total / passager ÷ N mois. */
+    /** Mensualité affichée = prix total / passager ÷ FINANCING_DIVISOR. */
     function getFinancingMonthlyAmount(totalPerPassenger) {
         const total = optionalPrice(totalPerPassenger);
         if (total === null) return null;
-        return Math.round((total / getFinancingMonths()) * 100) / 100;
+        return Math.round((total / getFinancingDivisor()) * 100) / 100;
     }
 
     function getListingFinancingMonthly(p) {
@@ -2456,6 +2464,7 @@
         applySocialMetaTags,
         isFinancingActive,
         getFinancingMonths,
+        getFinancingDivisor,
         getFinancingApplyUrl,
         getFinancingStarNote,
         getFinancingMonthlyAmount,
