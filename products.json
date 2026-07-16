@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-16T18:43:54.916Z",
+  "updatedAt": "2026-07-16T19:46:55.161Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -413,20 +413,20 @@
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2027-01-22T00:00:00.000Z",
-          "departTime": "08:15",
+          "departTime": "",
           "to": "Punta Cana",
           "arriveDate": "2027-01-22T00:00:00.000Z",
           "arriveTime": "",
-          "number": "WS2916"
+          "number": ""
         },
         "return": {
           "from": "Punta Cana",
           "departDate": "2027-01-29T00:00:00.000Z",
-          "departTime": "15:10",
+          "departTime": "",
           "to": "Montréal (YUL)",
           "arriveDate": "2027-01-29T00:00:00.000Z",
           "arriveTime": "",
-          "number": "WS2903"
+          "number": ""
         },
         "airlineLogo": ""
       },
@@ -673,25 +673,25 @@
       "endDate": "2026-09-12T00:00:00.000Z",
       "departureDate": "2027-03-27T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "Montréal (YUL)",
+      "returnAirport": "FPO",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2027-03-27T00:00:00.000Z",
-          "departTime": "",
+          "departTime": "06:00",
           "to": "Freeport",
           "arriveDate": "2027-03-27T00:00:00.000Z",
           "arriveTime": "",
-          "number": ""
+          "number": "WS2952"
         },
         "return": {
           "from": "Freeport",
           "departDate": "2027-04-03T00:00:00.000Z",
-          "departTime": "",
-          "to": "Montréal (YUL)",
+          "departTime": "10:55",
+          "to": "FPO",
           "arriveDate": "2027-04-03T00:00:00.000Z",
           "arriveTime": "",
-          "number": ""
+          "number": "WS2953"
         },
         "airlineLogo": ""
       },
