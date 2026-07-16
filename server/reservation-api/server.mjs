@@ -139,14 +139,31 @@ function buildContactBody(payload) {
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
     source: 'Site réservation chambre',
-    tags: [GHL_CONTACT_TAG],
-    notes: buildNotes(payload) || undefined
+    tags: [GHL_CONTACT_TAG]
   };
 
   Object.keys(body).forEach((k) => {
     if (body[k] === undefined) delete body[k];
   });
   return body;
+}
+
+async function ghlAddNote(contactId, bodyText) {
+  if (!contactId || !bodyText) return;
+  const res = await fetch(`${GHL_API}/contacts/${contactId}/notes`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${GHL_API_KEY}`,
+      Version: GHL_VERSION,
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ body: bodyText })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn('[reservation] note failed', res.status, text.slice(0, 300));
+  }
 }
 
 async function ghlUpsertContact(body) {
@@ -254,10 +271,15 @@ const server = http.createServer(async (req, res) => {
 
     try {
       const body = buildContactBody(payload);
+      const noteText = buildNotes(payload);
       const result = await ghlUpsertContact(body);
+      const contactId = result?.contact?.id || result?.id || null;
+      if (contactId && noteText) {
+        await ghlAddNote(contactId, noteText);
+      }
       return sendJson(res, 200, {
         ok: true,
-        contactId: result?.contact?.id || result?.id || null
+        contactId
       });
     } catch (err) {
       console.error('[reservation]', err.message);

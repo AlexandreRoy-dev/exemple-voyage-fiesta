@@ -287,10 +287,10 @@
     /** Location ID public (aussi dans products.json) */
     window.GHL_LOCATION_ID = 'V90iyFBbBrCg3tpctRjc';
     /**
-     * API réservation (OVH VPS, même machine que DuProprio).
-     * Crée le contact GHL sans iframe. Ne jamais y mettre le PIT.
+     * API réservation (OVH VPS via tunnel HTTPS — le site est en HTTPS).
+     * Pour une URL stable: pointer un sous-domaine vers 158.69.1.173 + Let's Encrypt.
      */
-    window.GHL_RESERVATION_API_URL = 'http://158.69.1.173:3847/';
+    window.GHL_RESERVATION_API_URL = 'https://hart-intelligence-footwear-underground.trycloudflare.com/';
 
     /**
      * Mapping native form fields → GHL Query Keys (data-q).
