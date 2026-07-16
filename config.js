@@ -318,6 +318,7 @@
         passeport_valide: 'passeport_valide',
         assurance_annulation: 'assurance_annulation',
         payment_responsible: 'single_line_21nm7',
+        infopassager: 'infopassager',
         notes: 'notes',
         sommaire: 'sommaire',
         terms_and_conditions: 'terms_and_conditions'
