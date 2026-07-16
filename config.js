@@ -319,6 +319,7 @@
         assurance_annulation: 'assurance_annulation',
         payment_responsible: 'single_line_21nm7',
         notes: 'notes',
+        sommaire: 'sommaire',
         terms_and_conditions: 'terms_and_conditions'
     };
 

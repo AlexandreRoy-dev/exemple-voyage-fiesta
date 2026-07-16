@@ -69,9 +69,11 @@ const CSV_COLUMNS = [
   ['Rabais Aubaines Express', 'rabais'],
   ['Dépôt requis ($ / pers.)', 'depot_par_personne'],
   ['Vol aller numéro', 'vol_aller_numero'],
-  ['Vol aller -heure départ', 'vol_aller_heure_depart'],
-  ['Vol retour -numéro', 'vol_retour_numero'],
-  ['Vol retour -heure départ', 'vol_retour_heure_depart'],
+  ['Vol aller - heure départ', 'vol_aller_heure_depart'],
+  ['Vol aller - heure d\'arrivée', 'vol_aller_heure_arrivee'],
+  ['Vol retour - numéro', 'vol_retour_numero'],
+  ['Vol retour - heure départ', 'vol_retour_heure_depart'],
+  ['Vol retour - heure d\'arrivée', 'vol_retour_heure_arrivee'],
   ['Lien fiche fournisseur', 'lien_fiche_fournisseur']
 ];
 

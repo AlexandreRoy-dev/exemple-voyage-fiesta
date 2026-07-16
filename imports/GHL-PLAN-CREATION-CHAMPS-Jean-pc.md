@@ -171,19 +171,16 @@ Familial · Tout-inclus · Directement sur la plage · Tranquille / Détente · 
 >
 > Le client n’a qu’à saisir **numéro + heures** quand ils sont connus.
 
-| # | Field name (FR) | Key | Type | Requis | Exemple |
-|---|-----------------|-----|------|--------|---------|
-| 8.1 | Vol aller — numéro | `vol_aller_numero` | Single line | Non | WS2916 |
-| 8.2 | Vol aller — heure départ | `vol_aller_heure_depart` | Single line | Non | 08:15 |
-| 8.3 | Vol retour — numéro | `vol_retour_numero` | Single line | Non | WS2903 |
-| 8.4 | Vol retour — heure départ | `vol_retour_heure_depart` | Single line | Non | 15:10 |
+| # | Field name (FR) | Key API typique | Type | Requis | Exemple |
+|---|-----------------|-----------------|------|--------|---------|
+| 8.1 | Vol aller - numéro | `vol_aller_numero` | Single line | Non | WS2916 |
+| 8.2 | Vol aller - heure départ | `vol_aller_heure_dpart` | Single line | Non | 08:15 |
+| 8.3 | Vol aller - heure d'arrivée | `vol_aller__heure_darrivee` | Single line | Non | 12:30 |
+| 8.4 | Vol retour - numéro | `vol_retour_numero` | Single line | Non | WS2903 |
+| 8.5 | Vol retour - heure départ | `vol_retour_heure_dpart` | Single line | Non | 15:10 |
+| 8.6 | Vol retour - heure d'arrivée | `vol_retour__heure_darrivee` | Single line | Non | 17:50 |
 
-### Optionnel (seulement si vous voulez l’heure d’arrivée affichée)
-
-| # | Field name (FR) | Key | Type | Notes |
-|---|-----------------|-----|------|-------|
-| 8.5 | Vol aller — heure arrivée | `vol_aller_heure_arrivee` | Single line | Sinon « à venir » |
-| 8.6 | Vol retour — heure arrivée | `vol_retour_heure_arrivee` | Single line | Sinon « à venir » |
+Si une heure d'arrivée est vide, le site affiche « à venir ».
 
 **Ne pas créer :** villes, dates de vol, aéroports destination — déjà couverts par `destination`, `aeroport_depart`, `date_depart`.
 

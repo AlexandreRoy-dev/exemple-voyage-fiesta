@@ -888,7 +888,7 @@
                 bookingTotalWithTaxes: null,
                 totalDeposit: null,
                 depositPerPerson: getDepositPerPerson(p),
-                pricingSummary: 'Configuration sur mesure — nous vous contacterons.',
+                pricingSummary: 'Configuration sur mesure - nous vous contacterons.',
                 useComponentPricing: true,
                 isAutres: true
             };
@@ -980,6 +980,42 @@
         let totalPerPerson;
         let pricingSummary;
 
+        const taxLabelLower = getTaxesAirFeesLabel().toLowerCase();
+
+        function moneyPlain(amount) {
+            return formatMoney(amount) || '-';
+        }
+
+        /** Client-facing sommaire: one line per traveler. */
+        function buildPassengerLinesSummary({ adultPrice, adultCount, childLines, taxPerPerson, bookingTotal, label }) {
+            const lines = [];
+            let idx = 1;
+            for (let a = 0; a < adultCount; a++) {
+                if (taxPerPerson != null) {
+                    lines.push(
+                        `Passager ${idx} : ${moneyPlain(adultPrice)} + ${moneyPlain(taxPerPerson)} ${taxLabelLower}`
+                    );
+                } else {
+                    lines.push(`Passager ${idx} : ${moneyPlain(adultPrice)}`);
+                }
+                idx += 1;
+            }
+            (childLines || []).forEach(line => {
+                const childTax = line.taxesPerPerson ?? taxPerPerson;
+                if (childTax != null) {
+                    lines.push(
+                        `Passager ${idx} : ${moneyPlain(line.unitPrice)} + ${moneyPlain(childTax)} ${taxLabelLower}`
+                    );
+                } else {
+                    lines.push(`Passager ${idx} : ${moneyPlain(line.unitPrice)}`);
+                }
+                idx += 1;
+            });
+            if (label) lines.push(`Occupation : ${label}`);
+            if (bookingTotal != null) lines.push(`Total forfait : ${moneyPlain(bookingTotal)}`);
+            return lines.join('\n');
+        }
+
         if (useComponentPricing) {
             const childTotal = sumChildUnitPrices(p, children212, children1317);
             if (childTotal === null) return null;
@@ -987,39 +1023,37 @@
             pricePerPerson = adultUnitPrice;
             totalPerPerson = taxesPerPerson !== null ? adultUnitPrice + taxesPerPerson : adultUnitPrice;
 
-            const summaryParts = [`${formatMoneyPerPerson(adultUnitPrice, { html: false })} × ${adults} adulte${adults > 1 ? 's' : ''}`];
-            child212Lines.forEach(line => {
-                summaryParts.push(`${formatMoneyPerChild(line.unitPrice, { html: false })} (${line.label.toLowerCase()})`);
+            const bookingTotalPreview = taxesPerPerson !== null
+                ? roundMoney(bookingBeforeTaxes + (taxesPerPerson * totalPeople))
+                : bookingBeforeTaxes;
+
+            pricingSummary = buildPassengerLinesSummary({
+                adultPrice: adultUnitPrice,
+                adultCount: adults,
+                childLines: [...child212Lines, ...child1317Lines],
+                taxPerPerson: taxesPerPerson,
+                bookingTotal: bookingTotalPreview,
+                label: bookingLabel
             });
-            child1317Lines.forEach(line => {
-                summaryParts.push(`${formatMoneyPerChild(line.unitPrice, { html: false })} (${line.label.toLowerCase()})`);
-            });
-            pricingSummary = summaryParts.join(' + ');
-            if (taxesPerPerson !== null) {
-                pricingSummary += ` · ${getTaxesAirFeesLabel({ perPerson: true }).toLowerCase()}`;
-            }
-            if (totalPeople > 0) {
-                const bookingTotalPreview = taxesPerPerson !== null
-                    ? roundMoney(bookingBeforeTaxes + (taxesPerPerson * totalPeople))
-                    : bookingBeforeTaxes;
-                pricingSummary += ` · forfait ${formatPassengerCountLabel(totalPeople)} : ${formatMoney(bookingTotalPreview)}`;
-            }
         } else {
             pricePerPerson = adultUnitPrice;
             totalPerPerson = row.totalPerPerson ?? row.totalWithTaxes ?? (
                 taxesPerPerson !== null ? pricePerPerson + taxesPerPerson : pricePerPerson
             );
             bookingBeforeTaxes = roundMoney(pricePerPerson * totalPeople);
-            pricingSummary = `${formatMoneyPerPerson(pricePerPerson, { html: false })} ${getBeforeTaxesLabel().toLowerCase()}`;
-            if (taxesPerPerson !== null && totalPerPerson !== null) {
-                pricingSummary += ` + ${formatMoneyPerPerson(taxesPerPerson, { html: false })} ${getTaxesAirFeesLabel().toLowerCase()} = ${formatMoneyPerPerson(totalPerPerson, { html: false })} total`;
-            }
-            if (totalPeople > 1) {
-                const bookingTotalPreview = totalPerPerson !== null
-                    ? roundMoney(totalPerPerson * totalPeople)
-                    : bookingBeforeTaxes;
-                pricingSummary += ` · forfait ${formatPassengerCountLabel(totalPeople)} : ${formatMoney(bookingTotalPreview)}`;
-            }
+            const bookingTotalPreview = totalPerPerson !== null
+                ? roundMoney(totalPerPerson * totalPeople)
+                : bookingBeforeTaxes;
+
+            // Same unit price for every traveler
+            pricingSummary = buildPassengerLinesSummary({
+                adultPrice: pricePerPerson,
+                adultCount: totalPeople,
+                childLines: [],
+                taxPerPerson: taxesPerPerson,
+                bookingTotal: bookingTotalPreview,
+                label: bookingLabel
+            });
         }
 
         const bookingTaxes = taxesPerPerson !== null ? roundMoney(taxesPerPerson * totalPeople) : null;

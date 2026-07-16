@@ -316,6 +316,7 @@
             initialPassengerCount = 2,
             initialKidsCount = 0,
             depositPerPerson = null,
+            pricingSummary = '',
             onSubmit,
             summaryHtml = ''
         } = options;
@@ -377,6 +378,7 @@
             }
 
             const payload = formDataToPayload(form);
+            if (pricingSummary) payload.sommaire = pricingSummary;
             const ghlUrl = buildGhlRoomFormUrl(payload);
             if (!ghlUrl) {
                 errorEl.textContent = 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.';

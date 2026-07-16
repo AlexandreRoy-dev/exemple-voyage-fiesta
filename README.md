@@ -112,14 +112,14 @@ node scripts/sync-ghl-products.mjs
 | flight_out_depart_time | `out.departTime` | 08:45 *(vide → « à venir »)* |
 | flight_out_to | `out.to` | Cancún (CUN) |
 | flight_out_arrive_date | `out.arriveDate` | 2026-09-20 |
-| flight_out_arrive_time | `out.arriveTime` | 12:30 |
+| flight_out_arrive_time / `vol_aller__heure_darrivee` | `out.arriveTime` | 12:30 *(vide → « à venir »)* |
 | flight_out_number | `out.number` | WS2632 |
 | flight_return_from | `return.from` | Cancún (CUN) |
 | flight_return_depart_date | `return.departDate` | 2026-09-27 |
 | flight_return_depart_time | `return.departTime` | 12:15 |
 | flight_return_to | `return.to` | Québec (YQB) |
 | flight_return_arrive_date | `return.arriveDate` | 2026-09-27 |
-| flight_return_arrive_time | `return.arriveTime` | 17:50 |
+| flight_return_arrive_time / `vol_retour__heure_darrivee` | `return.arriveTime` | 17:50 *(vide → « à venir »)* |
 | flight_return_number | `return.number` | WS2633 |
 | flight_airline_logo | `airlineLogo` | URL logo compagnie (optionnel) |
 | package_type | `packageType` | Forfait Tout-Inclus |

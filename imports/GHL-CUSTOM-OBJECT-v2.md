@@ -176,14 +176,16 @@ Le site construit déjà l’affichage complet (`getEffectiveFlights` dans `api.
 
 ### À créer dans GHL (dossier `08 — Vols`)
 
-| Field Key | Label GHL (FR) | Type |
-|-----------|----------------|------|
-| `vol_aller_numero` | Vol aller — numéro | Texte |
-| `vol_aller_heure_depart` | Vol aller — heure départ | Texte (HH:MM) |
-| `vol_retour_numero` | Vol retour — numéro | Texte |
-| `vol_retour_heure_depart` | Vol retour — heure départ | Texte (HH:MM) |
+| Field Key (label) | Clé API GHL réelle | Type |
+|-------------------|--------------------|------|
+| Vol aller - numéro | `vol_aller_numero` | Texte |
+| Vol aller - heure départ | `vol_aller_heure_dpart` | Texte (HH:MM) |
+| Vol aller - heure d'arrivée | `vol_aller__heure_darrivee` | Texte (HH:MM) |
+| Vol retour - numéro | `vol_retour_numero` | Texte |
+| Vol retour - heure départ | `vol_retour_heure_dpart` | Texte (HH:MM) |
+| Vol retour - heure d'arrivée | `vol_retour__heure_darrivee` | Texte (HH:MM) |
 
-**Optionnel :** `vol_aller_heure_arrivee`, `vol_retour_heure_arrivee` — sinon le site affiche « à venir ».
+Si une heure d'arrivée est vide, le site affiche « à venir ».
 
 **Ne pas créer :** `vol_aller_depart`, `vol_aller_arrivee`, dates de vol séparées, etc.
 
