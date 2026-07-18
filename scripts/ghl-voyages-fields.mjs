@@ -39,11 +39,11 @@ export const VOYAGES_FIELDS = {
   depot_par_personne: 'depot_par_personne',
   vol_aller_numero: 'vol_aller_numero',
   vol_aller_heure_depart: 'vol_aller_heure_dpart',
-  /** Label GHL « Vol aller - heure d'arrivée » → clé générée avec __ et sans accent */
-  vol_aller_heure_arrivee: 'vol_aller__heure_darrivee',
+  /** Label GHL « Vol aller - heure d'arrivée » → clé tronquée (darrive, pas darrivee) */
+  vol_aller_heure_arrivee: 'vol_aller__heure_darrive',
   vol_retour_numero: 'vol_retour_numero',
   vol_retour_heure_depart: 'vol_retour_heure_dpart',
-  vol_retour_heure_arrivee: 'vol_retour__heure_darrivee',
+  vol_retour_heure_arrivee: 'vol_retour__heure_darrive',
   photo_principale: 'photo_principale',
   photo_extra: 'photos_extra'
 };

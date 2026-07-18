@@ -786,7 +786,7 @@ function mapFlights(props, context = {}) {
  departTime: 'vol_aller_heure_depart',
  to: 'vol_aller_arrivee',
  arriveDate: 'vol_aller_date_arrivee',
- arriveTime: 'vol_aller__heure_darrivee',
+ arriveTime: 'vol_aller__heure_darrive',
  number: 'vol_aller_numero'
  }),
  return: mapFlightLeg(props, 'flight_return', {
@@ -795,7 +795,7 @@ function mapFlights(props, context = {}) {
  departTime: 'vol_retour_heure_depart',
  to: 'vol_retour_arrivee',
  arriveDate: 'vol_retour_date_arrivee',
- arriveTime: 'vol_retour__heure_darrivee',
+ arriveTime: 'vol_retour__heure_darrive',
  number: 'vol_retour_numero'
  }),
  airlineLogo: pickText(props, 'flight_airline_logo', 'vol_compagnie_logo') || ''
@@ -806,6 +806,7 @@ function mapFlights(props, context = {}) {
  const outArriveTime = pickProp(
   props,
   'vol_aller_heure_arrivee',
+  'vol_aller__heure_darrive',
   'vol_aller__heure_darrivee',
   'vol_aller_heure_arrivee',
   'flight_out_arrive_time'
@@ -815,6 +816,7 @@ function mapFlights(props, context = {}) {
  const retArriveTime = pickProp(
   props,
   'vol_retour_heure_arrivee',
+  'vol_retour__heure_darrive',
   'vol_retour__heure_darrivee',
   'vol_retour_heure_arrivee',
   'flight_return_arrive_time'
