@@ -2042,7 +2042,7 @@
         const months = getFinancingMonths();
         return String(
             window.FINANCING_STAR_NOTE ||
-            `* Financement sur ${months} mois (à partir du prix total par passager). Sous réserve d’approbation.`
+            `* Simulation de financement sur ${months} mois basée sur le prix total par passager. Sous réserve d’approbation du crédit. Le taux d’intérêt varie selon votre dossier.`
         ).trim();
     }
 
