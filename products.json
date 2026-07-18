@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-18T19:49:53.216Z",
+  "updatedAt": "2026-07-18T20:29:02.842Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -156,7 +156,7 @@
           "departTime": "12:00",
           "to": "Roatan",
           "arriveDate": "2027-01-11T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "16:15",
           "number": "WS2926"
         },
         "return": {
@@ -165,7 +165,7 @@
           "departTime": "12:35",
           "to": "Montréal (YUL)",
           "arriveDate": "2027-01-18T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "18:30",
           "number": "WS2927"
         },
         "airlineLogo": ""
@@ -243,7 +243,7 @@
           "departTime": "09:00",
           "to": "Cozumel",
           "arriveDate": "2026-12-07T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "14:00",
           "number": "AC2242"
         },
         "return": {
@@ -252,7 +252,7 @@
           "departTime": "15:00",
           "to": "Montréal (YUL)",
           "arriveDate": "2026-12-14T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "19:10",
           "number": "AC2243"
         },
         "airlineLogo": ""
@@ -329,7 +329,7 @@
           "departTime": "09:00",
           "to": "Playa Blanca",
           "arriveDate": "2027-02-12T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "15:15",
           "number": "WS2986"
         },
         "return": {
@@ -338,7 +338,7 @@
           "departTime": "17:20",
           "to": "Montréal (YUL)",
           "arriveDate": "2027-02-19T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "23:05",
           "number": "WS2987"
         },
         "airlineLogo": ""
@@ -681,7 +681,7 @@
           "departTime": "06:00",
           "to": "Freeport",
           "arriveDate": "2027-03-27T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "09:55",
           "number": "WS2952"
         },
         "return": {
@@ -690,7 +690,7 @@
           "departTime": "10:55",
           "to": "FPO",
           "arriveDate": "2027-04-03T00:00:00.000Z",
-          "arriveTime": "",
+          "arriveTime": "14:15",
           "number": "WS2953"
         },
         "airlineLogo": ""
