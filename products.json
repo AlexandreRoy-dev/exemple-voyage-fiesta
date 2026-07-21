@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-21T19:51:26.243Z",
+  "updatedAt": "2026-07-21T21:11:55.135Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -148,7 +148,7 @@
       "endDate": "2026-09-08T00:00:00.000Z",
       "departureDate": "2027-01-11T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "Montréal (YUL)",
+      "returnAirport": "RTB",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -163,7 +163,7 @@
           "from": "Roatan",
           "departDate": "2027-01-18T00:00:00.000Z",
           "departTime": "12:35",
-          "to": "Montréal (YUL)",
+          "to": "RTB",
           "arriveDate": "2027-01-18T00:00:00.000Z",
           "arriveTime": "18:30",
           "number": "WS2927"
