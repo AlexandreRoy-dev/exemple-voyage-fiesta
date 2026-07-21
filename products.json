@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-21T21:11:55.135Z",
+  "updatedAt": "2026-07-21T22:12:48.546Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -60,7 +60,7 @@
       "endDate": "2026-07-25T00:00:00.000Z",
       "departureDate": "2027-02-25T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "Montréal (YUL)",
+      "returnAirport": "MBJ",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -75,7 +75,7 @@
           "from": "Montego Bay",
           "departDate": "2027-03-04T00:00:00.000Z",
           "departTime": "",
-          "to": "Montréal (YUL)",
+          "to": "MBJ",
           "arriveDate": "2027-03-04T00:00:00.000Z",
           "arriveTime": "",
           "number": ""
@@ -402,13 +402,13 @@
       "taxChild212": null,
       "taxChild1317": null,
       "packageType": "toutinclus",
-      "promotion": "Départ tôt le matin",
+      "promotion": "",
       "hotelDescription": "## Royalton Splash Punta Cana – Vacances familiales tout inclus\n\nLe Royalton Splash Punta Cana est un complexe tout inclus conçu pour les familles qui souhaitent profiter d'un séjour rempli d'activités en République dominicaine. Situé près de la magnifique plage de Bávaro, l'hôtel offre un accès facile au soleil, à la mer et à une foule de divertissements.\n\nVéritable paradis pour les enfants, le complexe possède l'un des plus grands parcs aquatiques de la région avec plusieurs glissades, une piscine à vagues et des jeux d'eau adaptés aux plus jeunes. Les enfants et adolescents pourront également participer aux activités du club jeunesse pendant que les parents profitent des piscines ou de la plage.\n\nLes vacanciers bénéficient également d'avantages supplémentaires grâce à l'accès à certaines installations du Royalton Punta Cana voisin, incluant la plage, certains restaurants et le casino.\n\nPour les repas, plusieurs restaurants proposent une sélection de saveurs internationales, de spécialités mexicaines et de fruits de mer. Les chambres spacieuses et confortables complètent parfaitement l'expérience, avec la possibilité d'ajouter les privilèges exclusifs du Diamond Club™.\n\n### Points forts\n\n* Parc aquatique spectaculaire avec glissades et piscine à vagues\n* Accès à certaines installations du Royalton Punta Cana\n* À proximité de la plage de Bávaro\n* Activités pour enfants et adolescents\n* Plusieurs restaurants et bars\n* Option Diamond Club™\n* Excellent choix pour les familles\n\nLe Royalton Splash Punta Cana est une destination idéale pour des vacances en famille alliant détente, plaisir aquatique et formule tout inclus.\nConsultez le lien ci-dessous pour tous les détails.",
       "forfaitLink": "https://www.sunwing.ca/en/hotel/dominican-republic/punta-cana/royalton-splash-punta-cana-an-autograph-collection-all-inclusive-resort-and-casino",
       "endDate": "2026-08-14T00:00:00.000Z",
       "departureDate": "2027-01-22T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "Montréal (YUL)",
+      "returnAirport": "PUJ",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -423,7 +423,7 @@
           "from": "Punta Cana",
           "departDate": "2027-01-29T00:00:00.000Z",
           "departTime": "",
-          "to": "Montréal (YUL)",
+          "to": "PUJ",
           "arriveDate": "2027-01-29T00:00:00.000Z",
           "arriveTime": "",
           "number": ""
@@ -497,7 +497,7 @@
       "endDate": "2026-09-14T00:00:00.000Z",
       "departureDate": "2026-12-30T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "Montréal (YUL)",
+      "returnAirport": "CUN",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -512,7 +512,7 @@
           "from": "Playacar",
           "departDate": "2027-01-06T00:00:00.000Z",
           "departTime": "13:35",
-          "to": "Montréal (YUL)",
+          "to": "CUN",
           "arriveDate": "2027-01-06T00:00:00.000Z",
           "arriveTime": "",
           "number": "539"
