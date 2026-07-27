@@ -301,6 +301,12 @@
      */
     window.GHL_RESERVATION_API_URL = 'https://hart-intelligence-footwear-underground.trycloudflare.com/';
 
+    /** Pipeline « voyage fiesta » — opportunité (si workflow GHL en crée une) */
+    window.GHL_PIPELINE_ID = '0epoPtkeq89cfu3KsxDs';
+    window.GHL_PIPELINE_STAGE_ID = '41f6a9bb-52fb-4f82-9ccb-20b717024e71';
+    /** Tag appliqué sur les demandes de prix — trigger workflow GHL : Tag Added → demande-prix */
+    window.GHL_PRICE_REQUEST_TAG = 'demande-prix';
+
     /**
      * Mapping native form fields → GHL Query Keys (data-q).
      * Legacy keys on passengers 2–5 match the live GHL form as of 2026-07.

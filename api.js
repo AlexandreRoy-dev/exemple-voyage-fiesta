@@ -689,8 +689,66 @@
         return `${occLabel} et ${totalKids} enfant${totalKids > 1 ? 's' : ''}`;
     }
 
-    function getOccupationIdForAdultCount(adults, p) {
+    function adultCountToOccupationId(adults) {
         const n = clampInt(adults, { min: 1, max: window.MAX_ADULT_COUNT_SELECT ?? 5 });
+        const map = {
+            1: 'simple',
+            2: 'double',
+            3: 'triple',
+            4: 'quad',
+            5: 'autres'
+        };
+        return map[n] || 'double';
+    }
+
+    function adultOccupancyPriceKeys(adults) {
+        const id = adultCountToOccupationId(adults);
+        const def = getOccupationDef(id);
+        if (!def) return ['price', 'price_occ_double'];
+        if (id === 'double') {
+            return ['price', 'price_occ_double', 'priceOccDouble', ...(def.priceKeys || [])];
+        }
+        return def.priceKeys || [];
+    }
+
+    /** True when GHL has an explicit $/pers. for that adult occupancy (no fallback). */
+    function hasExplicitAdultOccupancyPrice(p, adults) {
+        const n = clampInt(adults, { min: 1, max: window.MAX_ADULT_COUNT_SELECT ?? 5 });
+        if (n >= 5) return false;
+        return pickOccupationPrice(p, adultOccupancyPriceKeys(n)) !== null;
+    }
+
+    /**
+     * Sélection sans tarif publié (ex. 4 adultes alors que seul Occ. double est saisi).
+     * → formulaire « Demande de prix » au lieu de RÉSERVER.
+     */
+    function isPriceOnRequestSelection(p, occupationId, overrides = {}) {
+        if (!p) return true;
+        if (occupationId === 'autres' || overrides.isAutres) return true;
+
+        let adults;
+        if (overrides.adults !== undefined && overrides.adults !== null) {
+            adults = clampInt(overrides.adults, { min: 1, max: getMaxAdultCount(p) });
+        } else {
+            const def = getOccupationDef(occupationId);
+            adults = def?.adults ?? 2;
+        }
+
+        if (!hasExplicitAdultOccupancyPrice(p, adults)) return true;
+
+        const children212 = clampInt(overrides.children212 ?? 0, { min: 0, max: 9 });
+        const children1317 = clampInt(overrides.children1317 ?? 0, { min: 0, max: 9 });
+        if (children212 + children1317 > 0) {
+            if (!productHasChildUnitPricing(p)) return true;
+            if (sumChildUnitPrices(p, children212, children1317) === null) return true;
+        }
+
+        return false;
+    }
+
+    function getOccupationIdForAdultCount(adults, p) {
+        const preferred = adultCountToOccupationId(adults);
+        if (p && getSelectedOccupationRow(p, preferred)) return preferred;
         const map = [
             { count: 1, id: 'simple' },
             { count: 2, id: 'double' },
@@ -698,8 +756,6 @@
             { count: 4, id: 'quad' },
             { count: 5, id: 'autres' }
         ];
-        const preferred = map.find(entry => entry.count === n)?.id ?? 'double';
-        if (p && getSelectedOccupationRow(p, preferred)) return preferred;
         for (const entry of [...map].reverse()) {
             if (getSelectedOccupationRow(p, entry.id)) return entry.id;
         }
@@ -2494,6 +2550,9 @@
         getAdultOccupationLabel,
         getComponentAdultUnitRow,
         getOccupationIdForAdultCount,
+        adultCountToOccupationId,
+        hasExplicitAdultOccupancyPrice,
+        isPriceOnRequestSelection,
         getMaxAdultCount,
         pickOccupationPrice,
         calculateSalesTaxes,

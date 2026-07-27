@@ -46,6 +46,18 @@ function pick(obj, ...keys) {
   return '';
 }
 
+function isPriceRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'demande_prix' || type === 'price_request';
+}
+
+function resolveContactTag(payload, env) {
+  if (isPriceRequest(payload)) {
+    return pick(payload, 'contact_tag') || env.GHL_PRICE_REQUEST_TAG || 'demande-prix';
+  }
+  return env.GHL_CONTACT_TAG || 'reservation-site';
+}
+
 function buildNotes(payload) {
   const lines = [];
   const add = (label, value) => {
@@ -54,8 +66,14 @@ function buildNotes(payload) {
     }
   };
 
-  add('Dépôt', payload.depot);
+  if (isPriceRequest(payload)) {
+    lines.push('Type: Demande de prix (tarif non publié)');
+  }
+
+  add('Dépôt', isPriceRequest(payload) ? '' : payload.depot);
   add('Nombre de passagers', payload.nombre_passagers);
+  add('Adultes', payload.nombre_adultes);
+  add('Enfants', payload.nombre_enfants_2_12 || payload.nombre_enfants);
   add('Infos passagers', payload.infopassager);
   add('Assurance médicale', payload.assurance_medicale);
   add('Passeport valide 6 mois', payload.passeport_valide);
@@ -96,6 +114,7 @@ function buildContactBody(payload, locationId, tag, fieldMap) {
   const lastName = pick(payload, 'p1_nom', 'last_name', 'contact_nom');
   const email = pick(payload, 'p1_email', 'email', 'contact_email');
   const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
+  const priceRequest = isPriceRequest(payload);
 
   const body = {
     locationId,
@@ -107,8 +126,8 @@ function buildContactBody(payload, locationId, tag, fieldMap) {
     address1: pick(payload, 'address') || undefined,
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
-    source: 'Site réservation chambre',
-    tags: tag ? [tag] : ['reservation-site'],
+    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
+    tags: tag ? [tag] : undefined,
     notes: buildNotes(payload) || undefined
   };
 
@@ -245,16 +264,14 @@ export default {
     }
 
     try {
-      const body = buildContactBody(
-        payload,
-        locationId,
-        env.GHL_CONTACT_TAG || 'reservation-site',
-        fieldMap
-      );
+      const tag = resolveContactTag(payload, env);
+      const body = buildContactBody(payload, locationId, tag, fieldMap);
       const result = await upsertContact(apiKey, body);
       return jsonResponse({
         ok: true,
-        contactId: result?.contact?.id || result?.id || null
+        contactId: result?.contact?.id || result?.id || null,
+        tag,
+        requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation'
       }, 200, cors);
     } catch (err) {
       return jsonResponse({

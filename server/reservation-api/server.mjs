@@ -44,6 +44,8 @@ const PORT = Number(process.env.PORT || 3847);
 const GHL_API_KEY = process.env.GHL_API_KEY || '';
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || '';
 const GHL_CONTACT_TAG = process.env.GHL_CONTACT_TAG || 'reservation-site';
+/** Tag Distinct — trigger workflow « Demande de prix » dans GHL */
+const GHL_PRICE_REQUEST_TAG = process.env.GHL_PRICE_REQUEST_TAG || 'demande-prix';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .split(',')
   .map((s) => s.trim())
@@ -132,6 +134,18 @@ function pick(obj, ...keys) {
     if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim();
   }
   return '';
+}
+
+function isPriceRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'demande_prix' || type === 'price_request';
+}
+
+function resolveContactTag(payload) {
+  if (isPriceRequest(payload)) {
+    return pick(payload, 'contact_tag') || GHL_PRICE_REQUEST_TAG;
+  }
+  return GHL_CONTACT_TAG;
 }
 
 function ghlHeaders(extra = {}) {
@@ -262,10 +276,16 @@ function buildNotes(payload) {
     }
   };
 
+  if (isPriceRequest(payload)) {
+    lines.push('Type: Demande de prix (tarif non publié)');
+  }
+
   add('Forfait', payload.forfait_name || payload.nom_du_forfait);
   add('Slug', payload.forfait_slug);
   add('Occupation', payload.occupation);
-  add('Dépôt', payload.depot || payload.depot_total);
+  if (!isPriceRequest(payload)) {
+    add('Dépôt', payload.depot || payload.depot_total);
+  }
   add('Nombre de passagers', payload.nombre_passagers || payload.nombre_personnes);
   add('Adultes', payload.nombre_adultes);
   add('Enfants', payload.nombre_enfants_2_12 || payload.nombre_enfants);
@@ -352,6 +372,7 @@ function buildContactBody(payload) {
   const lastName = pick(payload, 'p1_nom', 'last_name', 'contact_nom');
   const email = pick(payload, 'p1_email', 'email', 'contact_email');
   const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
+  const priceRequest = isPriceRequest(payload);
 
   const body = {
     locationId: GHL_LOCATION_ID,
@@ -363,7 +384,7 @@ function buildContactBody(payload) {
     address1: pick(payload, 'address') || undefined,
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
-    source: 'Site réservation chambre'
+    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre'
   };
 
   const customFields = buildCustomFields(payload);
@@ -519,17 +540,20 @@ const server = http.createServer(async (req, res) => {
       const noteText = buildNotes(payload);
       const result = await ghlUpsertContact(body);
       const contactId = result?.contact?.id || result?.id || null;
+      const tag = resolveContactTag(payload);
 
       let tagsAdded = [];
       if (contactId) {
-        const tagResult = await ghlApplyTag(contactId, GHL_CONTACT_TAG);
-        tagsAdded = tagResult?.tagsAdded || [];
+        const tagResult = await ghlApplyTag(contactId, tag);
+        tagsAdded = tagResult?.tagsAdded || [tag];
         if (noteText) await ghlAddNote(contactId, noteText);
       }
 
       return sendJson(res, 200, {
         ok: true,
         contactId,
+        tag,
+        requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation',
         tagsAdded,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0
       });
