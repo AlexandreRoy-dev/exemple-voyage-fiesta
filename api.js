@@ -1205,24 +1205,91 @@
         return { deposit, finalPaymentDate: finalPaymentValid };
     }
 
+    function extractIataCode(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        const paren = raw.match(/\(([A-Za-z]{3})\)\s*$/);
+        if (paren) return paren[1].toUpperCase();
+        if (/^[A-Za-z]{3}$/.test(raw)) return raw.toUpperCase();
+        return '';
+    }
+
+    function sameAirportLabel(a, b) {
+        const left = String(a || '').trim();
+        const right = String(b || '').trim();
+        if (!left || !right) return false;
+        const codeA = extractIataCode(left);
+        const codeB = extractIataCode(right);
+        if (codeA && codeB) return codeA === codeB;
+        return left.toLowerCase() === right.toLowerCase();
+    }
+
+    function enrichCityWithAirport(city, airport) {
+        const cityLabel = String(city || '').trim();
+        const airportLabel = formatAirportLabel(airport);
+        if (!airportLabel) return cityLabel;
+        if (!cityLabel) return airportLabel;
+        const code = extractIataCode(airportLabel);
+        if (code && /\([A-Za-z]{3}\)\s*$/.test(airportLabel)) return airportLabel;
+        if (code && !extractIataCode(cityLabel)) return `${cityLabel} (${code})`;
+        return airportLabel;
+    }
+
+    /**
+     * GHL « Aéroport de retour » = aéroport à destination (CZM, PUJ…),
+     * pas l’arrivée du vol retour à la maison.
+     */
+    function resolveHomeAirportLabel(p) {
+        return formatAirportLabel(p.departureAirport || p.aeroport_depart || '');
+    }
+
+    function resolveDestAirportLabel(p) {
+        const home = resolveHomeAirportLabel(p);
+        const rawReturn = formatAirportLabel(
+            p.returnAirport ?? p.aeroport_retour ?? p.return_airport ?? ''
+        );
+        const destCity = String(p.subDest || p.destination || p.destination1 || '').trim();
+        if (rawReturn && (!home || !sameAirportLabel(rawReturn, home))) {
+            return enrichCityWithAirport(destCity, rawReturn);
+        }
+        return destCity;
+    }
+
+    function preferEndpointLabel(current, preferred) {
+        const cur = String(current || '').trim();
+        const pref = String(preferred || '').trim();
+        if (!pref) return cur;
+        if (!cur) return pref;
+        if (sameAirportLabel(cur, pref)) {
+            return extractIataCode(pref) && !extractIataCode(cur) ? pref : (extractIataCode(cur) ? cur : pref);
+        }
+        if (extractIataCode(pref) && !extractIataCode(cur)) return pref;
+        return cur;
+    }
+
+    function coerceHomeEndpoint(current, home, dest) {
+        const cur = String(current || '').trim();
+        if (!home) return cur;
+        if (!cur) return home;
+        if (dest && sameAirportLabel(cur, dest)) return home;
+        return preferEndpointLabel(cur, home);
+    }
+
     function inferArrivalLabel(p, leg) {
-        if (leg?.to) return leg.to;
-        if (p.subDest) return p.subDest;
-        return p.destination || p.destination1 || '';
+        if (leg?.to) return preferEndpointLabel(leg.to, resolveDestAirportLabel(p));
+        return resolveDestAirportLabel(p);
     }
 
     function inferReturnAirportLabel(p, leg) {
-        if (leg?.to) return leg.to;
-        const returnAirport = formatAirportLabel(
-            p.returnAirport ?? p.aeroport_retour ?? p.return_airport
-        );
-        if (returnAirport) return returnAirport;
-        return formatAirportLabel(p.departureAirport || '');
+        const home = resolveHomeAirportLabel(p);
+        const dest = resolveDestAirportLabel(p);
+        if (leg?.to) return coerceHomeEndpoint(leg.to, home, dest);
+        return home || dest;
     }
 
     function inferDepartureLabel(p, leg) {
-        if (leg?.from) return leg.from;
-        return formatAirportLabel(p.departureAirport || '');
+        if (leg?.from) return preferEndpointLabel(leg.from, resolveHomeAirportLabel(p));
+        return resolveHomeAirportLabel(p);
     }
 
     function formatAirportLabel(value) {
@@ -1241,6 +1308,9 @@
         const out = { ...(flights.out || {}) };
         const ret = { ...(flights.return || {}) };
 
+        const home = resolveHomeAirportLabel(p);
+        const dest = resolveDestAirportLabel(p);
+
         const departureDate = p.departureDate instanceof Date
             ? p.departureDate.toISOString()
             : (p.departureDate || p.departure_date || '');
@@ -1249,16 +1319,16 @@
             ? returnDateRaw.toISOString()
             : (returnDateRaw || '');
 
-        if (departureDate || p.departureAirport) {
-            if (!out.from) out.from = inferDepartureLabel(p, out);
+        if (departureDate || p.departureAirport || out.from || out.to) {
+            out.from = preferEndpointLabel(out.from, home);
             if (!out.departDate) out.departDate = departureDate;
-            if (!out.to) out.to = inferArrivalLabel(p, out);
+            out.to = preferEndpointLabel(out.to, dest);
             if (!out.arriveDate) out.arriveDate = out.departDate || departureDate;
         }
-        if (returnDate || p.subDest) {
-            if (!ret.from) ret.from = inferArrivalLabel(p, ret);
+        if (returnDate || p.subDest || ret.from || ret.to) {
+            ret.from = preferEndpointLabel(ret.from, dest);
             if (!ret.departDate) ret.departDate = returnDate;
-            if (!ret.to) ret.to = inferReturnAirportLabel(p, ret);
+            ret.to = coerceHomeEndpoint(ret.to, home, dest);
             if (!ret.arriveDate) ret.arriveDate = ret.departDate || returnDate;
         }
 

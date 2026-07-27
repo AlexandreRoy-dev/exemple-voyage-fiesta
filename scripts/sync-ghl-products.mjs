@@ -769,6 +769,51 @@ function mapFlightLeg(props, prefix, aliases = {}) {
  };
 }
 
+function extractIataCode(value) {
+ const raw = String(value || '').trim();
+ if (!raw) return '';
+ const paren = raw.match(/\(([A-Za-z]{3})\)\s*$/);
+ if (paren) return paren[1].toUpperCase();
+ if (/^[A-Za-z]{3}$/.test(raw)) return raw.toUpperCase();
+ return '';
+}
+
+function sameAirportLabel(a, b) {
+ const left = String(a || '').trim();
+ const right = String(b || '').trim();
+ if (!left || !right) return false;
+ const codeA = extractIataCode(left);
+ const codeB = extractIataCode(right);
+ if (codeA && codeB) return codeA === codeB;
+ return left.toLowerCase() === right.toLowerCase();
+}
+
+function preferAirportEndpoint(current, preferred) {
+ const cur = String(current || '').trim();
+ const pref = String(preferred || '').trim();
+ if (!pref) return cur;
+ if (!cur) return pref;
+ if (sameAirportLabel(cur, pref)) {
+  return extractIataCode(pref) && !extractIataCode(cur) ? pref : (extractIataCode(cur) ? cur : pref);
+ }
+ if (extractIataCode(pref) && !extractIataCode(cur)) return pref;
+ return cur;
+}
+
+/** GHL aeroport_retour = destination airport; enrich city with IATA when possible. */
+function resolveDestAirportLabel(destLabel, returnAirport, homeLabel) {
+ const destCity = String(destLabel || '').trim();
+ const ret = String(returnAirport || '').trim();
+ const home = String(homeLabel || '').trim();
+ if (ret && (!home || !sameAirportLabel(ret, home))) {
+  const code = extractIataCode(ret);
+  if (/\([A-Za-z]{3}\)\s*$/.test(ret)) return ret;
+  if (code && destCity && !extractIataCode(destCity)) return `${destCity} (${code})`;
+  return ret || destCity;
+ }
+ return destCity;
+}
+
 function mapFlights(props, context = {}) {
  const {
  departureDate = '',
@@ -829,17 +874,24 @@ function mapFlights(props, context = {}) {
  if (retArriveTime) flights.return.arriveTime = String(retArriveTime).trim();
 
  const destLabel = subDest || destination;
- if (!flights.out.from && departureAirport) flights.out.from = departureAirport;
+ const homeLabel = departureAirport || '';
+ const destAirportLabel = resolveDestAirportLabel(destLabel, returnAirport, homeLabel);
+
+ flights.out.from = preferAirportEndpoint(flights.out.from, homeLabel);
  if (!flights.out.departDate && departureDate) flights.out.departDate = departureDate;
- if (!flights.out.to && destLabel) flights.out.to = destLabel;
+ flights.out.to = preferAirportEndpoint(flights.out.to, destAirportLabel);
  if (!flights.out.arriveDate && (flights.out.departDate || departureDate)) {
  flights.out.arriveDate = flights.out.departDate || departureDate;
  }
 
- if (!flights.return.from && destLabel) flights.return.from = destLabel;
+ flights.return.from = preferAirportEndpoint(flights.return.from, destAirportLabel);
  if (!flights.return.departDate && returnDate) flights.return.departDate = returnDate;
- if (!flights.return.to && (returnAirport || departureAirport)) {
- flights.return.to = returnAirport || departureAirport;
+ // Arrivée retour = maison (GHL aeroport_retour = destination, pas la maison)
+ const retTo = String(flights.return.to || '').trim();
+ if (!retTo || sameAirportLabel(retTo, destAirportLabel) || sameAirportLabel(retTo, destLabel) || sameAirportLabel(retTo, returnAirport)) {
+  flights.return.to = homeLabel || retTo;
+ } else {
+  flights.return.to = preferAirportEndpoint(retTo, homeLabel);
  }
  if (!flights.return.arriveDate && (flights.return.departDate || returnDate)) {
  flights.return.arriveDate = flights.return.departDate || returnDate;

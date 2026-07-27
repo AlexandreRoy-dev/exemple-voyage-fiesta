@@ -66,16 +66,16 @@
           "from": "Montréal (YUL)",
           "departDate": "2027-02-25T00:00:00.000Z",
           "departTime": "",
-          "to": "Montego Bay",
+          "to": "Montego Bay (MBJ)",
           "arriveDate": "2027-02-25T00:00:00.000Z",
           "arriveTime": "",
           "number": ""
         },
         "return": {
-          "from": "Montego Bay",
+          "from": "Montego Bay (MBJ)",
           "departDate": "2027-03-04T00:00:00.000Z",
           "departTime": "",
-          "to": "MBJ",
+          "to": "Montréal (YUL)",
           "arriveDate": "2027-03-04T00:00:00.000Z",
           "arriveTime": "",
           "number": ""
@@ -154,16 +154,16 @@
           "from": "Montréal (YUL)",
           "departDate": "2027-01-11T00:00:00.000Z",
           "departTime": "12:00",
-          "to": "Roatan",
+          "to": "Roatan (RTB)",
           "arriveDate": "2027-01-11T00:00:00.000Z",
           "arriveTime": "16:15",
           "number": "WS2926"
         },
         "return": {
-          "from": "Roatan",
+          "from": "Roatan (RTB)",
           "departDate": "2027-01-18T00:00:00.000Z",
           "departTime": "12:35",
-          "to": "RTB",
+          "to": "Montréal (YUL)",
           "arriveDate": "2027-01-18T00:00:00.000Z",
           "arriveTime": "18:30",
           "number": "WS2927"
@@ -243,16 +243,16 @@
           "from": "Montréal (YUL)",
           "departDate": "2026-12-07T00:00:00.000Z",
           "departTime": "09:00",
-          "to": "Cozumel",
+          "to": "Cozumel (CZM)",
           "arriveDate": "2026-12-07T00:00:00.000Z",
           "arriveTime": "14:00",
           "number": "AC2242"
         },
         "return": {
-          "from": "Cozumel",
+          "from": "Cozumel (CZM)",
           "departDate": "2026-12-14T00:00:00.000Z",
           "departTime": "15:00",
-          "to": "Cozumel (CZM)",
+          "to": "Montréal (YUL)",
           "arriveDate": "2026-12-14T00:00:00.000Z",
           "arriveTime": "19:10",
           "number": "AC2243"
@@ -416,16 +416,16 @@
           "from": "Montréal (YUL)",
           "departDate": "2027-01-22T00:00:00.000Z",
           "departTime": "",
-          "to": "Punta Cana",
+          "to": "Punta Cana (PUJ)",
           "arriveDate": "2027-01-22T00:00:00.000Z",
           "arriveTime": "",
           "number": ""
         },
         "return": {
-          "from": "Punta Cana",
+          "from": "Punta Cana (PUJ)",
           "departDate": "2027-01-29T00:00:00.000Z",
           "departTime": "",
-          "to": "PUJ",
+          "to": "Montréal (YUL)",
           "arriveDate": "2027-01-29T00:00:00.000Z",
           "arriveTime": "",
           "number": ""
@@ -505,16 +505,16 @@
           "from": "Montréal (YUL)",
           "departDate": "2026-12-30T00:00:00.000Z",
           "departTime": "07:20",
-          "to": "Playacar",
+          "to": "Playacar (CUN)",
           "arriveDate": "2026-12-30T00:00:00.000Z",
           "arriveTime": "",
           "number": "538"
         },
         "return": {
-          "from": "Playacar",
+          "from": "Playacar (CUN)",
           "departDate": "2027-01-06T00:00:00.000Z",
           "departTime": "13:35",
-          "to": "CUN",
+          "to": "Montréal (YUL)",
           "arriveDate": "2027-01-06T00:00:00.000Z",
           "arriveTime": "",
           "number": "539"
@@ -681,16 +681,16 @@
           "from": "Montréal (YUL)",
           "departDate": "2027-03-27T00:00:00.000Z",
           "departTime": "06:00",
-          "to": "Freeport",
+          "to": "Freeport (FPO)",
           "arriveDate": "2027-03-27T00:00:00.000Z",
           "arriveTime": "09:55",
           "number": "WS2952"
         },
         "return": {
-          "from": "Freeport",
+          "from": "Freeport (FPO)",
           "departDate": "2027-04-03T00:00:00.000Z",
           "departTime": "10:55",
-          "to": "FPO",
+          "to": "Montréal (YUL)",
           "arriveDate": "2027-04-03T00:00:00.000Z",
           "arriveTime": "14:15",
           "number": "WS2953"
