@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ghl-voyage-fiesta": {
+      "url": "https://services.leadconnectorhq.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer pit-f59e4324-5c55-4819-9a48-cdb0d6c490a3",
+        "locationId": "V90iyFBbBrCg3tpctRjc"
+      }
+    }
+  }
+}

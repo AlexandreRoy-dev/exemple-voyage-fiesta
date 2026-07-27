@@ -1303,6 +1303,28 @@
         return `${formatted}<span class="${suffixClass}"> / enfant</span>`;
     }
 
+    function getPriceOnRequestLabel() {
+        return String(window.PRICE_ON_REQUEST_LABEL || 'Veuillez nous contacter').trim()
+            || 'Veuillez nous contacter';
+    }
+
+    /**
+     * Prix formaté, ou libellé « Veuillez nous contacter » si montant manquant.
+     * @param {number|null|undefined} amount
+     * @param {{ perChild?: boolean, html?: boolean }} [options]
+     */
+    function formatPriceOrContact(amount, options = {}) {
+        const price = optionalPrice(amount);
+        if (price === null) {
+            const label = getPriceOnRequestLabel();
+            if (options.html === false) return label;
+            return `<span class="italic text-gray-500 font-medium">${escapeHtml(label)}</span>`;
+        }
+        return options.perChild
+            ? formatMoneyPerChild(price, options)
+            : formatMoneyPerPerson(price, options);
+    }
+
     /** Red card incentive — price / pers. + taxes / pers. ; barré = (price + rabais) + taxes */
     function getIncentive(p) {
         const doubleBeforeTaxes = optionalPrice(p.price);
@@ -2414,8 +2436,10 @@
         getIncentive,
         formatMoney,
         formatMoneyPerPerson,
-        formatPassengerCountLabel,
         formatMoneyPerChild,
+        getPriceOnRequestLabel,
+        formatPriceOrContact,
+        formatPassengerCountLabel,
         formatFlightDate,
         formatFlightTime,
         formatFlightNumber,

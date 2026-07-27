@@ -252,6 +252,9 @@
     window.TAXES_AIR_FEES_LABEL = 'Taxes et frais aériens';
     window.BEFORE_TAXES_AIR_FEES_LABEL = 'Avant taxes et frais aériens';
 
+    /** Affiché à la place du $ quand un tarif GHL est vide (ex. enfant sans prix) */
+    window.PRICE_ON_REQUEST_LABEL = 'Veuillez nous contacter';
+
     /** Nombre max d'enfants sélectionnables (sélecteur unique — tous âges) */
     window.MAX_CHILD_COUNT_SELECT = 3;
 
