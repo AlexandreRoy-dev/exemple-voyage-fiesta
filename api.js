@@ -89,7 +89,7 @@
 
     function renderPreSaleBannerHtml(options = {}) {
         const title = window.PRE_SALE_BANNER_TITLE || 'Pré-vente';
-        const subtitle = window.PRE_SALE_BANNER_SUBTITLE || 'Réservez dès maintenant — offre en avant-première';
+        const subtitle = window.PRE_SALE_BANNER_SUBTITLE || 'Réservez dès maintenant - offre en avant-première';
         if (options.compact) {
             return `<div class="absolute top-4 left-4 bg-brand-blue text-white font-bold px-3 py-1.5 rounded shadow-lg z-10 text-sm tracking-wide uppercase">
                 <i class="fa-solid fa-clock mr-1.5" aria-hidden="true"></i>${escapeHtml(title)}
@@ -135,7 +135,7 @@
 
     function isPublicImageUrl(url) {
         if (!url || !/^https?:\/\//i.test(url)) return false;
-        // GHL file uploads are private — not loadable on a public GitHub Pages site
+        // GHL file uploads are private - not loadable on a public GitHub Pages site
         if (/msgsndr-private\.storage\.googleapis\.com/i.test(url)) return false;
         return true;
     }
@@ -194,7 +194,7 @@
         return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
     }
 
-    /** Montants taxes — conserve les centimes (ex. 265,50 $ / pers.). */
+    /** Montants taxes - conserve les centimes (ex. 265,50 $ / pers.). */
     function optionalTaxAmount(value) {
         value = unwrapFieldValue(value);
         if (value === undefined || value === null || value === '') return null;
@@ -225,7 +225,7 @@
         };
     }
 
-    /** TPS 5 % + TVQ 9,975 % — chaque taxe calculée sur le montant avant taxes */
+    /** TPS 5 % + TVQ 9,975 % - chaque taxe calculée sur le montant avant taxes */
     function calculateSalesTaxes(baseAmount) {
         const base = Math.round(Number(baseAmount));
         if (!Number.isFinite(base) || base <= 0) return null;
@@ -267,7 +267,7 @@
         {
             id: 'double',
             label: 'Occ. double',
-            hint: '2 adultes — prix par passager, avant taxes et frais aériens',
+            hint: '2 adultes - prix par passager, avant taxes et frais aériens',
             primary: true,
             adults: 2,
             children212: 0,
@@ -278,7 +278,7 @@
         {
             id: 'double_1_child',
             label: 'Occ. double + 1 enfant (2-12 ans)',
-            hint: '2 adultes + 1 enfant (2-12 ans au retour) — prix par passager',
+            hint: '2 adultes + 1 enfant (2-12 ans au retour) - prix par passager',
             adults: 2,
             children212: 1,
             children1317: 0,
@@ -288,7 +288,7 @@
         {
             id: 'double_2_child',
             label: 'Occ. double + 2 enfants (2-12 ans)',
-            hint: '2 adultes + 2 enfants (2-12 ans au retour) — prix par passager',
+            hint: '2 adultes + 2 enfants (2-12 ans au retour) - prix par passager',
             adults: 2,
             children212: 2,
             children1317: 0,
@@ -298,7 +298,7 @@
         {
             id: 'double_1_child_1317',
             label: 'Occ. double + 1 enfant (13-17 ans)',
-            hint: '2 adultes + 1 adolescent (13-17 ans au retour) — prix par passager',
+            hint: '2 adultes + 1 adolescent (13-17 ans au retour) - prix par passager',
             adults: 2,
             children212: 0,
             children1317: 1,
@@ -308,7 +308,7 @@
         {
             id: 'double_2_child_1317',
             label: 'Occ. double + 2 enfants (13-17 ans)',
-            hint: '2 adultes + 2 adolescents (13-17 ans au retour) — prix par passager',
+            hint: '2 adultes + 2 adolescents (13-17 ans au retour) - prix par passager',
             adults: 2,
             children212: 0,
             children1317: 2,
@@ -318,7 +318,7 @@
         {
             id: 'simple',
             label: 'Occ. simple',
-            hint: '1 adulte — prix par passager, avant taxes et frais aériens',
+            hint: '1 adulte - prix par passager, avant taxes et frais aériens',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -328,7 +328,7 @@
         {
             id: 'simple_1_child',
             label: 'Occ. simple + 1 enfant (2-12 ans)',
-            hint: '1 adulte + 1 enfant (2-12 ans au retour) — prix par passager',
+            hint: '1 adulte + 1 enfant (2-12 ans au retour) - prix par passager',
             adults: 1,
             children212: 1,
             children1317: 0,
@@ -338,7 +338,7 @@
         {
             id: 'simple_1_child_1317',
             label: 'Occ. simple + 1 enfant (13-17 ans)',
-            hint: '1 adulte + 1 adolescent (13-17 ans au retour) — prix par passager',
+            hint: '1 adulte + 1 adolescent (13-17 ans au retour) - prix par passager',
             adults: 1,
             children212: 0,
             children1317: 1,
@@ -348,7 +348,7 @@
         {
             id: 'triple',
             label: 'Occ. triple',
-            hint: '3 adultes — prix par passager, avant taxes et frais aériens',
+            hint: '3 adultes - prix par passager, avant taxes et frais aériens',
             adults: 3,
             children212: 0,
             children1317: 0,
@@ -358,7 +358,7 @@
         {
             id: 'quad',
             label: 'Occ. quad',
-            hint: '4 adultes — prix par passager, avant taxes et frais aériens',
+            hint: '4 adultes - prix par passager, avant taxes et frais aériens',
             adults: 4,
             children212: 0,
             children1317: 0,
@@ -368,7 +368,7 @@
         {
             id: 'autres',
             label: 'Autres',
-            hint: 'Autre configuration — prix par passager, avant taxes et frais aériens',
+            hint: 'Autre configuration - prix par passager, avant taxes et frais aériens',
             adults: 1,
             children212: 0,
             children1317: 0,
@@ -596,7 +596,7 @@
         return getChild212UnitPrice(p, index);
     }
 
-    /** Tarif enfant pour le sélecteur unique — 2-12 prioritaire, repli 13-17. */
+    /** Tarif enfant pour le sélecteur unique - 2-12 prioritaire, repli 13-17. */
     function getChildUnitPrice(p, index) {
         const info = getChildPricingInfo(p);
         if (index < 0) return null;
@@ -631,7 +631,7 @@
         return labels[n] || 'Occ. double';
     }
 
-    /** Libellé enfant — tranche d'âge optionnelle (grille fournisseur). generic=true : pas de mention 2-12 / 13-17. */
+    /** Libellé enfant - tranche d'âge optionnelle (grille fournisseur). generic=true : pas de mention 2-12 / 13-17. */
     function getChildPriceLabel(band, childIndex, hasSecondPrice, options) {
         const generic = options && options.generic;
         if (generic) {
@@ -647,7 +647,7 @@
         return `${ordinal} enfant (${ageLabel})`;
     }
 
-    /** Libellé tableau tarifs — tranche d'âge sur la ligne suivante (sauf generic). */
+    /** Libellé tableau tarifs - tranche d'âge sur la ligne suivante (sauf generic). */
     function formatChildTableLabelHtml(band, childIndex, hasSecondPrice, options) {
         const generic = options && options.generic;
         let main;
@@ -783,7 +783,7 @@
         return Math.min(max, window.MAX_ADULT_COUNT_SELECT ?? 5);
     }
 
-    /** taxes_amount = $ / pers. — affiché tel quel (sans × nb voyageurs). */
+    /** taxes_amount = $ / pers. - affiché tel quel (sans × nb voyageurs). */
     function resolveOccupationTaxes(p, def) {
         const perPerson = pickOccupationTaxPerPerson(p);
         if (perPerson !== null) {
@@ -825,7 +825,7 @@
         return null;
     }
 
-    /** Occupations client — prix GHL = $ / pers. avant taxes */
+    /** Occupations client - prix GHL = $ / pers. avant taxes */
     function getOccupationPrices(p) {
         const rows = [];
         const hideChildOccRows = productHasChildUnitPricing(p);
@@ -896,14 +896,14 @@
         return taxes !== null ? base + taxes : base;
     }
 
-    /** Prix occ. double avec taxes — pastille rouge (liste). */
+    /** Prix occ. double avec taxes - pastille rouge (liste). */
     function getDoubleOccupationDisplayPrice(p) {
         const amount = getDoubleOccupationTotalWithTaxes(p);
         if (amount === null) return null;
         return { amount, label: 'Occ. double' };
     }
 
-    /** Prix affiché sur la fiche liste — occupation la moins chère. */
+    /** Prix affiché sur la fiche liste - occupation la moins chère. */
     function getListingDisplayPrice(p) {
         const lowest = getLowestOccupationRow(p);
         if (lowest) {
@@ -929,7 +929,7 @@
     }
 
     /**
-     * Détail tarifaire — adulte / pers. + enfant / enfant; totaux = somme des composantes.
+     * Détail tarifaire - adulte / pers. + enfant / enfant; totaux = somme des composantes.
      */
     function getOccupationPricingBreakdown(p, occupationId, overrides) {
         if (occupationId === 'autres') {
@@ -1175,7 +1175,7 @@
         row = getSelectedOccupationRow(p, occupationId);
         breakdown = getOccupationPricingBreakdown(p, occupationId, overrides);
 
-        // Champs du formulaire GHL — Query Keys = config.js → GHL_FORM_IFRAME_KEYS
+        // Champs du formulaire GHL - Query Keys = config.js → GHL_FORM_IFRAME_KEYS
         set('forfait_slug', p.slug);
         set('forfait_name', p.name);
         if (row) {
@@ -1451,7 +1451,7 @@
             : formatMoneyPerPerson(price, options);
     }
 
-    /** Red card incentive — price / pers. + taxes / pers. ; barré = (price + rabais) + taxes */
+    /** Red card incentive - price / pers. + taxes / pers. ; barré = (price + rabais) + taxes */
     function getIncentive(p) {
         const doubleBeforeTaxes = optionalPrice(p.price);
         const doubleTaxes = getDoubleOccupationTaxTotal(p);
@@ -1506,7 +1506,7 @@
         return s || 'À venir';
     }
 
-    /** Hotel star rating — supports half stars (e.g. 3.5, 4.5) */
+    /** Hotel star rating - supports half stars (e.g. 3.5, 4.5) */
     function parseStarValue(value) {
         if (value === undefined || value === null || value === '') return NaN;
         if (typeof value === 'number') return value;
@@ -1768,7 +1768,7 @@
         return aliases[normalizedKey] || normalizedKey;
     }
 
-    /** Logo compagnie aérienne — carrier d'abord, jamais le fournisseur tour operator. */
+    /** Logo compagnie aérienne - carrier d'abord, jamais le fournisseur tour operator. */
     function resolveCarrierLogoKey(normalizedKey) {
         if (!normalizedKey) return '';
         const aliases = window.CARRIER_LOGO_KEY_ALIASES || {};
@@ -1959,7 +1959,7 @@
             .replace(/\b([a-zàâäéèêëïîôùûüç])/gi, (_, c) => c.toUpperCase());
     }
 
-    /** Options filtre destination — uniquement les clés présentes dans le catalogue. */
+    /** Options filtre destination - uniquement les clés présentes dans le catalogue. */
     function getDestinationFilterOptions(products) {
         const map = new Map();
         for (const product of products || []) {
@@ -2098,7 +2098,7 @@
         });
     }
 
-    /** Date pour champs GHL (type Date) — JJ/MM/AAAA */
+    /** Date pour champs GHL (type Date) - JJ/MM/AAAA */
     function formatGhlFormDate(value) {
         if (!value) return null;
         const d = value instanceof Date ? value : new Date(value);
@@ -2257,7 +2257,7 @@
                 <p class="m-0 mt-1.5 pl-6"><a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></p>
             </div>`;
         }
-        return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} — <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
+        return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} - <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
     }
 
     function renderEmbedRootLinkHtml(href = 'index.html') {
@@ -2297,7 +2297,7 @@
         return `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`;
     }
 
-    /** Static share page — crawlers (Facebook) read OG tags here, not product.html JS. */
+    /** Static share page - crawlers (Facebook) read OG tags here, not product.html JS. */
     function getProductShareUrl(p) {
         const slug = String(p?.slug || '').trim();
         if (!slug) return getSiteBaseUrl();
@@ -2385,7 +2385,7 @@
 
     function getSocialShareHref(platform, payload) {
         const url = encodeURIComponent(payload.url);
-        const text = encodeURIComponent(`${payload.title}${payload.description ? ` — ${payload.description}` : ''}`);
+        const text = encodeURIComponent(`${payload.title}${payload.description ? ` - ${payload.description}` : ''}`);
         const image = encodeURIComponent(payload.image || '');
         switch (platform) {
             case 'facebook':

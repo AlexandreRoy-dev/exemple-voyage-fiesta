@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voyage Fiesta</title>
-    <meta name="description" content="Forfait voyage — Voyage Fiesta">
+    <meta name="description" content="Forfait voyage - Voyage Fiesta">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Voyage Fiesta">
     <meta property="og:locale" content="fr_CA">
     <meta property="og:title" content="Voyage Fiesta">
-    <meta property="og:description" content="Forfait voyage — Voyage Fiesta">
+    <meta property="og:description" content="Forfait voyage - Voyage Fiesta">
     <meta property="og:url" content="https://promofiesta.roymarketing.ca/product.html">
     <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
     <meta property="og:image:alt" content="Voyage Fiesta">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Voyage Fiesta">
-    <meta name="twitter:description" content="Forfait voyage — Voyage Fiesta">
+    <meta name="twitter:description" content="Forfait voyage - Voyage Fiesta">
     <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -343,11 +343,11 @@
                         </button>
                         <div class="hidden md:grid grid-rows-2 gap-2 h-full min-h-0 min-w-0">
                             <button type="button" class="gallery-open gallery-tile relative block w-full min-w-0 min-h-0 h-full bg-gray-300 rounded-tr-xl overflow-hidden border-0 p-0" data-gallery-index="${Math.min(1, count - 1)}" aria-label="Ouvrir la galerie">
-                                <img src="${thumb1}" class="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="Chambre — ${alt}">
+                                <img src="${thumb1}" class="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="Chambre - ${alt}">
                             </button>
                             <div class="relative min-h-0 h-full min-w-0 rounded-br-xl overflow-hidden bg-gray-300">
                                 <button type="button" class="gallery-open gallery-tile absolute inset-0 z-0 border-0 p-0 w-full h-full" data-gallery-index="${Math.min(2, count - 1)}" aria-label="Ouvrir la galerie">
-                                    <img src="${thumb2}" class="w-full h-full object-cover pointer-events-none" alt="Activités — ${alt}">
+                                    <img src="${thumb2}" class="w-full h-full object-cover pointer-events-none" alt="Activités - ${alt}">
                                 </button>
                                 ${overlayHtml}
                             </div>
@@ -374,7 +374,7 @@
             function renderSlide() {
                 if (!activeGallery.length) return;
                 imageEl.src = activeGallery[gallerySlideIndex];
-                imageEl.alt = `${activeGalleryAlt} — photo ${gallerySlideIndex + 1}`;
+                imageEl.alt = `${activeGalleryAlt} - photo ${gallerySlideIndex + 1}`;
                 counterEl.textContent = `${gallerySlideIndex + 1} / ${activeGallery.length}`;
                 prevBtn.classList.toggle('hidden', activeGallery.length <= 1);
                 nextBtn.classList.toggle('hidden', activeGallery.length <= 1);
@@ -489,7 +489,7 @@
             return `
                 <div class="md:flex gap-6">
                     <div class="md:w-2/5 mb-4 md:mb-0">
-                        <img src="${p.imgRoom || p.img}" alt="Chambre — ${escapeHtml(p.name)}" class="w-full h-56 md:h-full min-h-[14rem] object-cover rounded-xl border border-gray-100">
+                        <img src="${p.imgRoom || p.img}" alt="Chambre - ${escapeHtml(p.name)}" class="w-full h-56 md:h-full min-h-[14rem] object-cover rounded-xl border border-gray-100">
                     </div>
                     <div class="md:w-3/5">
                         <h3 class="font-bold text-brand-blue text-lg mb-3">${escapeHtml(p.name)}</h3>
@@ -618,7 +618,7 @@
             if (financingUrl) {
                 const financingLabel = window.FINANCING_INFO_LABEL || 'Financement sur demande';
                 const financingLinkText = window.FINANCING_INFO_LINK_TEXT || 'Demander un financement';
-                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-credit-card text-brand-blue text-xs mt-0.5"></i> <span>${escapeHtml(financingLabel)} — <a href="${escapeHtml(financingUrl)}" target="_blank" rel="noopener noreferrer" class="text-brand-blue font-semibold hover:underline">${escapeHtml(financingLinkText)}</a></span></li>`);
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-credit-card text-brand-blue text-xs mt-0.5"></i> <span>${escapeHtml(financingLabel)} - <a href="${escapeHtml(financingUrl)}" target="_blank" rel="noopener noreferrer" class="text-brand-blue font-semibold hover:underline">${escapeHtml(financingLinkText)}</a></span></li>`);
             }
             const listing = VoyageFiestaAPI.getListingDisplayPrice(p);
             if (listing?.amount != null) {
@@ -679,12 +679,12 @@
                     : VoyageFiestaAPI.formatMoneyPerPerson(price);
                 const totalCell = total != null
                     ? (perChild ? VoyageFiestaAPI.formatMoneyPerChild(total) : VoyageFiestaAPI.formatMoneyPerPerson(total))
-                    : '—';
+                    : '-';
                 rows.push(`
                     <tr class="border-b border-gray-100 last:border-0">
                         <td class="py-2.5 pr-2 text-sm text-gray-700 leading-snug">${labelHtml}</td>
                         <td class="py-2.5 px-2 text-sm text-right text-gray-800">${priceCell}</td>
-                        <td class="py-2.5 px-2 text-sm text-right text-gray-600">${taxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(taxes) : '—'}</td>
+                        <td class="py-2.5 px-2 text-sm text-right text-gray-600">${taxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(taxes) : '-'}</td>
                         <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue">${totalCell}</td>
                     </tr>`);
             };
@@ -707,9 +707,8 @@
                     info.child1317First,
                     true
                 );
-            } else {
-                pushRow(escapeHtml('Enfant'), null, true);
             }
+            // Pas de prix enfant → pas de ligne / options enfants
 
             return rows.join('');
         }
@@ -832,7 +831,7 @@
                         </div>
                         <div class="px-4 py-4 bg-white">
                             <p class="text-base font-bold text-brand-blue">${escapeHtml(contactLabel)}</p>
-                            <p class="text-xs text-gray-600 mt-1 leading-relaxed">Tarif non publié pour cette occupation — laissez vos coordonnées ci-dessous.</p>
+                            <p class="text-xs text-gray-600 mt-1 leading-relaxed">Tarif non publié pour cette occupation - laissez vos coordonnées ci-dessous.</p>
                         </div>
                     </div>`;
             }
@@ -853,7 +852,7 @@
             };
 
             if (breakdown?.useComponentPricing) {
-                // Détail ligne par ligne masqué — le tableau tarifaire couvre l'obligation d'affichage.
+                // Détail ligne par ligne masqué - le tableau tarifaire couvre l'obligation d'affichage.
             } else if (breakdown) {
                 pushRow(BEFORE_TAX_LABEL_PP(), breakdown.totalBeforeTaxes);
                 if (breakdown.totalTaxes !== null) {
@@ -952,13 +951,9 @@
             }
 
             const rows = VoyageFiestaAPI.getOccupationPrices(p);
-            const childContactNote = `<p class="text-xs text-gray-500 italic leading-relaxed">
-                <i class="fa-solid fa-circle-info mr-1 text-brand-orange" aria-hidden="true"></i>
-                Tarif enfant : ${escapeHtml(VoyageFiestaAPI.getPriceOnRequestLabel())}.
-            </p>`;
 
             if (!rows.length) {
-                return `<p class="text-sm text-gray-500 italic">Tarifs sur demande.</p>${childContactNote}`;
+                return `<p class="text-sm text-gray-500 italic">Tarifs sur demande.</p>`;
             }
 
             return `
@@ -981,7 +976,6 @@
                     <p id="occupation-required-hint" class="text-xs text-brand-orange font-medium pt-1 leading-relaxed">
                         <i class="fa-solid fa-circle-info mr-1"></i> Touchez une option ci-dessus avant de réserver.
                     </p>
-                    ${childContactNote}
                     <div id="occupation-summary" class="hidden"></div>
                 </div>`;
         }
@@ -1003,7 +997,7 @@
                     </div>`;
             }
 
-            // Toujours le tableau Occ. double + Enfant ($ ou « Veuillez nous contacter »)
+            // Occ. double + Enfant seulement si un tarif enfant est publié
             let tableHtml = '';
             if (hasTaxes) {
                 tableHtml = `
@@ -1193,7 +1187,7 @@
                                     </div>` : ''}
                                     <div class="flex justify-between text-sm gap-3">
                                         <span class="text-gray-500 shrink-0">Départ de :</span>
-                                        <span class="font-bold text-brand-blue text-right">${escapeHtml(p.departureAirport || '—')}</span>
+                                        <span class="font-bold text-brand-blue text-right">${escapeHtml(p.departureAirport || '-')}</span>
                                     </div>
                                     <div class="flex justify-between text-sm gap-3">
                                         <span class="text-gray-500 shrink-0">Durée :</span>
@@ -1276,12 +1270,14 @@
                 );
             }
             const kidOpts = [];
-            for (let n = 0; n <= Math.max(maxKids, kids); n++) {
-                kidOpts.push(
-                    `<option value="${n}"${n === kids ? ' selected' : ''}>${n} enfant${n > 1 ? 's' : ''}</option>`
-                );
+            if (maxKids > 0) {
+                for (let n = 0; n <= maxKids; n++) {
+                    kidOpts.push(
+                        `<option value="${n}"${n === Math.min(kids, maxKids) ? ' selected' : ''}>${n} enfant${n > 1 ? 's' : ''}</option>`
+                    );
+                }
             }
-            const kidsField = maxKids > 0 || kids > 0
+            const kidsField = maxKids > 0
                 ? `<div>
                         <label for="pr-kids" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Enfants</label>
                         <select id="pr-kids" name="nombre_enfants" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
@@ -1293,7 +1289,7 @@
             return `
                 <form id="price-request-form" class="space-y-3 rounded-xl border border-blue-100 bg-brand-light/40 p-4" novalidate>
                     <p class="text-sm font-semibold text-brand-blue">Demande de prix</p>
-                    <p class="text-xs text-gray-600 leading-relaxed -mt-1">Remplissez ce court formulaire — un conseiller vous recontactera.</p>
+                    <p class="text-xs text-gray-600 leading-relaxed -mt-1">Remplissez ce court formulaire - un conseiller vous recontactera.</p>
                     <div>
                         <label for="pr-name" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Nom complet</label>
                         <input id="pr-name" name="full_name" type="text" autocomplete="name" required
@@ -1443,14 +1439,14 @@
                     forfait_name: p.name,
                     nom_du_forfait: p.name,
                     sommaire: [
-                        `Demande de prix — ${p.name}`,
+                        `Demande de prix - ${p.name}`,
                         `Occupation : ${occupationLabel}`,
                         `Adultes : ${adults}`,
                         `Enfants : ${kids}`,
                         `Départ : ${VoyageFiestaAPI.formatDepartureDate(p.departureDate) || 'à confirmer'}`,
-                        `Aéroport : ${p.departureAirport || '—'}`
+                        `Aéroport : ${p.departureAirport || '-'}`
                     ].join('\n'),
-                    notes: `Demande de prix (tarif non publié) — ${occupationLabel}`,
+                    notes: `Demande de prix (tarif non publié) - ${occupationLabel}`,
                     pipeline_id: window.GHL_PIPELINE_ID || '',
                     pipeline_stage_id: window.GHL_PIPELINE_STAGE_ID || '',
                     contact_tag: window.GHL_PRICE_REQUEST_TAG || 'demande-prix'

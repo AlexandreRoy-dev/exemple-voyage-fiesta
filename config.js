@@ -1,6 +1,6 @@
 (function () {
     /**
-     * Libellés fournisseurs — clé normalisée (slug GHL) → nom affiché.
+     * Libellés fournisseurs - clé normalisée (slug GHL) → nom affiché.
      * Évite le regroupement « Autres » pour sunwing, transat, etc.
      */
     window.SUPPLIER_LABELS = {
@@ -15,7 +15,7 @@
         vacances_transat: 'Vacances Transat'
     };
 
-    /** Compagnies aériennes — clé normalisée (slug GHL) → nom affiché */
+    /** Compagnies aériennes - clé normalisée (slug GHL) → nom affiché */
     window.CARRIER_LABELS = {
         air_canada: 'Air Canada',
         westjet: 'WestJet',
@@ -39,7 +39,7 @@
         westjet_quebec: 'westjet_quebec'
     };
 
-    /** Logos fournisseurs / compagnies — clé normalisée → chemin relatif (assets/suppliers/) */
+    /** Logos fournisseurs / compagnies - clé normalisée → chemin relatif (assets/suppliers/) */
     window.SUPPLIER_LOGOS = {
         sunwing: 'assets/suppliers/sunwing.svg',
         air_canada: 'assets/suppliers/air-canada.png',
@@ -56,7 +56,7 @@
         'transat'
     ];
 
-    /** @deprecated Utiliser SUPPLIER_LABELS — conservé pour compatibilité */
+    /** @deprecated Utiliser SUPPLIER_LABELS - conservé pour compatibilité */
     window.KNOWN_SUPPLIERS = [
         'Vacances Sunwing',
         'Vacances Air Canada',
@@ -64,7 +64,7 @@
         'Vacances Transat'
     ];
 
-    /** Destinations (boutique filter) — libellés affichés; comparés en slug (voir DESTINATION_ALIASES) */
+    /** Destinations (boutique filter) - libellés affichés; comparés en slug (voir DESTINATION_ALIASES) */
     window.FILTER_DESTINATIONS = [
         'Amsterdam',
         'Antigua',
@@ -161,7 +161,7 @@
         cozumel: 'Cozumel'
     };
 
-    /** Critères (boutique filter) — labels + GHL keys from field `criteria` */
+    /** Critères (boutique filter) - labels + GHL keys from field `criteria` */
     window.CRITERIA_OPTIONS = [
         { label: 'Tout inclus', value: 'tout_inclus_allinclusive' },
         { label: 'Pour adultes (18+)', value: 'pour_adultes_18' },
@@ -213,10 +213,10 @@
         pour_clibataires: 'pour_celibataires'
     };
 
-    /** @deprecated use CRITERIA_OPTIONS — kept for backward compatibility */
+    /** @deprecated use CRITERIA_OPTIONS - kept for backward compatibility */
     window.FILTER_CRITERIA = window.CRITERIA_OPTIONS.map(o => o.label);
 
-    /** Departure airports — synced with GHL field `departure_airport` */
+    /** Departure airports - synced with GHL field `departure_airport` */
     window.FILTER_AIRPORTS = [
         'Montréal (YUL)',
         'Québec (YQB)',
@@ -239,23 +239,23 @@
     /** Hotel star filter options (supports half stars) */
     window.FILTER_STAR_OPTIONS = [3, 3.5, 4, 4.5, 5];
 
-    /** Static product feed — synced by GitHub Actions from GHL */
+    /** Static product feed - synced by GitHub Actions from GHL */
     window.PRODUCTS_JSON_URL = 'products.json';
 
     window.SITE_NAME = window.SITE_NAME || 'Voyage Fiesta';
     window.SITE_DEFAULT_DESCRIPTION = window.SITE_DEFAULT_DESCRIPTION
-        || 'Aubaines voyage tout inclus — promotions limitées Voyage Fiesta.';
+        || 'Aubaines voyage tout inclus - promotions limitées Voyage Fiesta.';
     window.SITE_DEFAULT_SHARE_IMAGE = window.SITE_DEFAULT_SHARE_IMAGE
         || 'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
 
-    /** Libellés affichés — taxes + frais aériens (GHL : taxes_amount) */
+    /** Libellés affichés - taxes + frais aériens (GHL : taxes_amount) */
     window.TAXES_AIR_FEES_LABEL = 'Taxes et frais aériens';
     window.BEFORE_TAXES_AIR_FEES_LABEL = 'Avant taxes et frais aériens';
 
     /** Affiché à la place du $ quand un tarif GHL est vide (ex. enfant sans prix) */
     window.PRICE_ON_REQUEST_LABEL = 'Veuillez nous contacter';
 
-    /** Nombre max d'enfants sélectionnables (sélecteur unique — tous âges) */
+    /** Nombre max d'enfants sélectionnables (sélecteur unique - tous âges) */
     window.MAX_CHILD_COUNT_SELECT = 3;
 
     /** Nombre max d'adultes sélectionnables (forfaits avec tarif enfant) */
@@ -268,7 +268,7 @@
     window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/index.html?embed=1';
 
     /**
-     * Financement iFinance — lien actif sur la boutique.
+     * Financement iFinance - lien actif sur la boutique.
      * Mensualité affichée = prix total / passager ÷ FINANCING_DIVISOR (36 mois).
      */
     window.FINANCING_MODE = 'active';
@@ -281,35 +281,35 @@
     window.FINANCING_STAR_NOTE =
         '* Simulation de financement sur 36 mois basée sur le prix total par passager. Sous réserve d’approbation du crédit. Le taux d’intérêt varie selon votre dossier.';
 
-    /** Taux TPS/TVQ — non utilisés (taxes par occupation dans GHL) */
+    /** Taux TPS/TVQ - non utilisés (taxes par occupation dans GHL) */
     window.TAX_TPS_RATE = 0.05;
     window.TAX_TVQ_RATE = 0.09975;
 
-    /** GHL reservation form — « Réservation de forfait » (prefill via Query Key = param URL) */
+    /** GHL reservation form - « Réservation de forfait » (prefill via Query Key = param URL) */
     window.GHL_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/V5DftNAy6QDV4X64bYzV';
 
     /**
-     * GHL — Formulaire d'inscription de chambre (passagers).
+     * GHL - Formulaire d'inscription de chambre (passagers).
      * Prefill via Query Keys. Dropdowns must have Query Keys set in GHL admin.
      */
     window.GHL_ROOM_FORM_EMBED_URL = 'https://api.leadconnectorhq.com/widget/form/DXJYaNnY1fdP5D1uVr9K';
     /** Location ID public (aussi dans products.json) */
     window.GHL_LOCATION_ID = 'V90iyFBbBrCg3tpctRjc';
     /**
-     * API réservation (OVH VPS via tunnel HTTPS — le site est en HTTPS).
+     * API réservation (OVH VPS via tunnel HTTPS - le site est en HTTPS).
      * Pour une URL stable: pointer un sous-domaine vers 158.69.1.173 + Let's Encrypt.
      */
     window.GHL_RESERVATION_API_URL = 'https://hart-intelligence-footwear-underground.trycloudflare.com/';
 
-    /** Pipeline « voyage fiesta » — opportunité (si workflow GHL en crée une) */
+    /** Pipeline « voyage fiesta » - opportunité (si workflow GHL en crée une) */
     window.GHL_PIPELINE_ID = '0epoPtkeq89cfu3KsxDs';
     window.GHL_PIPELINE_STAGE_ID = '41f6a9bb-52fb-4f82-9ccb-20b717024e71';
-    /** Tag appliqué sur les demandes de prix — trigger workflow GHL : Tag Added → demande-prix */
+    /** Tag appliqué sur les demandes de prix - trigger workflow GHL : Tag Added → demande-prix */
     window.GHL_PRICE_REQUEST_TAG = 'demande-prix';
 
     /**
      * Mapping native form fields → GHL Query Keys (data-q).
-     * Legacy keys on passengers 2–5 match the live GHL form as of 2026-07.
+     * Legacy keys on passengers 2-5 match the live GHL form as of 2026-07.
      */
     window.GHL_ROOM_FORM_FIELD_MAP = {
         nombre_passagers: 'nombre_passagers',
@@ -351,7 +351,7 @@
     };
 
     /**
-     * Query Keys envoyés à l'iframe GHL — doivent correspondre aux champs cachés du formulaire.
+     * Query Keys envoyés à l'iframe GHL - doivent correspondre aux champs cachés du formulaire.
      * nombre_enfants_2_12 = nombre total d'enfants (sélecteur unique sur le site).
      */
     window.GHL_FORM_IFRAME_KEYS = [
@@ -371,8 +371,8 @@
      * Query Key = exactement la clé ci-dessous (Settings du champ → Query Key).
      */
     window.GHL_FORM_HIDDEN_FIELDS = [
-        { key: 'forfait_slug', label: 'Forfait — identifiant (slug)' },
-        { key: 'forfait_name', label: 'Forfait — nom de l\'hôtel' },
+        { key: 'forfait_slug', label: 'Forfait - identifiant (slug)' },
+        { key: 'forfait_name', label: 'Forfait - nom de l\'hôtel' },
         { key: 'destination', label: 'Destination' },
         { key: 'sub_destination', label: 'Sous-destination (ville)' },
         { key: 'departure_date', label: 'Date de départ' },
@@ -380,35 +380,35 @@
         { key: 'departure_airport', label: 'Aéroport de départ' },
         { key: 'final_payment_date', label: 'Date paiement final' },
         { key: 'deposit_amount', label: 'Dépôt requis ($ / pers.)' },
-        { key: 'occupation', label: 'Occupation — libellé (Occ. double, etc.)' },
-        { key: 'occupation_label', label: 'Occupation — libellé' },
-        { key: 'selected_price', label: 'Prix sélectionné — avant taxes et frais aériens ($ / pers.)' },
+        { key: 'occupation', label: 'Occupation - libellé (Occ. double, etc.)' },
+        { key: 'occupation_label', label: 'Occupation - libellé' },
+        { key: 'selected_price', label: 'Prix sélectionné - avant taxes et frais aériens ($ / pers.)' },
         { key: 'selected_taxes', label: 'Taxes et frais aériens / pers. pour l\'occupation choisie ($)' },
         { key: 'selected_total', label: 'Total par personne (forfait + taxes et frais aériens) ($ / pers.)' },
         { key: 'nombre_personnes', label: 'Nombre total de voyageurs' },
         { key: 'nombre_adultes', label: 'Nombre d\'adultes' },
-        { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants — total tous âges (Query Key GHL : nombre_enfants_2_12)' },
+        { key: 'nombre_enfants_2_12', label: 'Nombre d\'enfants - total tous âges (Query Key GHL : nombre_enfants_2_12)' },
         { key: 'depot_par_personne', label: 'Dépôt par personne ($)' },
         { key: 'depot_total', label: 'Dépôt total (dépôt × nb personnes)' },
         { key: 'prix_adulte_unitaire', label: 'Prix unitaire adulte ($)' },
         { key: 'prix_enfant_2_12_unitaire', label: 'Prix unitaire enfant 2-12 ($)' },
         { key: 'prix_total_avant_taxes', label: 'Prix total avant taxes et frais aériens ($)' },
-        { key: 'taxes_total', label: 'Taxes et frais aériens totaux ($) — montant × nb personnes' },
+        { key: 'taxes_total', label: 'Taxes et frais aériens totaux ($) - montant × nb personnes' },
         { key: 'taxes_total1', label: 'Alias taxes et frais aériens totaux (formulaire client)' },
         { key: 'taxes_par_personne', label: 'Taxes et frais aériens / pers. (occupation choisie)' },
         { key: 'prix_total', label: 'Prix total avec taxes et frais aériens ($)' },
         { key: 'total', label: 'Alias prix total (même que prix_total)' },
         { key: 'pricing_summary', label: 'Résumé texte du calcul (courriel)' },
-        { key: 'price_double', label: 'Tarif — occ. double ($ / pers.)' },
-        { key: 'price_double_1_child', label: 'Tarif — occ. double + 1 enfant 2-12 ($ / pers.)' },
-        { key: 'price_double_2_child', label: 'Tarif — occ. double + 2 enfants 2-12 ($ / pers.)' },
-        { key: 'price_simple', label: 'Tarif — occ. simple ($ / pers.)' },
-        { key: 'price_simple_1_child', label: 'Tarif — occ. simple + 1 enfant 2-12 ($ / pers.)' },
-        { key: 'price_triple', label: 'Tarif — occ. triple ($ / pers.)' },
-        { key: 'price_quad', label: 'Tarif — occ. quad ($ / pers.)' },
-        { key: 'price_autres', label: 'Tarif — autres ($ / pers.)' },
-        { key: 'price_child_2_12', label: 'Réf. enfant 2-12 ans seul ($ / pers.) — optionnel' },
-        { key: 'price_child_13_17', label: 'Réf. enfant 13-17 ans seul ($ / pers.) — optionnel' },
+        { key: 'price_double', label: 'Tarif - occ. double ($ / pers.)' },
+        { key: 'price_double_1_child', label: 'Tarif - occ. double + 1 enfant 2-12 ($ / pers.)' },
+        { key: 'price_double_2_child', label: 'Tarif - occ. double + 2 enfants 2-12 ($ / pers.)' },
+        { key: 'price_simple', label: 'Tarif - occ. simple ($ / pers.)' },
+        { key: 'price_simple_1_child', label: 'Tarif - occ. simple + 1 enfant 2-12 ($ / pers.)' },
+        { key: 'price_triple', label: 'Tarif - occ. triple ($ / pers.)' },
+        { key: 'price_quad', label: 'Tarif - occ. quad ($ / pers.)' },
+        { key: 'price_autres', label: 'Tarif - autres ($ / pers.)' },
+        { key: 'price_child_2_12', label: 'Réf. enfant 2-12 ans seul ($ / pers.) - optionnel' },
+        { key: 'price_child_13_17', label: 'Réf. enfant 13-17 ans seul ($ / pers.) - optionnel' },
         { key: 'supplier', label: 'Fournisseur' },
         { key: 'carrier', label: 'Transporteur' },
         { key: 'room_category', label: 'Catégorie de chambre' },
@@ -463,5 +463,5 @@
 
     /** Bannière statut pré-vente (GHL statut = pré-vente) */
     window.PRE_SALE_BANNER_TITLE = 'Pré-vente';
-    window.PRE_SALE_BANNER_SUBTITLE = 'Réservez dès maintenant — offre en avant-première';
+    window.PRE_SALE_BANNER_SUBTITLE = 'Réservez dès maintenant - offre en avant-première';
 })();
