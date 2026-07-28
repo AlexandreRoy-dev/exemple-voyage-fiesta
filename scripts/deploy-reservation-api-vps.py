@@ -15,9 +15,12 @@ except ImportError:
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent  # exemple voyage fiesta
 API_DIR = ROOT / "server" / "reservation-api"
-DUPRO_ENV = Path(
-    r"C:\Users\Alex\OneDrive - Codesk\01. Roy Marketing\Clients\duproprio sync\scripts\deploy.local.env"
-)
+_DUPRO_CANDIDATES = [
+    Path(os.path.expanduser(r"~\OneDrive - Codesk\01. Roy Marketing\Clients\duproprio sync\scripts\deploy.local.env")),
+    Path(r"C:\Users\Admin\OneDrive - Codesk\01. Roy Marketing\Clients\duproprio sync\scripts\deploy.local.env"),
+    Path(r"C:\Users\Alex\OneDrive - Codesk\01. Roy Marketing\Clients\duproprio sync\scripts\deploy.local.env"),
+]
+DUPRO_ENV = next((p for p in _DUPRO_CANDIDATES if p.exists()), _DUPRO_CANDIDATES[0])
 
 REMOTE_DIR = "/opt/voyage-fiesta-reservation"
 SERVICE_NAME = "voyage-fiesta-reservation"
@@ -116,6 +119,7 @@ def main() -> None:
             f"PORT={PORT}",
             "ALLOWED_ORIGINS=*",
             "GHL_CONTACT_TAG=reservation-site",
+            "GHL_PRICE_REQUEST_TAG=demande-prix",
             "",
         ]
     )

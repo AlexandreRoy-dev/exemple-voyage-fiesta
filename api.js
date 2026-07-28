@@ -581,8 +581,8 @@
         const info = getChildPricingInfo(p);
         if (info.child212First === null || index < 0) return null;
         if (index === 0) return info.child212First;
-        if (index === 1 && info.child212Second !== null) return info.child212Second;
-        return info.child212Second ?? info.child212First;
+        if (index === 1) return info.child212Second;
+        return null;
     }
 
     function getChild1317UnitPrice(p, index) {
@@ -590,27 +590,41 @@
         if (index < 0) return null;
         if (info.child1317First !== null) {
             if (index === 0) return info.child1317First;
-            if (index === 1 && info.child1317Second !== null) return info.child1317Second;
-            return info.child1317Second ?? info.child1317First;
+            if (index === 1) return info.child1317Second;
+            return null;
         }
+        // Pas de grille 13-17 : réutiliser la grille 2-12 (même limite de créneaux tarifés)
         return getChild212UnitPrice(p, index);
     }
 
-    /** Tarif enfant pour le sélecteur unique - 2-12 prioritaire, repli 13-17. */
+    /** Tarif enfant pour le sélecteur unique - 2-12 prioritaire, repli 13-17.
+     *  Pas de reuse du 1er tarif pour le 2e enfant : sans 2e prix → null (demande de prix). */
     function getChildUnitPrice(p, index) {
         const info = getChildPricingInfo(p);
         if (index < 0) return null;
         if (info.child212First !== null) {
             if (index === 0) return info.child212First;
-            if (index === 1 && info.child212Second !== null) return info.child212Second;
-            return info.child212Second ?? info.child212First;
+            if (index === 1) return info.child212Second;
+            return null;
         }
         if (info.child1317First !== null) {
             if (index === 0) return info.child1317First;
-            if (index === 1 && info.child1317Second !== null) return info.child1317Second;
-            return info.child1317Second ?? info.child1317First;
+            if (index === 1) return info.child1317Second;
+            return null;
         }
         return null;
+    }
+
+    /** Nombre d'enfants couverts par un tarif GHL explicite (1 ou 2). */
+    function getPricedChildSlotCount(p) {
+        const info = getChildPricingInfo(p);
+        if (info.child212First !== null) {
+            return info.child212Second !== null ? 2 : 1;
+        }
+        if (info.child1317First !== null) {
+            return info.child1317Second !== null ? 2 : 1;
+        }
+        return 0;
     }
 
     function getComponentAdultUnitRow(p) {
@@ -740,6 +754,8 @@
         const children1317 = clampInt(overrides.children1317 ?? 0, { min: 0, max: 9 });
         if (children212 + children1317 > 0) {
             if (!productHasChildUnitPricing(p)) return true;
+            const totalKids = children212 + children1317;
+            if (totalKids > getPricedChildSlotCount(p)) return true;
             if (sumChildUnitPrices(p, children212, children1317) === null) return true;
         }
 
@@ -2539,6 +2555,7 @@
         productHasChildUnitPricing,
         productSupportsKidsPricing,
         getChildUnitPrice,
+        getPricedChildSlotCount,
         getChildPriceLabel,
         formatChildTableLabelHtml,
         getLowestOccupationRow,
