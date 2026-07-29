@@ -490,7 +490,7 @@
                 }
 
                 const card = document.createElement('div');
-                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isUnavailable ? 'border-red-200' : ''}`;
+                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isUnavailable ? 'border-red-200' : ''}${isPreSale ? ' ring-2 ring-brand-blue/40' : ''}`;
 
                 const productUrl = window.VoyageFiestaEmbed
                     ? window.VoyageFiestaEmbed.boutiqueUrl(`product.html?slug=${encodeURIComponent(p.slug)}`)

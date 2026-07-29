@@ -114,8 +114,16 @@
         const subtitle = window.PRE_SALE_BANNER_SUBTITLE
             || 'Manifestez votre intérêt — aucun dépôt requis pour le moment';
         if (options.compact) {
-            return `<div class="absolute top-4 left-4 bg-brand-blue text-white font-bold px-3 py-1.5 rounded shadow-lg z-10 text-sm tracking-wide uppercase">
-                <i class="fa-solid fa-clock mr-1.5" aria-hidden="true"></i>${escapeHtml(title)}
+            // Full-width ribbon on listing cards — must read at a glance
+            return `<div class="absolute top-0 left-0 right-0 z-20 pointer-events-none" role="status">
+                <div class="bg-brand-blue text-white shadow-lg px-3 py-2.5 sm:py-3 text-center border-b-4 border-brand-orange">
+                    <p class="text-base sm:text-lg font-black uppercase tracking-[0.12em] leading-none">
+                        <i class="fa-solid fa-clock mr-2" aria-hidden="true"></i>${escapeHtml(title)}
+                    </p>
+                    <p class="mt-1 text-[10px] sm:text-[11px] font-semibold leading-snug opacity-95 normal-case tracking-normal">
+                        Aucun dépôt requis
+                    </p>
+                </div>
             </div>`;
         }
         return `<div class="bg-blue-50 text-brand-blue border-2 border-brand-blue/30 rounded-lg p-3 text-center mb-6">
