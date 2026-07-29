@@ -784,6 +784,8 @@ function extractIataCode(value) {
  if (!raw) return '';
  const paren = raw.match(/\(([A-Za-z]{3})\)\s*$/);
  if (paren) return paren[1].toUpperCase();
+ const slug = raw.toLowerCase().replace(/\s+/g, '_').match(/_([a-z]{3})$/);
+ if (slug) return slug[1].toUpperCase();
  if (/^[A-Za-z]{3}$/.test(raw)) return raw.toUpperCase();
  return '';
 }
@@ -887,17 +889,17 @@ function mapFlights(props, context = {}) {
  const homeLabel = departureAirport || '';
  const destAirportLabel = resolveDestAirportLabel(destLabel, returnAirport, homeLabel);
 
- flights.out.from = preferAirportEndpoint(flights.out.from, homeLabel);
+ flights.out.from = preferAirportEndpoint(formatAeroportLabel(flights.out.from), homeLabel);
  if (!flights.out.departDate && departureDate) flights.out.departDate = departureDate;
- flights.out.to = preferAirportEndpoint(flights.out.to, destAirportLabel);
+ flights.out.to = preferAirportEndpoint(formatAeroportLabel(flights.out.to), destAirportLabel);
  if (!flights.out.arriveDate && (flights.out.departDate || departureDate)) {
  flights.out.arriveDate = flights.out.departDate || departureDate;
  }
 
- flights.return.from = preferAirportEndpoint(flights.return.from, destAirportLabel);
+ flights.return.from = preferAirportEndpoint(formatAeroportLabel(flights.return.from), destAirportLabel);
  if (!flights.return.departDate && returnDate) flights.return.departDate = returnDate;
  // Arrivée retour = maison (GHL aeroport_retour = destination, pas la maison)
- const retTo = String(flights.return.to || '').trim();
+ const retTo = formatAeroportLabel(flights.return.to);
  if (!retTo || sameAirportLabel(retTo, destAirportLabel) || sameAirportLabel(retTo, destLabel) || sameAirportLabel(retTo, returnAirport)) {
   flights.return.to = homeLabel || retTo;
  } else {

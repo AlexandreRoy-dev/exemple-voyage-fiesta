@@ -229,7 +229,9 @@
     /** Clés option GHL → libellé affiché (doit correspondre à FILTER_AIRPORTS) */
     window.AIRPORT_LABELS = {
         montral_yul: 'Montréal (YUL)',
+        montreal_yul: 'Montréal (YUL)',
         qubec_yqb: 'Québec (YQB)',
+        quebec_yqb: 'Québec (YQB)',
         ottawa_yow: 'Ottawa (YOW)',
         toronto_yyz: 'Toronto (YYZ)',
         halifax_yhz: 'Halifax (YHZ)',

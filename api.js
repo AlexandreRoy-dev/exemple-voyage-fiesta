@@ -1315,6 +1315,8 @@
         if (!raw) return '';
         const paren = raw.match(/\(([A-Za-z]{3})\)\s*$/);
         if (paren) return paren[1].toUpperCase();
+        const slug = raw.toLowerCase().replace(/\s+/g, '_').match(/_([a-z]{3})$/);
+        if (slug) return slug[1].toUpperCase();
         if (/^[A-Za-z]{3}$/.test(raw)) return raw.toUpperCase();
         return '';
     }
@@ -1404,6 +1406,12 @@
         const labels = window.AIRPORT_LABELS || {};
         if (labels[key]) return labels[key];
         if (labels[raw]) return labels[raw];
+        const code = extractIataCode(raw);
+        if (code) {
+            for (const label of Object.values(labels)) {
+                if (extractIataCode(label) === code) return label;
+            }
+        }
         return raw;
     }
 
@@ -1425,15 +1433,15 @@
             : (returnDateRaw || '');
 
         if (departureDate || p.departureAirport || out.from || out.to) {
-            out.from = preferEndpointLabel(out.from, home);
+            out.from = preferEndpointLabel(formatAirportLabel(out.from), home);
             if (!out.departDate) out.departDate = departureDate;
-            out.to = preferEndpointLabel(out.to, dest);
+            out.to = preferEndpointLabel(formatAirportLabel(out.to), dest);
             if (!out.arriveDate) out.arriveDate = out.departDate || departureDate;
         }
         if (returnDate || p.subDest || ret.from || ret.to) {
-            ret.from = preferEndpointLabel(ret.from, dest);
+            ret.from = preferEndpointLabel(formatAirportLabel(ret.from), dest);
             if (!ret.departDate) ret.departDate = returnDate;
-            ret.to = coerceHomeEndpoint(ret.to, home, dest);
+            ret.to = coerceHomeEndpoint(formatAirportLabel(ret.to), home, dest);
             if (!ret.arriveDate) ret.arriveDate = ret.departDate || returnDate;
         }
 
