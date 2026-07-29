@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-29T16:12:37.924Z",
+  "updatedAt": "2026-07-29T17:39:44.271Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -21,7 +21,10 @@
       "carrier": "westjet",
       "durationNights": 7,
       "roomCategory": "Chambre avec vue cour",
-      "criteria": [],
+      "criteria": [
+        "tout_inclus",
+        "vol_direct_sans_escale"
+      ],
       "inventory": 15,
       "price": 1518,
       "priceOccSimple": 2208,
@@ -54,31 +57,31 @@
       "taxChild212": null,
       "taxChild1317": null,
       "packageType": "toutinclus",
-      "promotion": "",
+      "promotion": "Relâche",
       "hotelDescription": "Forfait tout-inclus au Gran Muthu Runaway Bay à Montego Bay, Jamaïque. Séjour de 7 nuits / 8 jours. Vols avec WestJet via Sunwing depuis Montréal (YUL). Occupation triple non disponible à ce tarif. Horaires et numéros de vol à venir.\nPour tout les détails, visiter:",
       "forfaitLink": "https://www.sunwing.ca/en/hotel/jamaica/jamaica/grand-muthu-runaway-bay-club-caribbean",
       "endDate": "2026-08-22T00:00:00.000Z",
       "departureDate": "2027-02-25T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "MBJ",
+      "returnAirport": "Montego Bay (MBJ)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2027-02-25T00:00:00.000Z",
-          "departTime": "",
+          "departTime": "08:00",
           "to": "Montego Bay (MBJ)",
           "arriveDate": "2027-02-25T00:00:00.000Z",
-          "arriveTime": "",
-          "number": ""
+          "arriveTime": "13:05",
+          "number": "WS2914"
         },
         "return": {
           "from": "Montego Bay (MBJ)",
           "departDate": "2027-03-04T00:00:00.000Z",
-          "departTime": "",
+          "departTime": "14:05",
           "to": "Montréal (YUL)",
           "arriveDate": "2027-03-04T00:00:00.000Z",
-          "arriveTime": "",
-          "number": ""
+          "arriveTime": "18:45",
+          "number": "WS2915"
         },
         "airlineLogo": ""
       },
@@ -109,7 +112,9 @@
       "carrier": "westjet",
       "durationNights": 7,
       "roomCategory": "CHAMBRE D'HÔTEL",
-      "criteria": [],
+      "criteria": [
+        "tout_inclus"
+      ],
       "inventory": 11,
       "price": 1358,
       "priceOccSimple": null,
@@ -148,7 +153,7 @@
       "endDate": "2026-09-08T00:00:00.000Z",
       "departureDate": "2027-01-11T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "RTB",
+      "returnAirport": "Roatan (RTB)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -239,19 +244,19 @@
       "endDate": "2026-08-12T00:00:00.000Z",
       "departureDate": "2027-03-15T00:00:00.000Z",
       "departureAirport": "quebec_yqb",
-      "returnAirport": "(RTB) ROTAN",
+      "returnAirport": "ROTAN (RTB)",
       "flights": {
         "out": {
           "from": "quebec_yqb",
           "departDate": "2027-03-15T00:00:00.000Z",
           "departTime": "07:30",
-          "to": "(RTB) ROTAN",
+          "to": "ROTAN (RTB)",
           "arriveDate": "2027-03-15T00:00:00.000Z",
           "arriveTime": "11:45",
           "number": "WS2966"
         },
         "return": {
-          "from": "(RTB) ROTAN",
+          "from": "ROTAN (RTB)",
           "departDate": "2027-03-22T00:00:00.000Z",
           "departTime": "17:15",
           "to": "quebec_yqb",
@@ -287,7 +292,9 @@
       "durationNights": 7,
       "roomCategory": "Chambre Melia Vue Jardin Tout Compris 1-4 pax total",
       "criteria": [
-        "tout_inclus"
+        "tout_inclus",
+        "sur_la_plage",
+        "vol_direct_sans_escale"
       ],
       "inventory": 14,
       "price": 1064,
@@ -310,7 +317,7 @@
       "taxesOccTriple": null,
       "taxesOccQuad": null,
       "taxesOccAutres": null,
-      "discountAmount": 350,
+      "discountAmount": 400,
       "financingMonthly": null,
       "depositAmount": 200,
       "finalPaymentDate": "2026-10-01T00:00:00.000Z",
@@ -327,19 +334,19 @@
       "endDate": "2026-08-06T00:00:00.000Z",
       "departureDate": "2026-12-07T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "(CZM) Cozumel",
+      "returnAirport": "Cozumel (CZM)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2026-12-07T00:00:00.000Z",
           "departTime": "09:00",
-          "to": "(CZM) Cozumel",
+          "to": "Cozumel (CZM)",
           "arriveDate": "2026-12-07T00:00:00.000Z",
           "arriveTime": "14:00",
           "number": "AC2242"
         },
         "return": {
-          "from": "(CZM) Cozumel",
+          "from": "Cozumel (CZM)",
           "departDate": "2026-12-14T00:00:00.000Z",
           "departTime": "15:00",
           "to": "Montréal (YUL)",
@@ -410,25 +417,25 @@
       "taxChild212": null,
       "taxChild1317": null,
       "packageType": "toutinclus",
-      "promotion": "Exclusif - Nous avons les dernières chambres",
+      "promotion": "Exclusif - Dernières chambres disponibles",
       "hotelDescription": "Riu Playa Blanca – Tout inclus au Panama\n\nSitué directement sur la magnifique plage de Playa Blanca, le Riu Playa Blanca est un complexe tout inclus idéal pour les voyageurs en quête de soleil, de détente et de divertissement. Grâce à son emplacement à proximité de l'aéroport, vous pourrez passer rapidement de votre vol à la plage.\n\nProfitez de plusieurs piscines avec vue sur l'océan, d'une longue plage de sable et d'un espace aquatique pour enfants comprenant glissades et jeux d'eau. Les plus jeunes apprécieront également les activités offertes au club pour enfants.\n\nCôté gastronomie, plusieurs restaurants proposent des saveurs internationales, des spécialités asiatiques, italiennes et des grillades, sans réservation.\n\n### Points forts\n\n* Situé sur la plage de Playa Blanca\n* À quelques minutes de l'aéroport\n* Piscines avec vue sur la mer\n* Parc aquatique pour enfants\n* Restaurants variés sans réservation\n* Idéal pour les familles et les couples\n\nLe Riu Playa Blanca est l'endroit parfait pour profiter d'un séjour tout inclus au Panama dans un cadre tropical et décontracté.\nConsultez le lien ci-dessous pour tous les détails.",
       "forfaitLink": "https://www.sunwing.ca/fr/hotel/panama/playa-blanca-playa-bonita/riu-playa-blanca",
       "endDate": "2026-08-20T00:00:00.000Z",
       "departureDate": "2027-02-12T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "(RIH) Playa Blanca",
+      "returnAirport": "Playa Blanca (RIH)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2027-02-12T00:00:00.000Z",
           "departTime": "09:00",
-          "to": "(RIH) Playa Blanca",
+          "to": "Playa Blanca (RIH)",
           "arriveDate": "2027-02-12T00:00:00.000Z",
           "arriveTime": "15:15",
           "number": "WS2986"
         },
         "return": {
-          "from": "(RIH) Playa Blanca",
+          "from": "Playa Blanca (RIH)",
           "departDate": "2027-02-19T00:00:00.000Z",
           "departTime": "17:20",
           "to": "Montréal (YUL)",
@@ -501,25 +508,25 @@
       "taxChild212": null,
       "taxChild1317": null,
       "packageType": "toutinclus",
-      "promotion": "",
+      "promotion": "Pour Famille",
       "hotelDescription": "Royalton Splash Punta Cana – Vacances familiales tout inclus\n\nLe Royalton Splash Punta Cana est un complexe tout inclus conçu pour les familles qui souhaitent profiter d'un séjour rempli d'activités en République dominicaine. Situé près de la magnifique plage de Bávaro, l'hôtel offre un accès facile au soleil, à la mer et à une foule de divertissements.\n\nVéritable paradis pour les enfants, le complexe possède l'un des plus grands parcs aquatiques de la région avec plusieurs glissades, une piscine à vagues et des jeux d'eau adaptés aux plus jeunes. Les enfants et adolescents pourront également participer aux activités du club jeunesse pendant que les parents profitent des piscines ou de la plage.\n\nLes vacanciers bénéficient également d'avantages supplémentaires grâce à l'accès à certaines installations du Royalton Punta Cana voisin, incluant la plage, certains restaurants et le casino.\n\nPour les repas, plusieurs restaurants proposent une sélection de saveurs internationales, de spécialités mexicaines et de fruits de mer. Les chambres spacieuses et confortables complètent parfaitement l'expérience, avec la possibilité d'ajouter les privilèges exclusifs du Diamond Club™.\n\n### Points forts\n\n* Parc aquatique spectaculaire avec glissades et piscine à vagues\n* Accès à certaines installations du Royalton Punta Cana\n* À proximité de la plage de Bávaro\n* Activités pour enfants et adolescents\n* Plusieurs restaurants et bars\n* Option Diamond Club™\n* Excellent choix pour les familles\n\nLe Royalton Splash Punta Cana est une destination idéale pour des vacances en famille alliant détente, plaisir aquatique et formule tout inclus.\nConsultez le lien ci-dessous pour tous les détails.",
       "forfaitLink": "https://www.sunwing.ca/en/hotel/dominican-republic/punta-cana/royalton-splash-punta-cana-an-autograph-collection-all-inclusive-resort-and-casino",
       "endDate": "2026-08-14T00:00:00.000Z",
       "departureDate": "2027-01-22T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "(PUJ) Punta Cana",
+      "returnAirport": "Punta Cana (PUJ)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2027-01-22T00:00:00.000Z",
           "departTime": "08:15",
-          "to": "(PUJ) Punta Cana",
+          "to": "Punta Cana (PUJ)",
           "arriveDate": "2027-01-22T00:00:00.000Z",
           "arriveTime": "14:10",
           "number": "WS2916"
         },
         "return": {
-          "from": "(PUJ) Punta Cana",
+          "from": "Punta Cana (PUJ)",
           "departDate": "2027-01-29T00:00:00.000Z",
           "departTime": "15:10",
           "to": "Montréal (YUL)",
@@ -596,19 +603,19 @@
       "endDate": "2026-09-14T00:00:00.000Z",
       "departureDate": "2026-12-30T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "CUN",
+      "returnAirport": "Cancun (CUN)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2026-12-30T00:00:00.000Z",
           "departTime": "07:20",
-          "to": "Playacar (CUN)",
+          "to": "Cancun (CUN)",
           "arriveDate": "2026-12-30T00:00:00.000Z",
           "arriveTime": "",
           "number": "538"
         },
         "return": {
-          "from": "Playacar (CUN)",
+          "from": "Cancun (CUN)",
           "departDate": "2027-01-06T00:00:00.000Z",
           "departTime": "13:35",
           "to": "Montréal (YUL)",
@@ -685,7 +692,7 @@
       "endDate": "2026-09-12T00:00:00.000Z",
       "departureDate": "2027-03-27T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "FPO",
+      "returnAirport": "Freeport (FPO)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
