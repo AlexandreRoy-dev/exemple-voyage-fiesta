@@ -8,22 +8,28 @@ Les forfaits sont lus depuis le fichier statique `products.json` (même origine 
 
 Configuré dans `config.js` → `PRODUCTS_JSON_URL` (défaut : `products.json`).
 
-- **Liste boutique** (`index.html`) : seuls les forfaits avec **`active === "actif"`** sont affichés.
-- **Fiche produit** (`product.html`) : `actif` et **`complet_sold_out`** restent accessibles (SEO + badge COMPLET).
+- **Liste boutique** (`index.html`) : forfaits **`actif`**, **`pre_vente`**, **`complet_sold_out`**, **`vendu`**.
+- **Fiche produit** : mêmes états (pré-vente = formulaire d’intérêt sans dépôt ; complet / vendu = non réservable).
+- **Masqués** : `inactif`, `brouillon`, `archiv`.
 
 Si `products.json` est vide, le site affiche « Aucun forfait disponible ».
 
 ## Flux de données
 
 ```
-GHL Custom Object "Forfait Voyage"
-        ↓ API (toutes les 15 min + manuel)
+GHL Custom Object "Voyage" (statut)
+        ↓ API (toutes les 5 min + manuel)
    GitHub Actions → scripts/sync-ghl-products.mjs
         ↓ commit
-   products.json → GitHub Pages
-        ↓ fetch
+   products.json → GitHub Pages (~1–2 min)
+        ↓ fetch (no-store)
    api.js → index.html + product.html
 ```
+
+**Délai typique client → site :** jusqu’à ~5–10 minutes (sync + déploiement Pages).  
+Pour une urgence : GitHub → Actions → **Sync GHL Products** → **Run workflow**.
+
+> Les cron GitHub peuvent être retardés sous forte charge (parfois > 5 min). Le bouton manuel force une sync immédiate.
 
 ## GitHub Actions — configuration
 
@@ -33,15 +39,16 @@ GHL Custom Object "Forfait Voyage"
 |--------|-------------|
 | `GHL_API_KEY` | Token Private Integration GHL |
 | `GHL_LOCATION_ID` | ID de la sub-account (location) |
-| `GHL_OBJECT_SCHEMA_KEY` | Clé du Custom Object, ex. `custom_objects.forfaits_voyage` |
+| `GHL_OBJECT_SCHEMA_KEY` | Clé du Custom Object, ex. `custom_objects.voyages` |
 
 ### Workflow
 
 Fichier : `.github/workflows/sync-products.yml`
 
-- **Cron** : toutes les 15 minutes
-- **Manuel** : Actions → *Sync GHL Products* → *Run workflow*
+- **Cron** : toutes les 5 minutes (délai GitHub possible sous charge)
+- **Manuel** : Actions → *Sync GHL Products* → *Run workflow* (immédiat)
 - **Résultat** : commit automatique de `products.json` si les données ont changé
+- **Validation** : le workflow vérifie que `products.json` est un JSON valide avant push
 
 ### Test local (optionnel)
 
@@ -245,7 +252,7 @@ Pour une sync quasi instantanée à l'avenir : webhook GHL → `repository_dispa
 3. Lancer le workflow manuellement (*Run workflow*)
 4. Vérifier que `products.json` contient les forfaits GHL
 5. Ouvrir `promofiesta.roymarketing.ca` — les cartes correspondent à GHL
-6. Modifier un forfait dans GHL → attendre ≤ 15 min → rafraîchir le site
+6. Modifier un forfait dans GHL → attendre ≤ 5–10 min (ou *Run workflow*) → rafraîchir le site (Ctrl+F5)
 7. (Test) Sans forfaits GHL → le site affiche « Aucun forfait disponible »
 
 Format `products.json` :

@@ -1742,7 +1742,15 @@
     async function loadProductsJson() {
         const res = await fetchWithTimeout(
             JSON_URL + '?t=' + Date.now(),
-            { method: 'GET', headers: { Accept: 'application/json' }, cache: 'no-store' },
+            {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    Pragma: 'no-cache'
+                },
+                cache: 'no-store'
+            },
             FETCH_TIMEOUT_MS
         );
 

@@ -1,13 +1,17 @@
 name: Sync GHL Products
 
+# Intervalle minimal GitHub Actions = 5 min.
+# Note: les cron GitHub peuvent être retardés sous charge; utiliser « Run workflow »
+# pour une sync immédiate après une modif GHL urgente.
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 concurrency:
   group: sync-products
-  cancel-in-progress: true
+  # Ne pas annuler une sync en cours (téléchargement images) — la suivante attend.
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -15,11 +19,13 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,18 +33,36 @@ jobs:
           node-version: '20'
 
       - name: Sync products from GoHighLevel
+        id: sync
         env:
           GHL_API_KEY: ${{ secrets.GHL_API_KEY }}
           GHL_LOCATION_ID: ${{ secrets.GHL_LOCATION_ID }}
           GHL_OBJECT_SCHEMA_KEY: ${{ secrets.GHL_OBJECT_SCHEMA_KEY }}
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull origin main
+          git pull --ff-only origin main
           node scripts/sync-ghl-products.mjs
+          node -e "
+            const fs = require('fs');
+            const raw = fs.readFileSync('products.json', 'utf8');
+            const data = JSON.parse(raw);
+            const products = data.products || [];
+            if (!Array.isArray(products)) throw new Error('products.json: products is not an array');
+            const byState = {};
+            for (const p of products) {
+              const s = p.state || p.active || '?';
+              byState[s] = (byState[s] || 0) + 1;
+              if (!p.slug) throw new Error('Product missing slug: ' + (p.name || p.id));
+            }
+            console.log('OK products.json —', products.length, 'forfait(s)', JSON.stringify(byState));
+            console.log('updatedAt', data.updatedAt || '(none)');
+          "
 
       - name: Commit and push if changed
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -56,7 +80,8 @@ jobs:
             echo "Merge conflict — keeping synced products.json and images"
             git checkout --ours products.json
             git add products.json assets/forfaits/ share/
-            git commit --no-edit
+            git commit --no-edit || true
           fi
 
           git push origin main
+          echo "Pushed sync — GitHub Pages should update within ~1–2 minutes."
