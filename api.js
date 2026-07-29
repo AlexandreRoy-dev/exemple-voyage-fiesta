@@ -33,7 +33,15 @@
         }
 
         if (s === 'actif' || s === 'active') return 'actif';
-        if (s === 'pre_vente' || s === 'pre-vente' || s === 'prevente') return 'pre_vente';
+        if (s === 'inactif' || s === 'inactive') return 'inactif';
+        // GHL option keys strip accents (Prévente → prvente), same as montral / europen
+        if (
+            s === 'pre_vente'
+            || s === 'pre-vente'
+            || s === 'prevente'
+            || s === 'prvente'
+            || s === 'pr_vente'
+        ) return 'pre_vente';
         if (s === 'brouillon' || s === 'draft') return 'brouillon';
         if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
         if (s === 'vendu' || s === 'vendue') return 'vendu';
@@ -43,10 +51,13 @@
 
         if (/sold\s*out|complet\s*\(|complet.*sold|épuisé|epuise/.test(s)) return 'complet_sold_out';
         if (/^complet$|complet\s*-/.test(s)) return 'complet_sold_out';
-        if (/pr[eé][\s_-]?vente|pre[\s_]?sale/.test(s)) return 'pre_vente';
+        // [eé]? : GHL « Prévente » → prvente (accented letter dropped, not é→e)
+        if (/pr[eé]?[\s_-]?vente|pre[\s_]?sale/.test(s)) return 'pre_vente';
         if (/brouillon|draft/.test(s)) return 'brouillon';
         if (/archiv|archive/.test(s)) return 'archiv';
-        if (/actif|active|publié|publie/.test(s)) return 'actif';
+        // Word-boundary: avoid matching « actif » inside « inactif »
+        if (/(^|[^a-z])(actif|active|publié|publie)([^a-z]|$)/.test(` ${s} `)) return 'actif';
+        if (/(^|[^a-z])(inactif|inactive)([^a-z]|$)/.test(` ${s} `)) return 'inactif';
 
         return s.replace(/[^a-z0-9]+/g, '_');
     }
@@ -76,7 +87,18 @@
     function isBookablePackage(p) {
         if (!p || isUnavailablePackage(p)) return false;
         const state = normalizeState(p.state, p.active);
+        // Pré-vente : formulaire d'intérêt seulement (pas de dépôt / réservation)
         return state === 'actif' || state === 'pre_vente';
+    }
+
+    /** Réservation en ligne avec dépôt — actif seulement (pas pré-vente). */
+    function acceptsOnlineDeposit(p) {
+        return isActifPackage(p) && !isUnavailablePackage(p);
+    }
+
+    /** Formulaire d'intérêt (pré-vente) — pas de paiement. */
+    function usesInterestRequestForm(p) {
+        return isPreSale(p);
     }
 
     function escapeHtml(value) {
@@ -89,7 +111,8 @@
 
     function renderPreSaleBannerHtml(options = {}) {
         const title = window.PRE_SALE_BANNER_TITLE || 'Pré-vente';
-        const subtitle = window.PRE_SALE_BANNER_SUBTITLE || 'Réservez dès maintenant - offre en avant-première';
+        const subtitle = window.PRE_SALE_BANNER_SUBTITLE
+            || 'Manifestez votre intérêt — aucun dépôt requis pour le moment';
         if (options.compact) {
             return `<div class="absolute top-4 left-4 bg-brand-blue text-white font-bold px-3 py-1.5 rounded shadow-lg z-10 text-sm tracking-wide uppercase">
                 <i class="fa-solid fa-clock mr-1.5" aria-hidden="true"></i>${escapeHtml(title)}
@@ -507,6 +530,8 @@
     }
 
     function getDepositPerPerson(p) {
+        // Pré-vente : aucun dépôt en ligne (demande d'intérêt seulement)
+        if (!p || isPreSale(p) || !acceptsOnlineDeposit(p)) return null;
         return optionalPrice(p.depositAmount ?? p.deposit_amount);
     }
 
@@ -1133,7 +1158,7 @@
             ? roundMoney(bookingBeforeTaxes + bookingTaxes)
             : bookingBeforeTaxes;
 
-        const depositPerPerson = optionalPrice(p.depositAmount ?? p.deposit_amount);
+        const depositPerPerson = getDepositPerPerson(p);
         const totalDeposit = depositPerPerson !== null ? roundMoney(depositPerPerson * totalPeople) : null;
 
         return {
@@ -1265,7 +1290,7 @@
     }
 
     function getPaymentTerms(p) {
-        const deposit = optionalPrice(p.depositAmount ?? p.deposit_amount);
+        const deposit = getDepositPerPerson(p);
         const finalPaymentDateRaw = p.finalPaymentDate ?? p.final_payment_date;
         const finalPaymentDate = finalPaymentDateRaw ? new Date(finalPaymentDateRaw) : null;
         const finalPaymentValid = finalPaymentDate && !Number.isNaN(finalPaymentDate.getTime())
@@ -2616,6 +2641,8 @@
         isUnavailablePackage,
         isPreSale,
         isBookablePackage,
+        acceptsOnlineDeposit,
+        usesInterestRequestForm,
         renderPreSaleBannerHtml,
         renderVenduBannerHtml,
         isVisibleOnSite,

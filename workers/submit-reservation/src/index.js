@@ -48,10 +48,24 @@ function pick(obj, ...keys) {
 
 function isPriceRequest(payload) {
   const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
-  return type === 'demande_prix' || type === 'price_request';
+  return (
+    type === 'demande_prix'
+    || type === 'price_request'
+    || type === 'demande_prevente'
+    || type === 'prevente'
+    || type === 'pre_vente'
+  );
+}
+
+function isPreSaleRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'demande_prevente' || type === 'prevente' || type === 'pre_vente';
 }
 
 function resolveContactTag(payload, env) {
+  if (isPreSaleRequest(payload)) {
+    return pick(payload, 'contact_tag') || env.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
+  }
   if (isPriceRequest(payload)) {
     return pick(payload, 'contact_tag') || env.GHL_PRICE_REQUEST_TAG || 'demande-prix';
   }
@@ -66,7 +80,9 @@ function buildNotes(payload) {
     }
   };
 
-  if (isPriceRequest(payload)) {
+  if (isPreSaleRequest(payload)) {
+    lines.push('Type: Intérêt pré-vente (aucun dépôt)');
+  } else if (isPriceRequest(payload)) {
     lines.push('Type: Demande de prix (tarif non publié)');
   }
 
@@ -271,7 +287,9 @@ export default {
         ok: true,
         contactId: result?.contact?.id || result?.id || null,
         tag,
-        requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation'
+        requestType: isPreSaleRequest(payload)
+          ? 'demande_prevente'
+          : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')
       }, 200, cors);
     } catch (err) {
       return jsonResponse({

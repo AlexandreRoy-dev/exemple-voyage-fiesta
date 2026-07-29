@@ -564,17 +564,27 @@ function normalizeState(raw) {
 
  if (s === 'inactif' || s === 'inactive') return 'inactif';
  if (s === 'actif' || s === 'active') return 'actif';
- if (s === 'pre_vente' || s === 'pre-vente' || s === 'prevente') return 'pre_vente';
+ // GHL option keys strip accents (Prévente → prvente), same as montral / europen
+ if (
+  s === 'pre_vente'
+  || s === 'pre-vente'
+  || s === 'prevente'
+  || s === 'prvente'
+  || s === 'pr_vente'
+ ) return 'pre_vente';
  if (s === 'brouillon' || s === 'draft') return 'brouillon';
  if (s === 'complet_sold_out' || s === 'complet-sold-out') return 'complet_sold_out';
  if (s === 'archiv' || s === 'archive' || s === 'archivé' || s === 'archivé') return 'archiv';
 
  if (/sold\s*out|complet\s*\(|complet.*sold|épuisé|epuise/.test(s)) return 'complet_sold_out';
  if (/^complet$|complet\s*-/.test(s)) return 'complet_sold_out';
- if (/pr[eé][\s_-]?vente|pre[\s_]?sale/.test(s)) return 'pre_vente';
+ // [eé]? : GHL « Prévente » → prvente (accented letter dropped, not é→e)
+ if (/pr[eé]?[\s_-]?vente|pre[\s_]?sale/.test(s)) return 'pre_vente';
  if (/brouillon|draft/.test(s)) return 'brouillon';
  if (/archiv|archive/.test(s)) return 'archiv';
- if (/actif|active|publié|publie/.test(s)) return 'actif';
+ // Word-boundary: avoid matching « actif » inside « inactif »
+ if (/(^|[^a-z])(inactif|inactive)([^a-z]|$)/.test(` ${s} `)) return 'inactif';
+ if (/(^|[^a-z])(actif|active|publié|publie)([^a-z]|$)/.test(` ${s} `)) return 'actif';
 
  return s.replace(/[^a-z0-9]+/g, '_');
 }
@@ -847,7 +857,7 @@ async function mapRecord(record, apiKey, manifest, slug) {
  const props = record.properties || record.fields || record;
  let state = normalizeState(pickProp(props, 'statut', 'state', 'status'));
  const inventoryRaw = toNumber(pickProp(props, 'inventaire', 'inventory', 'stock'), 0);
- if (state === 'inactif' && inventoryRaw === 0) state = 'complet_sold_out';
+ // inactif stays hidden — do not remap to complet_sold_out
  const active = state;
  const occ = computeOccupationPerPersonPrices(props);
 

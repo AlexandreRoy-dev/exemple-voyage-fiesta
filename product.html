@@ -1259,7 +1259,8 @@
             VoyageFiestaAPI.bindSocialShare(document.getElementById('product-content'), () => p);
         }
 
-        function buildPriceRequestFormHtml(p, adults, kids) {
+        function buildPriceRequestFormHtml(p, adults, kids, options = {}) {
+            const isPreSale = Boolean(options.isPreSale);
             const maxAdults = VoyageFiestaAPI.getMaxAdultCount(p);
             const childInfo = VoyageFiestaAPI.getChildPricingInfo(p);
             const maxKids = childInfo.hasKids ? childInfo.maxKids : 0;
@@ -1286,10 +1287,21 @@
                     </div>`
                 : `<input type="hidden" id="pr-kids" name="nombre_enfants" value="0">`;
 
+            const title = isPreSale
+                ? (window.PRE_SALE_REQUEST_FORM_TITLE || 'Je suis intéressé(e)')
+                : 'Demande de prix';
+            const intro = isPreSale
+                ? (window.PRE_SALE_REQUEST_FORM_INTRO
+                    || 'Remplissez ce court formulaire — un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.')
+                : 'Remplissez ce court formulaire - un conseiller vous recontactera.';
+            const submitLabel = isPreSale
+                ? (window.PRE_SALE_REQUEST_SUBMIT_LABEL || 'Envoyer mon intérêt')
+                : 'Demander un prix';
+
             return `
-                <form id="price-request-form" class="space-y-3 rounded-xl border border-blue-100 bg-brand-light/40 p-4" novalidate>
-                    <p class="text-sm font-semibold text-brand-blue">Demande de prix</p>
-                    <p class="text-xs text-gray-600 leading-relaxed -mt-1">Remplissez ce court formulaire - un conseiller vous recontactera.</p>
+                <form id="price-request-form" class="space-y-3 rounded-xl border border-blue-100 bg-brand-light/40 p-4" data-request-mode="${isPreSale ? 'prevente' : 'prix'}" novalidate>
+                    <p class="text-sm font-semibold text-brand-blue">${escapeHtml(title)}</p>
+                    <p class="text-xs text-gray-600 leading-relaxed -mt-1">${escapeHtml(intro)}</p>
                     <div>
                         <label for="pr-name" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Nom complet</label>
                         <input id="pr-name" name="full_name" type="text" autocomplete="name" required
@@ -1319,7 +1331,7 @@
                     </div>
                     <button type="submit" id="price-request-submit"
                         class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-3.5 rounded-xl shadow-lg hover:scale-[1.01] active:scale-95 text-base transition-all">
-                        Demander un prix
+                        ${escapeHtml(submitLabel)}
                     </button>
                     <p id="price-request-status" class="hidden text-center text-xs text-brand-blue font-medium"></p>
                 </form>`;
@@ -1338,15 +1350,16 @@
             }
         }
 
-        function setBookingCtaMode(p, priceOnRequest) {
+        function setBookingCtaMode(p, showRequestForm) {
             const bookEl = document.getElementById('booking-cta-book');
             const requestEl = document.getElementById('booking-cta-price-request');
             const depositNote = document.getElementById('deposit-per-person-note');
             if (!bookEl || !requestEl) return;
 
-            if (depositNote) depositNote.classList.toggle('hidden', priceOnRequest);
+            const isPreSale = VoyageFiestaAPI.isPreSale(p);
+            if (depositNote) depositNote.classList.toggle('hidden', showRequestForm || isPreSale);
 
-            if (priceOnRequest) {
+            if (showRequestForm) {
                 bookEl.classList.add('hidden');
                 const adults = Number(document.getElementById('passenger-adults')?.value)
                     || Number(document.getElementById('pr-adults')?.value)
@@ -1355,8 +1368,11 @@
                     || Number(document.getElementById('pr-kids')?.value)
                     || 0;
                 const existingForm = requestEl.querySelector('#price-request-form');
-                if (!existingForm) {
-                    requestEl.innerHTML = buildPriceRequestFormHtml(p, adults, kids);
+                const desiredMode = isPreSale ? 'prevente' : 'prix';
+                const needsRebuild = !existingForm
+                    || existingForm.getAttribute('data-request-mode') !== desiredMode;
+                if (needsRebuild) {
+                    requestEl.innerHTML = buildPriceRequestFormHtml(p, adults, kids, { isPreSale });
                     requestEl.classList.remove('hidden');
                     bindPriceRequestForm(p);
                 } else {
@@ -1379,6 +1395,12 @@
             const form = document.getElementById('price-request-form');
             if (!form || form.dataset.bound === '1') return;
             form.dataset.bound = '1';
+
+            const isPreSale = VoyageFiestaAPI.isPreSale(p)
+                || form.getAttribute('data-request-mode') === 'prevente';
+            const submitLabel = isPreSale
+                ? (window.PRE_SALE_REQUEST_SUBMIT_LABEL || 'Envoyer mon intérêt')
+                : 'Demander un prix';
 
             ['pr-adults', 'pr-kids'].forEach(id => {
                 const el = document.getElementById(id);
@@ -1416,10 +1438,17 @@
                     0,
                     adults
                 );
-                const opportunityName = `Demande de prix - ${fullName}`;
+                const requestType = isPreSale ? 'demande_prevente' : 'demande_prix';
+                const opportunityName = isPreSale
+                    ? `Pré-vente - ${fullName}`
+                    : `Demande de prix - ${fullName}`;
+                const sommairePrefix = isPreSale ? 'Intérêt pré-vente' : 'Demande de prix';
+                const notesLabel = isPreSale
+                    ? `Intérêt pré-vente (aucun dépôt) - ${occupationLabel}`
+                    : `Demande de prix (tarif non publié) - ${occupationLabel}`;
 
                 const payload = {
-                    request_type: 'demande_prix',
+                    request_type: requestType,
                     create_opportunity: true,
                     opportunity_name: opportunityName,
                     full_name: fullName,
@@ -1439,17 +1468,19 @@
                     forfait_name: p.name,
                     nom_du_forfait: p.name,
                     sommaire: [
-                        `Demande de prix - ${p.name}`,
+                        `${sommairePrefix} - ${p.name}`,
                         `Occupation : ${occupationLabel}`,
                         `Adultes : ${adults}`,
                         `Enfants : ${kids}`,
                         `Départ : ${VoyageFiestaAPI.formatDepartureDate(p.departureDate) || 'à confirmer'}`,
                         `Aéroport : ${p.departureAirport || '-'}`
                     ].join('\n'),
-                    notes: `Demande de prix (tarif non publié) - ${occupationLabel}`,
+                    notes: notesLabel,
                     pipeline_id: window.GHL_PIPELINE_ID || '',
                     pipeline_stage_id: window.GHL_PIPELINE_STAGE_ID || '',
-                    contact_tag: window.GHL_PRICE_REQUEST_TAG || 'demande-prix'
+                    contact_tag: isPreSale
+                        ? (window.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente')
+                        : (window.GHL_PRICE_REQUEST_TAG || 'demande-prix')
                 };
 
                 if (submitBtn) {
@@ -1475,7 +1506,7 @@
                 } catch (err) {
                     if (submitBtn) {
                         submitBtn.disabled = false;
-                        submitBtn.textContent = 'Demander un prix';
+                        submitBtn.textContent = submitLabel;
                     }
                     if (statusEl) {
                         statusEl.textContent = err?.message
@@ -1563,15 +1594,17 @@
                 const occupationId = getSelectedOccupationId();
                 const overrides = getBookingSelectionOverrides();
                 const hasSelection = hasValidBookingSelection();
+                const isPreSale = VoyageFiestaAPI.isPreSale(p);
                 const priceOnRequest = hasSelection && VoyageFiestaAPI.isPriceOnRequestSelection(
                     p,
                     occupationId,
                     overrides || {}
                 );
+                const showRequestForm = isPreSale || priceOnRequest;
 
-                setButtonEnabled(hasSelection && !priceOnRequest);
+                setButtonEnabled(hasSelection && !showRequestForm);
                 if (hint) hint.classList.toggle('hidden', hasSelection);
-                setBookingCtaMode(p, priceOnRequest);
+                setBookingCtaMode(p, showRequestForm);
 
                 if (summary) {
                     if (hasSelection && occupationId) {
@@ -1641,6 +1674,8 @@
             const submitStatusText = document.getElementById('room-submit-status-text');
 
             function openModal() {
+                // Pré-vente : formulaire d'intérêt seulement (pas de modal dépôt)
+                if (VoyageFiestaAPI.isPreSale(p)) return;
                 if (!hasValidBookingSelection()) return;
                 if (!window.RoomRegistration || !roomRoot) return;
 

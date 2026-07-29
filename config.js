@@ -461,7 +461,14 @@
 
     window.VENDU_BANNER_TITLE = 'Trop tard, Complet!';
 
-    /** Bannière statut pré-vente (GHL statut = pré-vente) */
+    /** Bannière statut pré-vente (GHL statut = Prévente → clé prvente) */
     window.PRE_SALE_BANNER_TITLE = 'Pré-vente';
-    window.PRE_SALE_BANNER_SUBTITLE = 'Réservez dès maintenant - offre en avant-première';
+    window.PRE_SALE_BANNER_SUBTITLE = 'Manifestez votre intérêt — aucun dépôt requis pour le moment';
+
+    /** Formulaire d'intérêt (pré-vente) — pas de dépôt */
+    window.PRE_SALE_REQUEST_FORM_TITLE = 'Je suis intéressé(e)';
+    window.PRE_SALE_REQUEST_FORM_INTRO =
+        'Remplissez ce court formulaire — un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.';
+    window.PRE_SALE_REQUEST_SUBMIT_LABEL = 'Envoyer mon intérêt';
+    window.GHL_PRE_SALE_REQUEST_TAG = 'demande-prevente';
 })();

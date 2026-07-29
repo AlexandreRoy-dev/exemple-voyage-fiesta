@@ -128,9 +128,20 @@ export function formatAeroportLabel(value) {
 
 export function normalizeStatutOption(value) {
   const s = String(value || '').trim().toLowerCase();
+  if (
+    s === 'pre_vente'
+    || s === 'pre-vente'
+    || s === 'prevente'
+    || s === 'prvente'
+    || s === 'pr_vente'
+    || /pr[eé]?[\s_-]?vente/.test(s)
+  ) {
+    return 'prvente';
+  }
   if (s === 'actif') return 'actif';
   if (s === 'complet_sold_out' || s === 'complet' || s === 'inactif') return 'inactif';
   if (s === 'brouillon' || s === 'archiv') return 'inactif';
+  if (s === 'vendu') return 'vendu';
   return 'actif';
 }
 
