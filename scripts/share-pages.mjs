@@ -88,14 +88,26 @@ export function buildShareTitle(product) {
   return title;
 }
 
+/** Prix / pass. affiché = prix base + taxes par personne (comme getListingDisplayPrice). */
+function resolveShareDisplayPrice(product) {
+  const base = Number(product.price);
+  if (!Number.isFinite(base)) return null;
+  const taxes = Number(
+    product.taxesAmount ?? product.taxes_amount ?? product.taxes_par_personne
+  );
+  if (Number.isFinite(taxes) && taxes > 0) return base + taxes;
+  return base;
+}
+
 export function buildShareDescription(product) {
   const parts = [];
   const destination = product.subDest || product.destination || product.destination1;
   if (destination) parts.push(destination);
   if (product.country && product.country !== destination) parts.push(product.country);
   if (product.durationNights) parts.push(`${product.durationNights} nuits`);
-  if (product.price != null) {
-    parts.push(`à partir de ${formatMoney(product.price)}/pass.`);
+  const displayPrice = resolveShareDisplayPrice(product);
+  if (displayPrice != null) {
+    parts.push(`à partir de ${formatMoney(displayPrice)}/pass.`);
   }
   return parts.filter(Boolean).join(' · ') || 'Forfait voyage tout inclus — Voyage Fiesta';
 }
