@@ -110,12 +110,25 @@ export function normalizeAeroportOption(value) {
 /** Clé option GHL → libellé affiché boutique */
 export const AEROPORT_LABELS = {
   montral_yul: 'Montréal (YUL)',
+  montreal_yul: 'Montréal (YUL)',
   qubec_yqb: 'Québec (YQB)',
+  quebec_yqb: 'Québec (YQB)',
   ottawa_yow: 'Ottawa (YOW)',
   toronto_yyz: 'Toronto (YYZ)',
   halifax_yhz: 'Halifax (YHZ)',
   vancouver_yvr: 'Vancouver (YVR)'
 };
+
+function extractIataFromAirportValue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const paren = raw.match(/\(([A-Za-z]{3})\)/);
+  if (paren) return paren[1].toUpperCase();
+  const slug = raw.toLowerCase().replace(/\s+/g, '_').match(/_([a-z]{3})$/);
+  if (slug) return slug[1].toUpperCase();
+  if (/^[A-Za-z]{3}$/.test(raw)) return raw.toUpperCase();
+  return '';
+}
 
 export function formatAeroportLabel(value) {
   const raw = String(value || '').trim();
@@ -123,6 +136,12 @@ export function formatAeroportLabel(value) {
   const key = raw.toLowerCase().replace(/\s+/g, '_');
   if (AEROPORT_LABELS[key]) return AEROPORT_LABELS[key];
   if (AEROPORT_LABELS[raw]) return AEROPORT_LABELS[raw];
+  const code = extractIataFromAirportValue(raw);
+  if (code) {
+    for (const label of Object.values(AEROPORT_LABELS)) {
+      if (extractIataFromAirportValue(label) === code) return label;
+    }
+  }
   return raw;
 }
 

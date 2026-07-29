@@ -243,11 +243,11 @@
       "forfaitLink": "https://www.sunwing.ca/fr/hotel/honduras/roatan/henry-morgan-hotel-and-beach-resort",
       "endDate": "2026-08-12T00:00:00.000Z",
       "departureDate": "2027-03-15T00:00:00.000Z",
-      "departureAirport": "quebec_yqb",
+      "departureAirport": "Québec (YQB)",
       "returnAirport": "ROTAN (RTB)",
       "flights": {
         "out": {
-          "from": "quebec_yqb",
+          "from": "Québec (YQB)",
           "departDate": "2027-03-15T00:00:00.000Z",
           "departTime": "07:30",
           "to": "ROTAN (RTB)",
@@ -259,7 +259,7 @@
           "from": "ROTAN (RTB)",
           "departDate": "2027-03-22T00:00:00.000Z",
           "departTime": "17:15",
-          "to": "quebec_yqb",
+          "to": "Québec (YQB)",
           "arriveDate": "2027-03-22T00:00:00.000Z",
           "arriveTime": "23:10",
           "number": "WS2967"
