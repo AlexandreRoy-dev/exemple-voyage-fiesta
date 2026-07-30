@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-30T16:58:02.062Z",
+  "updatedAt": "2026-07-30T18:23:39.948Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -188,8 +188,8 @@
       "id": "6a5fdf2db7eef45ef94006d3",
       "slug": "henry-morgan-beach-hotel-roatan-2027-03-15",
       "name": "Henry Morgan Beach Hotel - Roatan",
-      "state": "pre_vente",
-      "active": "pre_vente",
+      "state": "actif",
+      "active": "actif",
       "destTag": "",
       "subDest": "Roatan",
       "destination1": "Roatan",
@@ -244,19 +244,19 @@
       "endDate": "2026-08-12T00:00:00.000Z",
       "departureDate": "2027-03-15T00:00:00.000Z",
       "departureAirport": "Québec (YQB)",
-      "returnAirport": "ROTAN (RTB)",
+      "returnAirport": "ROATAN (RTB)",
       "flights": {
         "out": {
           "from": "Québec (YQB)",
           "departDate": "2027-03-15T00:00:00.000Z",
           "departTime": "07:30",
-          "to": "ROTAN (RTB)",
+          "to": "ROATAN (RTB)",
           "arriveDate": "2027-03-15T00:00:00.000Z",
           "arriveTime": "11:45",
           "number": "WS2966"
         },
         "return": {
-          "from": "ROTAN (RTB)",
+          "from": "ROATAN (RTB)",
           "departDate": "2027-03-22T00:00:00.000Z",
           "departTime": "17:15",
           "to": "Québec (YQB)",
