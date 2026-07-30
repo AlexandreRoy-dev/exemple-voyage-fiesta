@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-30T13:06:33.252Z",
+  "updatedAt": "2026-07-30T15:22:00.824Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -26,7 +26,7 @@
         "vol_direct_sans_escale"
       ],
       "inventory": 15,
-      "price": 1518,
+      "price": 1509,
       "priceOccSimple": 2208,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
@@ -386,7 +386,7 @@
         "sur_la_plage"
       ],
       "inventory": 15,
-      "price": 1750,
+      "price": 1749,
       "priceOccSimple": null,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
@@ -477,7 +477,7 @@
         "familial"
       ],
       "inventory": 14,
-      "price": 1568,
+      "price": 1529,
       "priceOccSimple": null,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
@@ -497,7 +497,7 @@
       "taxesOccTriple": null,
       "taxesOccQuad": null,
       "taxesOccAutres": null,
-      "discountAmount": 287,
+      "discountAmount": 176,
       "financingMonthly": null,
       "depositAmount": 200,
       "finalPaymentDate": "2026-10-15T00:00:00.000Z",
@@ -655,7 +655,7 @@
         "tout_inclus"
       ],
       "inventory": 8,
-      "price": 1858,
+      "price": 1759,
       "priceOccSimple": null,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
@@ -675,7 +675,7 @@
       "taxesOccTriple": null,
       "taxesOccQuad": null,
       "taxesOccAutres": null,
-      "discountAmount": 716,
+      "discountAmount": 800,
       "financingMonthly": null,
       "depositAmount": 200,
       "finalPaymentDate": "2027-01-11T00:00:00.000Z",
