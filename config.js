@@ -421,8 +421,8 @@
     /**
      * Page de remerciement après soumission du formulaire.
      * Dans GHL : Formulaire → Paramètres → À la soumission → Rediriger vers une URL :
-     *   https://promofiesta.roymarketing.ca/thank-you.html?forfait_slug={{forfait_slug}}
-     * (ajustez le domaine si besoin ; le champ caché forfait_slug doit correspondre)
+     *   https://aubaineexpress.voyagefiesta.ca/thank-you.html?forfait_slug={{forfait_slug}}
+     * (le champ caché forfait_slug doit correspondre)
      */
     window.GHL_FORM_THANKYOU_PATH = 'thank-you.html';
 

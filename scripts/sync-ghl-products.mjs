@@ -191,7 +191,11 @@ const OCCUPATION_PRICE_KEYS = [
  'priceAutres'
 ];
 
-/** Conserve les champs corrigés localement quand GHL envoie null ou un taux erroné. */
+/**
+ * GHL is the source of truth for aubaineexpress.voyagefiesta.ca.
+ * Keep previous values only when GHL omits a field (null/empty).
+ * Never block a non-null GHL taxesAmount (old half-tax lock caused stuck prices).
+ */
 function mergeSyncOverrides(product, previous) {
  if (!previous) {
  return clearLegacyTaxOccFields(normalizeOccupationPriceFields(product));
@@ -205,18 +209,9 @@ function mergeSyncOverrides(product, previous) {
  }
  }
 
- const syncedTax = merged.taxesAmount;
- const prevTax = previous.taxesAmount;
- if (prevTax != null) {
- if (syncedTax == null) {
- merged.taxesAmount = prevTax;
- } else if (Math.abs(syncedTax - prevTax) >= 0.01) {
- // GHL a envoyé la moitié du taux corrigé (ex. 150 au lieu de 300)
- if (syncedTax < prevTax && Math.abs(syncedTax * 2 - prevTax) < 0.01) {
- merged.taxesAmount = prevTax;
- }
- // Sinon, GHL prime (ex. mise à jour 185 → 370 $/pers.)
- }
+ // Trust GHL whenever taxes are present; only retain previous if GHL left it empty.
+ if (merged.taxesAmount == null && previous.taxesAmount != null) {
+ merged.taxesAmount = previous.taxesAmount;
  }
 
  return clearLegacyTaxOccFields(merged);

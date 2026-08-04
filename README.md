@@ -235,7 +235,7 @@ Le site envoie ces valeurs automatiquement dans l'URL de l'iframe quand le clien
 2. Copier l'URL d'intégration iframe → `config.js` → `GHL_FORM_EMBED_URL`
 3. **Page de remerciement** : Paramètres → **À la soumission** → **Rediriger vers une URL** :
    ```
-   https://promofiesta.roymarketing.ca/thank-you.html?forfait_slug={{forfait_slug}}&first_name={{contact.first_name}}
+   https://aubaineexpress.voyagefiesta.ca/thank-you.html?forfait_slug={{forfait_slug}}&first_name={{contact.first_name}}
    ```
 4. Dans GHL, mappez les champs cachés vers des **Custom Fields contact** si vous voulez les voir dans le CRM et les workflows
 
@@ -251,7 +251,7 @@ Pour une sync quasi instantanée à l'avenir : webhook GHL → `repository_dispa
 2. Pousser ce code sur la branche `main` (GitHub Pages)
 3. Lancer le workflow manuellement (*Run workflow*)
 4. Vérifier que `products.json` contient les forfaits GHL
-5. Ouvrir `promofiesta.roymarketing.ca` — les cartes correspondent à GHL
+5. Ouvrir `aubaineexpress.voyagefiesta.ca` — les cartes correspondent à GHL
 6. Modifier un forfait dans GHL → attendre ≤ 5–10 min (ou *Run workflow*) → rafraîchir le site (Ctrl+F5)
 7. (Test) Sans forfaits GHL → le site affiche « Aucun forfait disponible »
 
