@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-11T21:24:36.189Z",
+  "updatedAt": "2026-08-11T22:11:51.282Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -502,7 +502,7 @@
       "depositAmount": 200,
       "finalPaymentDate": "2026-10-15T00:00:00.000Z",
       "returnDate": "2027-01-29T00:00:00.000Z",
-      "priceChild212": 1088,
+      "priceChild212": 1108,
       "priceChild1317": null,
       "priceChild2Minus": null,
       "taxChild212": null,
