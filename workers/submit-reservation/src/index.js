@@ -7,9 +7,12 @@
  *
  * Optional vars:
  *   GHL_CONTACT_TAG      Tag appliqué (défaut: reservation-site)
+ *   GHL_CONSEILLER_TAG   Tag partagé leads conseiller (défaut: lead-conseiller)
  *   ALLOWED_ORIGINS      CSV d'origines CORS (défaut: *)
  *   CUSTOM_FIELD_MAP     JSON { "depot": "fieldId", ... } optionnel
  *
+ * Avec agent_id (Owner) : contact assignedTo = [userId] + tag lead-conseiller
+ * → une seule automation GHL pour tous les conseillers.
  * Deploy:
  *   cd workers/submit-reservation
  *   npx wrangler secret put GHL_API_KEY
@@ -72,23 +75,19 @@ function resolveContactTag(payload, env) {
   return env.GHL_CONTACT_TAG || 'reservation-site';
 }
 
-function slugifyAgentKey(value) {
-  return String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 function pushTag(set, value) {
-  const tag = String(value || '').trim();
-  if (tag) set.add(tag);
+  let tag = String(value || '').trim();
+  if (!tag) return;
+  // Legacy per-agent tags → one shared tag (one GHL workflow for all conseillers)
+  if (/^conseiller-/i.test(tag) && tag.toLowerCase() !== 'lead-conseiller') {
+    tag = 'lead-conseiller';
+  }
+  set.add(tag);
 }
 
 /**
- * Primary request tag + conseiller sequence tag (sub-boutique / product owner).
- * Example: reservation-site + conseiller-marie-tremblay
+ * Primary request tag + shared conseiller tag (not one tag per agent).
+ * Routing = assignedTo user id. One GHL workflow on lead-conseiller.
  */
 function resolveContactTags(payload, env) {
   const tags = new Set();
@@ -103,13 +102,17 @@ function resolveContactTags(payload, env) {
 
   pushTag(tags, pick(payload, 'conseiller_tag', 'agent_tag'));
 
+  const agentId = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
   const agentSlug = pick(payload, 'agent_slug', 'conseiller_slug');
-  if (agentSlug) {
-    const key = slugifyAgentKey(agentSlug) || agentSlug;
-    pushTag(tags, `conseiller-${key}`);
+  if (agentId || agentSlug) {
+    pushTag(tags, env.GHL_CONSEILLER_TAG || 'lead-conseiller');
   }
 
   return [...tags];
+}
+
+function resolveAssignedUserId(payload) {
+  return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
 }
 
 function buildNotes(payload) {
@@ -139,7 +142,8 @@ function buildNotes(payload) {
   add('Ville', payload.city);
   add('Code postal', payload.postal_code);
   add('Conseiller', payload.conseiller_name || payload.agent_slug);
-  add('Tag conseiller', payload.conseiller_tag);
+  add('Conseiller ID', payload.agent_id);
+  add('Conseiller slug', payload.agent_slug);
 
   if (payload.sommaire) {
     lines.push('', '— Sommaire —', String(payload.sommaire).trim());
@@ -174,6 +178,7 @@ function buildContactBody(payload, locationId, tags, fieldMap) {
   const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
   const priceRequest = isPriceRequest(payload);
   const tagList = Array.isArray(tags) ? tags.filter(Boolean) : (tags ? [tags] : []);
+  const assignedUserId = resolveAssignedUserId(payload);
 
   const body = {
     locationId,
@@ -187,7 +192,9 @@ function buildContactBody(payload, locationId, tags, fieldMap) {
     postalCode: pick(payload, 'postal_code') || undefined,
     source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
     tags: tagList.length ? tagList : undefined,
-    notes: buildNotes(payload) || undefined
+    notes: buildNotes(payload) || undefined,
+    // Assign to conseiller GHL user → appears in their contacts; one shared sequence works for all
+    assignedTo: assignedUserId ? [assignedUserId] : undefined
   };
 
   const customFields = [];
@@ -369,6 +376,7 @@ export default {
         contactId,
         tag: tags[0] || null,
         tags: tagsAdded,
+        assignedTo: resolveAssignedUserId(payload) || null,
         requestType: isPreSaleRequest(payload)
           ? 'demande_prevente'
           : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')

@@ -148,43 +148,47 @@ function resolveContactTag(payload) {
   return GHL_CONTACT_TAG;
 }
 
-function slugifyAgentKey(value) {
-  return String(value || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
 function resolveContactTags(payload) {
   const tags = new Set();
   const primary = resolveContactTag(payload);
   if (primary) tags.add(primary);
 
+  const normalize = (raw) => {
+    let tag = String(raw || '').trim();
+    if (!tag) return '';
+    if (/^conseiller-/i.test(tag) && tag.toLowerCase() !== 'lead-conseiller') {
+      return 'lead-conseiller';
+    }
+    return tag;
+  };
+
   const explicitList = payload?.contact_tags ?? payload?.tags;
   if (Array.isArray(explicitList)) {
     explicitList.forEach((t) => {
-      const tag = String(t || '').trim();
+      const tag = normalize(t);
       if (tag) tags.add(tag);
     });
   } else if (typeof explicitList === 'string' && explicitList.trim()) {
     explicitList.split(/[,;|]/).forEach((t) => {
-      const tag = String(t || '').trim();
+      const tag = normalize(t);
       if (tag) tags.add(tag);
     });
   }
 
-  const conseiller = pick(payload, 'conseiller_tag', 'agent_tag');
+  const conseiller = normalize(pick(payload, 'conseiller_tag', 'agent_tag'));
   if (conseiller) tags.add(conseiller);
 
+  const agentId = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
   const agentSlug = pick(payload, 'agent_slug', 'conseiller_slug');
-  if (agentSlug) {
-    const key = slugifyAgentKey(agentSlug) || agentSlug;
-    tags.add(`conseiller-${key}`);
+  if (agentId || agentSlug) {
+    tags.add(process.env.GHL_CONSEILLER_TAG || 'lead-conseiller');
   }
 
   return [...tags];
+}
+
+function resolveAssignedUserId(payload) {
+  return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
 }
 
 function ghlHeaders(extra = {}) {
@@ -412,6 +416,7 @@ function buildContactBody(payload) {
   const email = pick(payload, 'p1_email', 'email', 'contact_email');
   const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
   const priceRequest = isPriceRequest(payload);
+  const assignedUserId = resolveAssignedUserId(payload);
 
   const body = {
     locationId: GHL_LOCATION_ID,
@@ -423,7 +428,8 @@ function buildContactBody(payload) {
     address1: pick(payload, 'address') || undefined,
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
-    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre'
+    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
+    assignedTo: assignedUserId ? [assignedUserId] : undefined
   };
 
   const customFields = buildCustomFields(payload);
@@ -604,6 +610,7 @@ const server = http.createServer(async (req, res) => {
         contactId,
         tag: tags[0] || null,
         tags,
+        assignedTo: resolveAssignedUserId(payload) || null,
         requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation',
         tagsAdded,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0

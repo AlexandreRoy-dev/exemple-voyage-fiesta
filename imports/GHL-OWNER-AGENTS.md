@@ -12,7 +12,7 @@ Sous-boutique: `https://aubaineexpress.voyagefiesta.ca/?agent=<slug>`
 1. **Inviter** chaque conseiller : Settings → Team / My Staff → invite location user.
 2. **Permissions** : accès Custom Objects → Voyages (créer + modifier). Optionnel : **Assigned Data Only** pour ne voir que leurs dossiers.
 3. **Owner** : champ natif sur chaque enregistrement Voyage — rien à créer.
-4. **PIT (Private Integration)** : ajouter le scope **`users.readonly`** (en plus des scopes objets existants). Requis pour que le sync lise nom / téléphone / courriel du Owner.
+4. **PIT (Private Integration)** : ajouter le scope **`users.readonly`** (en plus des scopes objets / contacts existants). Requis pour que le sync lise nom / téléphone / courriel du Owner.
 5. Après le premier forfait syncé d’un agent, lui envoyer son lien : `?agent=<son-slug>` (slug auto depuis prénom+nom).
 
 Pas besoin de : champ custom « conseiller », nouvel objet, sous-compte GHL par agent, liste manuelle d’agents sur le site.
@@ -38,17 +38,19 @@ Liste live : `agents.json` (généré, ne pas éditer à la main).
 
 ---
 
-## Tags séquence (réservation / intérêt)
+## Séquence : **1 seule automation** (pas une par conseiller)
 
-Quand un client réserve ou demande depuis une sous-boutique `?agent=<slug>` (ou un forfait dont l’Owner est ce conseiller), le contact GHL reçoit **en plus** du tag métier (`reservation-site` / `demande-prevente` / …) le tag :
+À la réservation / demande depuis une sous-boutique (ou un forfait avec Owner), le site :
 
-`conseiller-<slug>`  
-ex. `conseiller-marie-tremblay`
+1. Applique le tag partagé **`lead-conseiller`** (+ le tag métier `reservation-site` / `demande-prevente` / …)
+2. **Assigne le contact** au user GHL du conseiller (`assignedTo` = Owner id)
 
-### Workflow GHL (par conseiller)
+### Workflow GHL (une fois pour toute l’équipe)
 
-1. Créer le tag `conseiller-<slug>` (ou le laisser se créer à la 1re soumission).
-2. Workflow / campagne : **Trigger = Tag Added** → `conseiller-marie-tremblay`.
-3. Action : ajouter à la **séquence** (ou pipeline) de ce conseiller.
+1. Trigger : **Tag Added** → `lead-conseiller`
+2. Action : **Add to sequence / campaign** (une séquence commune)
+3. Dans les emails : utilisez le **user assigné** (nom, téléphone, courriel du conseiller) — pas besoin d’une séquence par agent
 
-Le master sans `?agent=` n’ajoute le tag conseiller que si le forfait a un Owner (fallback product.owner).
+Les nouveaux conseillers n’exigent **aucune** nouvelle automation : invite → Owner sur un Voyage → sync → leur `?agent=` fonctionne.
+
+Ne créez **pas** de tags `conseiller-marie-tremblay`, `conseiller-jean-…`, etc.

@@ -1804,15 +1804,16 @@
             .replace(/^-+|-+$/g, '');
     }
 
-    /** GHL workflow / sequence trigger tag for a conseiller. */
+    /** Shared GHL tag for all conseiller leads (one workflow for everyone). */
     function buildConseillerTag(slugOrId) {
-        const key = slugifyAgentKey(slugOrId);
-        return key ? `conseiller-${key}` : '';
+        if (!String(slugOrId || '').trim()) return '';
+        return 'lead-conseiller';
     }
 
     /**
      * Conseiller context for listing/booking.
      * Prefers ?agent= (sub-boutique), else product.owner.
+     * Sequence routing = assign contact to owner userId (not one tag per agent).
      */
     function resolveBookingAgentContext(product) {
         const fromUrl = getAgentQueryParam();
