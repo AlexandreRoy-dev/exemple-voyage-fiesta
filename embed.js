@@ -14,13 +14,18 @@
         return forcedEmbed || inIframe();
     }
 
-    /** Preserve ?embed=1 on internal boutique links. */
+    /** Preserve ?embed=1 and ?agent= on internal boutique links. */
     function boutiqueUrl(href) {
-        if (!href || !isEmbedMode()) return href;
+        if (!href) return href;
         try {
             const u = new URL(href, window.location.href);
             if (u.origin !== window.location.origin) return href;
-            u.searchParams.set('embed', '1');
+            const current = new URLSearchParams(window.location.search);
+            if (isEmbedMode()) u.searchParams.set('embed', '1');
+            const agent = current.get('agent');
+            if (agent && !u.searchParams.has('agent')) {
+                u.searchParams.set('agent', agent);
+            }
             const path = u.pathname.replace(/^\//, '');
             return path + u.search + u.hash;
         } catch (_) {

@@ -168,7 +168,7 @@
             .flight-leg-center { min-width: 0; }
         }
     </style>
-    <script src="embed.js?v=2"></script>
+                <script src="embed.js?v=3"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans product-has-booking">
 
@@ -233,7 +233,7 @@
 
     <script src="config.js?v=48"></script>
     <script src="room-registration.js?v=15"></script>
-    <script src="api.js?v=96"></script>
+    <script src="api.js?v=97"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1447,6 +1447,7 @@
                     ? `Intérêt pré-vente (aucun dépôt) - ${occupationLabel}`
                     : `Demande de prix (tarif non publié) - ${occupationLabel}`;
 
+                const agentCtx = VoyageFiestaAPI.resolveBookingAgentContext(p);
                 const payload = {
                     request_type: requestType,
                     create_opportunity: true,
@@ -1480,7 +1481,14 @@
                     pipeline_stage_id: window.GHL_PIPELINE_STAGE_ID || '',
                     contact_tag: isPreSale
                         ? (window.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente')
-                        : (window.GHL_PRICE_REQUEST_TAG || 'demande-prix')
+                        : (window.GHL_PRICE_REQUEST_TAG || 'demande-prix'),
+                    agent_slug: agentCtx.agent_slug,
+                    agent_id: agentCtx.agent_id,
+                    conseiller_name: agentCtx.conseiller_name,
+                    conseiller_email: agentCtx.conseiller_email,
+                    conseiller_phone: agentCtx.conseiller_phone,
+                    conseiller_tag: agentCtx.conseiller_tag,
+                    contact_tags: agentCtx.contact_tags
                 };
 
                 if (submitBtn) {

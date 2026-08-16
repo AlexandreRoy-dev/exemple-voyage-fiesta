@@ -4,9 +4,9 @@
  * Mirrors GHL file uploads to assets/forfaits/ for public GitHub Pages hosting.
  *
  * Required env vars:
- * GHL_API_KEY
+ * GHL_API_KEY (PIT: custom objects + users.readonly)
  * GHL_LOCATION_ID
- * GHL_OBJECT_SCHEMA_KEY (e.g. custom_objects.forfaits_voyage)
+ * GHL_OBJECT_SCHEMA_KEY (e.g. custom_objects.voyages)
  */
 
 import { createHash } from 'node:crypto';
@@ -19,6 +19,7 @@ import { writeSharePages } from './share-pages.mjs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const OUTPUT = resolve(ROOT, 'products.json');
+const AGENTS_OUTPUT = resolve(ROOT, 'agents.json');
 const IMAGES_DIR = resolve(ROOT, 'assets', 'forfaits');
 const MANIFEST_PATH = resolve(IMAGES_DIR, '.manifest.json');
 const API_BASE = 'https://services.leadconnectorhq.com';
@@ -427,6 +428,103 @@ function normalizeSlug(value, fallback = 'forfait') {
 
 function getRecordId(record, props) {
  return String(record.id || pick(props, 'id') || '').trim();
+}
+
+/** Native GHL Owner on custom object records → first user id. */
+function extractOwnerId(record, props = {}) {
+ const candidates = [
+  record?.owners,
+  record?.owner,
+  props?.owners,
+  props?.owner,
+  props?.assignedTo,
+  props?.assigned_to
+ ];
+ for (const c of candidates) {
+  if (c === undefined || c === null || c === '') continue;
+  if (Array.isArray(c) && c.length) {
+   const first = c[0];
+   if (typeof first === 'string' && first.trim()) return first.trim();
+   if (first && typeof first === 'object') {
+    const id = String(first.id || first.userId || first.value || '').trim();
+    if (id) return id;
+   }
+   continue;
+  }
+  if (typeof c === 'string' && c.trim()) return c.trim();
+  if (typeof c === 'object') {
+   const id = String(c.id || c.userId || c.value || '').trim();
+   if (id) return id;
+  }
+ }
+ return '';
+}
+
+async function fetchGhlUser(apiKey, userId) {
+ const res = await fetch(`${API_BASE}/users/${encodeURIComponent(userId)}`, {
+  method: 'GET',
+  headers: {
+   Authorization: `Bearer ${apiKey}`,
+   Accept: 'application/json',
+   Version: '2021-07-28'
+  }
+ });
+ if (!res.ok) {
+  const text = await res.text();
+  console.warn(` users/${userId}: HTTP ${res.status} — ${text.slice(0, 180)}`);
+  return null;
+ }
+ const data = await res.json();
+ return data.user || data;
+}
+
+function reserveAgentSlug(base, userId, usedSlugs) {
+ let slug = base || slugify(String(userId || '').slice(0, 8)) || 'agent';
+ if (!usedSlugs.has(slug)) {
+  usedSlugs.add(slug);
+  return slug;
+ }
+ const suffix = slugify(String(userId || '').slice(-4)) || String(userId || '').slice(-4).toLowerCase();
+ slug = `${base}-${suffix}`;
+ let n = 2;
+ while (usedSlugs.has(slug)) {
+  slug = `${base}-${suffix || n}-${n}`;
+  n += 1;
+ }
+ usedSlugs.add(slug);
+ return slug;
+}
+
+function buildOwnerProfile(user, userId, usedSlugs) {
+ const first = String(user?.firstName || user?.first_name || '').trim();
+ const last = String(user?.lastName || user?.last_name || '').trim();
+ const nameFromParts = [first, last].filter(Boolean).join(' ');
+ const name = nameFromParts
+  || String(user?.name || user?.fullName || user?.email || '').trim()
+  || userId;
+ const base = slugify(nameFromParts) || slugify(name) || '';
+ const slug = reserveAgentSlug(base, userId, usedSlugs);
+ return {
+  id: userId,
+  name,
+  email: String(user?.email || '').trim(),
+  phone: String(user?.phone || user?.phoneNumber || user?.mobilePhone || '').trim(),
+  slug
+ };
+}
+
+/**
+ * Resolve Owner → GHL user profile (cached per sync run).
+ * Requires PIT scope users.readonly.
+ */
+async function resolveOwnerProfile(apiKey, record, props, cache, usedSlugs) {
+ const ownerId = extractOwnerId(record, props);
+ if (!ownerId) return null;
+ if (cache.has(ownerId)) return cache.get(ownerId);
+ const user = await fetchGhlUser(apiKey, ownerId);
+ const profile = buildOwnerProfile(user || {}, ownerId, usedSlugs);
+ cache.set(ownerId, profile);
+ return profile;
 }
 
 function loadPreviousSlugById() {
@@ -1160,6 +1258,8 @@ async function main() {
  const previousProductsById = loadPreviousProductsById();
  const slugAssignments = assignSlugs(records, previousSlugById);
  const products = [];
+ const ownerCache = new Map();
+ const usedAgentSlugs = new Set();
 
  for (const record of records) {
  const props = record.properties || record.fields || record;
@@ -1167,8 +1267,24 @@ async function main() {
  const name = resolveRecordName(record, props);
  const mapKey = recordId || `__name__:${normalizeSlug(name)}`;
  const slug = slugAssignments.get(mapKey) || normalizeSlug(name);
+ const owner = await resolveOwnerProfile(apiKey, record, props, ownerCache, usedAgentSlugs);
  const rawProduct = await mapRecord(record, apiKey, manifest, slug);
+ if (owner) {
+  rawProduct.ownerId = owner.id;
+  rawProduct.owner = { ...owner };
+ } else {
+  rawProduct.ownerId = null;
+  rawProduct.owner = null;
+ }
  const product = mergeSyncOverrides(rawProduct, previousProductsById[recordId]);
+ // Preserve owner after merge (previous products may lack owner fields)
+ if (owner) {
+  product.ownerId = owner.id;
+  product.owner = { ...owner };
+ } else {
+  product.ownerId = null;
+  product.owner = null;
+ }
  if (VISIBLE_STATES.has(product.state)) {
  products.push(product);
  } else {
@@ -1183,6 +1299,16 @@ async function main() {
  products.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
  saveManifest(manifest);
 
+ const agents = [...ownerCache.values()].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+ const agentsPayload = {
+  updatedAt: new Date().toISOString(),
+  source: 'ghl',
+  locationId,
+  agents
+ };
+ writeFileSync(AGENTS_OUTPUT, JSON.stringify(agentsPayload, null, 2) + '\n', 'utf8');
+ console.log(`Wrote ${agents.length} agent(s) to ${AGENTS_OUTPUT}`);
+
  const payload = {
  updatedAt: new Date().toISOString(),
  source: 'ghl',
@@ -1196,6 +1322,7 @@ async function main() {
  console.log(` actif: ${products.filter(p => p.active === 'actif').length}`);
  console.log(` pre_vente: ${products.filter(p => p.active === 'pre_vente').length}`);
  console.log(` complet_sold_out: ${products.filter(p => p.active === 'complet_sold_out').length}`);
+ console.log(` with owner: ${products.filter(p => p.ownerId).length}`);
 
  writeSharePages(products);
 }

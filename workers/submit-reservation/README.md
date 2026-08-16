@@ -29,10 +29,14 @@ Scopes Private Integration recommandés : **contacts.write** (et contacts.readon
 
 1. Formulaire natif (étapes 1–2–3) sur le site  
 2. POST JSON `{ payload }` → worker  
-3. Worker → `POST /contacts/upsert` (GHL) avec nom, courriel, téléphone, adresse, notes détaillées, tag `reservation-site`  
+3. Worker → `POST /contacts/upsert` (GHL) avec nom, courriel, téléphone, adresse, notes détaillées, tags :
+   - métier : `reservation-site` / `demande-prevente` / `demande-prix`
+   - conseiller (sous-boutique) : `conseiller-<slug>` pour déclencher la séquence du conseiller  
 4. Redirection → `thank-you.html`  
 
 Aucun iframe GHL.
+
+Les tags sont retirés puis ré-appliqués après upsert pour que les workflows **Tag Added** se déclenchent aussi sur une re-soumission.
 
 ## Champs custom (optionnel)
 

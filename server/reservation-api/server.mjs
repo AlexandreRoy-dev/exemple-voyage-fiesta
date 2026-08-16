@@ -148,6 +148,45 @@ function resolveContactTag(payload) {
   return GHL_CONTACT_TAG;
 }
 
+function slugifyAgentKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function resolveContactTags(payload) {
+  const tags = new Set();
+  const primary = resolveContactTag(payload);
+  if (primary) tags.add(primary);
+
+  const explicitList = payload?.contact_tags ?? payload?.tags;
+  if (Array.isArray(explicitList)) {
+    explicitList.forEach((t) => {
+      const tag = String(t || '').trim();
+      if (tag) tags.add(tag);
+    });
+  } else if (typeof explicitList === 'string' && explicitList.trim()) {
+    explicitList.split(/[,;|]/).forEach((t) => {
+      const tag = String(t || '').trim();
+      if (tag) tags.add(tag);
+    });
+  }
+
+  const conseiller = pick(payload, 'conseiller_tag', 'agent_tag');
+  if (conseiller) tags.add(conseiller);
+
+  const agentSlug = pick(payload, 'agent_slug', 'conseiller_slug');
+  if (agentSlug) {
+    const key = slugifyAgentKey(agentSlug) || agentSlug;
+    tags.add(`conseiller-${key}`);
+  }
+
+  return [...tags];
+}
+
 function ghlHeaders(extra = {}) {
   return {
     Authorization: `Bearer ${GHL_API_KEY}`,
@@ -441,6 +480,17 @@ async function ghlApplyTag(contactId, tag) {
   return data;
 }
 
+async function ghlApplyTags(contactId, tags) {
+  const list = [...new Set((tags || []).map((t) => String(t || '').trim()).filter(Boolean))];
+  const tagsAdded = [];
+  for (const tag of list) {
+    const result = await ghlApplyTag(contactId, tag);
+    if (result?.tagsAdded?.length) tagsAdded.push(...result.tagsAdded);
+    else tagsAdded.push(tag);
+  }
+  return { tagsAdded };
+}
+
 async function ghlUpsertContact(body) {
   let res = await fetch(`${GHL_API}/contacts/upsert`, {
     method: 'POST',
@@ -540,19 +590,20 @@ const server = http.createServer(async (req, res) => {
       const noteText = buildNotes(payload);
       const result = await ghlUpsertContact(body);
       const contactId = result?.contact?.id || result?.id || null;
-      const tag = resolveContactTag(payload);
+      const tags = resolveContactTags(payload);
 
       let tagsAdded = [];
-      if (contactId) {
-        const tagResult = await ghlApplyTag(contactId, tag);
-        tagsAdded = tagResult?.tagsAdded || [tag];
+      if (contactId && tags.length) {
+        const tagResult = await ghlApplyTags(contactId, tags);
+        tagsAdded = tagResult?.tagsAdded || tags;
         if (noteText) await ghlAddNote(contactId, noteText);
       }
 
       return sendJson(res, 200, {
         ok: true,
         contactId,
-        tag,
+        tag: tags[0] || null,
+        tags,
         requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation',
         tagsAdded,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0

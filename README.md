@@ -37,9 +37,20 @@ Pour une urgence : GitHub → Actions → **Sync GHL Products** → **Run workfl
 
 | Secret | Description |
 |--------|-------------|
-| `GHL_API_KEY` | Token Private Integration GHL |
+| `GHL_API_KEY` | Token Private Integration GHL (scopes objets + **`users.readonly`**) |
 | `GHL_LOCATION_ID` | ID de la sub-account (location) |
 | `GHL_OBJECT_SCHEMA_KEY` | Clé du Custom Object, ex. `custom_objects.voyages` |
+
+Le scope **`users.readonly`** est requis pour enrichir le Owner (conseiller) → `agents.json` + champs `owner` sur chaque forfait.
+
+### Sous-boutiques conseiller
+
+| Boutique | URL |
+|----------|-----|
+| Master (tous) | `https://aubaineexpress.voyagefiesta.ca/` |
+| Un conseiller | `https://aubaineexpress.voyagefiesta.ca/?agent=<slug>` |
+
+À la réservation / demande d’intérêt, le contact reçoit aussi le tag `conseiller-<slug>` pour déclencher la séquence GHL du conseiller. Voir [`imports/GHL-OWNER-AGENTS.md`](imports/GHL-OWNER-AGENTS.md).
 
 ### Workflow
 
@@ -47,7 +58,7 @@ Fichier : `.github/workflows/sync-products.yml`
 
 - **Cron** : toutes les 5 minutes (délai GitHub possible sous charge)
 - **Manuel** : Actions → *Sync GHL Products* → *Run workflow* (immédiat)
-- **Résultat** : commit automatique de `products.json` si les données ont changé
+- **Résultat** : commit automatique de `products.json` + `agents.json` si les données ont changé
 - **Validation** : le workflow vérifie que `products.json` est un JSON valide avant push
 
 ### Test local (optionnel)
@@ -66,6 +77,7 @@ node scripts/sync-ghl-products.mjs
 | `config.js` | URL JSON + listes de filtres + URL API réservation |
 | `api.js` | Fetch `products.json`, filtres |
 | `products.json` | Données live (généré par GitHub Actions) |
+| `agents.json` | Conseillers (owners uniques, généré au sync) |
 | `scripts/sync-ghl-products.mjs` | Script de sync GHL → JSON |
 | `workers/submit-reservation/` | Cloudflare Worker : form → GHL Contacts API |
 | `.github/workflows/sync-products.yml` | Workflow planifié |

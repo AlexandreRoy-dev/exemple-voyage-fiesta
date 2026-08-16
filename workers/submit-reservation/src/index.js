@@ -72,6 +72,46 @@ function resolveContactTag(payload, env) {
   return env.GHL_CONTACT_TAG || 'reservation-site';
 }
 
+function slugifyAgentKey(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function pushTag(set, value) {
+  const tag = String(value || '').trim();
+  if (tag) set.add(tag);
+}
+
+/**
+ * Primary request tag + conseiller sequence tag (sub-boutique / product owner).
+ * Example: reservation-site + conseiller-marie-tremblay
+ */
+function resolveContactTags(payload, env) {
+  const tags = new Set();
+  pushTag(tags, resolveContactTag(payload, env));
+
+  const explicitList = payload?.contact_tags ?? payload?.tags;
+  if (Array.isArray(explicitList)) {
+    explicitList.forEach((t) => pushTag(tags, t));
+  } else if (typeof explicitList === 'string' && explicitList.trim()) {
+    explicitList.split(/[,;|]/).forEach((t) => pushTag(tags, t));
+  }
+
+  pushTag(tags, pick(payload, 'conseiller_tag', 'agent_tag'));
+
+  const agentSlug = pick(payload, 'agent_slug', 'conseiller_slug');
+  if (agentSlug) {
+    const key = slugifyAgentKey(agentSlug) || agentSlug;
+    pushTag(tags, `conseiller-${key}`);
+  }
+
+  return [...tags];
+}
+
 function buildNotes(payload) {
   const lines = [];
   const add = (label, value) => {
@@ -98,6 +138,8 @@ function buildNotes(payload) {
   add('Adresse', payload.address);
   add('Ville', payload.city);
   add('Code postal', payload.postal_code);
+  add('Conseiller', payload.conseiller_name || payload.agent_slug);
+  add('Tag conseiller', payload.conseiller_tag);
 
   if (payload.sommaire) {
     lines.push('', '— Sommaire —', String(payload.sommaire).trim());
@@ -125,12 +167,13 @@ function buildNotes(payload) {
   return lines.join('\n');
 }
 
-function buildContactBody(payload, locationId, tag, fieldMap) {
+function buildContactBody(payload, locationId, tags, fieldMap) {
   const firstName = pick(payload, 'p1_prenom', 'full_name', 'contact_prenom');
   const lastName = pick(payload, 'p1_nom', 'last_name', 'contact_nom');
   const email = pick(payload, 'p1_email', 'email', 'contact_email');
   const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
   const priceRequest = isPriceRequest(payload);
+  const tagList = Array.isArray(tags) ? tags.filter(Boolean) : (tags ? [tags] : []);
 
   const body = {
     locationId,
@@ -143,7 +186,7 @@ function buildContactBody(payload, locationId, tag, fieldMap) {
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
     source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
-    tags: tag ? [tag] : undefined,
+    tags: tagList.length ? tagList : undefined,
     notes: buildNotes(payload) || undefined
   };
 
@@ -230,6 +273,40 @@ async function createContact(apiKey, body) {
   return data;
 }
 
+/** Remove then re-add so GHL "Tag Added" workflows / sequences still fire. */
+async function applyContactTags(apiKey, contactId, tags) {
+  const list = [...new Set((tags || []).map((t) => String(t || '').trim()).filter(Boolean))];
+  if (!contactId || !list.length) return list;
+
+  for (const tag of list) {
+    await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Version: GHL_VERSION,
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ tags: [tag] })
+    });
+    const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Version: GHL_VERSION,
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ tags: [tag] })
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.warn(`[reservation] tag ${tag} failed`, res.status, text.slice(0, 200));
+    }
+  }
+  return list;
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -280,13 +357,18 @@ export default {
     }
 
     try {
-      const tag = resolveContactTag(payload, env);
-      const body = buildContactBody(payload, locationId, tag, fieldMap);
+      const tags = resolveContactTags(payload, env);
+      const body = buildContactBody(payload, locationId, tags, fieldMap);
       const result = await upsertContact(apiKey, body);
+      const contactId = result?.contact?.id || result?.id || null;
+      const tagsAdded = contactId
+        ? await applyContactTags(apiKey, contactId, tags)
+        : tags;
       return jsonResponse({
         ok: true,
-        contactId: result?.contact?.id || result?.id || null,
-        tag,
+        contactId,
+        tag: tags[0] || null,
+        tags: tagsAdded,
         requestType: isPreSaleRequest(payload)
           ? 'demande_prevente'
           : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')

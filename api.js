@@ -1294,6 +1294,17 @@
         set('price_child_2_12', optionalPrice(p.priceChild212 ?? p.price_child_2_12));
         set('price_child_13_17', optionalPrice(p.priceChild1317 ?? p.price_child_13_17));
 
+        const agentCtx = resolveBookingAgentContext(p);
+        set('agent_slug', agentCtx.agent_slug);
+        set('agent_id', agentCtx.agent_id);
+        set('conseiller_name', agentCtx.conseiller_name);
+        set('conseiller_email', agentCtx.conseiller_email);
+        set('conseiller_phone', agentCtx.conseiller_phone);
+        set('conseiller_tag', agentCtx.conseiller_tag);
+        if (agentCtx.contact_tags.length) {
+            params.contact_tags = agentCtx.contact_tags;
+        }
+
         return params;
     }
 
@@ -1762,10 +1773,128 @@
         return extractPackageArray(data).map(normalizeProduct);
     }
 
-    async function fetchProducts() {
+    /** Sub-boutique: ?agent=<owner.slug|ownerId> — empty on master. */
+    function getAgentQueryParam() {
+        try {
+            return String(new URLSearchParams(window.location.search).get('agent') || '').trim();
+        } catch (_) {
+            return '';
+        }
+    }
+
+    function productMatchesAgent(p, agent) {
+        const wanted = String(agent || '').trim().toLowerCase();
+        if (!wanted) return true;
+        const slug = String(p?.owner?.slug || '').trim().toLowerCase();
+        const id = String(p?.ownerId || p?.owner?.id || '').trim().toLowerCase();
+        return (slug && slug === wanted) || (id && id === wanted);
+    }
+
+    function filterProductsByAgent(products, agent) {
+        if (!agent) return products || [];
+        return (products || []).filter((p) => productMatchesAgent(p, agent));
+    }
+
+    function slugifyAgentKey(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
+
+    /** GHL workflow / sequence trigger tag for a conseiller. */
+    function buildConseillerTag(slugOrId) {
+        const key = slugifyAgentKey(slugOrId);
+        return key ? `conseiller-${key}` : '';
+    }
+
+    /**
+     * Conseiller context for listing/booking.
+     * Prefers ?agent= (sub-boutique), else product.owner.
+     */
+    function resolveBookingAgentContext(product) {
+        const fromUrl = getAgentQueryParam();
+        const owner = product && typeof product.owner === 'object' ? product.owner : null;
+        const agentKey = fromUrl
+            || String(owner?.slug || '').trim()
+            || String(product?.ownerId || owner?.id || '').trim();
+        if (!agentKey) {
+            return {
+                agent_slug: '',
+                agent_id: '',
+                conseiller_name: '',
+                conseiller_email: '',
+                conseiller_phone: '',
+                conseiller_tag: '',
+                contact_tags: []
+            };
+        }
+        const slug = fromUrl
+            ? slugifyAgentKey(fromUrl) || fromUrl
+            : String(owner?.slug || '').trim() || slugifyAgentKey(agentKey);
+        const tag = buildConseillerTag(slug || agentKey);
+        return {
+            agent_slug: slug || agentKey,
+            agent_id: String(product?.ownerId || owner?.id || '').trim(),
+            conseiller_name: String(owner?.name || '').trim(),
+            conseiller_email: String(owner?.email || '').trim(),
+            conseiller_phone: String(owner?.phone || '').trim(),
+            conseiller_tag: tag,
+            contact_tags: tag ? [tag] : []
+        };
+    }
+
+    async function fetchAgents() {
+        try {
+            const res = await fetchWithTimeout(
+                'agents.json?t=' + Date.now(),
+                {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        Pragma: 'no-cache'
+                    },
+                    cache: 'no-store'
+                },
+                FETCH_TIMEOUT_MS
+            );
+            if (!res.ok) return [];
+            const data = await res.json();
+            if (Array.isArray(data?.agents)) return data.agents;
+            if (Array.isArray(data)) return data;
+            return [];
+        } catch (err) {
+            console.warn('[api] agents.json unavailable:', err.message);
+            return [];
+        }
+    }
+
+    function findAgentProfile(agents, agentKey) {
+        const wanted = String(agentKey || '').trim().toLowerCase();
+        if (!wanted) return null;
+        return (agents || []).find((a) => {
+            const slug = String(a?.slug || '').trim().toLowerCase();
+            const id = String(a?.id || '').trim().toLowerCase();
+            return (slug && slug === wanted) || (id && id === wanted);
+        }) || null;
+    }
+
+    function resolveAgentFromProducts(products, agentKey) {
+        const match = (products || []).find(
+            (p) => productMatchesAgent(p, agentKey) && p.owner
+        );
+        return match?.owner || null;
+    }
+
+    async function fetchProducts(options = {}) {
         try {
             const all = await loadProductsJson();
-            return all.filter(isListingVisible);
+            const visible = all.filter(isListingVisible);
+            const agent = options.agent !== undefined ? options.agent : getAgentQueryParam();
+            return filterProductsByAgent(visible, agent);
         } catch (err) {
             const message = err.name === 'AbortError'
                 ? 'Request timed out after ' + FETCH_TIMEOUT_MS + 'ms'
@@ -2675,6 +2804,14 @@
         isDetailVisible,
         normalizeState,
         extractPackageArray,
+        getAgentQueryParam,
+        productMatchesAgent,
+        filterProductsByAgent,
+        buildConseillerTag,
+        resolveBookingAgentContext,
+        fetchAgents,
+        findAgentProfile,
+        resolveAgentFromProducts,
         getSiteBaseUrl,
         resolveAbsoluteUrl,
         getProductShareImage,

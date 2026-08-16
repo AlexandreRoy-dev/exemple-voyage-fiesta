@@ -228,7 +228,7 @@
             .filters-sidebar { max-width: 100%; }
         }
     </style>
-    <script src="embed.js?v=2"></script>
+    <script src="embed.js?v=3"></script>
 </head>
 <body class="bg-brand-light text-gray-800 font-sans flex flex-col min-h-screen">
 
@@ -255,6 +255,12 @@
                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
             </a>
         </nav>
+
+        <div id="agent-boutique-header" class="hidden mb-6 rounded-lg border border-brand-blue/15 bg-white px-4 py-3.5 shadow-sm" role="region" aria-label="Conseiller">
+            <p class="text-xs font-semibold uppercase tracking-wide text-brand-orange m-0 mb-1">Votre conseiller</p>
+            <p id="agent-boutique-name" class="text-lg sm:text-xl font-bold text-brand-blue m-0"></p>
+            <p id="agent-boutique-contact" class="text-sm text-gray-600 m-0 mt-1.5 flex flex-wrap gap-x-4 gap-y-1"></p>
+        </div>
 
         <div class="flex flex-col lg:flex-row gap-5 lg:gap-6">
         <aside id="filters-sidebar" class="filters-sidebar w-full lg:w-56 xl:w-60 bg-white rounded-lg shadow-md p-3.5 h-fit lg:sticky lg:z-30 lg:self-start shrink-0" data-open="true">
@@ -336,7 +342,7 @@
     </main>
 
     <script src="config.js?v=48"></script>
-    <script src="api.js?v=96"></script>
+    <script src="api.js?v=97"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -789,6 +795,40 @@
             });
         }
 
+        async function renderAgentBoutiqueHeader(agentKey, listedProducts) {
+            const wrap = document.getElementById('agent-boutique-header');
+            const nameEl = document.getElementById('agent-boutique-name');
+            const contactEl = document.getElementById('agent-boutique-contact');
+            if (!wrap || !nameEl || !contactEl) return;
+
+            if (!agentKey) {
+                wrap.classList.add('hidden');
+                nameEl.textContent = '';
+                contactEl.innerHTML = '';
+                return;
+            }
+
+            const agents = await VoyageFiestaAPI.fetchAgents();
+            const profile = VoyageFiestaAPI.findAgentProfile(agents, agentKey)
+                || VoyageFiestaAPI.resolveAgentFromProducts(listedProducts, agentKey);
+
+            if (!profile || !profile.name) {
+                wrap.classList.add('hidden');
+                return;
+            }
+
+            nameEl.textContent = profile.name;
+            const bits = [];
+            if (profile.phone) {
+                bits.push(`<a class="text-brand-blue hover:underline" href="tel:${escapeHtml(profile.phone)}">${escapeHtml(profile.phone)}</a>`);
+            }
+            if (profile.email) {
+                bits.push(`<a class="text-brand-blue hover:underline" href="mailto:${escapeHtml(profile.email)}">${escapeHtml(profile.email)}</a>`);
+            }
+            contactEl.innerHTML = bits.join('');
+            wrap.classList.remove('hidden');
+        }
+
         async function init() {
             VoyageFiestaAPI.applySocialMetaTags(VoyageFiestaAPI.buildListingSharePayload());
             buildFilterUI();
@@ -796,7 +836,9 @@
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('error-state').classList.add('hidden');
             try {
-                products = await VoyageFiestaAPI.fetchProducts();
+                const agentKey = VoyageFiestaAPI.getAgentQueryParam();
+                products = await VoyageFiestaAPI.fetchProducts({ agent: agentKey });
+                await renderAgentBoutiqueHeader(agentKey, products);
                 buildDestinationFilter(products);
                 buildSupplierFilter(products);
                 buildDepartureDateFilter(products);
