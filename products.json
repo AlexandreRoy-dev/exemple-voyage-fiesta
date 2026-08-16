@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-16T20:41:03.992Z",
+  "updatedAt": "2026-08-16T20:59:03.257Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -93,7 +93,9 @@
         "assets/forfaits/grand-muthu-runaway-bay-club-caribbean-2027-02-25-extra-1.jpg",
         "assets/forfaits/grand-muthu-runaway-bay-club-caribbean-2027-02-25-extra-2.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     },
     {
       "id": "6a3853de3468e0295c7be776",
@@ -182,7 +184,9 @@
         "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-img.jpg",
         "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-extra-1.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     },
     {
       "id": "6a5fdf2db7eef45ef94006d3",
@@ -272,7 +276,9 @@
       "images": [
         "assets/forfaits/henry-morgan-beach-hotel-roatan-2027-03-15-img.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     },
     {
       "id": "6a3853dcc9025e2db441d210",
@@ -362,7 +368,9 @@
       "images": [
         "assets/forfaits/melia-cozumel-2026-12-07-img.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     },
     {
       "id": "6a3853dbe8091c1fb4e3838c",
@@ -452,7 +460,9 @@
         "assets/forfaits/riu-playa-blanca-2027-02-12-img.jpg",
         "assets/forfaits/riu-playa-blanca-2027-02-12-extra-1.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     },
     {
       "id": "6a3853db445438e1255349fa",
@@ -543,7 +553,9 @@
         "assets/forfaits/royalton-splash-punta-cana-2027-01-22-img.jpg",
         "assets/forfaits/royalton-splash-punta-cana-2027-01-22-extra-1.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     },
     {
       "id": "6a3853df000845089f58d058",
@@ -632,7 +644,9 @@
         "assets/forfaits/sandos-playacar-2026-12-30-img.jpg",
         "assets/forfaits/sandos-playacar-2026-12-30-extra-1.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     },
     {
       "id": "6a3853dd3452b20f5e0fdd63",
@@ -722,7 +736,9 @@
         "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-extra-1.jpg",
         "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-extra-2.jpg"
       ],
-      "seoTags": []
+      "seoTags": [],
+      "ownerId": null,
+      "owner": null
     }
   ]
 }
