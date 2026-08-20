@@ -83,7 +83,6 @@
             font-size: 0.8125rem;
             width: 100%;
             max-width: 100%;
-            top: 0.75rem;
         }
         .filters-sidebar__title {
             font-size: 0.95rem;
@@ -209,9 +208,6 @@
                 font-size: 1.125rem;
             }
         }
-        html.embed-mode .filters-sidebar {
-            top: calc(var(--embed-chrome-height) + 0.5rem);
-        }
         html.embed-mode .filters-sidebar__title { font-size: 0.95rem; }
         html.embed-mode .filters-sidebar h3 { font-size: 0.75rem; }
         html.embed-mode .filter-select { font-size: 0.75rem; padding: 0.35rem 0.55rem; }
@@ -253,7 +249,7 @@
         </div>
 
         <div class="flex flex-col gap-5">
-        <aside id="filters-sidebar" class="filters-sidebar w-full bg-white rounded-lg shadow-md p-3.5 h-fit sticky z-30" data-open="true">
+        <aside id="filters-sidebar" class="filters-sidebar w-full bg-white rounded-lg shadow-md p-3.5 h-fit" data-open="true">
             <div class="filters-sidebar__header flex justify-between items-center mb-3">
                 <h2 class="filters-sidebar__title font-bold text-brand-blue m-0">
                     <i class="fa-solid fa-filter mr-1.5 text-xs" aria-hidden="true"></i>Filtres

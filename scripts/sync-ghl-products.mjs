@@ -215,6 +215,13 @@ function mergeSyncOverrides(product, previous) {
  merged.taxesAmount = previous.taxesAmount;
  }
 
+ if (!merged.img && previous.img) merged.img = previous.img;
+ if (!merged.imgRoom && previous.imgRoom) merged.imgRoom = previous.imgRoom;
+ if (!merged.imgExtra && previous.imgExtra) merged.imgExtra = previous.imgExtra;
+ if ((!Array.isArray(merged.images) || merged.images.length === 0) && Array.isArray(previous.images) && previous.images.length) {
+ merged.images = previous.images;
+ }
+
  return clearLegacyTaxOccFields(merged);
 }
 

@@ -455,10 +455,15 @@
         },
         "airlineLogo": ""
       },
-      "img": "",
-      "imgRoom": "",
-      "imgExtra": "",
-      "images": [],
+      "img": "assets/forfaits/riu-flamingos-2026-12-20-img.jpg",
+      "imgRoom": "assets/forfaits/riu-flamingos-2026-12-20-extra-1.jpg",
+      "imgExtra": "assets/forfaits/riu-flamingos-2026-12-20-extra-2.jpg",
+      "images": [
+        "assets/forfaits/riu-flamingos-2026-12-20-img.jpg",
+        "assets/forfaits/riu-flamingos-2026-12-20-extra-1.jpg",
+        "assets/forfaits/riu-flamingos-2026-12-20-extra-2.jpg",
+        "assets/forfaits/riu-flamingos-2026-12-20-extra-3.jpg"
+      ],
       "seoTags": [],
       "ownerId": "0nvsiaLmrxoziqCY1cOY",
       "owner": {
