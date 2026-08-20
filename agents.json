@@ -1,6 +1,14 @@
 {
-  "updatedAt": "2026-08-20T00:24:02.487Z",
+  "updatedAt": "2026-08-20T01:07:48.893Z",
   "source": "ghl",
   "locationId": "V90iyFBbBrCg3tpctRjc",
-  "agents": []
+  "agents": [
+    {
+      "id": "0nvsiaLmrxoziqCY1cOY",
+      "name": "Barbara Conseillère Voyage",
+      "email": "Barbara@voyagefiesta.com",
+      "phone": "+18736712155",
+      "slug": "barbara-conseillere-voyage"
+    }
+  ]
 }
