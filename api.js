@@ -1782,8 +1782,19 @@
         }
     }
 
-    function productMatchesAgent(p, agent) {
+    /** Old GHL display names that still appear in shared boutique links. */
+    const AGENT_SLUG_ALIASES = {
+        'barbara-conseillere-voyage': 'barbara-delisle'
+    };
+
+    function normalizeAgentKey(agent) {
         const wanted = String(agent || '').trim().toLowerCase();
+        if (!wanted) return '';
+        return AGENT_SLUG_ALIASES[wanted] || wanted;
+    }
+
+    function productMatchesAgent(p, agent) {
+        const wanted = normalizeAgentKey(agent);
         if (!wanted) return true;
         const slug = String(p?.owner?.slug || '').trim().toLowerCase();
         const id = String(p?.ownerId || p?.owner?.id || '').trim().toLowerCase();
@@ -1874,7 +1885,7 @@
     }
 
     function findAgentProfile(agents, agentKey) {
-        const wanted = String(agentKey || '').trim().toLowerCase();
+        const wanted = normalizeAgentKey(agentKey);
         if (!wanted) return null;
         return (agents || []).find((a) => {
             const slug = String(a?.slug || '').trim().toLowerCase();
