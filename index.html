@@ -163,6 +163,7 @@
         html.embed-mode .boutique-hero { display: none; }
         html.embed-mode main { padding-top: 0.75rem; }
         html.embed-mode .breadcrumb-inline { display: none; }
+        #listing-back-nav.hidden { display: none !important; }
         html.embed-mode .embed-chrome {
             position: sticky;
             top: 0;
@@ -236,7 +237,7 @@
     </section>
 
     <main class="container mx-auto px-4 py-8 flex-grow">
-        <nav class="breadcrumb-inline text-lg sm:text-xl text-gray-600 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
+        <nav id="listing-back-nav" class="breadcrumb-inline hidden text-lg sm:text-xl text-gray-600 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
             <a href="index.html" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
             </a>
@@ -791,8 +792,13 @@
                 wrap.classList.add('hidden');
                 nameEl.textContent = '';
                 contactEl.innerHTML = '';
+                const backNav = document.getElementById('listing-back-nav');
+                if (backNav) backNav.classList.add('hidden');
                 return;
             }
+
+            const backNav = document.getElementById('listing-back-nav');
+            if (backNav) backNav.classList.remove('hidden');
 
             const agents = await VoyageFiestaAPI.fetchAgents();
             const profile = VoyageFiestaAPI.findAgentProfile(agents, agentKey)
