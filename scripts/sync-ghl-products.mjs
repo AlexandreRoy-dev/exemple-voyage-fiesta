@@ -36,6 +36,32 @@ function requireEnv(name) {
  return value;
 }
 
+function payloadWithoutUpdatedAt(data) {
+ const { updatedAt, ...rest } = data || {};
+ return rest;
+}
+
+/** Skip rewriting JSON when only updatedAt would change — avoids no-op bot commits. */
+function writeJsonIfChanged(filePath, nextPayload) {
+ const nextBody = JSON.stringify(nextPayload, null, 2) + '\n';
+ if (existsSync(filePath)) {
+  try {
+   const previous = JSON.parse(readFileSync(filePath, 'utf8'));
+   if (
+    JSON.stringify(payloadWithoutUpdatedAt(previous)) ===
+    JSON.stringify(payloadWithoutUpdatedAt(nextPayload))
+   ) {
+    console.log(`Unchanged (except updatedAt) — kept ${filePath}`);
+    return false;
+   }
+  } catch {
+   // Rewrite if the existing file is unreadable.
+  }
+ }
+ writeFileSync(filePath, nextBody, 'utf8');
+ return true;
+}
+
 function pick(props, ...keys) {
  for (const key of keys) {
  const val = props[key];
@@ -1313,8 +1339,9 @@ async function main() {
   locationId,
   agents
  };
- writeFileSync(AGENTS_OUTPUT, JSON.stringify(agentsPayload, null, 2) + '\n', 'utf8');
- console.log(`Wrote ${agents.length} agent(s) to ${AGENTS_OUTPUT}`);
+ if (writeJsonIfChanged(AGENTS_OUTPUT, agentsPayload)) {
+  console.log(`Wrote ${agents.length} agent(s) to ${AGENTS_OUTPUT}`);
+ }
 
  const payload = {
  updatedAt: new Date().toISOString(),
@@ -1324,8 +1351,9 @@ async function main() {
  products
  };
 
- writeFileSync(OUTPUT, JSON.stringify(payload, null, 2) + '\n', 'utf8');
- console.log(`Wrote ${products.length} product(s) to ${OUTPUT}`);
+ if (writeJsonIfChanged(OUTPUT, payload)) {
+  console.log(`Wrote ${products.length} product(s) to ${OUTPUT}`);
+ }
  console.log(` actif: ${products.filter(p => p.active === 'actif').length}`);
  console.log(` pre_vente: ${products.filter(p => p.active === 'pre_vente').length}`);
  console.log(` complet_sold_out: ${products.filter(p => p.active === 'complet_sold_out').length}`);

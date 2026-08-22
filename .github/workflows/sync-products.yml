@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Sync products from GoHighLevel
         id: sync
@@ -42,7 +42,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --ff-only origin main
+          git fetch origin main
+          git reset --hard origin/main
           node scripts/sync-ghl-products.mjs
           node -e "
             const fs = require('fs');
@@ -66,22 +67,45 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add products.json agents.json assets/forfaits/ share/
+          paths=()
+          for p in products.json agents.json assets/forfaits share; do
+            if [ -e "$p" ]; then
+              paths+=("$p")
+            fi
+          done
+          git add -- "${paths[@]}"
+
           if git diff --staged --quiet; then
             echo "No changes to products.json, agents.json, share pages or images"
             exit 0
           fi
 
-          git commit -m "chore: sync products from GoHighLevel [skip ci]"
-
-          # Bot-owned files: always prefer this sync over remote products.json
-          git fetch origin main
-          if ! git merge origin/main --no-edit -X ours; then
-            echo "Merge conflict — keeping synced products.json and images"
-            git checkout --ours products.json agents.json
-            git add products.json agents.json assets/forfaits/ share/
-            git commit --no-edit || true
+          json_changed="$(git diff --staged -- products.json agents.json || true)"
+          json_real="$(printf '%s\n' "$json_changed" | grep -E '^[+-]' | grep -vE '^[+-]{3} ' | grep -vE '^[+-] *"updatedAt":' || true)"
+          other_change="$(git diff --staged --name-only | grep -vE '^(products|agents)\.json$' || true)"
+          if [ -z "$json_real" ] && [ -z "$other_change" ]; then
+            echo "Only updatedAt changed — skipping commit"
+            git restore --staged --worktree -- products.json agents.json
+            exit 0
           fi
 
-          git push origin main
-          echo "Pushed sync — GitHub Pages should update within ~1–2 minutes."
+          git commit -m "chore: sync products from GoHighLevel [skip ci]"
+
+          for attempt in 1 2 3 4 5; do
+            git fetch origin main
+            if ! git merge origin/main --no-edit -X ours; then
+              echo "Merge conflict — keeping synced products.json and images"
+              git checkout --ours -- products.json agents.json || true
+              git add -- "${paths[@]}"
+              git commit --no-edit || true
+            fi
+            if git push origin main; then
+              echo "Pushed sync — GitHub Pages should update within ~1–2 minutes."
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}/5) — retrying..."
+            sleep $((attempt * 2))
+          done
+
+          echo "Push failed after retries" >&2
+          exit 1
