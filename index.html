@@ -580,24 +580,25 @@
                 const incentiveBadge = renderIncentiveBadge(inc);
                 const hasIncentive = Boolean(incentiveBadge);
                 const listingPrice = VoyageFiestaAPI.getListingDisplayPrice(p);
-                const financingLine = listingPrice
-                    ? VoyageFiestaAPI.renderFinancingFromPriceHtml(listingPrice.amount, {
+                const displayAmount = listingPrice?.amount ?? inc?.price ?? null;
+                const priceLabel = inc?.occupationLabel || listingPrice?.label || 'Occ. double';
+                const financingLine = displayAmount != null
+                    ? VoyageFiestaAPI.renderFinancingFromPriceHtml(displayAmount, {
                         compact: true,
                         className: 'mt-1'
                     })
                     : '';
-                const priceFooterHtml = hasIncentive
+                const strikeHtml = inc?.strikePrice
+                    ? `<p class="text-sm text-gray-400 line-through leading-tight mb-0.5">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice)}</p>`
+                    : '';
+                const priceFooterHtml = displayAmount != null
                     ? `<div>
-                            <p class="text-xs text-gray-500">${escapeHtml(inc.occupationLabel || listingPrice?.label || 'Occ. double')} · à partir de</p>
+                            <p class="text-xs text-gray-500 mb-1">${escapeHtml(priceLabel)} · à partir de</p>
+                            ${strikeHtml}
+                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(displayAmount)}</p>
                             ${financingLine}
                        </div>`
-                    : listingPrice
-                        ? `<div>
-                            <p class="text-xs text-gray-500 mb-1">${escapeHtml(listingPrice.label)} · à partir de</p>
-                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(listingPrice.amount)}</p>
-                            ${financingLine}
-                       </div>`
-                        : `<div>
+                    : `<div>
                             <p class="text-xs text-gray-500 mb-1">Occ. double</p>
                             <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
                        </div>`;

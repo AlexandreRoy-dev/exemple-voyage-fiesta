@@ -1,0 +1,180 @@
+<!--
+  GHL — Infolettre générique (conseiller assigné)
+  ================================================
+  Une seule template pour toute l'équipe. Le conseiller affiché = user assigné au contact.
+
+  Merge fields contact :
+    {{contact.first_name}}
+
+  Merge fields user (conseiller assigné) :
+    {{user.name}}  {{user.first_name}}  {{user.last_name}}
+    {{user.email}}  {{user.phone}}  {{user.phone_raw}}
+    {{user.email_signature}}
+
+  Photo conseiller (custom field contact — voir ghl-email-infolettre-generique.md) :
+    {{contact.custom.conseiller_photo}}
+
+  Forfait (optionnel — si rempli sur le contact) :
+    {{contact.custom.nom_du_forfait}}  {{contact.custom.forfait_slug}}
+    {{contact.custom.sommaire}}  {{contact.custom.depot_total}}
+    {{contact.custom.paiement_final}}  {{contact.custom.occupation}}
+
+  Obligatoire : {{unsubscribe_link}}
+
+  Objet (exemple) :
+  {{contact.custom.nom_du_forfait}} — une aubaine pour vous, {{contact.first_name}}
+
+  Expéditeur : {{user.name}} / promo.voyagefiesta.com
+  Reply-to : {{user.email}}
+-->
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Aubaine Voyage Fiesta</title>
+  <style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+      .advisor-col { display: block !important; width: 100% !important; text-align: center !important; }
+      .advisor-photo { margin: 0 auto 12px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#eeeeee; font-family:Georgia, 'Times New Roman', Times, serif; color:#222222;">
+
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0;">
+    {{contact.custom.nom_du_forfait}} — message de {{user.first_name}}, votre conseiller Voyage Fiesta.
+  </div>
+
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#eeeeee;">
+    <tr>
+      <td align="center" style="padding:16px 8px 32px;">
+        <table role="presentation" class="email-container" width="600" cellspacing="0" cellpadding="0" border="0" style="width:100%; max-width:600px; background-color:#ffffff;">
+
+          <!-- En-tête -->
+          <tr>
+            <td style="background-color:#025091; padding:14px 24px;">
+              <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:14px; font-weight:700; color:#ffffff;">
+                Voyage Fiesta · Aubaines Express
+              </p>
+            </td>
+          </tr>
+
+          <!-- Hero — remplacer l'URL par la photo du forfait pour chaque campagne,
+               ou utiliser {{contact.custom.forfait_image}} si le champ existe -->
+          <tr>
+            <td>
+              <img src="https://aubaineexpress.voyagefiesta.ca/assets/forfaits/riu-flamingos-2026-12-20-img.jpg" alt="{{contact.custom.nom_du_forfait}}" width="600" style="display:block; width:100%; max-width:600px; height:auto;">
+            </td>
+          </tr>
+
+          <!-- Corps -->
+          <tr>
+            <td class="px" style="padding:28px 32px 8px;">
+              <p style="margin:0 0 18px; font-size:17px; line-height:1.6;">
+                Bonjour {{contact.first_name}},
+              </p>
+              <p style="margin:0 0 18px; font-size:17px; line-height:1.6;">
+                <!-- Adapter le texte par campagne ; le nom du forfait peut venir du CRM -->
+                J’ai une aubaine à vous signaler&nbsp;: <strong>{{contact.custom.nom_du_forfait}}</strong>.
+              </p>
+              <p style="margin:0 0 8px; font-size:17px; line-height:1.6;">
+                <!-- Paragraphe libre — dates, inclusions, inventaire, etc. -->
+                Places limitées — répondez à ce courriel ou appelez-moi pour les détails et la disponibilité.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Sommaire tarifaire (si rempli sur le contact) -->
+          <tr>
+            <td class="px" style="padding:12px 32px 8px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#F3F7FA; border-left:4px solid #F26522; border-radius:0 8px 8px 0;">
+                <tr>
+                  <td style="padding:16px 18px;">
+                    <p style="margin:0 0 8px; font-family:Arial, Helvetica, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#025091;">
+                      Récapitulatif
+                    </p>
+                    <p style="margin:0 0 8px; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.65; color:#333333; white-space:pre-line;">{{contact.custom.sommaire}}</p>
+                    <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:14px; line-height:1.65; color:#333333;">
+                      Dépôt&nbsp;: <strong>{{contact.custom.depot_total}}&nbsp;$</strong><br>
+                      Paiement final au plus tard le <strong>{{contact.custom.paiement_final}}</strong>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td class="px" style="padding:20px 32px 8px;">
+              <p style="margin:0 0 14px; font-size:17px; line-height:1.6;">
+                Intéressé(e)&nbsp;? Répondez directement à ce courriel ou appelez-moi.
+              </p>
+              <p style="margin:0 0 6px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6;">
+                <a href="mailto:{{user.email}}" style="color:#F26522; font-weight:700; text-decoration:underline;">Répondre à {{user.first_name}}</a>
+              </p>
+              <p style="margin:0 0 14px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6;">
+                <a href="tel:{{user.phone_raw}}" style="color:#025091; text-decoration:underline;">{{user.phone}}</a>
+              </p>
+              <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6;">
+                <a href="https://aubaineexpress.voyagefiesta.ca/" style="color:#F26522; font-weight:700; text-decoration:underline;">Voir la boutique Aubaines Express</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Carte conseiller (photo + coordonnées assignées) -->
+          <tr>
+            <td class="px" style="padding:16px 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border-top:1px solid #e5e7eb; padding-top:20px;">
+                <tr>
+                  <td class="advisor-col" width="96" valign="top" style="padding-right:16px;">
+                    <img class="advisor-photo" src="{{contact.custom.conseiller_photo}}" alt="{{user.name}}" width="88" height="88" style="display:block; width:88px; height:88px; border-radius:50%; object-fit:cover; border:3px solid #025091;">
+                  </td>
+                  <td class="advisor-col" valign="middle">
+                    <p style="margin:0 0 4px; font-size:17px; line-height:1.5; font-weight:bold;">
+                      {{user.name}}
+                    </p>
+                    <p style="margin:0 0 4px; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:#666666;">
+                      Conseiller(ère) en voyages · Voyage Fiesta
+                    </p>
+                    <p style="margin:0 0 2px; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:#666666;">
+                      <a href="mailto:{{user.email}}" style="color:#025091; text-decoration:underline;">{{user.email}}</a>
+                    </p>
+                    <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:#666666;">
+                      <a href="tel:{{user.phone_raw}}" style="color:#025091; text-decoration:underline;">{{user.phone}}</a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <!-- Signature GHL (optionnelle — peut inclure logo / texte configuré dans le profil user) -->
+              <div style="margin-top:16px; font-family:Arial, Helvetica, sans-serif; font-size:13px; color:#666666; line-height:1.5;">
+                {{user.email_signature}}
+              </div>
+            </td>
+          </tr>
+
+          <!-- Pied -->
+          <tr>
+            <td style="border-top:3px solid #F26522; padding:16px 32px 24px; font-family:Arial, Helvetica, sans-serif;">
+              <p style="margin:0 0 8px; font-size:11px; line-height:1.5; color:#888888;">
+                Agence avec permis valide au Québec. Tarifs et disponibilités sujets à changement jusqu’à la réservation.
+              </p>
+              <p style="margin:0; font-size:11px; line-height:1.5; color:#888888;">
+                <a href="{{unsubscribe_link}}" style="color:#888888; text-decoration:underline;">Se désabonner</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
