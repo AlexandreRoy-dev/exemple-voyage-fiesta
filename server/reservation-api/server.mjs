@@ -148,74 +148,38 @@ function resolveContactTag(payload) {
   return GHL_CONTACT_TAG;
 }
 
-/** Smart-list tags already used in GHL (barbara, eric, …). */
-const AGENT_LIST_TAGS = {
-  '0nvsiaLmrxoziqCY1cOY': 'barbara',
-  'fG599Arfh45eLVOMCMLh': 'eric',
-  'M37kX9dOKDqiT8arwEJs': 'agence voyage fiesta et mariage sud',
-  'BhhvFMtF0UsXpdnQnxzJ': 'jasmine',
-  'Xdip2xRxyWi1n3KJaMjI': 'sabrina',
-  'W4Y7L2Uoszcnh87CeSHI': 'valerie',
-  'iERaWbeWruXnURio6HYJ': 'vanessa',
-  'VtiD6mbBQU9uI8atIPIy': 'rabais'
-};
-
-function resolveAgentListTag(payload) {
-  const id = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
-  if (id && AGENT_LIST_TAGS[id]) return AGENT_LIST_TAGS[id];
-  const slug = pick(payload, 'agent_slug', 'conseiller_slug').toLowerCase();
-  if (slug.startsWith('barbara')) return 'barbara';
-  if (slug.startsWith('eric')) return 'eric';
-  if (slug.startsWith('agence')) return 'agence voyage fiesta et mariage sud';
-  const name = pick(payload, 'conseiller_name');
-  const first = name.split(/\s+/)[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (first && first !== 'agence') return first;
-  return '';
-}
-
+/** Process tags only. Owner routing is assignedTo, never a conseiller tag. */
 function resolveContactTags(payload) {
-  const tags = new Set();
   const primary = resolveContactTag(payload);
-  if (primary) tags.add(primary);
-
-  const normalize = (raw) => {
-    let tag = String(raw || '').trim();
-    if (!tag) return '';
-    if (/^conseiller-/i.test(tag) && tag.toLowerCase() !== 'lead-conseiller') {
-      return 'lead-conseiller';
-    }
-    return tag;
-  };
-
-  const explicitList = payload?.contact_tags ?? payload?.tags;
-  if (Array.isArray(explicitList)) {
-    explicitList.forEach((t) => {
-      const tag = normalize(t);
-      if (tag) tags.add(tag);
-    });
-  } else if (typeof explicitList === 'string' && explicitList.trim()) {
-    explicitList.split(/[,;|]/).forEach((t) => {
-      const tag = normalize(t);
-      if (tag) tags.add(tag);
-    });
-  }
-
-  const conseiller = normalize(pick(payload, 'conseiller_tag', 'agent_tag'));
-  if (conseiller) tags.add(conseiller);
-
-  const agentId = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
-  const agentSlug = pick(payload, 'agent_slug', 'conseiller_slug');
-  if (agentId || agentSlug) {
-    tags.add(process.env.GHL_CONSEILLER_TAG || 'lead-conseiller');
-  }
-  const listTag = resolveAgentListTag(payload);
-  if (listTag) tags.add(listTag);
-
-  return [...tags];
+  return primary ? [primary] : [];
 }
 
-function resolveAssignedUserId(payload) {
-  return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
+let productsCache = { at: 0, products: [] };
+
+async function lookupOwnerIdBySlug(slug) {
+  const key = String(slug || '').trim();
+  if (!key) return '';
+  const now = Date.now();
+  if (now - productsCache.at > 5 * 60 * 1000) {
+    const url = process.env.PRODUCTS_JSON_URL || 'https://aubaineexpress.voyagefiesta.ca/products.json';
+    const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}t=${now}`);
+    if (!res.ok) throw new Error(`products.json HTTP ${res.status}`);
+    const data = await res.json();
+    productsCache = { at: now, products: Array.isArray(data?.products) ? data.products : [] };
+  }
+  const product = productsCache.products.find((p) => String(p?.slug || '') === key);
+  return String(product?.ownerId || product?.owner?.id || '').trim();
+}
+
+async function resolveAssignedUserId(payload) {
+  const fromPayload = pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
+  if (fromPayload) return fromPayload;
+  try {
+    return await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
+  } catch (err) {
+    console.warn('[reservation] owner lookup failed', err.message);
+    return '';
+  }
 }
 
 function ghlHeaders(extra = {}) {
@@ -437,13 +401,12 @@ function buildCustomFields(payload) {
   return [...byKey.entries()].map(([key, field_value]) => ({ key, field_value }));
 }
 
-function buildContactBody(payload) {
+function buildContactBody(payload, assignedUserId) {
   const firstName = pick(payload, 'p1_prenom', 'full_name', 'contact_prenom');
   const lastName = pick(payload, 'p1_nom', 'last_name', 'contact_nom');
   const email = pick(payload, 'p1_email', 'email', 'contact_email');
   const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
   const priceRequest = isPriceRequest(payload);
-  const assignedUserId = resolveAssignedUserId(payload);
 
   const body = {
     locationId: GHL_LOCATION_ID,
@@ -632,13 +595,13 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
-      const body = buildContactBody(payload);
+      const assignedUserId = await resolveAssignedUserId(payload);
+      const body = buildContactBody(payload, assignedUserId);
       const noteText = buildNotes(payload);
       const result = await ghlUpsertContact(body);
       const contactId = result?.contact?.id || result?.id || null;
       const tags = resolveContactTags(payload);
 
-      const assignedUserId = resolveAssignedUserId(payload);
       if (contactId && assignedUserId) {
         await ghlAssignContact(contactId, assignedUserId);
       }
@@ -655,7 +618,7 @@ const server = http.createServer(async (req, res) => {
         contactId,
         tag: tags[0] || null,
         tags,
-        assignedTo: resolveAssignedUserId(payload) || null,
+        assignedTo: assignedUserId || null,
         requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation',
         tagsAdded,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0

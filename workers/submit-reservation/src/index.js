@@ -7,12 +7,10 @@
  *
  * Optional vars:
  *   GHL_CONTACT_TAG      Tag appliqué (défaut: reservation-site)
- *   GHL_CONSEILLER_TAG   Tag partagé leads conseiller (défaut: lead-conseiller)
  *   ALLOWED_ORIGINS      CSV d'origines CORS (défaut: *)
  *   CUSTOM_FIELD_MAP     JSON { "depot": "fieldId", ... } optionnel
  *
- * Avec agent_id (Owner) : contact assignedTo = [userId] + tag lead-conseiller
- * → une seule automation GHL pour tous les conseillers.
+ * Avec agent_id (Owner) : contact assignedTo = userId. No per-agent tags.
  * Deploy:
  *   cd workers/submit-reservation
  *   npx wrangler secret put GHL_API_KEY
@@ -75,66 +73,10 @@ function resolveContactTag(payload, env) {
   return env.GHL_CONTACT_TAG || 'reservation-site';
 }
 
-function pushTag(set, value) {
-  let tag = String(value || '').trim();
-  if (!tag) return;
-  // Legacy per-agent tags → one shared tag (one GHL workflow for all conseillers)
-  if (/^conseiller-/i.test(tag) && tag.toLowerCase() !== 'lead-conseiller') {
-    tag = 'lead-conseiller';
-  }
-  set.add(tag);
-}
-
-/**
- * Primary request tag + shared conseiller tag (not one tag per agent).
- * Routing = assignedTo user id. One GHL workflow on lead-conseiller.
- */
+/** Process tags only. Owner routing is assignedTo, never a conseiller tag. */
 function resolveContactTags(payload, env) {
-  const tags = new Set();
-  pushTag(tags, resolveContactTag(payload, env));
-
-  const explicitList = payload?.contact_tags ?? payload?.tags;
-  if (Array.isArray(explicitList)) {
-    explicitList.forEach((t) => pushTag(tags, t));
-  } else if (typeof explicitList === 'string' && explicitList.trim()) {
-    explicitList.split(/[,;|]/).forEach((t) => pushTag(tags, t));
-  }
-
-  pushTag(tags, pick(payload, 'conseiller_tag', 'agent_tag'));
-
-  const agentId = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
-  const agentSlug = pick(payload, 'agent_slug', 'conseiller_slug');
-  if (agentId || agentSlug) {
-    pushTag(tags, env.GHL_CONSEILLER_TAG || 'lead-conseiller');
-  }
-  const listTag = resolveAgentListTag(payload);
-  if (listTag) pushTag(tags, listTag);
-
-  return [...tags];
-}
-
-const AGENT_LIST_TAGS = {
-  '0nvsiaLmrxoziqCY1cOY': 'barbara',
-  'fG599Arfh45eLVOMCMLh': 'eric',
-  'M37kX9dOKDqiT8arwEJs': 'agence voyage fiesta et mariage sud',
-  'BhhvFMtF0UsXpdnQnxzJ': 'jasmine',
-  'Xdip2xRxyWi1n3KJaMjI': 'sabrina',
-  'W4Y7L2Uoszcnh87CeSHI': 'valerie',
-  'iERaWbeWruXnURio6HYJ': 'vanessa',
-  'VtiD6mbBQU9uI8atIPIy': 'rabais'
-};
-
-function resolveAgentListTag(payload) {
-  const id = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
-  if (id && AGENT_LIST_TAGS[id]) return AGENT_LIST_TAGS[id];
-  const slug = pick(payload, 'agent_slug', 'conseiller_slug').toLowerCase();
-  if (slug.startsWith('barbara')) return 'barbara';
-  if (slug.startsWith('eric')) return 'eric';
-  if (slug.startsWith('agence')) return 'agence voyage fiesta et mariage sud';
-  const name = pick(payload, 'conseiller_name');
-  const first = name.split(/\s+/)[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (first && first !== 'agence') return first;
-  return '';
+  const primary = resolveContactTag(payload, env);
+  return primary ? [primary] : [];
 }
 
 function resolveAssignedUserId(payload) {
@@ -339,6 +281,24 @@ async function applyContactTags(apiKey, contactId, tags) {
   return list;
 }
 
+async function assignContact(apiKey, contactId, userId) {
+  if (!contactId || !userId) return;
+  const res = await fetch(`${GHL_API}/contacts/${contactId}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      Version: GHL_VERSION,
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ assignedTo: userId })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn('[reservation] assign failed', res.status, text.slice(0, 200));
+  }
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -390,9 +350,13 @@ export default {
 
     try {
       const tags = resolveContactTags(payload, env);
+      const assignedUserId = resolveAssignedUserId(payload);
       const body = buildContactBody(payload, locationId, tags, fieldMap);
       const result = await upsertContact(apiKey, body);
       const contactId = result?.contact?.id || result?.id || null;
+      if (contactId && assignedUserId) {
+        await assignContact(apiKey, contactId, assignedUserId);
+      }
       const tagsAdded = contactId
         ? await applyContactTags(apiKey, contactId, tags)
         : tags;

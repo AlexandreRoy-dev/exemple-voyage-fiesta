@@ -42,15 +42,13 @@ Liste live : `agents.json` (généré, ne pas éditer à la main).
 
 À la réservation / demande depuis une sous-boutique (ou un forfait avec Owner), le site :
 
-1. Applique le tag partagé **`lead-conseiller`** (+ le tag métier `reservation-site` / `demande-prevente` / …)
-2. Applique aussi le tag Smart List du conseiller (**`barbara`**, **`eric`**, …)
-3. **Assigne le contact** au user GHL du conseiller (`assignedTo` = Owner id, string)
+1. **Assigne le contact** au user GHL du conseiller (`assignedTo` = Owner id)
+2. Tag métier seulement : `reservation-site` / `demande-prevente` / `demande-prix` — pas de tag par conseiller
 
 ### Workflow GHL (une fois pour toute l’équipe)
 
-1. Trigger : **Tag Added** → `lead-conseiller`
-2. Action : **Add to sequence / campaign** (une séquence commune)
-3. Dans les emails : utilisez le **user assigné** (nom, téléphone, courriel du conseiller) — pas besoin d’une séquence par agent
+1. Trigger : **Contact created / updated**, ou tag métier
+2. Dans les emails : utilisez le **user assigné** (nom, téléphone, courriel du conseiller)
 
 Les nouveaux conseillers n’exigent **aucune** nouvelle automation : invite → Owner sur un Voyage → sync → leur `?agent=` fonctionne.
 

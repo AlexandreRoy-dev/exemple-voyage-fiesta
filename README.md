@@ -62,7 +62,7 @@ Le scope **`users.readonly`** est requis pour enrichir le Owner (conseiller) →
 | Master (tous) | `https://aubaineexpress.voyagefiesta.ca/` |
 | Un conseiller | `https://aubaineexpress.voyagefiesta.ca/?agent=<slug>` |
 
-À la réservation / demande d’intérêt, le contact est **assigné au conseiller** (Owner) et reçoit le tag partagé `lead-conseiller` — **une seule** automation GHL pour toute l’équipe. Voir [`imports/GHL-OWNER-AGENTS.md`](imports/GHL-OWNER-AGENTS.md).
+À la réservation / demande d’intérêt, le contact est **assigné au Owner** du forfait. Pas de tag par conseiller. Voir [`imports/GHL-OWNER-AGENTS.md`](imports/GHL-OWNER-AGENTS.md).
 
 ### Workflow
 

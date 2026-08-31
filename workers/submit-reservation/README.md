@@ -31,8 +31,7 @@ Scopes Private Integration recommandés : **contacts.write** (et contacts.readon
 2. POST JSON `{ payload }` → worker  
 3. Worker → `POST /contacts/upsert` (GHL) avec nom, courriel, téléphone, adresse, notes, tags, et **assignation au conseiller** :
    - métier : `reservation-site` / `demande-prevente` / `demande-prix`
-   - partagé : `lead-conseiller` (une seule automation pour tous les conseillers)
-   - `assignedTo` = user id du Owner (pas de tag par agent)  
+   - `assignedTo` = user id du Owner (pas de tag par conseiller)  
 4. Redirection → `thank-you.html`  
 
 Aucun iframe GHL.
