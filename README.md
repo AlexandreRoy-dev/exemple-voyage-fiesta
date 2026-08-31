@@ -1,6 +1,6 @@
 # Voyage Fiesta — Boutique (receiving end)
 
-Site statique alimenté par **GoHighLevel**, synchronisé via **GitHub Actions** vers `products.json`.
+Site statique alimenté par **GoHighLevel**, synchronisé depuis le **VPS DuProprio** (cron 15 min) vers `products.json`.
 
 ## Source de données (products.json)
 
@@ -18,20 +18,32 @@ Si `products.json` est vide, le site affiche « Aucun forfait disponible ».
 
 ```
 GHL Custom Object "Voyage" (statut)
-        ↓ API (toutes les 5 min + manuel)
-   GitHub Actions → scripts/sync-ghl-products.mjs
-        ↓ commit
+        ↓ API (toutes les 15 min sur le VPS)
+   OVH VPS → scripts/sync-ghl-products.mjs
+        ↓ git push
    products.json → GitHub Pages (~1–2 min)
         ↓ fetch (no-store)
    api.js → index.html + product.html
 ```
 
-**Délai typique client → site :** jusqu’à ~5–10 minutes (sync + déploiement Pages).  
-Pour une urgence : GitHub → Actions → **Sync GHL Products** → **Run workflow**.
+**Délai typique client → site :** jusqu’à ~15–17 minutes (cron VPS + Pages).  
+Pour une urgence : SSH sur le VPS et lancer le script, ou GitHub → Actions → **Sync GHL Products** → **Run workflow** (secours).
 
-> Les cron GitHub peuvent être retardés sous forte charge (parfois > 5 min). Le bouton manuel force une sync immédiate.
+```bash
+ssh ubuntu@158.69.1.173
+bash /home/ubuntu/voyage-fiesta-sync/scripts/run-vps-product-sync.sh
+tail -f /home/ubuntu/voyage-fiesta-sync/logs/sync.log
+```
 
-## GitHub Actions — configuration
+Redéployer le job VPS depuis Windows :
+
+```bash
+python scripts/deploy-product-sync-vps.py
+```
+
+Le cron GitHub Actions a été retiré : il sautait souvent sous charge. Le VPS tourne déjà d’autres syncs `*/15`.
+
+## Sync VPS + GitHub — configuration
 
 ### Secrets requis (Settings → Secrets and variables → Actions)
 
@@ -54,12 +66,13 @@ Le scope **`users.readonly`** est requis pour enrichir le Owner (conseiller) →
 
 ### Workflow
 
-Fichier : `.github/workflows/sync-products.yml`
+| Chemin | Rôle |
+|--------|------|
+| VPS cron `*/15` | Source de vérité — `/home/ubuntu/voyage-fiesta-sync` |
+| `.github/workflows/sync-products.yml` | Secours manuel seulement (plus de cron GitHub) |
 
-- **Cron** : toutes les 5 minutes (délai GitHub possible sous charge)
-- **Manuel** : Actions → *Sync GHL Products* → *Run workflow* (immédiat)
-- **Résultat** : commit automatique de `products.json` + `agents.json` si les données ont changé
-- **Validation** : le workflow vérifie que `products.json` est un JSON valide avant push
+- **Résultat** : commit automatique de `products.json` + `agents.json` + images + pages `share/` si les données ont changé
+- **Validation** : le script VPS vérifie que `products.json` est un JSON valide avant push
 
 ### Test local (optionnel)
 
@@ -76,11 +89,13 @@ node scripts/sync-ghl-products.mjs
 |---------|------|
 | `config.js` | URL JSON + listes de filtres + URL API réservation |
 | `api.js` | Fetch `products.json`, filtres |
-| `products.json` | Données live (généré par GitHub Actions) |
+| `products.json` | Données live (généré par le cron VPS) |
 | `agents.json` | Conseillers (owners uniques, généré au sync) |
 | `scripts/sync-ghl-products.mjs` | Script de sync GHL → JSON |
+| `scripts/run-vps-product-sync.sh` | Job VPS (pull GHL + push git) |
+| `scripts/deploy-product-sync-vps.py` | Installer / mettre à jour le job sur le VPS |
 | `workers/submit-reservation/` | Cloudflare Worker : form → GHL Contacts API |
-| `.github/workflows/sync-products.yml` | Workflow planifié |
+| `.github/workflows/sync-products.yml` | Sync manuelle de secours |
 | `index.html` | Liste + filtres boutique |
 | `product.html` | Fiche produit + modal réservation (API, sans iframe) |
 

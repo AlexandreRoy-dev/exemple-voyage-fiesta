@@ -241,7 +241,7 @@
     /** Hotel star filter options (supports half stars) */
     window.FILTER_STAR_OPTIONS = [3, 3.5, 4, 4.5, 5];
 
-    /** Static product feed - synced by GitHub Actions from GHL */
+    /** Static product feed - synced from GHL by the DuProprio VPS cron */
     window.PRODUCTS_JSON_URL = 'products.json';
 
     window.SITE_NAME = window.SITE_NAME || 'Voyage Fiesta';

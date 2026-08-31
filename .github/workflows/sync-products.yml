@@ -1,11 +1,8 @@
 name: Sync GHL Products
 
-# Intervalle minimal GitHub Actions = 5 min.
-# Note: les cron GitHub peuvent être retardés sous charge; utiliser « Run workflow »
-# pour une sync immédiate après une modif GHL urgente.
+# Primary schedule lives on the DuProprio VPS (every 15 min).
+# Keep this workflow as a manual backup only — GitHub cron is often delayed or skipped.
 on:
-  schedule:
-    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 concurrency:
