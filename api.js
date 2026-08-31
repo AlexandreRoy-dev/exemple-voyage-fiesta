@@ -1821,10 +1821,37 @@
         return 'lead-conseiller';
     }
 
+    /** Smart-list tags already used in GHL (Barbara, Éric, …). */
+    const AGENT_LIST_TAGS = {
+        '0nvsiaLmrxoziqCY1cOY': 'barbara',
+        'fG599Arfh45eLVOMCMLh': 'eric',
+        'M37kX9dOKDqiT8arwEJs': 'agence voyage fiesta et mariage sud',
+        'BhhvFMtF0UsXpdnQnxzJ': 'jasmine',
+        'Xdip2xRxyWi1n3KJaMjI': 'sabrina',
+        'W4Y7L2Uoszcnh87CeSHI': 'valerie',
+        'iERaWbeWruXnURio6HYJ': 'vanessa',
+        'VtiD6mbBQU9uI8atIPIy': 'rabais'
+    };
+
+    function buildAgentListTag(owner, slug) {
+        const id = String(owner?.id || '').trim();
+        if (id && AGENT_LIST_TAGS[id]) return AGENT_LIST_TAGS[id];
+        const s = String(slug || owner?.slug || '').trim().toLowerCase();
+        if (s.startsWith('barbara')) return 'barbara';
+        if (s.startsWith('eric')) return 'eric';
+        if (s.startsWith('agence')) return 'agence voyage fiesta et mariage sud';
+        const first = String(owner?.name || '').trim().split(/\s+/)[0]
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+        if (first && first !== 'agence') return first;
+        return '';
+    }
+
     /**
      * Conseiller context for listing/booking.
      * Prefers ?agent= (sub-boutique), else product.owner.
-     * Sequence routing = assign contact to owner userId (not one tag per agent).
+     * Assigns the contact to the owner userId + Smart List tag (barbara, eric, …).
      */
     function resolveBookingAgentContext(product) {
         const fromUrl = getAgentQueryParam();
@@ -1846,15 +1873,20 @@
         const slug = fromUrl
             ? slugifyAgentKey(fromUrl) || fromUrl
             : String(owner?.slug || '').trim() || slugifyAgentKey(agentKey);
-        const tag = buildConseillerTag(slug || agentKey);
+        const sharedTag = buildConseillerTag(slug || agentKey);
+        const listTag = buildAgentListTag(
+            { id: product?.ownerId || owner?.id, name: owner?.name, slug },
+            slug
+        );
+        const contactTags = [...new Set([sharedTag, listTag].filter(Boolean))];
         return {
             agent_slug: slug || agentKey,
             agent_id: String(product?.ownerId || owner?.id || '').trim(),
             conseiller_name: String(owner?.name || '').trim(),
             conseiller_email: String(owner?.email || '').trim(),
             conseiller_phone: String(owner?.phone || '').trim(),
-            conseiller_tag: tag,
-            contact_tags: tag ? [tag] : []
+            conseiller_tag: listTag || sharedTag,
+            contact_tags: contactTags
         };
     }
 

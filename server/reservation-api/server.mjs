@@ -148,6 +148,31 @@ function resolveContactTag(payload) {
   return GHL_CONTACT_TAG;
 }
 
+/** Smart-list tags already used in GHL (barbara, eric, …). */
+const AGENT_LIST_TAGS = {
+  '0nvsiaLmrxoziqCY1cOY': 'barbara',
+  'fG599Arfh45eLVOMCMLh': 'eric',
+  'M37kX9dOKDqiT8arwEJs': 'agence voyage fiesta et mariage sud',
+  'BhhvFMtF0UsXpdnQnxzJ': 'jasmine',
+  'Xdip2xRxyWi1n3KJaMjI': 'sabrina',
+  'W4Y7L2Uoszcnh87CeSHI': 'valerie',
+  'iERaWbeWruXnURio6HYJ': 'vanessa',
+  'VtiD6mbBQU9uI8atIPIy': 'rabais'
+};
+
+function resolveAgentListTag(payload) {
+  const id = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
+  if (id && AGENT_LIST_TAGS[id]) return AGENT_LIST_TAGS[id];
+  const slug = pick(payload, 'agent_slug', 'conseiller_slug').toLowerCase();
+  if (slug.startsWith('barbara')) return 'barbara';
+  if (slug.startsWith('eric')) return 'eric';
+  if (slug.startsWith('agence')) return 'agence voyage fiesta et mariage sud';
+  const name = pick(payload, 'conseiller_name');
+  const first = name.split(/\s+/)[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (first && first !== 'agence') return first;
+  return '';
+}
+
 function resolveContactTags(payload) {
   const tags = new Set();
   const primary = resolveContactTag(payload);
@@ -183,6 +208,8 @@ function resolveContactTags(payload) {
   if (agentId || agentSlug) {
     tags.add(process.env.GHL_CONSEILLER_TAG || 'lead-conseiller');
   }
+  const listTag = resolveAgentListTag(payload);
+  if (listTag) tags.add(listTag);
 
   return [...tags];
 }
@@ -429,7 +456,7 @@ function buildContactBody(payload) {
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
     source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
-    assignedTo: assignedUserId ? [assignedUserId] : undefined
+    assignedTo: assignedUserId || undefined
   };
 
   const customFields = buildCustomFields(payload);
@@ -495,6 +522,19 @@ async function ghlApplyTags(contactId, tags) {
     else tagsAdded.push(tag);
   }
   return { tagsAdded };
+}
+
+async function ghlAssignContact(contactId, userId) {
+  if (!contactId || !userId) return;
+  const res = await fetch(`${GHL_API}/contacts/${contactId}`, {
+    method: 'PUT',
+    headers: ghlHeaders(),
+    body: JSON.stringify({ assignedTo: userId })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn('[reservation] assign failed', res.status, text.slice(0, 300));
+  }
 }
 
 async function ghlUpsertContact(body) {
@@ -597,6 +637,11 @@ const server = http.createServer(async (req, res) => {
       const result = await ghlUpsertContact(body);
       const contactId = result?.contact?.id || result?.id || null;
       const tags = resolveContactTags(payload);
+
+      const assignedUserId = resolveAssignedUserId(payload);
+      if (contactId && assignedUserId) {
+        await ghlAssignContact(contactId, assignedUserId);
+      }
 
       let tagsAdded = [];
       if (contactId && tags.length) {

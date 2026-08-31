@@ -107,8 +107,34 @@ function resolveContactTags(payload, env) {
   if (agentId || agentSlug) {
     pushTag(tags, env.GHL_CONSEILLER_TAG || 'lead-conseiller');
   }
+  const listTag = resolveAgentListTag(payload);
+  if (listTag) pushTag(tags, listTag);
 
   return [...tags];
+}
+
+const AGENT_LIST_TAGS = {
+  '0nvsiaLmrxoziqCY1cOY': 'barbara',
+  'fG599Arfh45eLVOMCMLh': 'eric',
+  'M37kX9dOKDqiT8arwEJs': 'agence voyage fiesta et mariage sud',
+  'BhhvFMtF0UsXpdnQnxzJ': 'jasmine',
+  'Xdip2xRxyWi1n3KJaMjI': 'sabrina',
+  'W4Y7L2Uoszcnh87CeSHI': 'valerie',
+  'iERaWbeWruXnURio6HYJ': 'vanessa',
+  'VtiD6mbBQU9uI8atIPIy': 'rabais'
+};
+
+function resolveAgentListTag(payload) {
+  const id = pick(payload, 'agent_id', 'owner_id', 'conseiller_id');
+  if (id && AGENT_LIST_TAGS[id]) return AGENT_LIST_TAGS[id];
+  const slug = pick(payload, 'agent_slug', 'conseiller_slug').toLowerCase();
+  if (slug.startsWith('barbara')) return 'barbara';
+  if (slug.startsWith('eric')) return 'eric';
+  if (slug.startsWith('agence')) return 'agence voyage fiesta et mariage sud';
+  const name = pick(payload, 'conseiller_name');
+  const first = name.split(/\s+/)[0].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (first && first !== 'agence') return first;
+  return '';
 }
 
 function resolveAssignedUserId(payload) {
@@ -193,8 +219,7 @@ function buildContactBody(payload, locationId, tags, fieldMap) {
     source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
     tags: tagList.length ? tagList : undefined,
     notes: buildNotes(payload) || undefined,
-    // Assign to conseiller GHL user → appears in their contacts; one shared sequence works for all
-    assignedTo: assignedUserId ? [assignedUserId] : undefined
+    assignedTo: assignedUserId || undefined
   };
 
   const customFields = [];

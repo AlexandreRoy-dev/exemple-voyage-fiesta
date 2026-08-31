@@ -43,7 +43,8 @@ Liste live : `agents.json` (généré, ne pas éditer à la main).
 À la réservation / demande depuis une sous-boutique (ou un forfait avec Owner), le site :
 
 1. Applique le tag partagé **`lead-conseiller`** (+ le tag métier `reservation-site` / `demande-prevente` / …)
-2. **Assigne le contact** au user GHL du conseiller (`assignedTo` = Owner id)
+2. Applique aussi le tag Smart List du conseiller (**`barbara`**, **`eric`**, …)
+3. **Assigne le contact** au user GHL du conseiller (`assignedTo` = Owner id, string)
 
 ### Workflow GHL (une fois pour toute l’équipe)
 
