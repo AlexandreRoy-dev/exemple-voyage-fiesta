@@ -233,7 +233,7 @@
 
     <script src="config.js?v=48"></script>
     <script src="room-registration.js?v=15"></script>
-    <script src="api.js?v=98"></script>
+    <script src="api.js?v=99"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -659,8 +659,7 @@
         function buildComponentUnitPriceTableBody(p) {
             const taxes = p.taxesAmount ?? null;
             const info = VoyageFiestaAPI.getChildPricingInfo(p);
-            const doubleRow = VoyageFiestaAPI.getOccupationPrices(p).find(r => r.id === 'double')
-                || VoyageFiestaAPI.getOccupationPrices(p).find(r => !r.isChildOccupation);
+            const occPrices = VoyageFiestaAPI.getOccupationPrices(p);
             const rows = [];
             const contactLabel = VoyageFiestaAPI.getPriceOnRequestLabel();
 
@@ -689,21 +688,26 @@
                     </tr>`);
             };
 
-            pushRow(
-                escapeHtml(doubleRow?.label || 'Occ. double'),
-                doubleRow?.price ?? null,
-                false
-            );
+            ['simple', 'double', 'triple', 'quad'].forEach((id) => {
+                const occ = occPrices.find((r) => r.id === id);
+                if (!occ) return;
+                pushRow(escapeHtml(occ.label), occ.price, false);
+            });
+            if (!occPrices.some((r) => ['simple', 'double', 'triple', 'quad'].includes(r.id))) {
+                const fallback = occPrices.find((r) => !r.isChildOccupation);
+                pushRow(escapeHtml(fallback?.label || 'Occ. double'), fallback?.price ?? null, false);
+            }
 
             if (info.has212) {
                 pushRow(
-                    escapeHtml(VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212, { generic: true })),
+                    escapeHtml(VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212, { generic: info.has212 && !info.has1317Price })),
                     info.child212First,
                     true
                 );
-            } else if (info.has1317Price) {
+            }
+            if (info.has1317Price) {
                 pushRow(
-                    escapeHtml(VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317, { generic: true })),
+                    escapeHtml(VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317, { generic: !info.has212 && info.has1317Price })),
                     info.child1317First,
                     true
                 );
@@ -1292,7 +1296,7 @@
                 : 'Demande de prix';
             const intro = isPreSale
                 ? (window.PRE_SALE_REQUEST_FORM_INTRO
-                    || 'Remplissez ce court formulaire — un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.')
+                    || 'Remplissez ce court formulaire. Un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.')
                 : 'Remplissez ce court formulaire - un conseiller vous recontactera.';
             const submitLabel = isPreSale
                 ? (window.PRE_SALE_REQUEST_SUBMIT_LABEL || 'Envoyer mon intérêt')
@@ -1627,7 +1631,6 @@
                             const kids = Number(overrides?.children212 || 0)
                                 + Number(overrides?.children1317 || 0);
                             breakdown = {
-                                ...(breakdown || {}),
                                 priceOnRequest: true,
                                 isAutres: occupationId === 'autres' || overrides?.isAutres,
                                 bookingLabel: VoyageFiestaAPI.buildBookingOccupationLabel(
@@ -1639,7 +1642,10 @@
                                     adults
                                 ),
                                 totalDeposit: null,
-                                depositPerPerson: null
+                                depositPerPerson: null,
+                                bookingTotalWithTaxes: null,
+                                totalWithTaxes: null,
+                                totalBeforeTaxes: null
                             };
                         }
                         if (breakdown) {
@@ -1689,19 +1695,15 @@
 
                 const occupationId = getSelectedOccupationId();
                 const overrides = getBookingSelectionOverrides() || {};
+                if (VoyageFiestaAPI.isPriceOnRequestSelection(p, occupationId, overrides)) return;
                 const row = occupationId && occupationId !== 'autres'
                     ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
                     : null;
                 const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
+                if (!breakdown || breakdown.bookingTotalWithTaxes == null) return;
                 const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
-                const bookingLabel = breakdown?.bookingLabel || row?.label || '';
-                const priceLine = breakdown?.bookingTotalWithTaxes != null
-                    ? `${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)} total · ${bookingLabel}`
-                    : (row
-                        ? (row.totalWithTaxes != null
-                            ? `${VoyageFiestaAPI.formatMoneyPerPerson(row.totalWithTaxes, { html: false })} total · ${row.label}`
-                            : `${VoyageFiestaAPI.formatMoneyPerPerson(row.price, { html: false })} · ${row.label}`)
-                        : `${VoyageFiestaAPI.formatMoneyPerPerson(p.price, { html: false })}`);
+                const bookingLabel = breakdown.bookingLabel || row?.label || '';
+                const priceLine = `${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)} total · ${bookingLabel}`;
 
                 document.getElementById('modal-product-name').textContent =
                     `${p.name} - ${priceLine}${departureText ? ' · Départ ' + departureText : ''} · ${p.departureAirport} · ${supplierLabel}`;

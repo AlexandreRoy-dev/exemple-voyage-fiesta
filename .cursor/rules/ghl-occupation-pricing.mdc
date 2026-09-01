@@ -1,0 +1,19 @@
+---
+description: Never invent a package price when GHL has no occupancy amount
+alwaysApply: true
+---
+
+# Occupation prices come from GHL only
+
+Do not show, calculate, or submit a booking total unless that occupancy has an explicit price in GoHighLevel.
+
+- 1 adult → `priceOccSimple` only. Empty = demande de prix. Never use occ. double.
+- 2 adults → `price` / occ. double.
+- 3 adults → `priceOccTriple` only.
+- 4 adults → `priceOccQuad` only.
+- 5+ or Autres → always on request unless `priceAutres` is filled.
+- Kids: only add a child unit that exists (`priceChild212`, 2e enfant, 13-17). No reuse of another occupancy or of the 1st child price for a 2nd child.
+- Taxes (`taxesAmount`) apply per person only after the occupancy/child unit is published.
+- Do not invent combo occupancies (double+1 enfant, etc.) from other fields.
+
+UI: unpublished selection → « Veuillez nous contacter » + interest form. No dollar amount, no deposit total, no selected_price fallback.

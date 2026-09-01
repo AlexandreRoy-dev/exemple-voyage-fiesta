@@ -1,4 +1,5 @@
 (function () {
+    try {
     const FETCH_TIMEOUT_MS = 15000;
     const JSON_URL = (window.PRODUCTS_JSON_URL || 'products.json').replace(/^\//, '');
 
@@ -112,7 +113,7 @@
     function renderPreSaleBannerHtml(options = {}) {
         const title = window.PRE_SALE_BANNER_TITLE || 'Pré-vente';
         const subtitle = window.PRE_SALE_BANNER_SUBTITLE
-            || 'Manifestez votre intérêt — aucun dépôt requis pour le moment';
+            || 'Manifestez votre intérêt. Aucun dépôt requis pour le moment';
         if (options.compact) {
             // Full-width ribbon on listing cards — must read at a glance
             return `<div class="absolute top-0 left-0 right-0 z-20 pointer-events-none" role="status">
@@ -412,21 +413,13 @@
         return optionalTaxAmount(p.taxesAmount ?? p.taxes_amount ?? p.taxes_par_personne);
     }
 
-    /** GHL met parfois le prix double+1 enfant dans price_occ_simple_1_child. */
+    /**
+     * Never invent an occupancy price. GHL empty = no price.
+     * Only remap a known GHL mix-up: double+1 enfant sometimes lands in simple+1 enfant.
+     */
     function normalizeOccupationPriceFields(product) {
         const p = { ...product };
-        const avgPerPerson = (total, people) => {
-            if (!Number.isFinite(total) || people <= 0) return null;
-            return Math.round((total / people) * 100) / 100;
-        };
-
         const doublePrice = optionalPrice(p.price);
-        const simplePrice = optionalPrice(p.priceOccSimple ?? p.price_occ_simple);
-        const child212 = optionalPrice(p.priceChild212 ?? p.price_child_2_12);
-        const child212b = optionalPrice(p.priceChild212_2 ?? p.prix_2e_enfant_2_12);
-        const child1317 = optionalPrice(p.priceChild1317 ?? p.price_child_13_17);
-        const child1317b = optionalPrice(p.priceChild1317_2 ?? p.prix_2e_enfant_13_17);
-
         const double1 = optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child);
         const simple1 = optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child);
 
@@ -435,32 +428,6 @@
             p.priceOccSimple1Child = null;
             p.price_occ_double_1_child = simple1;
             p.price_occ_simple_1_child = null;
-        }
-
-        if (optionalPrice(p.priceOccDouble1Child ?? p.price_occ_double_1_child) === null
-            && doublePrice !== null && child212 !== null) {
-            p.priceOccDouble1Child = avgPerPerson(2 * doublePrice + child212, 3);
-        }
-        if (optionalPrice(p.priceOccDouble2Child ?? p.price_occ_double_2_child) === null
-            && doublePrice !== null && child212 !== null && child212b !== null) {
-            p.priceOccDouble2Child = avgPerPerson(2 * doublePrice + child212 + child212b, 4);
-        }
-        if (optionalPrice(p.priceOccSimple1Child ?? p.price_occ_simple_1_child) === null
-            && simplePrice !== null && child212 !== null) {
-            p.priceOccSimple1Child = avgPerPerson(simplePrice + child212, 2);
-        }
-
-        if (optionalPrice(p.priceOccDouble1Child1317 ?? p.price_occ_double_1_child_13_17) === null
-            && doublePrice !== null && child1317 !== null) {
-            p.priceOccDouble1Child1317 = avgPerPerson(2 * doublePrice + child1317, 3);
-        }
-        if (optionalPrice(p.priceOccDouble2Child1317 ?? p.price_occ_double_2_child_13_17) === null
-            && doublePrice !== null && child1317 !== null && child1317b !== null) {
-            p.priceOccDouble2Child1317 = avgPerPerson(2 * doublePrice + child1317 + child1317b, 4);
-        }
-        if (optionalPrice(p.priceOccSimple1Child1317 ?? p.price_occ_simple_1_child_13_17) === null
-            && simplePrice !== null && child1317 !== null) {
-            p.priceOccSimple1Child1317 = avgPerPerson(simplePrice + child1317, 2);
         }
 
         return p;
@@ -766,8 +733,8 @@
     }
 
     /**
-     * Sélection sans tarif publié (ex. 4 adultes alors que seul Occ. double est saisi).
-     * → formulaire « Demande de prix » au lieu de RÉSERVER.
+     * Sélection sans tarif publié dans GHL (ex. 4 adultes alors que seul Occ. double est saisi).
+     * Jamais de repli sur un autre tarif. → « Veuillez nous contacter », pas de total.
      */
     function isPriceOnRequestSelection(p, occupationId, overrides = {}) {
         if (!p) return true;
@@ -787,8 +754,6 @@
         const children1317 = clampInt(overrides.children1317 ?? 0, { min: 0, max: 9 });
         if (children212 + children1317 > 0) {
             if (!productHasChildUnitPricing(p)) return true;
-            const totalKids = children212 + children1317;
-            if (totalKids > getPricedChildSlotCount(p)) return true;
             if (sumChildUnitPrices(p, children212, children1317) === null) return true;
         }
 
@@ -796,19 +761,7 @@
     }
 
     function getOccupationIdForAdultCount(adults, p) {
-        const preferred = adultCountToOccupationId(adults);
-        if (p && getSelectedOccupationRow(p, preferred)) return preferred;
-        const map = [
-            { count: 1, id: 'simple' },
-            { count: 2, id: 'double' },
-            { count: 3, id: 'triple' },
-            { count: 4, id: 'quad' },
-            { count: 5, id: 'autres' }
-        ];
-        for (const entry of [...map].reverse()) {
-            if (getSelectedOccupationRow(p, entry.id)) return entry.id;
-        }
-        return preferred;
+        return adultCountToOccupationId(adults);
     }
 
     function getMaxAdultCount(p) {
@@ -999,6 +952,10 @@
             };
         }
 
+        if (isPriceOnRequestSelection(p, occupationId, overrides || {})) {
+            return null;
+        }
+
         let def = getOccupationDef(occupationId);
         let row = getSelectedOccupationRow(p, occupationId);
         if (!def || !row) return null;
@@ -1010,22 +967,16 @@
         let adults;
         if (useComponentPricing && overrides && overrides.adults !== undefined) {
             adults = clampInt(overrides.adults, { min: 1, max: getMaxAdultCount(p) });
-            const doubleRow = getComponentAdultUnitRow(p);
-            const doubleDef = getOccupationDef('double');
-            if (doubleRow && doubleDef) {
-                def = doubleDef;
-                row = doubleRow;
-            } else {
-                const adultOccId = getOccupationIdForAdultCount(adults, p);
-                const adultDef = getOccupationDef(adultOccId);
-                const adultRow = getSelectedOccupationRow(p, adultOccId);
-                if (adultDef && adultRow) {
-                    def = adultDef;
-                    row = adultRow;
-                }
-            }
+            if (!hasExplicitAdultOccupancyPrice(p, adults)) return null;
+            const adultOccId = adultCountToOccupationId(adults);
+            const adultDef = getOccupationDef(adultOccId);
+            const adultRow = getSelectedOccupationRow(p, adultOccId);
+            if (!adultDef || !adultRow) return null;
+            def = adultDef;
+            row = adultRow;
         } else {
             adults = def.adults ?? 0;
+            if (!hasExplicitAdultOccupancyPrice(p, adults)) return null;
         }
 
         let children212;
@@ -1221,26 +1172,40 @@
         let breakdown;
         let row;
         let occupationId = occupationIdOrPassengers;
-        row = getSelectedOccupationRow(p, occupationId);
-        breakdown = getOccupationPricingBreakdown(p, occupationId, overrides);
+        const onRequest = isPriceOnRequestSelection(p, occupationId, overrides || {});
+        row = onRequest ? null : getSelectedOccupationRow(p, occupationId);
+        breakdown = onRequest ? null : getOccupationPricingBreakdown(p, occupationId, overrides);
 
         // Champs du formulaire GHL - Query Keys = config.js → GHL_FORM_IFRAME_KEYS
         set('forfait_slug', p.slug);
         set('forfait_name', p.name);
-        if (row) {
-            const bookingLabel = breakdown?.bookingLabel || row.label;
+        if (row && breakdown && !onRequest) {
+            const bookingLabel = breakdown.bookingLabel || row.label;
             set('occupation', bookingLabel);
             set('occupation_code', row.id);
             set('occupation_label', bookingLabel);
-            set('selected_price', breakdown?.adultUnitPrice ?? row.pricePerPerson ?? row.price);
-            set('selected_taxes', breakdown?.taxesPerPerson ?? row.taxesPerPerson ?? row.taxes);
-            set('selected_total', breakdown?.totalWithTaxes ?? row.totalPerPerson ?? row.totalWithTaxes);
-        } else if (breakdown?.isAutres) {
-            set('occupation', breakdown.bookingLabel);
-            set('occupation_code', 'autres');
-            set('occupation_label', breakdown.bookingLabel);
+            set('selected_price', breakdown.adultUnitPrice ?? row.pricePerPerson ?? row.price);
+            set('selected_taxes', breakdown.taxesPerPerson ?? row.taxesPerPerson ?? row.taxes);
+            set('selected_total', breakdown.totalWithTaxes ?? row.totalPerPerson ?? row.totalWithTaxes);
+        } else if (onRequest || breakdown?.isAutres) {
+            const adults = Number(overrides?.adults) || getOccupationDef(occupationId)?.adults || 2;
+            const kids212 = Number(overrides?.children212 || 0);
+            const kids1317 = Number(overrides?.children1317 || 0);
+            const occId = overrides?.isAutres || occupationId === 'autres'
+                ? 'autres'
+                : adultCountToOccupationId(adults);
+            const bookingLabel = breakdown?.bookingLabel
+                || buildBookingOccupationLabel(getOccupationDef(occId), kids212, kids1317, adults);
+            set('occupation', bookingLabel);
+            set('occupation_code', occId);
+            set('occupation_label', bookingLabel);
+            set('nombre_adultes', adults);
+            set('nombre_enfants_2_12', kids212 + kids1317);
+            set('nombre_personnes', adults + kids212 + kids1317);
+            set('pricing_summary', 'Tarif non publié pour cette occupation - nous vous contacterons.');
+            set('sommaire', 'Tarif non publié pour cette occupation - nous vous contacterons.');
         }
-        if (breakdown) {
+        if (breakdown && !onRequest) {
             // Query Key GHL « nombre_enfants_2_12 » = total enfants (tous âges), nom historique inchangé.
             const totalEnfants = (breakdown.children212 ?? 0) + (breakdown.children1317 ?? 0);
             set('nombre_personnes', breakdown.totalPeople);
@@ -1849,6 +1814,11 @@
             conseiller_tag: '',
             contact_tags: []
         };
+    }
+
+    /** Owner routing is assignedTo only. Kept for older callers. */
+    function buildConseillerTag() {
+        return '';
     }
 
     async function fetchAgents() {
@@ -2812,7 +2782,9 @@
         getAgentQueryParam,
         productMatchesAgent,
         filterProductsByAgent,
-        buildConseillerTag,
+        buildConseillerTag: typeof buildConseillerTag === 'function'
+            ? buildConseillerTag
+            : function () { return ''; },
         resolveBookingAgentContext,
         fetchAgents,
         findAgentProfile,
@@ -2841,4 +2813,30 @@
         renderSocialShareButtonsHtml,
         bindSocialShare
     };
+    if (typeof window.VoyageFiestaAPI.fetchProducts !== 'function') {
+        throw new Error('VoyageFiestaAPI.fetchProducts missing');
+    }
+    } catch (err) {
+        console.error('[VoyageFiestaAPI] init failed', err);
+        if (!window.VoyageFiestaAPI || typeof window.VoyageFiestaAPI.fetchProducts !== 'function') {
+            window.VoyageFiestaAPI = {
+                fetchProducts: async function () {
+                    const url = (window.PRODUCTS_JSON_URL || 'products.json').replace(/^\//, '') + '?t=' + Date.now();
+                    const res = await fetch(url, { cache: 'no-store' });
+                    const data = await res.json();
+                    return Array.isArray(data && data.products) ? data.products : [];
+                },
+                getAgentQueryParam: function () {
+                    try {
+                        return String(new URLSearchParams(window.location.search).get('agent') || '').trim();
+                    } catch (_) {
+                        return '';
+                    }
+                },
+                filterProductsByAgent: function (products) { return products || []; },
+                applySocialMetaTags: function () {},
+                buildListingSharePayload: function () { return {}; }
+            };
+        }
+    }
 })();

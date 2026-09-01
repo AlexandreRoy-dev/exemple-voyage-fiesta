@@ -1,0 +1,25 @@
+name: Check boutique JS
+
+on:
+  push:
+    paths:
+      - 'api.js'
+      - 'scripts/check-api-loads.mjs'
+      - '.github/workflows/check-frontend.yml'
+  pull_request:
+    paths:
+      - 'api.js'
+      - 'scripts/check-api-loads.mjs'
+      - '.github/workflows/check-frontend.yml'
+
+jobs:
+  api-loads:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: api.js must attach VoyageFiestaAPI
+        run: node scripts/check-api-loads.mjs
