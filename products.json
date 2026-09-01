@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-31T21:57:42.199Z",
+  "updatedAt": "2026-09-01T14:45:03.427Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -208,7 +208,7 @@
         "vol_direct_sans_escale"
       ],
       "inventory": 10,
-      "price": 778,
+      "price": 768,
       "priceOccSimple": 1078,
       "priceOccTriple": 768,
       "priceOccDouble1Child": null,
