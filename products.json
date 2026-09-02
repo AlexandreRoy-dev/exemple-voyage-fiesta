@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01T16:15:03.144Z",
+  "updatedAt": "2026-09-02T16:45:03.332Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -191,8 +191,8 @@
       "id": "6a95ee4b8386c23d9789b909",
       "slug": "marien-puerto-plata-hotel-2027-01-14",
       "name": "Marien Puerto Plata Hotel",
-      "state": "pre_vente",
-      "active": "pre_vente",
+      "state": "actif",
+      "active": "actif",
       "destTag": "",
       "subDest": "Puerto Plata (POP)",
       "destination1": "Puerto Plata (POP)",
