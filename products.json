@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-03T08:00:02.868Z",
+  "updatedAt": "2026-09-03T08:15:03.392Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -665,10 +665,10 @@
       "ownerId": "0nvsiaLmrxoziqCY1cOY",
       "owner": {
         "id": "0nvsiaLmrxoziqCY1cOY",
-        "name": "0nvsiaLmrxoziqCY1cOY",
-        "email": "",
-        "phone": "",
-        "slug": "0nvsialmrxoziqcy1coy"
+        "name": "Barbara Delisle",
+        "email": "Barbara@voyagefiesta.com",
+        "phone": "+18736712155",
+        "slug": "barbara-delisle"
       }
     },
     {
