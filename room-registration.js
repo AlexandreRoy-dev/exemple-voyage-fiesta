@@ -283,14 +283,16 @@
                             Notes
                         </h2>
                     </div>
-                    <label class="rr-field" for="conseiller_voyage">
-                        <span>Conseiller voyage</span>
-                        <input class="rr-input" id="conseiller_voyage" type="text" name="conseiller_voyage" autocomplete="off" placeholder="Nom de votre conseiller">
-                    </label>
-                    <label class="rr-field" for="notes_extra">
-                        <span>Notes ou demandes particulières</span>
-                        <textarea class="rr-input rr-textarea" id="notes_extra" name="notes_extra" rows="4" placeholder="Allergies, besoins spéciaux, questions..."></textarea>
-                    </label>
+                    <div class="rr-stack-fields">
+                        <label class="rr-field" for="conseiller_voyage">
+                            <span>Si vous avez un conseiller Voyages Fiesta veuillez inscrire son nom</span>
+                            <input class="rr-input" id="conseiller_voyage" type="text" name="conseiller_voyage" autocomplete="off" placeholder="Nom de votre conseiller">
+                        </label>
+                        <label class="rr-field" for="notes_extra">
+                            <span>Notes ou demandes particulières</span>
+                            <textarea class="rr-input rr-textarea" id="notes_extra" name="notes_extra" rows="4" placeholder="Allergies, besoins spéciaux, questions..."></textarea>
+                        </label>
+                    </div>
                 </section>
 
                 <section class="rr-card rr-card-terms">
