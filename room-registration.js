@@ -486,12 +486,58 @@
         return url;
     }
 
+    function isFramed() {
+        try {
+            return global.self !== global.top;
+        } catch (_) {
+            return true;
+        }
+    }
+
+    function clickNavigate(href, target) {
+        const a = document.createElement('a');
+        a.href = href;
+        a.target = target;
+        if (target === '_blank') a.rel = 'noopener noreferrer';
+        a.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    /**
+     * Page pleine sans toucher à WordPress.
+     * Dans l’iframe cross-origin (voyagefiesta.com), top.location est bloqué → nouvel onglet.
+     */
+    function navigateFullPage(url) {
+        const href = String(url);
+
+        if (!isFramed()) {
+            global.location.assign(href);
+            return 'self';
+        }
+
+        // Nouvel onglet = page complète sur aubaineexpress, sans script côté WP.
+        try {
+            clickNavigate(href, '_blank');
+            return 'blank';
+        } catch (_) { /* ignore */ }
+
+        try {
+            const win = global.open(href, '_blank', 'noopener,noreferrer');
+            if (win) return 'blank-open';
+        } catch (_) { /* ignore */ }
+
+        // Dernier recours : formulaire dans l’iframe
+        global.location.assign(href);
+        return 'iframe-self';
+    }
+
     function openReservationWindow(draft) {
         const sid = saveReservationDraft(draft || {});
         const url = reservationPageUrl(draft, sid);
-        const target = (global.top && global.top !== global) ? global.top : global;
-        target.location.assign(url.toString());
-        return target;
+        navigateFullPage(url.toString());
+        return url;
     }
 
     function formatMoneyCad(amount) {
@@ -803,6 +849,7 @@ select.rr-input {
         injectStyles,
         saveReservationDraft,
         loadReservationDraft,
-        openReservationWindow
+        openReservationWindow,
+        navigateFullPage
     };
 })(typeof window !== 'undefined' ? window : globalThis);

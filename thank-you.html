@@ -6,11 +6,29 @@
     <title>Merci - Voyage Fiesta</title>
     <script>
         (function () {
+            var href = window.location.href;
             try {
-                if (window.self !== window.top) {
-                    window.top.location.replace(window.location.href);
+                if (window.self === window.top) return;
+            } catch (_) { /* framed */ }
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type: 'voyage-fiesta-navigate', url: href }, '*');
                 }
+            } catch (_) { /* ignore */ }
+            try {
+                void window.top.location.href;
+                window.top.location.replace(href);
+                return;
             } catch (_) { /* cross-origin */ }
+            try {
+                var a = document.createElement('a');
+                a.href = href;
+                a.target = '_top';
+                a.rel = 'noopener';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } catch (_) { /* ignore */ }
         })();
     </script>
     <script src="https://cdn.tailwindcss.com"></script>

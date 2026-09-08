@@ -79,10 +79,10 @@
                 <li>En mode iframe, une <strong>barre fixe</strong> garde le fil d'Ariane visible au scroll.</li>
                 <li>Le paramètre <code class="bg-white px-1 rounded">?embed=1</code> masque la bannière promo en haut — idéal dans une iframe.</li>
                 <li>Navigation interne (filtres, fiche produit, retour liste) reste dans l’iframe.</li>
-                <li>Le formulaire de réservation GoHighLevel s’ouvre dans la fiche produit, toujours dans l’iframe.</li>
+                <li><strong>Réserver maintenant</strong> sort de l’iframe vers la page complète de réservation (<code class="bg-white px-1 rounded">target=_top</code>). Le snippet recommandé gère aussi <code class="bg-white px-1 rounded">voyage-fiesta-navigate</code> si le navigateur bloque la sortie.</li>
                 <li>Forfaits mis à jour automatiquement depuis GoHighLevel (sync ~15 min).</li>
                 <li><strong>GoHighLevel :</strong> Sites → Page → élément <em>Custom Code</em> ou <em>HTML</em> → coller le code.</li>
-                <li><strong>WordPress :</strong> Bloc « HTML personnalisé » ou « Code ».</li>
+                <li><strong>WordPress (Divi) :</strong> module Code — remplacer l’iframe actuelle par le snippet recommandé (avec <code class="bg-white px-1 rounded">id="voyage-fiesta-iframe"</code> + script).</li>
             </ul>
         </section>
     </main>
@@ -108,11 +108,15 @@
                 '<script>',
                 '(function(){',
                 '  window.addEventListener("message", function(e) {',
-                '    if (!e.data || e.data.type !== "voyage-fiesta-resize") return;',
+                '    if (!e.data || !e.data.type) return;',
+                '    if (e.origin !== "https://aubaineexpress.voyagefiesta.ca") return;',
                 '    var iframe = document.getElementById("voyage-fiesta-iframe");',
                 '    if (!iframe || e.source !== iframe.contentWindow) return;',
-                '    if (typeof e.data.height === "number" && e.data.height > 0) {',
+                '    if (e.data.type === "voyage-fiesta-resize" && typeof e.data.height === "number" && e.data.height > 0) {',
                 '      iframe.style.height = e.data.height + "px";',
+                '    }',
+                '    if (e.data.type === "voyage-fiesta-navigate" && typeof e.data.url === "string") {',
+                '      window.location.assign(e.data.url);',
                 '    }',
                 '  });',
                 '})();',
@@ -142,11 +146,15 @@
             document.getElementById('demo-iframe').src = embedUrl;
 
             window.addEventListener('message', function (e) {
-                if (!e.data || e.data.type !== 'voyage-fiesta-resize') return;
+                if (!e.data || !e.data.type) return;
+                if (e.origin !== 'https://aubaineexpress.voyagefiesta.ca' && e.origin !== location.origin) return;
                 var iframe = document.getElementById('demo-iframe');
                 if (!iframe || e.source !== iframe.contentWindow) return;
-                if (typeof e.data.height === 'number' && e.data.height > 0) {
+                if (e.data.type === 'voyage-fiesta-resize' && typeof e.data.height === 'number' && e.data.height > 0) {
                     iframe.style.height = e.data.height + 'px';
+                }
+                if (e.data.type === 'voyage-fiesta-navigate' && typeof e.data.url === 'string') {
+                    window.location.assign(e.data.url);
                 }
             });
 
