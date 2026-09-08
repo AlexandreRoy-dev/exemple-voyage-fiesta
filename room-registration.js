@@ -1,20 +1,14 @@
 /**
- * Formulaire d'inscription de chambre (natif) → autofill GHL
- * Form: https://api.leadconnectorhq.com/widget/form/DXJYaNnY1fdP5D1uVr9K
- *
- * Étape 1 : contact + dépôt (obligatoire)
- * Étape 2 : facturation & assurances (obligatoire)
- * Étape 3 : infos passagers (optionnel)
+ * Formulaire de réservation (une page) → GHL Contacts via Cloudflare Worker.
+ * S'ouvre dans une fenêtre dédiée depuis la fiche forfait.
  */
 (function (global) {
     'use strict';
 
     const MAX_STRUCTURED_PASSENGERS = 5;
-    const GENDER_OPTIONS = [
-        { value: 'Homme', label: 'Homme' },
-        { value: 'Femme', label: 'Femme' },
-        { value: 'Autre', label: 'Autre' }
-    ];
+    const MAX_EXTRA_TRAVELERS = MAX_STRUCTURED_PASSENGERS - 1;
+    const DRAFT_KEY_PREFIX = 'vf-reservation-draft-';
+    const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
     const YES_NO = [
         { value: 'Oui', label: 'Oui' },
         { value: 'Non', label: 'Non' }
@@ -28,17 +22,6 @@
         return global.GHL_ROOM_FORM_EMBED_URL || '';
     }
 
-    function getRoomFormId() {
-        const url = getEmbedUrl();
-        if (!url) return '';
-        try {
-            const parts = new URL(url).pathname.split('/').filter(Boolean);
-            return parts[parts.length - 1] || '';
-        } catch (_) {
-            return '';
-        }
-    }
-
     function payloadToGhlFields(payload) {
         const map = getMap();
         const fields = {};
@@ -50,10 +33,6 @@
         return fields;
     }
 
-    /**
-     * Soumet la réservation via l'API proxy (Cloudflare Worker → GHL Contacts).
-     * Ne pas appeler l'endpoint forms/submit GHL depuis le navigateur (401).
-     */
     async function submitGhlRoomForm({ payload, redirectUrl } = {}) {
         const apiUrl = String(global.GHL_RESERVATION_API_URL || '').trim();
         if (!apiUrl) {
@@ -105,95 +84,57 @@
         return s;
     }
 
-    function passengerSlotKeys(index) {
-        const n = index;
-        return {
-            prenom: `p${n}_prenom`,
-            nom: `p${n}_nom`,
-            genre: `p${n}_genre`,
-            dob: `p${n}_dob`,
-            phone: n <= 2 ? `p${n}_phone` : null,
-            email: n === 1 ? 'p1_email' : null
-        };
-    }
-
     function selectHtml(name, options, required, placeholder) {
         const opts = [`<option value="">${escapeHtml(placeholder || 'Choisissez une option')}</option>`]
             .concat(options.map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`));
-        return `<select name="${escapeHtml(name)}" class="rr-input" ${required ? 'required' : ''}>${opts.join('')}</select>`;
+        return `<select id="${escapeHtml(name)}" name="${escapeHtml(name)}" class="rr-input" ${required ? 'required' : ''}>${opts.join('')}</select>`;
     }
 
-    function progressHtml(activeStep) {
-        const steps = [
-            { n: 1, label: 'Coordonnées' },
-            { n: 2, label: 'Assurances' },
-            { n: 3, label: 'Passagers' }
-        ];
-        return `
-            <nav class="rr-progress" aria-label="Progression">
-                ${steps.map((s, i) => `
-                    <div class="rr-progress-item${s.n === activeStep ? ' is-active' : ''}${s.n < activeStep ? ' is-done' : ''}" data-progress="${s.n}">
-                        <span class="rr-progress-num">${s.n}</span>
-                        <span class="rr-progress-label">${escapeHtml(s.label)}</span>
-                    </div>
-                    ${i < steps.length - 1 ? '<span class="rr-progress-line" aria-hidden="true"></span>' : ''}
-                `).join('')}
-            </nav>`;
+    function reqMark() {
+        return '<span class="rr-req" aria-hidden="true">*</span><span class="sr-only"> (obligatoire)</span>';
     }
 
-    function passengerBlockHtml(index, { required, isPrincipal }) {
-        const keys = passengerSlotKeys(index);
-        const title = isPrincipal ? 'Passager principal' : `Passager ${index}`;
+    function extraTravelerHtml(index) {
+        const n = Number(index);
         return `
-            <section class="rr-card" data-passenger-block="${index}">
-                <h3 class="rr-card-title">${escapeHtml(title)}</h3>
-                ${isPrincipal ? `<p class="rr-hint">Le prénom, le nom et la date de naissance doivent être identiques au passeport.</p>` : ''}
-                <div class="rr-grid">
-                    <label class="rr-field">
-                        <span>Prénom ${required ? '*' : ''}</span>
-                        <input class="rr-input" type="text" name="${keys.prenom}" autocomplete="given-name" ${required ? 'required' : ''} placeholder="Prénom" ${isPrincipal ? 'data-prefill-prenom' : ''}>
-                    </label>
-                    <label class="rr-field">
-                        <span>Nom de famille ${required ? '*' : ''}</span>
-                        <input class="rr-input" type="text" name="${keys.nom}" autocomplete="family-name" ${required ? 'required' : ''} placeholder="Nom" ${isPrincipal ? 'data-prefill-nom' : ''}>
-                    </label>
-                    <label class="rr-field">
-                        <span>Genre ${required ? '*' : ''}</span>
-                        ${selectHtml(keys.genre, GENDER_OPTIONS, required, 'Choisir le genre')}
-                    </label>
-                    <label class="rr-field">
-                        <span>Date de naissance ${required ? '*' : ''}</span>
-                        <input class="rr-input" type="date" name="${keys.dob}" ${required ? 'required' : ''}>
-                    </label>
-                    ${!isPrincipal && keys.phone ? `
-                    <label class="rr-field">
-                        <span>Téléphone</span>
-                        <input class="rr-input" type="tel" name="${keys.phone}" autocomplete="tel" placeholder="+1 (555) 000-0000">
-                    </label>` : ''}
+            <article class="rr-extra-card" data-extra-traveler="${n}">
+                <div class="rr-extra-head">
+                    <h3 class="rr-extra-title">Voyageur ${n + 1}</h3>
+                    <button type="button" class="rr-btn-remove" data-remove-traveler aria-label="Retirer ce voyageur">Retirer</button>
                 </div>
-            </section>`;
+                <div class="rr-grid">
+                    <label class="rr-field" for="extra-prenom-${n}">
+                        <span>Prénom ${reqMark()}</span>
+                        <input class="rr-input" id="extra-prenom-${n}" type="text" name="extra_prenom_${n}" autocomplete="off" required placeholder="Marie">
+                    </label>
+                    <label class="rr-field" for="extra-nom-${n}">
+                        <span>Nom de famille ${reqMark()}</span>
+                        <input class="rr-input" id="extra-nom-${n}" type="text" name="extra_nom_${n}" autocomplete="off" required placeholder="Tremblay">
+                    </label>
+                    <label class="rr-field" for="extra-dob-${n}">
+                        <span>Date de naissance</span>
+                        <input class="rr-input" id="extra-dob-${n}" type="date" name="extra_dob_${n}">
+                    </label>
+                </div>
+            </article>`;
     }
 
     function kidRowHtml(i) {
         return `
             <div class="rr-kid-row" data-kid-row>
-                <h4 class="rr-kid-title">Enfant ${i}</h4>
+                <h3 class="rr-extra-title">Enfant ${i}</h3>
                 <div class="rr-grid">
-                    <label class="rr-field">
-                        <span>Prénom *</span>
-                        <input class="rr-input" type="text" name="kid_prenom_${i}" required placeholder="Prénom">
+                    <label class="rr-field" for="kid-prenom-${i}">
+                        <span>Prénom ${reqMark()}</span>
+                        <input class="rr-input" id="kid-prenom-${i}" type="text" name="kid_prenom_${i}" required placeholder="Prénom">
                     </label>
-                    <label class="rr-field">
-                        <span>Nom *</span>
-                        <input class="rr-input" type="text" name="kid_nom_${i}" required placeholder="Nom">
+                    <label class="rr-field" for="kid-nom-${i}">
+                        <span>Nom de famille ${reqMark()}</span>
+                        <input class="rr-input" id="kid-nom-${i}" type="text" name="kid_nom_${i}" required placeholder="Nom">
                     </label>
-                    <label class="rr-field">
-                        <span>Genre *</span>
-                        ${selectHtml(`kid_genre_${i}`, GENDER_OPTIONS, true, 'Genre')}
-                    </label>
-                    <label class="rr-field">
-                        <span>Date de naissance *</span>
-                        <input class="rr-input" type="date" name="kid_dob_${i}" required>
+                    <label class="rr-field" for="kid-dob-${i}">
+                        <span>Date de naissance ${reqMark()}</span>
+                        <input class="rr-input" id="kid-dob-${i}" type="date" name="kid_dob_${i}" required>
                     </label>
                 </div>
             </div>`;
@@ -204,8 +145,17 @@
         if (n <= 0) return '';
         const rows = Array.from({ length: n }, (_, i) => kidRowHtml(i + 1)).join('');
         return `
-            <section class="rr-card" id="rr-kids-section">
-                <h3 class="rr-card-title">Enfants (${n})</h3>
+            <section class="rr-card" id="rr-kids-section" aria-labelledby="rr-kids-title">
+                <div class="rr-card-head">
+                    <h2 class="rr-card-title" id="rr-kids-title">
+                        <i class="fa-solid fa-child-reaching" aria-hidden="true"></i>
+                        Enfants (${n})
+                    </h2>
+                </div>
+                <div class="rr-alert" role="note">
+                    <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    <p>Indiquez le nom exactement comme sur leurs passeports.</p>
+                </div>
                 <div id="rr-kids-list" class="rr-stack">${rows}</div>
             </section>`;
     }
@@ -214,131 +164,145 @@
         const adults = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(fixedPassengerCount) || 1));
         const kids = Math.max(0, Number(fixedKidsCount) || 0);
         const totalPeople = adults + kids;
-        const countLabel = totalPeople === 1 ? '1 passager' : `${totalPeople} passagers`;
+        const extraHint = adults > 1
+            ? `Ajoutez les autres adultes de la réservation (${adults} adultes).`
+            : 'Ajoutez un autre voyageur seulement s’il voyage avec vous.';
         return `
             <form id="room-registration-form" class="rr-form" novalidate>
+                <p class="rr-req-legend">Les champs marqués <span class="rr-req">*</span> sont obligatoires.</p>
                 <input type="hidden" name="nombre_passagers" value="${totalPeople}">
                 <input type="hidden" name="nombre_adultes" value="${adults}">
                 <input type="hidden" name="nombre_enfants" value="${kids}">
-                <input type="hidden" name="infopassager" id="rr-infopassager" value="Remplir plus tard">
+                <input type="hidden" name="infopassager" id="rr-infopassager" value="Oui">
+                <input type="hidden" name="payment_responsible" id="rr-payment-responsible" value="">
+                <input type="hidden" name="depot" id="rr-depot-value" value="">
 
-                <div id="rr-progress-root">${progressHtml(1)}</div>
-
-                <div id="rr-step-1" class="rr-step" data-rr-step="1">
-                    <p class="rr-step-lead">Vos coordonnées pour démarrer la réservation.</p>
-
-                    <section class="rr-card">
-                        <h3 class="rr-card-title">Vos coordonnées</h3>
-                        <div class="rr-grid">
-                            <label class="rr-field">
-                                <span>Prénom *</span>
-                                <input class="rr-input" type="text" name="contact_prenom" required autocomplete="given-name" placeholder="Prénom">
-                            </label>
-                            <label class="rr-field">
-                                <span>Nom *</span>
-                                <input class="rr-input" type="text" name="contact_nom" required autocomplete="family-name" placeholder="Nom">
-                            </label>
-                            <label class="rr-field">
-                                <span>Téléphone *</span>
-                                <input class="rr-input" type="tel" name="contact_phone" required autocomplete="tel" placeholder="+1 (555) 000-0000">
-                            </label>
-                            <label class="rr-field">
-                                <span>Courriel *</span>
-                                <input class="rr-input" type="email" name="contact_email" required autocomplete="email" placeholder="Votre@courriel.com">
-                            </label>
-                            <label class="rr-field">
-                                <span>Nombre de passagers</span>
-                                <input class="rr-input rr-input-readonly" type="text" value="${escapeHtml(countLabel)}" readonly tabindex="-1">
-                            </label>
-                            <label class="rr-field">
-                                <span>Dépôt</span>
-                                <input class="rr-input rr-input-readonly" type="text" name="depot_display" id="rr-depot-display" readonly tabindex="-1" placeholder="-">
-                                <input type="hidden" name="depot" id="rr-depot-value" value="">
-                                <span class="rr-field-hint" id="rr-depot-hint"></span>
-                            </label>
-                        </div>
-                    </section>
-
-                    <section class="rr-card rr-card-terms">
-                        <label class="rr-check">
-                            <input type="checkbox" name="terms_and_conditions" value="true" required>
-                            <span>J'ai lu et j'accepte les termes et conditions du document 001-554 et je confirme que toutes les informations fournies sont exactes.</span>
+                <section class="rr-card" aria-labelledby="rr-principal-title">
+                    <div class="rr-card-head">
+                        <h2 class="rr-card-title" id="rr-principal-title">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                            Voyageur principal
+                        </h2>
+                    </div>
+                    <div class="rr-alert" role="note" id="rr-passport-hint">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <p>Indiquez le nom exactement comme sur votre passeport.</p>
+                    </div>
+                    <div class="rr-grid">
+                        <label class="rr-field" for="contact_prenom">
+                            <span>Prénom ${reqMark()}</span>
+                            <input class="rr-input" id="contact_prenom" type="text" name="contact_prenom" required autocomplete="given-name" placeholder="Marie" aria-describedby="rr-passport-hint">
                         </label>
-                    </section>
-
-                    <p id="rr-form-error-1" class="rr-error hidden" role="alert"></p>
-                    <div class="rr-actions">
-                        <button type="button" class="rr-btn-primary" id="rr-step1-next">Continuer</button>
-                    </div>
-                </div>
-
-                <div id="rr-step-2" class="rr-step hidden" data-rr-step="2">
-                    <p class="rr-step-lead">Facturation et assurances. Après cette étape, vous pouvez réserver tout de suite ou ajouter les passagers.</p>
-
-                    <section class="rr-card">
-                        <h3 class="rr-card-title">Adresse de facturation</h3>
-                        <div class="rr-grid">
-                            <label class="rr-field rr-field-full">
-                                <span>Adresse civique du passager principal *</span>
-                                <input class="rr-input" type="text" name="address" required autocomplete="street-address" placeholder="Entrez l'adresse civique">
-                            </label>
-                            <label class="rr-field">
-                                <span>Ville *</span>
-                                <input class="rr-input" type="text" name="city" required autocomplete="address-level2" placeholder="Entrez la ville">
-                            </label>
-                            <label class="rr-field">
-                                <span>Code postal *</span>
-                                <input class="rr-input" type="text" name="postal_code" required autocomplete="postal-code" placeholder="Entrez le code postal">
-                            </label>
-                        </div>
-                    </section>
-
-                    <section class="rr-card">
-                        <h3 class="rr-card-title">Assurances & documents</h3>
-                        <div class="rr-stack-fields">
-                            <label class="rr-field">
-                                <span>Tous les voyageurs sont-ils couverts par une assurance voyage incluant les soins médicaux d'urgence ? *</span>
-                                ${selectHtml('assurance_medicale', YES_NO, true)}
-                            </label>
-                            <label class="rr-field">
-                                <span>Le passeport de chaque voyageur est-il valide au moins 6 mois après la date de retour prévue ? *</span>
-                                ${selectHtml('passeport_valide', YES_NO, true)}
-                            </label>
-                            <label class="rr-field">
-                                <span>Désirez-vous une assurance voyage Annulation ? *</span>
-                                ${selectHtml('assurance_annulation', YES_NO, true)}
-                            </label>
-                            <label class="rr-field">
-                                <span>Responsable du paiement *</span>
-                                <input class="rr-input" type="text" name="payment_responsible" required placeholder="Nom complet">
-                            </label>
-                        </div>
-                    </section>
-
-                    <p id="rr-form-error-2" class="rr-error hidden" role="alert"></p>
-                    <div class="rr-actions rr-actions-stack">
-                        <button type="button" class="rr-btn-primary" id="rr-step2-next">Continuer vers les passagers</button>
-                        <button type="button" class="rr-btn-ghost" id="rr-step2-reserve">Réserver maintenant</button>
-                        <p class="rr-actions-hint">Les étapes 1 et 2 suffisent pour réserver. Les infos passagers peuvent être ajoutées plus tard.</p>
-                        <button type="button" class="rr-btn-secondary" id="rr-step2-back">Retour</button>
-                    </div>
-                </div>
-
-                <div id="rr-step-3" class="rr-step hidden" data-rr-step="3">
-                    <p class="rr-step-lead">Renseignez chaque passager tel qu'indiqué sur le passeport.</p>
-                    <div id="rr-passengers" class="rr-stack"></div>
-                    ${kidsSectionHtml(kids)}
-                    <section class="rr-card">
-                        <label class="rr-field">
-                            <span>Notes additionnelles</span>
-                            <textarea class="rr-input rr-textarea" name="notes_extra" rows="3" placeholder="Infos supplémentaires (optionnel)"></textarea>
+                        <label class="rr-field" for="contact_nom">
+                            <span>Nom de famille ${reqMark()}</span>
+                            <input class="rr-input" id="contact_nom" type="text" name="contact_nom" required autocomplete="family-name" placeholder="Tremblay" aria-describedby="rr-passport-hint">
                         </label>
-                    </section>
-                    <p id="rr-form-error-3" class="rr-error hidden" role="alert"></p>
-                    <div class="rr-actions rr-actions-split">
-                        <button type="button" class="rr-btn-secondary" id="rr-step3-back">Retour</button>
-                        <button type="submit" class="rr-btn-primary" id="rr-submit">Envoyer la demande</button>
+                        <label class="rr-field" for="p1_dob">
+                            <span>Date de naissance</span>
+                            <input class="rr-input" id="p1_dob" type="date" name="p1_dob" autocomplete="bday">
+                        </label>
+                        <label class="rr-field" for="contact_email">
+                            <span>Courriel ${reqMark()}</span>
+                            <input class="rr-input" id="contact_email" type="email" name="contact_email" required autocomplete="email" placeholder="marie@exemple.com">
+                        </label>
+                        <label class="rr-field rr-field-full" for="contact_phone">
+                            <span>Téléphone ${reqMark()}</span>
+                            <input class="rr-input" id="contact_phone" type="tel" name="contact_phone" required autocomplete="tel" placeholder="514-555-0000">
+                        </label>
+                        <label class="rr-field rr-field-full" for="address">
+                            <span>Adresse ${reqMark()}</span>
+                            <input class="rr-input" id="address" type="text" name="address" required autocomplete="address-line1" placeholder="123 rue des Érables">
+                        </label>
+                        <label class="rr-field rr-field-full" for="address2">
+                            <span>Adresse 2 (optionnel)</span>
+                            <input class="rr-input" id="address2" type="text" name="address2" autocomplete="address-line2" placeholder="Apt 4B">
+                        </label>
                     </div>
+                    <div class="rr-grid rr-grid-city">
+                        <label class="rr-field" for="city">
+                            <span>Ville ${reqMark()}</span>
+                            <input class="rr-input" id="city" type="text" name="city" required autocomplete="address-level2" placeholder="Montréal">
+                        </label>
+                        <label class="rr-field" for="province">
+                            <span>Province ${reqMark()}</span>
+                            <input class="rr-input" id="province" type="text" name="province" required autocomplete="address-level1" placeholder="QC">
+                        </label>
+                        <label class="rr-field" for="postal_code">
+                            <span>Code postal ${reqMark()}</span>
+                            <input class="rr-input" id="postal_code" type="text" name="postal_code" required autocomplete="postal-code" placeholder="H2X 1Y3">
+                        </label>
+                    </div>
+                </section>
+
+                <section class="rr-card" aria-labelledby="rr-others-title">
+                    <div class="rr-card-head">
+                        <h2 class="rr-card-title" id="rr-others-title">
+                            <i class="fa-solid fa-user-group" aria-hidden="true"></i>
+                            Autres voyageurs
+                        </h2>
+                        <button type="button" class="rr-btn-add" id="rr-add-traveler">+ Ajouter</button>
+                    </div>
+                    <div class="rr-alert" role="note">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <p>Indiquez le nom exactement comme sur leurs passeports.</p>
+                    </div>
+                    <p class="rr-hint" id="rr-others-hint">${escapeHtml(extraHint)}</p>
+                    <div id="rr-extra-list" class="rr-stack"></div>
+                    <p class="rr-empty" id="rr-extra-empty">Aucun autre voyageur ajouté.</p>
+                </section>
+
+                ${kidsSectionHtml(kids)}
+
+                <section class="rr-card" aria-labelledby="rr-insurance-title">
+                    <div class="rr-card-head">
+                        <h2 class="rr-card-title" id="rr-insurance-title">
+                            <i class="fa-solid fa-shield-heart" aria-hidden="true"></i>
+                            Assurances et documents
+                        </h2>
+                    </div>
+                    <div class="rr-stack-fields">
+                        <label class="rr-field" for="assurance_medicale">
+                            <span>Tous les voyageurs sont-ils couverts par une assurance voyage incluant les soins médicaux d’urgence ? ${reqMark()}</span>
+                            ${selectHtml('assurance_medicale', YES_NO, true)}
+                        </label>
+                        <label class="rr-field" for="passeport_valide">
+                            <span>Le passeport de chaque voyageur est-il valide au moins 6 mois après la date de retour prévue ? ${reqMark()}</span>
+                            ${selectHtml('passeport_valide', YES_NO, true)}
+                        </label>
+                        <label class="rr-field" for="assurance_annulation">
+                            <span>Désirez-vous une assurance voyage Annulation ? ${reqMark()}</span>
+                            ${selectHtml('assurance_annulation', YES_NO, true)}
+                        </label>
+                    </div>
+                </section>
+
+                <section class="rr-card" aria-labelledby="rr-notes-title">
+                    <div class="rr-card-head">
+                        <h2 class="rr-card-title" id="rr-notes-title">
+                            <i class="fa-solid fa-clipboard" aria-hidden="true"></i>
+                            Notes
+                        </h2>
+                    </div>
+                    <label class="rr-field" for="conseiller_voyage">
+                        <span>Conseiller voyage</span>
+                        <input class="rr-input" id="conseiller_voyage" type="text" name="conseiller_voyage" autocomplete="off" placeholder="Nom de votre conseiller">
+                    </label>
+                    <label class="rr-field" for="notes_extra">
+                        <span>Notes ou demandes particulières</span>
+                        <textarea class="rr-input rr-textarea" id="notes_extra" name="notes_extra" rows="4" placeholder="Allergies, besoins spéciaux, questions..."></textarea>
+                    </label>
+                </section>
+
+                <section class="rr-card rr-card-terms">
+                    <label class="rr-check">
+                        <input type="checkbox" name="terms_and_conditions" value="true" required>
+                        <span>J’ai lu et j’accepte les termes et conditions du document 001-554 et je confirme que toutes les informations fournies sont exactes. ${reqMark()}</span>
+                    </label>
+                </section>
+
+                <p id="rr-form-error" class="rr-error hidden" role="alert"></p>
+                <div class="rr-actions">
+                    <button type="submit" class="rr-btn-primary" id="rr-submit">Envoyer la demande</button>
                 </div>
             </form>`;
     }
@@ -347,25 +311,32 @@
         const rows = [...form.querySelectorAll('[data-kid-row]')];
         const lines = [];
         rows.forEach((row, idx) => {
-            const prenom = row.querySelector(`[name^="kid_prenom"]`)?.value?.trim();
-            const nom = row.querySelector(`[name^="kid_nom"]`)?.value?.trim();
-            const genre = row.querySelector(`[name^="kid_genre"]`)?.value?.trim();
-            const dobRaw = row.querySelector(`[name^="kid_dob"]`)?.value;
-            const dob = formatDobForGhl(dobRaw);
+            const prenom = row.querySelector('[name^="kid_prenom"]')?.value?.trim();
+            const nom = row.querySelector('[name^="kid_nom"]')?.value?.trim();
+            const dob = formatDobForGhl(row.querySelector('[name^="kid_dob"]')?.value);
             if (!prenom && !nom && !dob) return;
             lines.push(
                 `Enfant ${idx + 1}: ${[prenom, nom].filter(Boolean).join(' ')}` +
-                (genre ? ` | ${genre}` : '') +
                 (dob ? ` | ${dob}` : '')
             );
         });
         return lines.join('\n');
     }
 
-    function formDataToPayload(form, { includePassengers, completedStep }) {
+    function collectExtraTravelers(form) {
+        return [...form.querySelectorAll('[data-extra-traveler]')].map((card, i) => ({
+            index: i + 2,
+            prenom: card.querySelector('[name^="extra_prenom_"]')?.value?.trim() || '',
+            nom: card.querySelector('[name^="extra_nom_"]')?.value?.trim() || '',
+            dob: formatDobForGhl(card.querySelector('[name^="extra_dob_"]')?.value)
+        })).filter(t => t.prenom || t.nom || t.dob);
+    }
+
+    function formDataToPayload(form) {
         const fd = new FormData(form);
         const get = (name) => String(fd.get(name) || '').trim();
         const count = Math.max(1, Number(get('nombre_passagers')) || 1);
+        const extras = collectExtraTravelers(form);
 
         const payload = {
             nombre_passagers: String(count),
@@ -374,46 +345,36 @@
             p1_nom: get('contact_nom'),
             p1_phone: get('contact_phone'),
             p1_email: get('contact_email'),
+            p1_dob: formatDobForGhl(get('p1_dob')),
             address: get('address'),
+            address2: get('address2'),
             city: get('city'),
+            province: get('province'),
             postal_code: get('postal_code'),
             assurance_medicale: get('assurance_medicale'),
             passeport_valide: get('passeport_valide'),
             assurance_annulation: get('assurance_annulation'),
             payment_responsible: get('payment_responsible') || `${get('contact_prenom')} ${get('contact_nom')}`.trim(),
-            infopassager: includePassengers ? 'Oui' : 'Remplir plus tard',
-            terms_and_conditions: form.querySelector('[name="terms_and_conditions"]')?.checked ? 'true' : ''
+            infopassager: 'Oui',
+            terms_and_conditions: form.querySelector('[name="terms_and_conditions"]')?.checked ? 'true' : '',
+            conseiller_voyage: get('conseiller_voyage')
         };
 
+        extras.forEach((traveler) => {
+            if (traveler.index > MAX_STRUCTURED_PASSENGERS) return;
+            payload[`p${traveler.index}_prenom`] = traveler.prenom;
+            payload[`p${traveler.index}_nom`] = traveler.nom;
+            payload[`p${traveler.index}_dob`] = traveler.dob;
+        });
+
         const noteParts = [];
-        if (!includePassengers) {
-            noteParts.push('Infos passagers : à remplir plus tard');
+        if (payload.conseiller_voyage) {
+            noteParts.push(`Conseiller voyage : ${payload.conseiller_voyage}`);
         }
-
-        if (includePassengers) {
-            const adultSlots = Math.min(
-                MAX_STRUCTURED_PASSENGERS,
-                Math.max(1, Number(get('nombre_adultes')) || count)
-            );
-            for (let i = 1; i <= adultSlots; i++) {
-                const keys = passengerSlotKeys(i);
-                if (i === 1) {
-                    payload.p1_prenom = get(keys.prenom) || payload.p1_prenom;
-                    payload.p1_nom = get(keys.nom) || payload.p1_nom;
-                    payload.p1_genre = get(keys.genre);
-                    payload.p1_dob = formatDobForGhl(get(keys.dob));
-                } else {
-                    payload[keys.prenom] = get(keys.prenom);
-                    payload[keys.nom] = get(keys.nom);
-                    payload[keys.genre] = get(keys.genre);
-                    payload[keys.dob] = formatDobForGhl(get(keys.dob));
-                    if (keys.phone) payload[keys.phone] = get(keys.phone);
-                }
-            }
-            const kidsNotes = collectKidsNotes(form);
-            if (kidsNotes) noteParts.push(kidsNotes);
-        }
-
+        if (payload.address2) noteParts.push(`Adresse 2 : ${payload.address2}`);
+        if (payload.province) noteParts.push(`Province : ${payload.province}`);
+        const kidsNotes = collectKidsNotes(form);
+        if (kidsNotes) noteParts.push(kidsNotes);
         const extra = get('notes_extra');
         if (extra) noteParts.push(extra);
         payload.notes = noteParts.filter(Boolean).join('\n\n');
@@ -439,11 +400,105 @@
         return url.toString();
     }
 
-    function renderPassengerBlocks(container, count) {
-        const n = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(count) || 1));
-        container.innerHTML = Array.from({ length: n }, (_, i) =>
-            passengerBlockHtml(i + 1, { required: true, isPrincipal: i === 0 })
-        ).join('');
+    function mergeReservationPayload(formPayload, draft = {}) {
+        const bookingContext = draft.bookingContext || {};
+        const adults = draft.adults != null ? String(draft.adults) : '';
+        const kids = draft.kids != null ? String(draft.kids) : '';
+        return {
+            ...bookingContext,
+            ...formPayload,
+            forfait_slug: bookingContext.forfait_slug || draft.productSlug || formPayload.forfait_slug,
+            forfait_name: bookingContext.forfait_name || draft.productName || formPayload.forfait_name,
+            depot_total: formPayload.depot || bookingContext.depot_total,
+            nombre_personnes: formPayload.nombre_passagers || bookingContext.nombre_personnes,
+            nombre_adultes: bookingContext.nombre_adultes || adults,
+            nombre_enfants_2_12: bookingContext.nombre_enfants_2_12 || kids,
+            occupation: bookingContext.occupation || formPayload.occupation || '',
+            sommaire: formPayload.sommaire || bookingContext.sommaire || draft.pricingSummary || '',
+            conseiller_name: bookingContext.conseiller_name,
+            conseiller_email: bookingContext.conseiller_email,
+            conseiller_phone: bookingContext.conseiller_phone,
+            conseiller_tag: bookingContext.conseiller_tag,
+            agent_id: bookingContext.agent_id,
+            agent_slug: bookingContext.agent_slug,
+            contact_tags: bookingContext.contact_tags,
+            conseiller_voyage: formPayload.conseiller_voyage
+        };
+    }
+
+    function cleanupDrafts() {
+        const cutoff = Date.now() - DRAFT_TTL_MS;
+        try {
+            Object.keys(localStorage).forEach((key) => {
+                if (!key.startsWith(DRAFT_KEY_PREFIX)) return;
+                try {
+                    const data = JSON.parse(localStorage.getItem(key) || '{}');
+                    if (!data.savedAt || data.savedAt < cutoff) localStorage.removeItem(key);
+                } catch (_) {
+                    localStorage.removeItem(key);
+                }
+            });
+        } catch (_) { /* private mode */ }
+    }
+
+    function saveReservationDraft(draft) {
+        cleanupDrafts();
+        const sid = (global.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : `draft-${Date.now()}`;
+        try {
+            localStorage.setItem(DRAFT_KEY_PREFIX + sid, JSON.stringify({
+                ...draft,
+                savedAt: Date.now()
+            }));
+        } catch (_) { /* ignore quota */ }
+        return sid;
+    }
+
+    function loadReservationDraft(sid) {
+        if (!sid) return null;
+        try {
+            const raw = localStorage.getItem(DRAFT_KEY_PREFIX + sid);
+            if (!raw) return null;
+            const data = JSON.parse(raw);
+            if (data.savedAt && Date.now() - data.savedAt > DRAFT_TTL_MS) {
+                localStorage.removeItem(DRAFT_KEY_PREFIX + sid);
+                return null;
+            }
+            return data;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function openReservationWindow(draft) {
+        const sid = saveReservationDraft(draft || {});
+        const url = new URL('room-registration.html', global.location.href);
+        url.searchParams.set('sid', sid);
+        if (draft?.productSlug) url.searchParams.set('forfait_slug', draft.productSlug);
+        if (draft?.adults) url.searchParams.set('adults', String(draft.adults));
+        if (draft?.kids != null) url.searchParams.set('kids', String(draft.kids));
+        const name = `vf-res-${String(draft?.productSlug || 'new').replace(/[^a-z0-9-]/gi, '')}`;
+        const features = 'width=920,height=980,scrollbars=yes,resizable=yes';
+        let win = null;
+        try {
+            win = global.open(url.toString(), name, features);
+        } catch (_) {
+            win = null;
+        }
+        if (!win) {
+            try {
+                win = global.top.open(url.toString(), name, features);
+            } catch (_) {
+                win = null;
+            }
+        }
+        if (!win) {
+            global.location.href = url.toString();
+            return null;
+        }
+        try { win.focus(); } catch (_) { /* ignore */ }
+        return win;
     }
 
     function formatMoneyCad(amount) {
@@ -455,21 +510,6 @@
         }).format(Number(amount));
     }
 
-    function setStepRequired(stepEl, enabled) {
-        if (!stepEl) return;
-        stepEl.querySelectorAll('input, select, textarea').forEach(el => {
-            if (!el.dataset.wasRequired) {
-                if (el.required) el.dataset.wasRequired = '1';
-            }
-            if (enabled) {
-                if (el.dataset.wasRequired === '1') el.required = true;
-            } else {
-                if (el.required) el.dataset.wasRequired = '1';
-                el.required = false;
-            }
-        });
-    }
-
     function mountForm(root, options = {}) {
         const {
             initialPassengerCount = 2,
@@ -477,8 +517,7 @@
             depositPerPerson = null,
             pricingSummary = '',
             onSubmit,
-            summaryHtml = '',
-            onStepChange
+            summaryHtml = ''
         } = options;
 
         const perPerson = depositPerPerson != null && Number.isFinite(Number(depositPerPerson))
@@ -491,19 +530,14 @@
         `;
 
         const form = root.querySelector('#room-registration-form');
-        const progressRoot = form.querySelector('#rr-progress-root');
-        const stepEls = {
-            1: form.querySelector('#rr-step-1'),
-            2: form.querySelector('#rr-step-2'),
-            3: form.querySelector('#rr-step-3')
-        };
-        const passengersEl = form.querySelector('#rr-passengers');
+        const extraList = form.querySelector('#rr-extra-list');
+        const extraEmpty = form.querySelector('#rr-extra-empty');
+        const addBtn = form.querySelector('#rr-add-traveler');
         const adultsInput = form.querySelector('[name="nombre_adultes"]');
         const totalInput = form.querySelector('[name="nombre_passagers"]');
-        const depotDisplay = form.querySelector('#rr-depot-display');
         const depotValue = form.querySelector('#rr-depot-value');
-        const depotHint = form.querySelector('#rr-depot-hint');
-        const infoPassagerInput = form.querySelector('#rr-infopassager');
+        const payInput = form.querySelector('#rr-payment-responsible');
+        const errorEl = form.querySelector('#rr-form-error');
 
         const adultCount = Math.min(
             MAX_STRUCTURED_PASSENGERS,
@@ -514,102 +548,88 @@
             Number(totalInput?.value) || (adultCount + Math.max(0, Number(initialKidsCount) || 0))
         );
 
-        let currentStep = 1;
-        let passengersRendered = false;
+        let extraSeq = 0;
 
-        function errorEl(step) {
-            return form.querySelector(`#rr-form-error-${step}`);
+        function showError(message) {
+            if (!errorEl) return;
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
         }
 
-        function clearError(step) {
-            const el = errorEl(step);
-            if (!el) return;
-            el.classList.add('hidden');
-            el.textContent = '';
-        }
-
-        function showError(step, message) {
-            const el = errorEl(step);
-            if (!el) return;
-            el.textContent = message;
-            el.classList.remove('hidden');
+        function clearError() {
+            if (!errorEl) return;
+            errorEl.classList.add('hidden');
+            errorEl.textContent = '';
         }
 
         function updateDepot() {
-            if (!depotDisplay || !depotValue) return;
+            if (!depotValue) return;
             if (perPerson == null) {
-                depotDisplay.value = '';
                 depotValue.value = '';
-                if (depotHint) depotHint.textContent = '';
                 return;
             }
-            const total = Math.round(perPerson * totalPeople * 100) / 100;
-            depotValue.value = String(total);
-            depotDisplay.value = formatMoneyCad(total);
-            if (depotHint) {
-                depotHint.textContent = `${formatMoneyCad(perPerson)} / pass. x ${totalPeople} = ${formatMoneyCad(total)}`;
+            depotValue.value = String(Math.round(perPerson * totalPeople * 100) / 100);
+        }
+
+        function syncPaymentResponsible() {
+            if (!payInput) return;
+            const p = form.querySelector('[name="contact_prenom"]')?.value || '';
+            const n = form.querySelector('[name="contact_nom"]')?.value || '';
+            payInput.value = `${p} ${n}`.trim();
+        }
+
+        function extraCount() {
+            return extraList.querySelectorAll('[data-extra-traveler]').length;
+        }
+
+        function refreshExtraState() {
+            const n = extraCount();
+            extraEmpty?.classList.toggle('hidden', n > 0);
+            if (addBtn) addBtn.disabled = n >= MAX_EXTRA_TRAVELERS;
+        }
+
+        function addTraveler() {
+            if (extraCount() >= MAX_EXTRA_TRAVELERS) return;
+            extraSeq += 1;
+            extraList.insertAdjacentHTML('beforeend', extraTravelerHtml(extraSeq));
+            refreshExtraState();
+            extraList.querySelector(`[data-extra-traveler="${extraSeq}"] input`)?.focus();
+        }
+
+        extraList?.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-remove-traveler]');
+            if (!btn) return;
+            btn.closest('[data-extra-traveler]')?.remove();
+            refreshExtraState();
+        });
+
+        addBtn?.addEventListener('click', addTraveler);
+
+        form.querySelector('[name="contact_prenom"]')?.addEventListener('input', syncPaymentResponsible);
+        form.querySelector('[name="contact_nom"]')?.addEventListener('input', syncPaymentResponsible);
+
+        updateDepot();
+        syncPaymentResponsible();
+        refreshExtraState();
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            clearError();
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                showError('Veuillez corriger les champs indiqués avant d’envoyer.');
+                return;
             }
-        }
-
-        function updateProgress(n) {
-            if (progressRoot) progressRoot.innerHTML = progressHtml(n);
-        }
-
-        function showStep(n) {
-            currentStep = n;
-            [1, 2, 3].forEach(i => {
-                const el = stepEls[i];
-                if (!el) return;
-                const active = i === n;
-                el.classList.toggle('hidden', !active);
-                setStepRequired(el, active);
-            });
-            updateProgress(n);
-            if (typeof onStepChange === 'function') onStepChange(n);
-            stepEls[n]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        function validateStep(n) {
-            clearError(n);
-            const stepEl = stepEls[n];
-            if (!stepEl) return false;
-            const fields = stepEl.querySelectorAll('input, select, textarea');
-            for (const el of fields) {
-                if (!el.checkValidity()) {
-                    el.reportValidity();
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function ensurePassengersRendered() {
-            if (passengersRendered || !passengersEl) return;
-            renderPassengerBlocks(passengersEl, adultCount);
-            const prenom = form.querySelector('[name="contact_prenom"]')?.value || '';
-            const nom = form.querySelector('[name="contact_nom"]')?.value || '';
-            const prePrenom = passengersEl.querySelector('[data-prefill-prenom]');
-            const preNom = passengersEl.querySelector('[data-prefill-nom]');
-            if (prePrenom) prePrenom.value = prenom;
-            if (preNom) preNom.value = nom;
-            passengersRendered = true;
-        }
-
-        function doSubmit({ includePassengers, completedStep }) {
+            syncPaymentResponsible();
             updateDepot();
-            if (infoPassagerInput) {
-                infoPassagerInput.value = includePassengers ? 'Oui' : 'Remplir plus tard';
-            }
-            const payload = formDataToPayload(form, { includePassengers, completedStep });
+            const payload = formDataToPayload(form);
             if (pricingSummary) payload.sommaire = pricingSummary;
 
             if (typeof onSubmit === 'function') {
                 onSubmit({
                     payload,
                     ghlUrl: buildGhlRoomFormUrl(payload),
-                    form,
-                    includePassengers,
-                    completedStep
+                    form
                 });
                 return;
             }
@@ -618,124 +638,77 @@
                 ? global.buildGhlThankYouUrl('')
                 : 'thank-you.html';
             submitGhlRoomForm({ payload, redirectUrl: thankYou }).catch((err) => {
-                showError(currentStep, err?.message
+                showError(err?.message
                     || 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.');
             });
-        }
-
-        updateDepot();
-        showStep(1);
-
-        form.querySelector('#rr-step1-next')?.addEventListener('click', () => {
-            if (!validateStep(1)) return;
-            const pay = form.querySelector('[name="payment_responsible"]');
-            if (pay && !pay.value.trim()) {
-                const p = form.querySelector('[name="contact_prenom"]')?.value || '';
-                const n = form.querySelector('[name="contact_nom"]')?.value || '';
-                pay.value = `${p} ${n}`.trim();
-            }
-            showStep(2);
         });
 
-        form.querySelector('#rr-step2-next')?.addEventListener('click', () => {
-            if (!validateStep(2)) return;
-            ensurePassengersRendered();
-            showStep(3);
-        });
-
-        form.querySelector('#rr-step2-reserve')?.addEventListener('click', () => {
-            if (!validateStep(2)) return;
-            doSubmit({ includePassengers: false, completedStep: 2 });
-        });
-
-        form.querySelector('#rr-step2-back')?.addEventListener('click', () => showStep(1));
-        form.querySelector('#rr-step3-back')?.addEventListener('click', () => showStep(2));
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (currentStep !== 3) return;
-            if (!validateStep(3)) return;
-            doSubmit({ includePassengers: true, completedStep: 3 });
-        });
-
-        return {
-            form,
-            updateDepot,
-            showStep
-        };
+        return { form, updateDepot };
     }
 
     const css = `
-.rr-form { display: flex; flex-direction: column; gap: 0; }
-.rr-step { display: flex; flex-direction: column; gap: 1.75rem; }
-.rr-step-lead {
-  margin: 0; font-size: 0.9rem; font-weight: 500; color: #4b5563; line-height: 1.5;
-}
-.rr-progress {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 0.35rem; margin-bottom: 1.75rem; padding: 0.25rem 0;
-}
-.rr-progress-item {
-  display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
-  flex: 0 0 auto; min-width: 4.5rem; opacity: 0.45;
-}
-.rr-progress-item.is-active, .rr-progress-item.is-done { opacity: 1; }
-.rr-progress-num {
-  width: 2rem; height: 2rem; border-radius: 9999px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 0.85rem; font-weight: 700; background: #e5e7eb; color: #6b7280;
-}
-.rr-progress-item.is-active .rr-progress-num {
-  background: #F26522; color: #fff;
-}
-.rr-progress-item.is-done .rr-progress-num {
-  background: #025091; color: #fff;
-}
-.rr-progress-label {
-  font-size: 0.7rem; font-weight: 600; color: #6b7280; text-align: center;
-  letter-spacing: 0.02em;
-}
-.rr-progress-item.is-active .rr-progress-label { color: #F26522; }
-.rr-progress-item.is-done .rr-progress-label { color: #025091; }
-.rr-progress-line {
-  flex: 1 1 auto; height: 2px; background: #e5e7eb; margin: 0 0.15rem 1.1rem;
-  align-self: center;
+.rr-form { display: flex; flex-direction: column; gap: 1.25rem; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
 .rr-summary {
-  background: #F3F7FA; border: 1px solid #dbe7f0; border-radius: 0.75rem;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
   padding: 1.1rem 1.25rem; font-size: 0.875rem; color: #374151; line-height: 1.55;
-  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 .rr-card {
-  background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem;
-  padding: 1.75rem 1.75rem 1.85rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: #fff; border: 1px solid #e8eef3; border-radius: 1rem;
+  padding: 1.5rem 1.6rem 1.65rem; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 }
-.rr-card-terms { padding: 1.35rem 1.5rem; background: #F3F7FA; }
+.rr-card-terms { padding: 1.2rem 1.4rem; background: #F3F7FA; }
+.rr-card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.85rem; margin-bottom: 1rem;
+}
 .rr-card-title {
-  font-size: 1.05rem; font-weight: 700; color: #025091;
-  margin: 0 0 1.5rem; padding-bottom: 0.85rem;
-  border-bottom: 1px solid #edf2f7;
+  font-size: 1.15rem; font-weight: 700; color: #025091;
+  margin: 0; display: flex; align-items: center; gap: 0.65rem;
 }
+.rr-card-title i { color: #025091; font-size: 1rem; }
+.rr-req { color: #dc2626; font-weight: 700; }
+.rr-req-legend {
+  margin: 0 0 0.15rem; font-size: 0.8rem; font-weight: 500; color: #6b7280;
+}
+.rr-alert {
+  display: flex; gap: 0.7rem; align-items: flex-start;
+  background: #FFF6E5; border-radius: 0.75rem; padding: 0.8rem 0.95rem;
+  color: #7A5416; font-size: 0.875rem; line-height: 1.45; margin-bottom: 1.15rem;
+}
+.rr-alert i { color: #E38B2A; margin-top: 0.12rem; }
+.rr-alert p { margin: 0; font-weight: 500; }
 .rr-hint {
   font-size: 0.8rem; font-weight: 500; color: #6b7280;
-  margin: -0.65rem 0 1.35rem; line-height: 1.5;
+  margin: -0.35rem 0 0.9rem; line-height: 1.45;
+}
+.rr-empty {
+  margin: 0.35rem 0 0; font-size: 0.875rem; color: #9ca3af; font-style: italic;
 }
 .rr-grid {
   display: grid; grid-template-columns: 1fr 1fr;
-  column-gap: 1.25rem; row-gap: 1.65rem;
+  column-gap: 1.1rem; row-gap: 1.2rem;
 }
-.rr-stack-fields { display: flex; flex-direction: column; gap: 1.65rem; }
+.rr-grid-city {
+  grid-template-columns: 1.2fr 0.55fr 0.7fr;
+  margin-top: 1.2rem;
+}
+.rr-stack-fields { display: flex; flex-direction: column; gap: 1.2rem; }
 .rr-field {
-  display: flex; flex-direction: column; gap: 0.7rem;
-  font-size: 0.875rem; font-weight: 600; color: #374151;
-  line-height: 1.45;
+  display: flex; flex-direction: column; gap: 0.45rem;
+  font-size: 0.875rem; font-weight: 700; color: #1f3b57;
+  line-height: 1.4;
 }
 .rr-field-full { grid-column: 1 / -1; }
 .rr-input, .rr-textarea {
   font-family: inherit; font-size: 0.95rem; font-weight: 500;
-  border: 1px solid #d1d5db; border-radius: 0.75rem;
-  padding: 0.95rem 1.05rem; background: #fff; color: #1f2937; width: 100%;
-  min-height: 3.1rem; line-height: 1.4;
+  border: 1px solid #d7dee7; border-radius: 0.7rem;
+  padding: 0.85rem 0.95rem; background: #fff; color: #1f2937; width: 100%;
+  min-height: 2.85rem; line-height: 1.4;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 select.rr-input {
@@ -745,31 +718,26 @@ select.rr-input {
   background-position: right 1.05rem center;
   padding-right: 2.5rem;
 }
-.rr-textarea { min-height: 6rem; resize: vertical; line-height: 1.55; }
-.rr-input-readonly {
-  background: #F3F7FA; font-weight: 600; color: #025091;
-  border-color: #dbe7f0;
-}
-.rr-field-hint {
-  font-size: 0.8rem; font-weight: 500;
-  color: #6b7280; line-height: 1.4; margin-top: 0.15rem;
-}
+.rr-textarea { min-height: 7rem; resize: vertical; line-height: 1.55; }
 .rr-input:focus, .rr-textarea:focus {
   outline: none; border-color: #025091;
   box-shadow: 0 0 0 3px rgba(2, 80, 145, 0.15);
 }
 .rr-input::placeholder, .rr-textarea::placeholder { color: #9ca3af; font-weight: 400; }
-.rr-stack { display: flex; flex-direction: column; gap: 1.75rem; }
-.rr-kid-row {
-  background: #F3F7FA; border: 1px solid #e5e7eb; border-radius: 0.85rem;
-  padding: 1.35rem 1.4rem;
+.rr-stack { display: flex; flex-direction: column; gap: 1rem; }
+.rr-extra-card, .rr-kid-row {
+  background: #F7FAFC; border: 1px solid #e5e7eb; border-radius: 0.85rem;
+  padding: 1.1rem 1.15rem;
 }
-.rr-kid-title {
-  font-size: 0.95rem; font-weight: 700; color: #025091;
-  margin: 0 0 1.15rem;
+.rr-extra-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem; margin-bottom: 1rem;
+}
+.rr-extra-title {
+  font-size: 0.95rem; font-weight: 700; color: #025091; margin: 0;
 }
 .rr-check {
-  display: flex; gap: 0.9rem; align-items: flex-start;
+  display: flex; gap: 0.85rem; align-items: flex-start;
   font-size: 0.9rem; color: #374151; line-height: 1.55; font-weight: 500;
 }
 .rr-check input {
@@ -777,37 +745,28 @@ select.rr-input {
   accent-color: #F26522;
 }
 .rr-actions {
-  display: flex; justify-content: flex-end; align-items: center; gap: 0.85rem;
-  padding-top: 0.35rem; padding-bottom: 0.25rem; flex-wrap: wrap;
-}
-.rr-actions-split { justify-content: space-between; }
-.rr-actions-stack {
-  flex-direction: column; align-items: stretch; gap: 0.75rem;
-}
-.rr-actions-hint {
-  margin: 0.15rem 0 0; font-size: 0.8rem; color: #6b7280; text-align: center; line-height: 1.4;
+  display: flex; justify-content: flex-end; align-items: center;
+  padding: 0.15rem 0 0.5rem;
 }
 .rr-btn-primary {
   background: #F26522; color: #fff; font-weight: 600; border: 0;
-  border-radius: 0.65rem; padding: 1rem 1.65rem; cursor: pointer;
+  border-radius: 0.7rem; padding: 1rem 1.7rem; cursor: pointer;
   font-size: 0.95rem; font-family: inherit;
   transition: background-color 0.15s ease;
 }
 .rr-btn-primary:hover { background: #025091; }
-.rr-btn-secondary {
-  background: #fff; color: #025091; border: 1px solid #c5d5e3;
-  border-radius: 0.65rem; padding: 0.95rem 1.35rem; font-size: 0.9rem;
-  font-weight: 600; cursor: pointer; white-space: nowrap; font-family: inherit;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+.rr-btn-add {
+  background: #025091; color: #fff; font-weight: 600; border: 0;
+  border-radius: 0.55rem; padding: 0.55rem 0.9rem; cursor: pointer;
+  font-size: 0.85rem; font-family: inherit; white-space: nowrap;
 }
-.rr-btn-secondary:hover { background: #F3F7FA; border-color: #025091; }
-.rr-btn-ghost {
-  background: transparent; color: #025091; border: 0;
-  border-radius: 0.65rem; padding: 0.85rem 1rem; font-size: 0.9rem;
-  font-weight: 600; cursor: pointer; font-family: inherit;
-  text-decoration: underline; text-underline-offset: 3px;
+.rr-btn-add:disabled { opacity: 0.45; cursor: not-allowed; }
+.rr-btn-remove {
+  background: transparent; color: #6b7280; border: 0; cursor: pointer;
+  font-size: 0.8rem; font-weight: 600; font-family: inherit;
+  text-decoration: underline; text-underline-offset: 2px;
 }
-.rr-btn-ghost:hover { color: #F26522; }
+.rr-btn-remove:hover { color: #b91c1c; }
 .rr-error {
   color: #b91c1c; font-size: 0.875rem; background: #fef2f2;
   border: 1px solid #fecaca; border-radius: 0.65rem; padding: 1rem 1.1rem;
@@ -815,12 +774,14 @@ select.rr-input {
 }
 .rr-error.hidden, .hidden { display: none !important; }
 @media (max-width: 640px) {
-  .rr-grid { grid-template-columns: 1fr; column-gap: 0; row-gap: 1.4rem; }
-  .rr-card { padding: 1.35rem 1.25rem 1.5rem; }
-  .rr-step { gap: 1.4rem; }
-  .rr-progress-label { font-size: 0.65rem; }
-  .rr-actions-split { flex-direction: column-reverse; }
-  .rr-btn-primary, .rr-btn-secondary { width: 100%; text-align: center; }
+  .rr-grid, .rr-grid-city { grid-template-columns: 1fr; column-gap: 0; row-gap: 1.05rem; }
+  .rr-card { padding: 1.2rem 1.1rem 1.3rem; }
+  .rr-card-head { flex-wrap: wrap; }
+  .rr-btn-primary, .rr-btn-add { width: 100%; text-align: center; }
+  .rr-actions { justify-content: stretch; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rr-input, .rr-textarea, .rr-btn-primary { transition: none; }
 }
 `;
 
@@ -842,8 +803,11 @@ select.rr-input {
         submitGhlRoomForm,
         payloadToGhlFields,
         formDataToPayload,
+        mergeReservationPayload,
         formatDobForGhl,
         injectStyles,
-        renderPassengerBlocks
+        saveReservationDraft,
+        loadReservationDraft,
+        openReservationWindow
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,0 +1,233 @@
+<!--
+  GHL — Infolettre promo Aubaines Express
+  =======================================
+  Promouvoir https://aubaineexpress.voyagefiesta.ca/
+  Conseiller = user assigné au contact.
+
+  Merge fields :
+    {{contact.first_name}}
+    {{user.name}}  {{user.first_name}}  {{user.email}}  {{user.phone}}  {{user.phone_raw}}
+    {{contact.custom.conseiller_photo}}  (URL — voir ghl-email-infolettre-generique.md)
+    {{unsubscribe_link}}
+
+  Objet suggéré :
+    {{contact.first_name}}, nos aubaines voyage sont en ligne — Aubaines Express
+
+  Alt. objet :
+    Tout inclus, prix chocs — découvrez Aubaines Express Voyage
+
+  Expéditeur : {{user.name}} / Voyage Fiesta
+  Reply-to : {{user.email}}
+-->
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Aubaines Express Voyage</title>
+  <style type="text/css">
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    @media only screen and (max-width: 620px) {
+      .email-container { width: 100% !important; }
+      .px { padding-left: 20px !important; padding-right: 20px !important; }
+      .btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .advisor-col { display: block !important; width: 100% !important; text-align: center !important; }
+      .advisor-photo { margin: 0 auto 12px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#F3F7FA; font-family:'Poppins', Arial, Helvetica, sans-serif; color:#1F2937;">
+
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0;">
+    Aubaines voyage tout inclus — promotions limitées sur aubaineexpress.voyagefiesta.ca
+  </div>
+
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#F3F7FA;">
+    <tr>
+      <td align="center" style="padding:24px 12px 32px;">
+        <table role="presentation" class="email-container" width="600" cellspacing="0" cellpadding="0" border="0" style="width:100%; max-width:600px; background-color:#ffffff; border-radius:16px; overflow:hidden;">
+
+          <!-- En-tête -->
+          <tr>
+            <td style="background-color:#025091; padding:28px 32px; text-align:center;">
+              <p style="margin:0 0 4px; font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.85);">
+                Voyage Fiesta
+              </p>
+              <h1 style="margin:0; font-size:26px; font-weight:700; line-height:1.2; color:#ffffff;">
+                Aubaines Express Voyage
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Hero -->
+          <tr>
+            <td>
+              <img src="https://aubaineexpress.voyagefiesta.ca/assets/forfaits/melia-cozumel-2026-12-14-img.jpg" alt="Aubaines voyage tout inclus" width="600" style="display:block; width:100%; max-width:600px; height:auto;">
+            </td>
+          </tr>
+
+          <!-- Accroche -->
+          <tr>
+            <td class="px" style="padding:32px 32px 12px;">
+              <p style="margin:0 0 16px; font-size:17px; line-height:1.65; color:#374151;">
+                Bonjour {{contact.first_name}},
+              </p>
+              <p style="margin:0 0 16px; font-size:17px; line-height:1.65; color:#374151;">
+                Nos <strong>aubaines voyage tout inclus</strong> sont maintenant regroupées sur une seule boutique en ligne&nbsp;: tarifs par personne, départs de Montréal et d’ailleurs, inventaire en temps réel et réservation en quelques clics.
+              </p>
+              <p style="margin:0; font-size:17px; line-height:1.65; color:#374151;">
+                Chaque promotion a une <strong>date limite</strong>&nbsp;: une fois le compte à rebours terminé, l’offre disparaît du site.
+              </p>
+            </td>
+          </tr>
+
+          <!-- 3 points forts -->
+          <tr>
+            <td class="px" style="padding:12px 32px 8px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="padding:14px 16px; background-color:#F3F7FA; border-radius:12px; margin-bottom:8px;">
+                    <p style="margin:0 0 4px; font-size:13px; font-weight:700; color:#025091;">
+                      ✈️ Forfaits tout inclus
+                    </p>
+                    <p style="margin:0; font-size:14px; line-height:1.55; color:#4B5563;">
+                      Vol, transfert, hôtel, repas et boissons — prix clairs par passager, taxes et frais aériens inclus.
+                    </p>
+                  </td>
+                </tr>
+                <tr><td style="height:8px; font-size:0; line-height:0;">&nbsp;</td></tr>
+                <tr>
+                  <td style="padding:14px 16px; background-color:#F3F7FA; border-radius:12px;">
+                    <p style="margin:0 0 4px; font-size:13px; font-weight:700; color:#025091;">
+                      ⏱ Promotions limitées
+                    </p>
+                    <p style="margin:0; font-size:14px; line-height:1.55; color:#4B5563;">
+                      Compte à rebours sur chaque fiche — les places partent vite, surtout en haute saison.
+                    </p>
+                  </td>
+                </tr>
+                <tr><td style="height:8px; font-size:0; line-height:0;">&nbsp;</td></tr>
+                <tr>
+                  <td style="padding:14px 16px; background-color:#FFF7ED; border-radius:12px; border:1px solid #FED7AA;">
+                    <p style="margin:0 0 4px; font-size:13px; font-weight:700; color:#F26522;">
+                      💳 Financement disponible*
+                    </p>
+                    <p style="margin:0; font-size:14px; line-height:1.55; color:#4B5563;">
+                      Mensualités affichées sur le site (financement sur 36 mois). Sous réserve d’approbation.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- CTA principal -->
+          <tr>
+            <td class="px" style="padding:24px 32px 8px; text-align:center;">
+              <a class="btn" href="https://aubaineexpress.voyagefiesta.ca/" style="display:inline-block; background-color:#F26522; color:#ffffff; font-size:16px; font-weight:700; text-decoration:none; padding:16px 36px; border-radius:12px; mso-padding-alt:0;">
+                <!--[if mso]><i style="letter-spacing:36px;mso-font-width:-100%;mso-text-raise:24pt">&nbsp;</i><![endif]-->
+                <span style="mso-text-raise:12pt;">Voir les aubaines en ligne</span>
+                <!--[if mso]><i style="letter-spacing:36px;mso-font-width:-100%">&nbsp;</i><![endif]-->
+              </a>
+              <p style="margin:14px 0 0; font-size:13px; color:#6B7280;">
+                <a href="https://aubaineexpress.voyagefiesta.ca/" style="color:#025091; text-decoration:underline;">aubaineexpress.voyagefiesta.ca</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Comment ça marche -->
+          <tr>
+            <td class="px" style="padding:20px 32px 8px;">
+              <p style="margin:0 0 12px; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#025091;">
+                Comment réserver
+              </p>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td valign="top" width="28" style="padding:4px 0; font-size:14px; font-weight:700; color:#F26522;">1.</td>
+                  <td style="padding:4px 0 10px; font-size:14px; line-height:1.55; color:#4B5563;">Parcourez les forfaits (destination, date de départ, fournisseur).</td>
+                </tr>
+                <tr>
+                  <td valign="top" width="28" style="padding:4px 0; font-size:14px; font-weight:700; color:#F26522;">2.</td>
+                  <td style="padding:4px 0 10px; font-size:14px; line-height:1.55; color:#4B5563;">Choisissez votre occupation et le nombre de passagers.</td>
+                </tr>
+                <tr>
+                  <td valign="top" width="28" style="padding:4px 0; font-size:14px; font-weight:700; color:#F26522;">3.</td>
+                  <td style="padding:4px 0 10px; font-size:14px; line-height:1.55; color:#4B5563;">Cliquez <strong>Réserver</strong> — on vous contacte pour confirmer le dépôt et finaliser.</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Deuxième visuel -->
+          <tr>
+            <td class="px" style="padding:8px 32px 8px;">
+              <img src="https://aubaineexpress.voyagefiesta.ca/assets/forfaits/sandos-playacar-2026-12-30-extra.jpg" alt="Plage tout inclus" width="536" style="display:block; width:100%; max-width:536px; height:auto; border-radius:12px;">
+            </td>
+          </tr>
+
+          <!-- Contact conseiller -->
+          <tr>
+            <td class="px" style="padding:24px 32px 8px;">
+              <p style="margin:0 0 16px; font-size:17px; line-height:1.65; color:#374151;">
+                Une question, un forfait précis ou de l’aide pour choisir&nbsp;? Répondez à ce courriel ou appelez-moi — je suis votre conseiller(ère) chez Voyage Fiesta.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Carte conseiller -->
+          <tr>
+            <td class="px" style="padding:8px 32px 32px;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#F3F7FA; border-radius:12px;">
+                <tr>
+                  <td style="padding:20px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td class="advisor-col" width="96" valign="top" style="padding-right:16px;">
+                          <img class="advisor-photo" src="{{contact.custom.conseiller_photo}}" alt="{{user.name}}" width="80" height="80" style="display:block; width:80px; height:80px; border-radius:50%; object-fit:cover; border:3px solid #025091;">
+                        </td>
+                        <td class="advisor-col" valign="middle">
+                          <p style="margin:0 0 4px; font-size:16px; font-weight:700; color:#025091;">
+                            {{user.name}}
+                          </p>
+                          <p style="margin:0 0 6px; font-size:13px; color:#6B7280;">
+                            Conseiller(ère) en voyages
+                          </p>
+                          <p style="margin:0 0 2px; font-size:13px;">
+                            <a href="mailto:{{user.email}}" style="color:#025091; text-decoration:underline;">{{user.email}}</a>
+                          </p>
+                          <p style="margin:0; font-size:13px;">
+                            <a href="tel:{{user.phone_raw}}" style="color:#025091; text-decoration:underline;">{{user.phone}}</a>
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Pied -->
+          <tr>
+            <td style="background-color:#025091; padding:20px 32px 24px; border-radius:0 0 16px 16px;">
+              <p style="margin:0 0 10px; font-size:12px; line-height:1.5; color:rgba(255,255,255,0.85);">
+                * Financement sur 36 mois, sous réserve d’approbation. Tarifs et disponibilités sujets à changement jusqu’à confirmation écrite.
+              </p>
+              <p style="margin:0 0 10px; font-size:12px; line-height:1.5; color:rgba(255,255,255,0.85);">
+                Agence avec permis valide au Québec.
+              </p>
+              <p style="margin:0; font-size:12px; line-height:1.5;">
+                <a href="{{unsubscribe_link}}" style="color:rgba(255,255,255,0.7); text-decoration:underline;">Se désabonner</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -209,30 +209,10 @@
         </div>
     </div>
 
-    <div id="reservation-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60" id="modal-backdrop"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-hidden flex flex-col">
-            <div class="flex justify-between items-center px-5 py-4 border-b shrink-0 bg-brand-light/60">
-                <div>
-                    <h3 class="font-bold text-brand-blue text-lg">Réserver ce forfait</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Étapes 1 et 2 obligatoires · passagers optionnels</p>
-                </div>
-                <button id="close-modal" class="text-gray-400 hover:text-gray-700 text-2xl leading-none px-1" aria-label="Fermer">&times;</button>
-            </div>
-            <div class="px-6 py-6 overflow-y-auto flex-grow bg-brand-light/40">
-                <p id="modal-product-name" class="text-sm text-gray-600 mb-6 font-medium leading-relaxed"></p>
-                <div id="room-form-modal-root"></div>
-                <div id="room-submit-status" class="hidden mt-4 rounded-xl border border-gray-200 bg-white p-6 text-center">
-                    <p id="room-submit-status-text" class="text-sm font-medium text-brand-blue">Envoi de votre demande…</p>
-                    <p class="text-xs text-gray-500 mt-2">Veuillez patienter quelques secondes.</p>
-                </div>
-            </div>
-        </div>
-    </div>
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=48"></script>
-    <script src="room-registration.js?v=15"></script>
+    <script src="config.js?v=49"></script>
+    <script src="room-registration.js?v=16"></script>
     <script src="api.js?v=99"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
@@ -391,8 +371,7 @@
             function closeLightbox() {
                 lightbox.classList.add('hidden');
                 imageEl.src = '';
-                const reservationOpen = !document.getElementById('reservation-modal')?.classList.contains('hidden');
-                if (!reservationOpen) document.body.style.overflow = '';
+                document.body.style.overflow = '';
             }
 
             function step(delta) {
@@ -1259,7 +1238,7 @@
             bindProductTabs();
             bindGalleryViewer(gallery, p.name);
             bindPassengerSelection(p);
-            bindReservationModal(p);
+            bindReservationWindow(p);
             VoyageFiestaAPI.bindSocialShare(document.getElementById('product-content'), () => p);
         }
 
@@ -1677,21 +1656,16 @@
             updateSelection();
         }
 
-        function bindReservationModal(p) {
-            const modal = document.getElementById('reservation-modal');
+        function bindReservationWindow(p) {
             const openBtn = document.getElementById('open-reservation');
             if (!openBtn) return;
 
             const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
-            const roomRoot = document.getElementById('room-form-modal-root');
-            const submitStatus = document.getElementById('room-submit-status');
-            const submitStatusText = document.getElementById('room-submit-status-text');
 
-            function openModal() {
-                // Pré-vente : formulaire d'intérêt seulement (pas de modal dépôt)
+            openBtn.addEventListener('click', () => {
                 if (VoyageFiestaAPI.isPreSale(p)) return;
                 if (!hasValidBookingSelection()) return;
-                if (!window.RoomRegistration || !roomRoot) return;
+                if (!window.RoomRegistration?.openReservationWindow) return;
 
                 const occupationId = getSelectedOccupationId();
                 const overrides = getBookingSelectionOverrides() || {};
@@ -1701,12 +1675,11 @@
                     : null;
                 const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
                 if (!breakdown || breakdown.bookingTotalWithTaxes == null) return;
+
                 const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
                 const bookingLabel = breakdown.bookingLabel || row?.label || '';
                 const priceLine = `${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)} total · ${bookingLabel}`;
-
-                document.getElementById('modal-product-name').textContent =
-                    `${p.name} - ${priceLine}${departureText ? ' · Départ ' + departureText : ''} · ${p.departureAirport} · ${supplierLabel}`;
+                const summaryText = `${p.name} — ${priceLine}${departureText ? ' · Départ ' + departureText : ''} · ${p.departureAirport || ''} · ${supplierLabel || ''}`.replace(/ ·  · /g, ' · ').trim();
 
                 let adults = Number(breakdown?.adults ?? overrides.adults);
                 let kids = Number(breakdown?.children212 ?? overrides.children212 ?? 0)
@@ -1738,77 +1711,30 @@
 
                 const depositPerPerson = breakdown?.depositPerPerson
                     ?? VoyageFiestaAPI.getDepositPerPerson(p);
-
-                RoomRegistration.injectStyles();
-                submitStatus?.classList.add('hidden');
-                roomRoot.classList.remove('opacity-60', 'pointer-events-none', 'hidden');
-                roomRoot.innerHTML = '';
-
                 const bookingContext = VoyageFiestaAPI.buildGhlReservationParams(
                     p,
                     occupationId,
                     overrides
                 ) || {};
+                const thankYou = typeof buildGhlThankYouUrl === 'function'
+                    ? buildGhlThankYouUrl(p.slug)
+                    : 'thank-you.html';
 
-                RoomRegistration.mountForm(roomRoot, {
-                    initialPassengerCount: adults,
-                    initialKidsCount: kids,
+                RoomRegistration.openReservationWindow({
+                    productName: p.name,
+                    productSlug: p.slug,
+                    summaryText,
+                    adults,
+                    kids,
                     depositPerPerson,
                     pricingSummary: breakdown?.pricingSummary || bookingContext.sommaire || '',
-                    summaryHtml: `<strong>Forfait :</strong> ${document.getElementById('modal-product-name')?.textContent || p.name}`,
-                    async onSubmit({ payload }) {
-                        const thankYou = typeof buildGhlThankYouUrl === 'function'
-                            ? buildGhlThankYouUrl(p.slug)
-                            : 'thank-you.html';
-
-                        // Merge trip/pricing context so GHL custom fields + email merge tags fill in
-                        const merged = {
-                            ...bookingContext,
-                            ...payload,
-                            forfait_slug: bookingContext.forfait_slug || p.slug,
-                            forfait_name: bookingContext.forfait_name || p.name,
-                            depot_total: payload.depot || bookingContext.depot_total,
-                            nombre_personnes: payload.nombre_passagers || bookingContext.nombre_personnes,
-                            nombre_adultes: bookingContext.nombre_adultes || String(adults),
-                            nombre_enfants_2_12: bookingContext.nombre_enfants_2_12 || String(kids),
-                            occupation: bookingContext.occupation || bookingLabel,
-                            sommaire: payload.sommaire || bookingContext.sommaire || breakdown?.pricingSummary || ''
-                        };
-
-                        roomRoot.classList.add('hidden');
-                        if (submitStatusText) {
-                            submitStatusText.textContent = 'Envoi de votre demande…';
-                        }
-                        submitStatus?.classList.remove('hidden');
-
-                        try {
-                            await RoomRegistration.submitGhlRoomForm({
-                                payload: merged,
-                                redirectUrl: thankYou
-                            });
-                        } catch (err) {
-                            roomRoot.classList.remove('hidden');
-                            submitStatus?.classList.add('hidden');
-                            alert(err?.message
-                                ? `Impossible d'envoyer la demande : ${err.message}`
-                                : 'Impossible d\'envoyer la demande. Veuillez réessayer.');
-                        }
-                    }
+                    bookingContext: {
+                        ...bookingContext,
+                        occupation: bookingContext.occupation || bookingLabel
+                    },
+                    thankYouUrl: thankYou
                 });
-
-                modal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-
-            function closeModal() {
-                modal.classList.add('hidden');
-                document.body.style.overflow = '';
-                submitStatus?.classList.add('hidden');
-            }
-
-            openBtn.addEventListener('click', openModal);
-            document.getElementById('close-modal').addEventListener('click', closeModal);
-            document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+            });
         }
 
         function startCountdown(endDate) {

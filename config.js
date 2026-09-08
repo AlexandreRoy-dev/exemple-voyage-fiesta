@@ -340,7 +340,9 @@
         p5_genre: 'genre_p5',
         p5_dob: 'passager_4_date_de_naissance_lib_copy',
         address: 'address',
+        address2: 'address2',
         city: 'city',
+        province: 'province',
         postal_code: 'postal_code',
         assurance_medicale: 'assurance_medicale',
         passeport_valide: 'passeport_valide',
@@ -348,6 +350,7 @@
         payment_responsible: 'single_line_21nm7',
         infopassager: 'infopassager',
         notes: 'notes',
+        conseiller_voyage: 'conseiller_voyage',
         sommaire: 'sommaire',
         terms_and_conditions: 'terms_and_conditions'
     };

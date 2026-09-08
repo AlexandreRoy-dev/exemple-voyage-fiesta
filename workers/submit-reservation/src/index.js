@@ -107,8 +107,11 @@ function buildNotes(payload) {
   add('Assurance annulation', payload.assurance_annulation);
   add('Responsable paiement', payload.payment_responsible);
   add('Adresse', payload.address);
+  add('Adresse 2', payload.address2);
   add('Ville', payload.city);
+  add('Province', payload.province || payload.state);
   add('Code postal', payload.postal_code);
+  add('Conseiller voyage (indiqué par le client)', payload.conseiller_voyage);
   add('Conseiller', payload.conseiller_name || payload.agent_slug);
   add('Conseiller ID', payload.agent_id);
   add('Conseiller slug', payload.agent_slug);
@@ -155,8 +158,9 @@ function buildContactBody(payload, locationId, tags, fieldMap) {
     name: [firstName, lastName].filter(Boolean).join(' ') || undefined,
     email: email || undefined,
     phone: phone || undefined,
-    address1: pick(payload, 'address') || undefined,
+    address1: [pick(payload, 'address'), pick(payload, 'address2')].filter(Boolean).join(', ') || undefined,
     city: pick(payload, 'city') || undefined,
+    state: pick(payload, 'province', 'state') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
     source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
     tags: tagList.length ? tagList : undefined,
