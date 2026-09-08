@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T18:30:04.208Z",
+  "updatedAt": "2026-09-08T18:45:03.267Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -203,12 +203,12 @@
       "supplier": "sunwing",
       "carrier": "westjet",
       "durationNights": 7,
-      "roomCategory": "Chambre de Luxe avec vue Jardin (Double seulement)",
+      "roomCategory": "Chambre de Luxe avec vue Jardin (Lit Double seulement)",
       "criteria": [
         "vol_direct_sans_escale",
         "tout_inclus"
       ],
-      "inventory": 10,
+      "inventory": 6,
       "price": 755,
       "priceOccSimple": 1065,
       "priceOccTriple": 755,
@@ -243,7 +243,7 @@
       "promotion": "",
       "hotelDescription": "• Complexe en bord de mer proposant des espaces adaptés aux familles ainsi qu’une section réservée aux adultes\n• Plusieurs catégories de chambres, incluant des suites communicantes pouvant accueillir jusqu’à six personnes\n• Théâtre intérieur offrant des spectacles et divertissements en soirée\n\nSitué directement sur les magnifiques plages de Puerto Plata, le Marien Puerto Plata Hotel convient autant aux vacances en couple qu’aux séjours en famille. Profitez de la grande piscine avec un cocktail à la main ou installez-vous sur la plage de sable doré pour une journée sous le soleil des Caraïbes.\n\nLes enfants pourront s’amuser au club qui leur est réservé pendant que les adultes profitent d’un moment de détente au spa. Plusieurs soins y sont proposés, notamment des massages et des traitements d’aromathérapie.\n\nCôté gastronomie, l’hôtel offre une belle variété de restaurants et de saveurs, allant de la cuisine brésilienne et mexicaine aux pizzas et autres options appréciées de toute la famille.\n\nEn soirée, place au divertissement avec des spectacles présentés dans le théâtre intérieur, ou profitez simplement de l’ambiance tropicale sous les étoiles. Après une journée bien remplie à Puerto Plata, retrouvez le confort de votre chambre équipée des commodités essentielles pour un séjour agréable.",
       "forfaitLink": "https://www.sunwing.ca/en/hotel/dominican-republic/puerto-plata/marien-puerto-plata-hotel",
-      "endDate": "2026-09-11T00:00:00.000Z",
+      "endDate": "2026-09-14T00:00:00.000Z",
       "departureDate": "2027-01-14T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Puerto Plata (POP)",
