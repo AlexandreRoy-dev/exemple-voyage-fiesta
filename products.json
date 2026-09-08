@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T16:00:03.438Z",
+  "updatedAt": "2026-09-08T18:30:04.208Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -203,9 +203,10 @@
       "supplier": "sunwing",
       "carrier": "westjet",
       "durationNights": 7,
-      "roomCategory": "Chambre de Luxe avec vue Jardin (Double et King)",
+      "roomCategory": "Chambre de Luxe avec vue Jardin (Double seulement)",
       "criteria": [
-        "vol_direct_sans_escale"
+        "vol_direct_sans_escale",
+        "tout_inclus"
       ],
       "inventory": 10,
       "price": 755,
