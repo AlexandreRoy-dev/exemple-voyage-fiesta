@@ -1,6 +1,6 @@
 /**
  * Formulaire de réservation (une page) → GHL Contacts via Cloudflare Worker.
- * S'ouvre dans une fenêtre dédiée depuis la fiche forfait.
+ * Redirection vers une page complète depuis la fiche forfait.
  */
 (function (global) {
     'use strict';
@@ -160,7 +160,7 @@
             </section>`;
     }
 
-    function formHtml(fixedPassengerCount, fixedKidsCount) {
+    function formHtml(fixedPassengerCount, fixedKidsCount, hideSubmit) {
         const adults = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(fixedPassengerCount) || 1));
         const kids = Math.max(0, Number(fixedKidsCount) || 0);
         const totalPeople = adults + kids;
@@ -301,8 +301,8 @@
                 </section>
 
                 <p id="rr-form-error" class="rr-error hidden" role="alert"></p>
-                <div class="rr-actions">
-                    <button type="submit" class="rr-btn-primary" id="rr-submit">Envoyer la demande</button>
+                <div class="rr-actions${hideSubmit ? ' hidden' : ''}">
+                    <button type="submit" class="rr-btn-primary" id="rr-submit">RÉSERVER MAINTENANT</button>
                 </div>
             </form>`;
     }
@@ -471,34 +471,25 @@
         }
     }
 
-    function openReservationWindow(draft) {
-        const sid = saveReservationDraft(draft || {});
+    function reservationPageUrl(draft, sid) {
         const url = new URL('room-registration.html', global.location.href);
-        url.searchParams.set('sid', sid);
-        if (draft?.productSlug) url.searchParams.set('forfait_slug', draft.productSlug);
+        if (sid) url.searchParams.set('sid', sid);
+        const slug = draft?.productSlug || '';
+        if (slug) {
+            url.searchParams.set('slug', slug);
+            url.searchParams.set('forfait_slug', slug);
+        }
         if (draft?.adults) url.searchParams.set('adults', String(draft.adults));
         if (draft?.kids != null) url.searchParams.set('kids', String(draft.kids));
-        const name = `vf-res-${String(draft?.productSlug || 'new').replace(/[^a-z0-9-]/gi, '')}`;
-        const features = 'width=920,height=980,scrollbars=yes,resizable=yes';
-        let win = null;
-        try {
-            win = global.open(url.toString(), name, features);
-        } catch (_) {
-            win = null;
-        }
-        if (!win) {
-            try {
-                win = global.top.open(url.toString(), name, features);
-            } catch (_) {
-                win = null;
-            }
-        }
-        if (!win) {
-            global.location.href = url.toString();
-            return null;
-        }
-        try { win.focus(); } catch (_) { /* ignore */ }
-        return win;
+        return url;
+    }
+
+    function openReservationWindow(draft) {
+        const sid = saveReservationDraft(draft || {});
+        const url = reservationPageUrl(draft, sid);
+        const target = (global.top && global.top !== global) ? global.top : global;
+        target.location.assign(url.toString());
+        return target;
     }
 
     function formatMoneyCad(amount) {
@@ -517,7 +508,8 @@
             depositPerPerson = null,
             pricingSummary = '',
             onSubmit,
-            summaryHtml = ''
+            summaryHtml = '',
+            hideSubmit = false
         } = options;
 
         const perPerson = depositPerPerson != null && Number.isFinite(Number(depositPerPerson))
@@ -526,7 +518,7 @@
 
         root.innerHTML = `
             ${summaryHtml ? `<div class="rr-summary">${summaryHtml}</div>` : ''}
-            ${formHtml(initialPassengerCount, initialKidsCount)}
+            ${formHtml(initialPassengerCount, initialKidsCount, hideSubmit)}
         `;
 
         const form = root.querySelector('#room-registration-form');
@@ -748,6 +740,7 @@ select.rr-input {
   display: flex; justify-content: flex-end; align-items: center;
   padding: 0.15rem 0 0.5rem;
 }
+.rr-actions.hidden { display: none !important; }
 .rr-btn-primary {
   background: #F26522; color: #fff; font-weight: 600; border: 0;
   border-radius: 0.7rem; padding: 1rem 1.7rem; cursor: pointer;

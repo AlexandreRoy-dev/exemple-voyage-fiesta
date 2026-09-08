@@ -31,6 +31,17 @@
                 radial-gradient(700px 380px at 110% 8%, rgba(242, 101, 34, 0.08), transparent 50%),
                 #F3F7FA;
         }
+        .sticky-booking { position: sticky; top: 1rem; }
+        .occupation-summary-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        @media (max-width: 1023px) {
+            .sticky-booking { position: static; top: auto; }
+        }
         @media (prefers-reduced-motion: reduce) {
             body { background: #F3F7FA; }
         }
@@ -38,43 +49,37 @@
 </head>
 <body class="text-gray-800 font-sans min-h-screen">
     <header class="bg-brand-blue text-white py-6 px-4">
-        <div class="max-w-3xl mx-auto">
+        <div class="max-w-6xl mx-auto">
+            <a id="rr-back-link" href="index.html" class="inline-flex items-center gap-2 text-xs text-white/80 hover:text-white mb-3">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                Retour au forfait
+            </a>
             <p class="text-xs uppercase tracking-widest text-white/70 mb-1">Voyage Fiesta</p>
-            <h1 class="text-2xl font-bold">Formulaire de réservation</h1>
-            <p id="rr-page-lead" class="text-sm text-white/80 mt-1">Coordonnées du voyageur principal, autres voyageurs et notes — envoyées à votre dossier Voyage Fiesta.</p>
+            <h1 class="text-2xl md:text-3xl font-bold">Formulaire de réservation</h1>
+            <p id="rr-page-lead" class="text-sm text-white/80 mt-2 leading-relaxed"></p>
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 py-8">
-        <div id="room-form-root"></div>
-        <div id="room-submit-status" class="hidden mt-6 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
-            <p id="room-submit-status-text" class="font-medium text-brand-blue">Envoi de votre demande…</p>
-            <p class="text-sm text-gray-500 mt-2">Veuillez patienter quelques secondes.</p>
+    <main class="max-w-6xl mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
+            <div class="lg:col-span-2 min-w-0">
+                <div id="room-form-root"></div>
+                <div id="room-submit-status" class="hidden mt-6 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+                    <p id="room-submit-status-text" class="font-medium text-brand-blue">Envoi de votre demande…</p>
+                    <p class="text-sm text-gray-500 mt-2">Veuillez patienter quelques secondes.</p>
+                </div>
+            </div>
+            <aside class="lg:col-span-1">
+                <div id="rr-booking-panel" class="bg-white rounded-2xl shadow-xl border-2 border-brand-blue p-4 sm:p-6 sticky-booking"></div>
+            </aside>
         </div>
     </main>
 
     <script src="config.js?v=49"></script>
-    <script src="room-registration.js?v=16"></script>
+    <script src="room-registration.js?v=17"></script>
+    <script src="api.js?v=99"></script>
     <script>
         (function () {
-            RoomRegistration.injectStyles();
-            const params = new URLSearchParams(window.location.search);
-            const draft = RoomRegistration.loadReservationDraft(params.get('sid')) || {};
-            const adults = Number(draft.adults || params.get('adults') || params.get('nombre_passagers') || 2) || 2;
-            const kids = Number(draft.kids || params.get('kids') || params.get('enfants') || 0) || 0;
-            const depositPerPerson = draft.depositPerPerson != null
-                ? draft.depositPerPerson
-                : (params.get('depot_par_personne') || params.get('deposit') || null);
-            const formRoot = document.getElementById('room-form-root');
-            const submitStatus = document.getElementById('room-submit-status');
-            const submitStatusText = document.getElementById('room-submit-status-text');
-            const lead = document.getElementById('rr-page-lead');
-
-            if (draft.productName && lead) {
-                lead.textContent = draft.summaryText || draft.productName;
-                document.title = 'Réservation — ' + draft.productName;
-            }
-
             function esc(s) {
                 return String(s || '')
                     .replace(/&/g, '&amp;')
@@ -82,39 +87,214 @@
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;');
             }
-            const summaryHtml = draft.summaryText
-                ? `<strong>Forfait :</strong> ${esc(draft.summaryText)}`
-                : '';
 
-            RoomRegistration.mountForm(formRoot, {
-                initialPassengerCount: Math.min(5, Math.max(1, adults)),
-                initialKidsCount: Math.min(4, Math.max(0, kids)),
-                depositPerPerson: depositPerPerson != null ? Number(depositPerPerson) : null,
-                pricingSummary: draft.pricingSummary || '',
-                summaryHtml,
-                async onSubmit({ payload }) {
-                    const slug = draft.productSlug || params.get('forfait_slug') || '';
-                    const thankYou = draft.thankYouUrl || (typeof buildGhlThankYouUrl === 'function'
-                        ? buildGhlThankYouUrl(slug)
-                        : 'thank-you.html');
-                    const merged = RoomRegistration.mergeReservationPayload(payload, draft);
-                    formRoot.classList.add('hidden');
-                    if (submitStatusText) submitStatusText.textContent = 'Envoi de votre demande…';
-                    submitStatus.classList.remove('hidden');
+            function money(amount) {
+                if (amount == null || !Number.isFinite(Number(amount))) return '—';
+                if (window.VoyageFiestaAPI?.formatMoney) {
+                    return VoyageFiestaAPI.formatMoney(amount);
+                }
+                return new Intl.NumberFormat('fr-CA', {
+                    style: 'currency',
+                    currency: 'CAD',
+                    maximumFractionDigits: 2
+                }).format(Number(amount));
+            }
+
+            function moneyPp(amount) {
+                if (window.VoyageFiestaAPI?.formatMoneyPerPerson) {
+                    return VoyageFiestaAPI.formatMoneyPerPerson(amount);
+                }
+                return money(amount) + ' / pass.';
+            }
+
+            function renderPriceTable(product) {
+                if (!product || !window.VoyageFiestaAPI?.getOccupationPrices) return '';
+                const rows = VoyageFiestaAPI.getOccupationPrices(product);
+                if (!rows.length) return '';
+                const taxLabel = VoyageFiestaAPI.getTaxesAirFeesLabel
+                    ? VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true })
+                    : 'Taxes';
+                const body = rows.map((row) => {
+                    const label = VoyageFiestaAPI.getOccupationPickerLabel
+                        ? VoyageFiestaAPI.getOccupationPickerLabel(row.id, product)
+                        : (row.label || row.id);
+                    const total = row.totalWithTaxes ?? row.totalPerPerson ?? row.price;
+                    const taxes = row.taxes != null ? moneyPp(row.taxes) : '—';
+                    return `<tr class="border-b border-gray-100 last:border-0">
+                        <td class="py-2.5 pr-2 text-sm text-gray-700">${esc(label)}</td>
+                        <td class="py-2.5 px-1 text-sm text-right text-gray-600 whitespace-nowrap">${row.price != null ? moneyPp(row.price) : '—'}</td>
+                        <td class="py-2.5 px-1 text-sm text-right text-gray-600 whitespace-nowrap">${taxes}</td>
+                        <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue whitespace-nowrap">${total != null ? moneyPp(total) : '—'}</td>
+                    </tr>`;
+                }).join('');
+                return `
+                    <div class="overflow-x-auto mb-4">
+                        <table class="w-full text-left min-w-0">
+                            <thead>
+                                <tr class="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-200">
+                                    <th class="pb-2 font-bold">Tarif</th>
+                                    <th class="pb-2 font-bold text-right">Avant taxes</th>
+                                    <th class="pb-2 font-bold text-right">${esc(taxLabel)}</th>
+                                    <th class="pb-2 font-bold text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>${body}</tbody>
+                        </table>
+                    </div>`;
+            }
+
+            function renderSidebar(draft, product) {
+                const pricing = draft.pricing || {};
+                const adults = Number(draft.adults) || 2;
+                const kids = Number(draft.kids) || 0;
+                const deposit = pricing.totalDeposit != null
+                    ? pricing.totalDeposit
+                    : (draft.depositPerPerson != null ? Number(draft.depositPerPerson) * (adults + kids) : null);
+                const incentive = product && window.VoyageFiestaAPI?.getIncentive
+                    ? VoyageFiestaAPI.getIncentive(product)
+                    : (pricing.incentiveDiscount != null ? { discount: pricing.incentiveDiscount } : null);
+                const departure = pricing.departureDate
+                    || (product && VoyageFiestaAPI.formatDepartureDate(product.departureDate))
+                    || '';
+                const ret = pricing.returnDate
+                    || (product && VoyageFiestaAPI.formatDepartureDate(product.returnDate))
+                    || '';
+                const airport = pricing.departureAirport || product?.departureAirport || '';
+                const nights = pricing.durationNights ?? product?.durationNights;
+                const days = nights != null ? Number(nights) + 1 : null;
+                const travelerLabel = kids
+                    ? `${adults} adulte${adults > 1 ? 's' : ''} · ${kids} enfant${kids > 1 ? 's' : ''}`
+                    : `${adults} adulte${adults > 1 ? 's' : ''}`;
+                const bookingLabel = pricing.bookingLabel || pricing.occupation || travelerLabel;
+                const total = pricing.bookingTotalWithTaxes;
+
+                const incentiveHtml = incentive?.discount
+                    ? `<div class="mb-4 p-3 rounded-lg bg-brand-light border border-blue-100 text-sm">
+                            <p class="text-red-600 font-bold"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${esc(money(incentive.discount))} par passager</p>
+                       </div>`
+                    : '';
+
+                return `
+                    <h2 class="font-bold text-sm text-gray-700 uppercase tracking-tighter mb-4">Tarifs par passager</h2>
+                    ${incentiveHtml}
+                    ${renderPriceTable(product)}
+                    <div class="space-y-3 mb-4 text-sm">
+                        ${departure ? `<div class="flex justify-between gap-3"><span class="text-gray-500">Date de départ</span><span class="font-bold text-brand-blue text-right">${esc(departure)}</span></div>` : ''}
+                        ${ret ? `<div class="flex justify-between gap-3"><span class="text-gray-500">Date de retour</span><span class="font-bold text-brand-blue text-right">${esc(ret)}</span></div>` : ''}
+                        ${airport ? `<div class="flex justify-between gap-3"><span class="text-gray-500">Départ de</span><span class="font-bold text-brand-blue text-right">${esc(airport)}</span></div>` : ''}
+                        ${nights != null ? `<div class="flex justify-between gap-3"><span class="text-gray-500">Durée</span><span class="font-bold text-brand-blue text-right">${esc(String(nights))} nuits${days ? ' / ' + days + ' jours' : ''}</span></div>` : ''}
+                    </div>
+                    <div class="occupation-summary-card">
+                        <div class="px-4 py-3 bg-brand-light border-b border-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-green-600 text-sm" aria-hidden="true"></i>
+                            <span class="font-semibold text-brand-blue text-sm">${esc(bookingLabel)}</span>
+                        </div>
+                        <div class="px-4 py-3 grid grid-cols-2 gap-3">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Adultes</p>
+                                <p class="text-sm font-semibold text-gray-800 mt-0.5">${adults}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Enfants</p>
+                                <p class="text-sm font-semibold text-gray-800 mt-0.5">${kids}</p>
+                            </div>
+                        </div>
+                        ${total != null ? `
+                        <div class="px-4 py-3 flex items-baseline justify-between gap-4 border-t border-gray-100 bg-brand-light/60">
+                            <span class="text-sm font-bold text-gray-800">Total</span>
+                            <span class="text-2xl font-bold text-brand-blue tabular-nums leading-none">${esc(money(total))}</span>
+                        </div>` : ''}
+                        ${deposit != null ? `
+                        <div class="px-4 py-3 flex items-baseline justify-between gap-4 bg-orange-50 border-t border-orange-100">
+                            <span class="text-sm font-bold text-brand-orange">Dépôt à payer</span>
+                            <span class="text-2xl font-bold text-brand-orange tabular-nums leading-none">${esc(money(deposit))}</span>
+                        </div>` : ''}
+                    </div>
+                    <button type="submit" form="room-registration-form" id="rr-sidebar-submit" class="mt-5 w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg text-lg transition-colors">RÉSERVER MAINTENANT</button>
+                    <p class="text-center text-[10px] text-gray-400 mt-3 px-2 leading-relaxed">En envoyant ce formulaire, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>
+                `;
+            }
+
+            async function init() {
+                RoomRegistration.injectStyles();
+                const params = new URLSearchParams(window.location.search);
+                const draft = RoomRegistration.loadReservationDraft(params.get('sid')) || {};
+                const slug = draft.productSlug || params.get('slug') || params.get('forfait_slug') || '';
+                const adults = Number(draft.adults || params.get('adults') || params.get('nombre_passagers') || 2) || 2;
+                const kids = Number(draft.kids || params.get('kids') || params.get('enfants') || 0) || 0;
+                const depositPerPerson = draft.depositPerPerson != null
+                    ? draft.depositPerPerson
+                    : (params.get('depot_par_personne') || params.get('deposit') || null);
+                const formRoot = document.getElementById('room-form-root');
+                const submitStatus = document.getElementById('room-submit-status');
+                const submitStatusText = document.getElementById('room-submit-status-text');
+                const lead = document.getElementById('rr-page-lead');
+                const backLink = document.getElementById('rr-back-link');
+                const panel = document.getElementById('rr-booking-panel');
+
+                if (slug && backLink) {
+                    backLink.href = 'product.html?slug=' + encodeURIComponent(slug);
+                }
+
+                if (draft.summaryText && lead) {
+                    lead.textContent = draft.summaryText;
+                } else if (draft.productName && lead) {
+                    lead.textContent = draft.productName;
+                }
+
+                if (draft.productName) {
+                    document.title = 'Réservation — ' + draft.productName;
+                }
+
+                let product = null;
+                if (slug && window.VoyageFiestaAPI?.fetchProductBySlug) {
                     try {
-                        await RoomRegistration.submitGhlRoomForm({
-                            payload: merged,
-                            redirectUrl: thankYou
-                        });
-                    } catch (err) {
-                        formRoot.classList.remove('hidden');
-                        submitStatus.classList.add('hidden');
-                        alert(err?.message
-                            ? `Impossible d'envoyer la demande : ${err.message}`
-                            : 'Impossible d\'envoyer la demande. Veuillez réessayer.');
+                        product = await VoyageFiestaAPI.fetchProductBySlug(slug);
+                    } catch (_) {
+                        product = null;
                     }
                 }
-            });
+
+                if (product && !draft.summaryText && lead) {
+                    lead.textContent = product.name;
+                    document.title = 'Réservation — ' + product.name;
+                }
+
+                if (panel) panel.innerHTML = renderSidebar(draft, product);
+
+                RoomRegistration.mountForm(formRoot, {
+                    initialPassengerCount: Math.min(5, Math.max(1, adults)),
+                    initialKidsCount: Math.min(4, Math.max(0, kids)),
+                    depositPerPerson: depositPerPerson != null ? Number(depositPerPerson) : null,
+                    pricingSummary: draft.pricingSummary || '',
+                    hideSubmit: true,
+                    async onSubmit({ payload }) {
+                        const thankYou = draft.thankYouUrl || (typeof buildGhlThankYouUrl === 'function'
+                            ? buildGhlThankYouUrl(slug)
+                            : 'thank-you.html');
+                        const merged = RoomRegistration.mergeReservationPayload(payload, draft);
+                        formRoot.classList.add('hidden');
+                        if (panel) panel.classList.add('hidden');
+                        if (submitStatusText) submitStatusText.textContent = 'Envoi de votre demande…';
+                        submitStatus.classList.remove('hidden');
+                        try {
+                            await RoomRegistration.submitGhlRoomForm({
+                                payload: merged,
+                                redirectUrl: thankYou
+                            });
+                        } catch (err) {
+                            formRoot.classList.remove('hidden');
+                            if (panel) panel.classList.remove('hidden');
+                            submitStatus.classList.add('hidden');
+                            alert(err?.message
+                                ? `Impossible d'envoyer la demande : ${err.message}`
+                                : 'Impossible d\'envoyer la demande. Veuillez réessayer.');
+                        }
+                    }
+                });
+            }
+
+            init();
         })();
     </script>
 </body>

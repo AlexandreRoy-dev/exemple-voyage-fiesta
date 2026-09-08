@@ -212,7 +212,7 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=49"></script>
-    <script src="room-registration.js?v=16"></script>
+    <script src="room-registration.js?v=17"></script>
     <script src="api.js?v=99"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
@@ -1709,6 +1709,7 @@
                 adults = Math.min(5, Math.max(1, adults));
                 kids = Math.min(4, Math.max(0, kids));
 
+                const incentive = VoyageFiestaAPI.getIncentive(p);
                 const depositPerPerson = breakdown?.depositPerPerson
                     ?? VoyageFiestaAPI.getDepositPerPerson(p);
                 const bookingContext = VoyageFiestaAPI.buildGhlReservationParams(
@@ -1727,7 +1728,21 @@
                     adults,
                     kids,
                     depositPerPerson,
+                    occupationId,
                     pricingSummary: breakdown?.pricingSummary || bookingContext.sommaire || '',
+                    pricing: {
+                        bookingLabel,
+                        bookingTotalWithTaxes: breakdown.bookingTotalWithTaxes,
+                        totalDeposit: breakdown.totalDeposit,
+                        depositPerPerson,
+                        departureDate: departureText,
+                        returnDate: VoyageFiestaAPI.formatDepartureDate(p.returnDate),
+                        departureAirport: p.departureAirport || '',
+                        durationNights: p.durationNights,
+                        location: p.location || '',
+                        incentiveDiscount: incentive?.discount ?? null,
+                        occupation: bookingContext.occupation || bookingLabel
+                    },
                     bookingContext: {
                         ...bookingContext,
                         occupation: bookingContext.occupation || bookingLabel
