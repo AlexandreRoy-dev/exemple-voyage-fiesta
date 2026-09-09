@@ -2692,6 +2692,7 @@
         matchesDepartureDateFilter,
         matchesCriteriaFilter,
         formatDepartureDate,
+        formatGhlFormDate,
         departureDateSortKey,
         departureDateFilterKey,
         getDepartureDateFilterOptions,
