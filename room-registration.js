@@ -309,20 +309,20 @@
             </form>`;
     }
 
+    function collectKids(form) {
+        return [...form.querySelectorAll('[data-kid-row]')].map((row, idx) => ({
+            index: idx + 1,
+            prenom: row.querySelector('[name^="kid_prenom"]')?.value?.trim() || '',
+            nom: row.querySelector('[name^="kid_nom"]')?.value?.trim() || '',
+            dob: formatDobForGhl(row.querySelector('[name^="kid_dob"]')?.value)
+        })).filter((kid) => kid.prenom || kid.nom || kid.dob);
+    }
+
     function collectKidsNotes(form) {
-        const rows = [...form.querySelectorAll('[data-kid-row]')];
-        const lines = [];
-        rows.forEach((row, idx) => {
-            const prenom = row.querySelector('[name^="kid_prenom"]')?.value?.trim();
-            const nom = row.querySelector('[name^="kid_nom"]')?.value?.trim();
-            const dob = formatDobForGhl(row.querySelector('[name^="kid_dob"]')?.value);
-            if (!prenom && !nom && !dob) return;
-            lines.push(
-                `Enfant ${idx + 1}: ${[prenom, nom].filter(Boolean).join(' ')}` +
-                (dob ? ` | ${dob}` : '')
-            );
-        });
-        return lines.join('\n');
+        return collectKids(form).map((kid) => (
+            `Enfant ${kid.index}: ${[kid.prenom, kid.nom].filter(Boolean).join(' ')}` +
+            (kid.dob ? ` | ${kid.dob}` : '')
+        )).join('\n');
     }
 
     function collectExtraTravelers(form) {
@@ -369,17 +369,16 @@
             payload[`p${traveler.index}_dob`] = traveler.dob;
         });
 
-        const noteParts = [];
-        if (payload.conseiller_voyage) {
-            noteParts.push(`Conseiller voyage : ${payload.conseiller_voyage}`);
-        }
-        if (payload.address2) noteParts.push(`Adresse 2 : ${payload.address2}`);
-        if (payload.province) noteParts.push(`Province : ${payload.province}`);
-        const kidsNotes = collectKidsNotes(form);
-        if (kidsNotes) noteParts.push(kidsNotes);
-        const extra = get('notes_extra');
-        if (extra) noteParts.push(extra);
-        payload.notes = noteParts.filter(Boolean).join('\n\n');
+        const kids = collectKids(form);
+        payload.nombre_enfants = String(kids.length || get('nombre_enfants') || '0');
+        kids.forEach((kid) => {
+            payload[`kid_${kid.index}_prenom`] = kid.prenom;
+            payload[`kid_${kid.index}_nom`] = kid.nom;
+            payload[`kid_${kid.index}_dob`] = kid.dob;
+        });
+
+        payload.notes_extra = get('notes_extra');
+        payload.notes = payload.notes_extra;
 
         return payload;
     }

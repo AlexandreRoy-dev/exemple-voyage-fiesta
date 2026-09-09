@@ -136,6 +136,11 @@ function pick(obj, ...keys) {
   return '';
 }
 
+function isPreSaleRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'demande_prevente' || type === 'prevente' || type === 'pre_vente';
+}
+
 function isPriceRequest(payload) {
   const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
   return type === 'demande_prix' || type === 'price_request';
@@ -302,55 +307,182 @@ function normalizeFieldValue(fieldKey, value) {
   return str;
 }
 
+function answerOf(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return String(value).trim();
+    }
+  }
+  return '—';
+}
+
+function qa(question, ...values) {
+  return `${question}\n→ ${answerOf(...values)}`;
+}
+
+function hasRoomFormAnswers(payload) {
+  return (
+    Object.prototype.hasOwnProperty.call(payload, 'assurance_medicale')
+    || Object.prototype.hasOwnProperty.call(payload, 'terms_and_conditions')
+    || Object.prototype.hasOwnProperty.call(payload, 'p1_dob')
+    || Object.prototype.hasOwnProperty.call(payload, 'passeport_valide')
+  );
+}
+
+function collectKidEntries(payload) {
+  const kids = [];
+  for (let i = 1; i <= 8; i++) {
+    const prenom = payload[`kid_${i}_prenom`];
+    const nom = payload[`kid_${i}_nom`];
+    const dob = payload[`kid_${i}_dob`];
+    if (!prenom && !nom && !dob) continue;
+    kids.push({ index: i, prenom, nom, dob });
+  }
+  if (kids.length) return kids;
+
+  const blob = String(payload.notes || '');
+  const re = /Enfant\s+(\d+)\s*:\s*([^\n|]+?)(?:\s*\|\s*(\d{1,2}\/\d{1,2}\/\d{4}))?/g;
+  let match;
+  while ((match = re.exec(blob))) {
+    const nameParts = String(match[2] || '').trim().split(/\s+/).filter(Boolean);
+    kids.push({
+      index: Number(match[1]) || kids.length + 1,
+      prenom: nameParts[0] || '',
+      nom: nameParts.slice(1).join(' '),
+      dob: match[3] || ''
+    });
+  }
+  return kids;
+}
+
 function buildNotes(payload) {
   const lines = [];
-  const add = (label, value) => {
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-      lines.push(`${label}: ${String(value).trim()}`);
-    }
+  const addSection = (title, rows) => {
+    const filled = (rows || []).filter(Boolean);
+    if (!filled.length) return;
+    if (lines.length) lines.push('');
+    lines.push(`— ${title} —`);
+    filled.forEach((row) => lines.push(row));
   };
 
-  if (isPriceRequest(payload)) {
+  if (isPreSaleRequest(payload)) {
+    lines.push('Type: Intérêt pré-vente (aucun dépôt)');
+  } else if (isPriceRequest(payload)) {
     lines.push('Type: Demande de prix (tarif non publié)');
+  } else {
+    lines.push('Type: Réservation');
   }
 
-  add('Forfait', payload.forfait_name || payload.nom_du_forfait);
-  add('Slug', payload.forfait_slug);
-  add('Occupation', payload.occupation);
-  if (!isPriceRequest(payload)) {
-    add('Dépôt', payload.depot || payload.depot_total);
-  }
-  add('Nombre de passagers', payload.nombre_passagers || payload.nombre_personnes);
-  add('Adultes', payload.nombre_adultes);
-  add('Enfants', payload.nombre_enfants_2_12 || payload.nombre_enfants);
-  add('Infos passagers', payload.infopassager);
-  add('Assurance médicale', payload.assurance_medicale);
-  add('Passeport valide 6 mois', payload.passeport_valide);
-  add('Assurance annulation', payload.assurance_annulation);
-  add('Responsable paiement', payload.payment_responsible);
-  add('Adresse', payload.address);
-  add('Ville', payload.city);
-  add('Code postal', payload.postal_code);
-  add('Paiement final', payload.final_payment_date);
+  addSection('Forfait', [
+    qa('Forfait', payload.forfait_name, payload.nom_du_forfait),
+    qa('Occupation', payload.occupation),
+    qa('Adultes', payload.nombre_adultes),
+    qa('Enfants', payload.nombre_enfants_2_12, payload.nombre_enfants),
+    qa('Nombre de passagers', payload.nombre_passagers, payload.nombre_personnes),
+    qa('Destination', payload.destination, payload.sub_destination),
+    qa('Pays', payload.country),
+    qa('Date de départ', payload.departure_date),
+    qa('Date de retour', payload.return_date),
+    qa('Aéroport de départ', payload.departure_airport),
+    qa('Aéroport à destination', payload.return_airport),
+    qa('Durée', payload.duration_nights ? `${payload.duration_nights} nuits` : ''),
+    qa('Catégorie de chambre', payload.room_category),
+    qa('Fournisseur', payload.supplier),
+    qa('Transporteur', payload.carrier),
+    qa('Promotion', payload.promotion),
+    isPriceRequest(payload) || isPreSaleRequest(payload)
+      ? ''
+      : qa('Dépôt', payload.depot, payload.depot_total),
+    qa('Date de paiement final', payload.paiement_final, payload.final_payment_date)
+  ].filter((row) => row && !row.endsWith('\n→ —')));
 
-  if (payload.sommaire) {
-    lines.push('', '— Sommaire —', String(payload.sommaire).trim());
-  }
-  if (payload.notes) {
-    lines.push('', '— Notes —', String(payload.notes).trim());
-  }
+  const roomForm = hasRoomFormAnswers(payload);
 
-  for (let i = 1; i <= 5; i++) {
+  addSection('Voyageur principal', [
+    qa('Prénom', payload.p1_prenom, payload.contact_prenom, payload.full_name),
+    qa('Nom de famille', payload.p1_nom, payload.contact_nom),
+    qa('Date de naissance', payload.p1_dob, payload.date_of_birth),
+    qa('Courriel', payload.p1_email, payload.email, payload.contact_email),
+    qa('Téléphone', payload.p1_phone, payload.phone, payload.contact_phone),
+    roomForm ? qa('Adresse', payload.address) : '',
+    roomForm ? qa('Adresse 2 (optionnel)', payload.address2) : '',
+    roomForm ? qa('Ville', payload.city) : '',
+    roomForm ? qa('Province', payload.province, payload.state) : '',
+    roomForm ? qa('Code postal', payload.postal_code) : ''
+  ]);
+
+  for (let i = 2; i <= 5; i++) {
     const prenom = payload[`p${i}_prenom`];
     const nom = payload[`p${i}_nom`];
-    const bits = [
-      prenom,
-      nom,
-      payload[`p${i}_genre`],
-      payload[`p${i}_dob`],
-      payload[`p${i}_phone`]
-    ].filter(Boolean);
-    if (bits.length) lines.push(`Passager ${i}: ${bits.join(' | ')}`);
+    const dob = payload[`p${i}_dob`];
+    const genre = payload[`p${i}_genre`];
+    const phone = payload[`p${i}_phone`];
+    if (!prenom && !nom && !dob && !genre && !phone) continue;
+    addSection(`Voyageur ${i}`, [
+      qa('Prénom', prenom),
+      qa('Nom de famille', nom),
+      qa('Date de naissance', dob),
+      genre ? qa('Genre', genre) : '',
+      phone ? qa('Téléphone', phone) : ''
+    ]);
+  }
+
+  const kids = collectKidEntries(payload);
+  const kidCount = Math.max(
+    kids.length,
+    Number(payload.nombre_enfants || payload.nombre_enfants_2_12 || 0) || 0
+  );
+  if (roomForm || kids.length) {
+    for (let i = 1; i <= kidCount; i++) {
+      const kid = kids.find((item) => item.index === i) || kids[i - 1] || {};
+      addSection(`Enfant ${i}`, [
+        qa('Prénom', kid.prenom),
+        qa('Nom de famille', kid.nom),
+        qa('Date de naissance', kid.dob)
+      ]);
+    }
+  }
+
+  if (roomForm) {
+    addSection('Assurances et documents', [
+      qa(
+        'Tous les voyageurs sont-ils couverts par une assurance voyage incluant les soins médicaux d’urgence ?',
+        payload.assurance_medicale
+      ),
+      qa(
+        'Le passeport de chaque voyageur est-il valide au moins 6 mois après la date de retour prévue ?',
+        payload.passeport_valide
+      ),
+      qa('Désirez-vous une assurance voyage Annulation ?', payload.assurance_annulation)
+    ]);
+
+    addSection('Notes du formulaire', [
+      qa(
+        'Si vous avez un conseiller Voyages Fiesta veuillez inscrire son nom',
+        payload.conseiller_voyage
+      ),
+      qa(
+        'Notes ou demandes particulières',
+        payload.notes_extra,
+        /Enfant\s+\d+\s*:/i.test(String(payload.notes || '')) ? '' : payload.notes
+      ),
+      qa(
+        'J’ai lu et j’accepte les termes et conditions du document 001-554',
+        payload.terms_and_conditions === 'true' || payload.terms_and_conditions === true
+          ? 'Oui'
+          : payload.terms_and_conditions
+      )
+    ]);
+  }
+
+  addSection('Conseiller', [
+    qa('Conseiller assigné', payload.conseiller_name, payload.agent_slug),
+    qa('Courriel conseiller', payload.conseiller_email),
+    qa('Téléphone conseiller', payload.conseiller_phone)
+  ].filter((row) => row && !row.endsWith('\n→ —')));
+
+  if (payload.sommaire) {
+    addSection('Sommaire', String(payload.sommaire).trim().split(/\r?\n/));
   }
 
   return lines.join('\n');
@@ -445,17 +577,11 @@ async function ghlAddNote(contactId, bodyText) {
 }
 
 /**
- * Tag Added workflows only fire when the tag is newly applied.
- * Remove then re-add so re-bookings / retests still trigger.
+ * Add process tags only. Do not delete first — GHL can apply the
+ * DELETE after the POST, which leaves reservation-site missing.
  */
 async function ghlApplyTag(contactId, tag) {
   if (!contactId || !tag) return { tagsAdded: [] };
-
-  await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
-    method: 'DELETE',
-    headers: ghlHeaders(),
-    body: JSON.stringify({ tags: [tag] })
-  });
 
   const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
     method: 'POST',
@@ -557,7 +683,14 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  let pathname = '/';
+  try {
+    const host = String(req.headers.host || 'localhost').replace(/[/\\]/g, '') || 'localhost';
+    pathname = new URL(req.url || '/', `http://${host}`).pathname;
+  } catch (_) {
+    pathname = String(req.url || '/').split('?')[0] || '/';
+  }
+  const url = { pathname };
 
   if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/health')) {
     return sendJson(res, 200, {
@@ -610,7 +743,10 @@ const server = http.createServer(async (req, res) => {
       if (contactId && tags.length) {
         const tagResult = await ghlApplyTags(contactId, tags);
         tagsAdded = tagResult?.tagsAdded || tags;
+        console.log('[reservation] tagged', contactId, tagsAdded.join(','));
         if (noteText) await ghlAddNote(contactId, noteText);
+      } else if (!contactId) {
+        console.warn('[reservation] upsert returned no contact id; tags skipped');
       }
 
       return sendJson(res, 200, {

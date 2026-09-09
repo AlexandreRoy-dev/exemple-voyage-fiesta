@@ -97,6 +97,22 @@ function buildNotes(payload) {
     lines.push('Type: Demande de prix (tarif non publié)');
   }
 
+  add('Nom', payload.full_name || [payload.p1_prenom, payload.p1_nom].filter(Boolean).join(' '));
+  add('Courriel', payload.p1_email || payload.email || payload.contact_email);
+  add('Téléphone', payload.p1_phone || payload.phone || payload.contact_phone);
+  add('Forfait', payload.forfait_name || payload.nom_du_forfait);
+  add('Slug', payload.forfait_slug);
+  add('Destination', payload.destination || payload.sub_destination);
+  add('Pays', payload.country);
+  add('Départ', payload.departure_date);
+  add('Retour', payload.return_date);
+  add('Aéroport de départ', payload.departure_airport);
+  add('Aéroport à destination', payload.return_airport);
+  add('Durée', payload.duration_nights ? `${payload.duration_nights} nuits` : '');
+  add('Chambre', payload.room_category);
+  add('Fournisseur', payload.supplier);
+  add('Transporteur', payload.carrier);
+  add('Occupation', payload.occupation);
   add('Dépôt', isPriceRequest(payload) ? '' : payload.depot);
   add('Nombre de passagers', payload.nombre_passagers);
   add('Adultes', payload.nombre_adultes);
@@ -119,24 +135,33 @@ function buildNotes(payload) {
   if (payload.sommaire) {
     lines.push('', '— Sommaire —', String(payload.sommaire).trim());
   }
-  if (payload.notes) {
+  if (payload.notes_extra) {
+    lines.push('', '— Notes —', String(payload.notes_extra).trim());
+  } else if (payload.notes && !/Enfant\s+\d+\s*:/i.test(String(payload.notes))) {
     lines.push('', '— Notes —', String(payload.notes).trim());
   }
 
-  // Extra passenger fields if present
   for (let i = 1; i <= 5; i++) {
     const prenom = payload[`p${i}_prenom`];
     const nom = payload[`p${i}_nom`];
-    if (!prenom && !nom && i > 1) continue;
-    if (i === 1 && !payload.p1_genre && !payload.p1_dob) continue;
-    const bits = [
-      prenom || (i === 1 ? payload.p1_prenom : ''),
-      nom || (i === 1 ? payload.p1_nom : ''),
-      payload[`p${i}_genre`],
-      payload[`p${i}_dob`],
-      payload[`p${i}_phone`]
-    ].filter(Boolean);
-    if (bits.length) lines.push(`Passager ${i}: ${bits.join(' | ')}`);
+    const dob = payload[`p${i}_dob`];
+    if (!prenom && !nom && !dob && i > 1) continue;
+    if (!prenom && !nom && !dob && i === 1) continue;
+    lines.push('', `— Voyageur ${i} —`);
+    add('Prénom', prenom);
+    add('Nom de famille', nom);
+    add('Date de naissance', dob || '—');
+  }
+
+  for (let i = 1; i <= 8; i++) {
+    const prenom = payload[`kid_${i}_prenom`];
+    const nom = payload[`kid_${i}_nom`];
+    const dob = payload[`kid_${i}_dob`];
+    if (!prenom && !nom && !dob) continue;
+    lines.push('', `— Enfant ${i} —`);
+    add('Prénom', prenom);
+    add('Nom de famille', nom);
+    add('Date de naissance', dob || '—');
   }
 
   return lines.join('\n');
@@ -251,22 +276,12 @@ async function createContact(apiKey, body) {
   return data;
 }
 
-/** Remove then re-add so GHL "Tag Added" workflows / sequences still fire. */
+/** Add process tags only. Deleting first can race and strip the tag. */
 async function applyContactTags(apiKey, contactId, tags) {
   const list = [...new Set((tags || []).map((t) => String(t || '').trim()).filter(Boolean))];
   if (!contactId || !list.length) return list;
 
   for (const tag of list) {
-    await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        Version: GHL_VERSION,
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ tags: [tag] })
-    });
     const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
       method: 'POST',
       headers: {

@@ -36,7 +36,7 @@ Scopes Private Integration recommandés : **contacts.write** (et contacts.readon
 
 Aucun iframe GHL.
 
-Les tags sont retirés puis ré-appliqués après upsert pour que les workflows **Tag Added** se déclenchent aussi sur une re-soumission.
+Les tags métier sont ajoutés après upsert (`reservation-site` / `demande-prix` / `demande-prevente`). On ne les retire plus avant — GHL peut appliquer le DELETE après le POST et vider le tag.
 
 ## Champs custom (optionnel)
 

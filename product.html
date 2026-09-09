@@ -212,8 +212,8 @@
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
     <script src="config.js?v=49"></script>
-    <script src="room-registration.js?v=20"></script>
-    <script src="api.js?v=99"></script>
+    <script src="room-registration.js?v=21"></script>
+    <script src="api.js?v=100"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1431,6 +1431,21 @@
                     : `Demande de prix (tarif non publié) - ${occupationLabel}`;
 
                 const agentCtx = VoyageFiestaAPI.resolveBookingAgentContext(p);
+                const formatFlightLeg = (leg) => {
+                    if (!leg) return '';
+                    const date = VoyageFiestaAPI.formatDepartureDate(leg.departDate || leg.depart_date) || '';
+                    const from = [leg.from, leg.departTime || leg.depart_time].filter(Boolean).join(' ');
+                    const to = [leg.to, leg.arriveTime || leg.arrive_time].filter(Boolean).join(' ');
+                    return [leg.number, date, from && to ? `${from} → ${to}` : ''].filter(Boolean).join(' | ');
+                };
+                const supplierLabel = p.supplierLabel
+                    || (typeof VoyageFiestaAPI.formatSupplierLabel === 'function'
+                        ? VoyageFiestaAPI.formatSupplierLabel(p.supplier)
+                        : p.supplier);
+                const carrierLabel = p.carrierLabel
+                    || (typeof VoyageFiestaAPI.formatCarrierLabel === 'function'
+                        ? VoyageFiestaAPI.formatCarrierLabel(p.carrier)
+                        : p.carrier);
                 const payload = {
                     request_type: requestType,
                     create_opportunity: true,
@@ -1451,13 +1466,38 @@
                     forfait_slug: p.slug,
                     forfait_name: p.name,
                     nom_du_forfait: p.name,
+                    destination: p.destination || p.destination1 || p.subDest || '',
+                    sub_destination: p.subDest || '',
+                    country: p.country || '',
+                    departure_date: VoyageFiestaAPI.formatDepartureDate(p.departureDate) || '',
+                    return_date: VoyageFiestaAPI.formatDepartureDate(p.returnDate) || '',
+                    departure_airport: p.departureAirport || '',
+                    return_airport: p.returnAirport || '',
+                    duration_nights: p.durationNights != null ? String(p.durationNights) : '',
+                    room_category: p.roomCategory || '',
+                    supplier: supplierLabel || '',
+                    carrier: carrierLabel || '',
+                    package_type: p.packageType || '',
+                    promotion: p.promotion || '',
+                    forfait_link: p.forfaitLink || '',
+                    vol_aller: formatFlightLeg(p.flights?.out),
+                    vol_retour: formatFlightLeg(p.flights?.return),
+                    final_payment_date: VoyageFiestaAPI.formatDepartureDate(p.finalPaymentDate) || '',
                     sommaire: [
                         `${sommairePrefix} - ${p.name}`,
+                        `Nom : ${fullName}`,
+                        `Courriel : ${email}`,
+                        `Téléphone : ${phone}`,
                         `Occupation : ${occupationLabel}`,
                         `Adultes : ${adults}`,
                         `Enfants : ${kids}`,
+                        `Destination : ${p.destination || p.subDest || '-'}`,
                         `Départ : ${VoyageFiestaAPI.formatDepartureDate(p.departureDate) || 'à confirmer'}`,
-                        `Aéroport : ${p.departureAirport || '-'}`
+                        `Retour : ${VoyageFiestaAPI.formatDepartureDate(p.returnDate) || '-'}`,
+                        `Aéroport : ${p.departureAirport || '-'}`,
+                        `Chambre : ${p.roomCategory || '-'}`,
+                        `Fournisseur : ${supplierLabel || '-'}`,
+                        `Transporteur : ${carrierLabel || '-'}`
                     ].join('\n'),
                     notes: notesLabel,
                     pipeline_id: window.GHL_PIPELINE_ID || '',
