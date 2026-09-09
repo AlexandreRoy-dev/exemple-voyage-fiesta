@@ -33,6 +33,33 @@
         return fields;
     }
 
+    function reservationFetchError(err) {
+        const raw = String(err?.message || err || '');
+        if (/failed to fetch|networkerror|load failed|network request failed/i.test(raw)) {
+            return 'Impossible de joindre le serveur de réservation. Vérifiez votre connexion, puis réessayez.';
+        }
+        return raw || 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.';
+    }
+
+    async function postReservation(apiUrl, payload) {
+        const body = JSON.stringify({ payload });
+        const opts = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body
+        };
+        try {
+            return await fetch(apiUrl, opts);
+        } catch (firstErr) {
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            try {
+                return await fetch(apiUrl, opts);
+            } catch (retryErr) {
+                throw new Error(reservationFetchError(retryErr || firstErr));
+            }
+        }
+    }
+
     async function submitGhlRoomForm({ payload, redirectUrl } = {}) {
         const apiUrl = String(global.GHL_RESERVATION_API_URL || '').trim();
         if (!apiUrl) {
@@ -41,11 +68,7 @@
             );
         }
 
-        const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({ payload })
-        });
+        const res = await postReservation(apiUrl, payload);
 
         let data = null;
         try {
@@ -719,8 +742,7 @@
                 ? global.buildGhlThankYouUrl('')
                 : 'thank-you.html';
             submitGhlRoomForm({ payload, redirectUrl: thankYou }).catch((err) => {
-                showError(err?.message
-                    || 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.');
+                showError(reservationFetchError(err));
             });
         });
 

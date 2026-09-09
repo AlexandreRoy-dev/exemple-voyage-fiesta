@@ -298,10 +298,10 @@
     /** Location ID public (aussi dans products.json) */
     window.GHL_LOCATION_ID = 'V90iyFBbBrCg3tpctRjc';
     /**
-     * API réservation (OVH VPS via tunnel HTTPS - le site est en HTTPS).
-     * Pour une URL stable: pointer un sous-domaine vers 158.69.1.173 + Let's Encrypt.
+     * API réservation (OVH VPS, HTTPS via dashboard.codesurmesure.ca).
+     * Do not point the live form at a trycloudflare URL — browsers treat that as a fetch error.
      */
-    window.GHL_RESERVATION_API_URL = 'https://hart-intelligence-footwear-underground.trycloudflare.com/';
+    window.GHL_RESERVATION_API_URL = 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/';
 
     /** Pipeline « voyage fiesta » - opportunité (si workflow GHL en crée une) */
     window.GHL_PIPELINE_ID = '0epoPtkeq89cfu3KsxDs';
