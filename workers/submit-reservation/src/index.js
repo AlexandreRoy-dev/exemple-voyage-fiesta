@@ -124,6 +124,7 @@ function buildNotes(payload) {
   add('Responsable paiement', payload.payment_responsible);
   add('Adresse', payload.address);
   add('Adresse 2', payload.address2);
+  add('Adresse de la carte de crédit', payload.credit_card_address);
   add('Ville', payload.city);
   add('Province', payload.province || payload.state);
   add('Code postal', payload.postal_code);

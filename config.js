@@ -341,6 +341,7 @@
         p5_dob: 'passager_4_date_de_naissance_lib_copy',
         address: 'address',
         address2: 'address2',
+        credit_card_address: 'credit_card_address',
         city: 'city',
         province: 'province',
         postal_code: 'postal_code',

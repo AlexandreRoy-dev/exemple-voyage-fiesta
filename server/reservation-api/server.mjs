@@ -408,7 +408,8 @@ function buildNotes(payload) {
     roomForm ? qa('Adresse 2 (optionnel)', payload.address2) : '',
     roomForm ? qa('Ville', payload.city) : '',
     roomForm ? qa('Province', payload.province, payload.state) : '',
-    roomForm ? qa('Code postal', payload.postal_code) : ''
+    roomForm ? qa('Code postal', payload.postal_code) : '',
+    roomForm ? qa('Adresse de la carte de crédit', payload.credit_card_address) : ''
   ]);
 
   for (let i = 2; i <= 5; i++) {

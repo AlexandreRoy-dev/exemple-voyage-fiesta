@@ -112,8 +112,8 @@
                         <input class="rr-input" id="extra-nom-${n}" type="text" name="extra_nom_${n}" autocomplete="off" required placeholder="Tremblay">
                     </label>
                     <label class="rr-field" for="extra-dob-${n}">
-                        <span>Date de naissance</span>
-                        <input class="rr-input" id="extra-dob-${n}" type="date" name="extra_dob_${n}">
+                        <span>Date de naissance ${reqMark()}</span>
+                        <input class="rr-input" id="extra-dob-${n}" type="date" name="extra_dob_${n}" required>
                     </label>
                 </div>
             </article>`;
@@ -198,8 +198,8 @@
                             <input class="rr-input" id="contact_nom" type="text" name="contact_nom" required autocomplete="family-name" placeholder="Tremblay" aria-describedby="rr-passport-hint">
                         </label>
                         <label class="rr-field" for="p1_dob">
-                            <span>Date de naissance</span>
-                            <input class="rr-input" id="p1_dob" type="date" name="p1_dob" autocomplete="bday">
+                            <span>Date de naissance ${reqMark()}</span>
+                            <input class="rr-input" id="p1_dob" type="date" name="p1_dob" required autocomplete="bday">
                         </label>
                         <label class="rr-field" for="contact_email">
                             <span>Courriel ${reqMark()}</span>
@@ -230,6 +230,17 @@
                         <label class="rr-field" for="postal_code">
                             <span>Code postal ${reqMark()}</span>
                             <input class="rr-input" id="postal_code" type="text" name="postal_code" required autocomplete="postal-code" placeholder="H2X 1Y3">
+                        </label>
+                    </div>
+                    <div class="rr-stack-fields rr-billing">
+                        <p class="rr-hint" id="rr-cc-address-hint">Adresse de facturation telle qu’elle apparaît sur le relevé de la carte de crédit.</p>
+                        <label class="rr-check" for="cc-address-same">
+                            <input type="checkbox" id="cc-address-same" name="cc_address_same" value="true">
+                            <span>Utiliser la même adresse que ci-dessus</span>
+                        </label>
+                        <label class="rr-field" for="credit_card_address">
+                            <span>Adresse de la carte de crédit ${reqMark()}</span>
+                            <textarea class="rr-input rr-textarea rr-textarea-short" id="credit_card_address" name="credit_card_address" rows="3" required autocomplete="billing street-address" aria-describedby="rr-cc-address-hint" placeholder="Numéro, rue, ville, province, code postal"></textarea>
                         </label>
                     </div>
                 </section>
@@ -353,6 +364,8 @@
             city: get('city'),
             province: get('province'),
             postal_code: get('postal_code'),
+            credit_card_address: get('credit_card_address'),
+            cc_address_same: form.querySelector('[name="cc_address_same"]')?.checked ? 'true' : '',
             assurance_medicale: get('assurance_medicale'),
             passeport_valide: get('passeport_valide'),
             assurance_annulation: get('assurance_annulation'),
@@ -617,6 +630,29 @@
             payInput.value = `${p} ${n}`.trim();
         }
 
+        function composeHomeAddress() {
+            const line1 = form.querySelector('[name="address"]')?.value?.trim() || '';
+            const line2 = form.querySelector('[name="address2"]')?.value?.trim() || '';
+            const city = form.querySelector('[name="city"]')?.value?.trim() || '';
+            const province = form.querySelector('[name="province"]')?.value?.trim() || '';
+            const postal = form.querySelector('[name="postal_code"]')?.value?.trim() || '';
+            return [line1, line2, [city, province].filter(Boolean).join(', '), postal]
+                .filter(Boolean)
+                .join('\n');
+        }
+
+        function syncCreditCardAddress() {
+            const same = form.querySelector('#cc-address-same');
+            const field = form.querySelector('#credit_card_address');
+            if (!same || !field) return;
+            if (same.checked) {
+                field.value = composeHomeAddress();
+                field.readOnly = true;
+            } else {
+                field.readOnly = false;
+            }
+        }
+
         function extraCount() {
             return extraList.querySelectorAll('[data-extra-traveler]').length;
         }
@@ -646,14 +682,20 @@
 
         form.querySelector('[name="contact_prenom"]')?.addEventListener('input', syncPaymentResponsible);
         form.querySelector('[name="contact_nom"]')?.addEventListener('input', syncPaymentResponsible);
+        form.querySelector('#cc-address-same')?.addEventListener('change', syncCreditCardAddress);
+        ['address', 'address2', 'city', 'province', 'postal_code'].forEach((name) => {
+            form.querySelector(`[name="${name}"]`)?.addEventListener('input', syncCreditCardAddress);
+        });
 
         updateDepot();
         syncPaymentResponsible();
+        syncCreditCardAddress();
         refreshExtraState();
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             clearError();
+            syncCreditCardAddress();
             if (!form.checkValidity()) {
                 form.reportValidity();
                 showError('Veuillez corriger les champs indiqués avant d’envoyer.');
@@ -758,6 +800,8 @@ select.rr-input {
   padding-right: 2.5rem;
 }
 .rr-textarea { min-height: 7rem; resize: vertical; line-height: 1.55; }
+.rr-textarea-short { min-height: 5.5rem; }
+.rr-billing { margin-top: 1.35rem; padding-top: 1.2rem; border-top: 1px solid #e8eef3; }
 .rr-input:focus, .rr-textarea:focus {
   outline: none; border-color: #025091;
   box-shadow: 0 0 0 3px rgba(2, 80, 145, 0.15);
