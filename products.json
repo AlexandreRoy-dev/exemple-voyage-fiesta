@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T19:15:03.911Z",
+  "updatedAt": "2026-09-09T15:45:03.165Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -288,8 +288,14 @@
         "assets/forfaits/henry-morgan-beach-hotel-2027-01-11-extra-1.jpg"
       ],
       "seoTags": [],
-      "ownerId": null,
-      "owner": null
+      "ownerId": "M37kX9dOKDqiT8arwEJs",
+      "owner": {
+        "id": "M37kX9dOKDqiT8arwEJs",
+        "name": "Agence Voyages Fiesta  et Mariage Sud",
+        "email": "info@promo.voyagefiesta.com",
+        "phone": "+15148566614",
+        "slug": "agence-voyages-fiesta-et-mariage-sud"
+      }
     },
     {
       "id": "6a5fdf2db7eef45ef94006d3",
@@ -380,8 +386,14 @@
         "assets/forfaits/henry-morgan-beach-hotel-roatan-2027-03-15-img.jpg"
       ],
       "seoTags": [],
-      "ownerId": null,
-      "owner": null
+      "ownerId": "M37kX9dOKDqiT8arwEJs",
+      "owner": {
+        "id": "M37kX9dOKDqiT8arwEJs",
+        "name": "Agence Voyages Fiesta  et Mariage Sud",
+        "email": "info@promo.voyagefiesta.com",
+        "phone": "+15148566614",
+        "slug": "agence-voyages-fiesta-et-mariage-sud"
+      }
     },
     {
       "id": "6a95ee4b8386c23d9789b909",
@@ -864,8 +876,14 @@
         "assets/forfaits/sandos-playacar-2026-12-30-extra-1.jpg"
       ],
       "seoTags": [],
-      "ownerId": null,
-      "owner": null
+      "ownerId": "M37kX9dOKDqiT8arwEJs",
+      "owner": {
+        "id": "M37kX9dOKDqiT8arwEJs",
+        "name": "Agence Voyages Fiesta  et Mariage Sud",
+        "email": "info@promo.voyagefiesta.com",
+        "phone": "+15148566614",
+        "slug": "agence-voyages-fiesta-et-mariage-sud"
+      }
     },
     {
       "id": "6a3853dd3452b20f5e0fdd63",
@@ -956,8 +974,14 @@
         "assets/forfaits/viva-fortuna-beach-by-wyndham-2027-03-27-extra-2.jpg"
       ],
       "seoTags": [],
-      "ownerId": null,
-      "owner": null
+      "ownerId": "M37kX9dOKDqiT8arwEJs",
+      "owner": {
+        "id": "M37kX9dOKDqiT8arwEJs",
+        "name": "Agence Voyages Fiesta  et Mariage Sud",
+        "email": "info@promo.voyagefiesta.com",
+        "phone": "+15148566614",
+        "slug": "agence-voyages-fiesta-et-mariage-sud"
+      }
     },
     {
       "id": "6a3853dcc9025e2db441d210",
@@ -1048,8 +1072,14 @@
         "assets/forfaits/zel-cozumel-2026-12-07-img.jpg"
       ],
       "seoTags": [],
-      "ownerId": null,
-      "owner": null
+      "ownerId": "M37kX9dOKDqiT8arwEJs",
+      "owner": {
+        "id": "M37kX9dOKDqiT8arwEJs",
+        "name": "Agence Voyages Fiesta  et Mariage Sud",
+        "email": "info@promo.voyagefiesta.com",
+        "phone": "+15148566614",
+        "slug": "agence-voyages-fiesta-et-mariage-sud"
+      }
     }
   ]
 }
