@@ -75,8 +75,8 @@
         </div>
     </main>
 
-    <script src="config.js?v=50"></script>
-    <script src="room-registration.js?v=22"></script>
+    <script src="config.js?v=51"></script>
+    <script src="room-registration.js?v=23"></script>
     <script src="api.js?v=99"></script>
     <script>
         (function () {
@@ -286,9 +286,11 @@
                             formRoot.classList.remove('hidden');
                             if (panel) panel.classList.remove('hidden');
                             submitStatus.classList.add('hidden');
-                            alert(err?.message
-                                ? `Impossible d'envoyer la demande : ${err.message}`
-                                : 'Impossible d\'envoyer la demande. Veuillez réessayer.');
+                            const raw = String(err?.message || '');
+                            const msg = /failed to fetch|networkerror|load failed/i.test(raw)
+                                ? 'Impossible de joindre le serveur de réservation. Vérifiez votre connexion, puis réessayez.'
+                                : (raw || 'Impossible d\'envoyer la demande. Veuillez réessayer.');
+                            alert(`Impossible d'envoyer la demande : ${msg}`);
                         }
                     }
                 });

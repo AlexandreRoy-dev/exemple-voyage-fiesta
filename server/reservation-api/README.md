@@ -20,7 +20,7 @@ Secrets live only in `/opt/voyage-fiesta-reservation/.env` on the VPS (chmod 600
 
 ## Site config
 
-`config.js` → `GHL_RESERVATION_API_URL = 'http://158.69.1.173:3847/'`
+`config.js` → `GHL_RESERVATION_API_URL = 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/'`
 
 ## GHL
 

@@ -211,9 +211,9 @@
 
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=50"></script>
-    <script src="room-registration.js?v=22"></script>
-    <script src="api.js?v=100"></script>
+    <script src="config.js?v=51"></script>
+    <script src="room-registration.js?v=23"></script>
+    <script src="api.js?v=101"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1482,7 +1482,9 @@
                     forfait_link: p.forfaitLink || '',
                     vol_aller: formatFlightLeg(p.flights?.out),
                     vol_retour: formatFlightLeg(p.flights?.return),
-                    final_payment_date: VoyageFiestaAPI.formatDepartureDate(p.finalPaymentDate) || '',
+                    final_payment_date: (VoyageFiestaAPI.formatGhlFormDate
+                        ? VoyageFiestaAPI.formatGhlFormDate(p.finalPaymentDate)
+                        : p.finalPaymentDate) || '',
                     sommaire: [
                         `${sommairePrefix} - ${p.name}`,
                         `Nom : ${fullName}`,

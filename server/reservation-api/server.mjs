@@ -252,11 +252,36 @@ function normalizeDateFr(value) {
   const str = String(value || '').trim();
   if (!str) return '';
   if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
-  const m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
-  if (!m) return str;
-  const d = m[1].padStart(2, '0');
-  const mo = m[2].padStart(2, '0');
-  return `${m[3]}-${mo}-${d}`;
+  const slash = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if (slash) {
+    return `${slash[3]}-${slash[2].padStart(2, '0')}-${slash[1].padStart(2, '0')}`;
+  }
+  const folded = str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/,/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const months = {
+    janvier: '01',
+    fevrier: '02',
+    mars: '03',
+    avril: '04',
+    mai: '05',
+    juin: '06',
+    juillet: '07',
+    aout: '08',
+    septembre: '09',
+    octobre: '10',
+    novembre: '11',
+    decembre: '12'
+  };
+  const longFr = folded.match(/^(\d{1,2})\s+([a-z]+)\s+(\d{4})$/);
+  if (longFr && months[longFr[2]]) {
+    return `${longFr[3]}-${months[longFr[2]]}-${longFr[1].padStart(2, '0')}`;
+  }
+  return '';
 }
 
 /** Long French date for email merge tags (GHL DATE fields render in English). */
