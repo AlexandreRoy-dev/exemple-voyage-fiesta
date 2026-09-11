@@ -111,6 +111,59 @@ export function normalizeAeroportOption(value) {
   return null;
 }
 
+/** Options GHL « Aéroport de retour » (aéroport à destination). */
+export const AEROPORT_RETOUR_OPTIONS = [
+  { key: 'antigua_anu', label: 'Antigua (ANU)', iata: 'ANU' },
+  { key: 'aruba_aua', label: 'Aruba (AUA)', iata: 'AUA' },
+  { key: 'bahamas_freeport_fpo', label: 'Bahamas, Freeport (FPO)', iata: 'FPO' },
+  { key: 'bahamas_nassau_nas', label: 'Bahamas, Nassau (NAS)', iata: 'NAS' },
+  { key: 'cancun_cun', label: 'Cancun (CUN)', iata: 'CUN' },
+  { key: 'carthagene_ctg', label: 'Carthagène (CTG)', iata: 'CTG' },
+  { key: 'cozumel_czm', label: 'Cozumel (CZM)', iata: 'CZM' },
+  { key: 'fort_de_france_fdf', label: 'Fort de France (FDF)', iata: 'FDF' },
+  { key: 'fort_lauderdale_fll', label: 'Fort Lauderdale (FLL)', iata: 'FLL' },
+  { key: 'la_romana_lrm', label: 'La Romana (LRM)', iata: 'LRM' },
+  { key: 'las_vegas_las', label: 'Las Vegas (LAS)', iata: 'LAS' },
+  { key: 'liberia_lir', label: 'Liberia (LIR)', iata: 'LIR' },
+  { key: 'los_cabos_sjd', label: 'Los Cabos (SJD)', iata: 'SJD' },
+  { key: 'managua_mga', label: 'Managua (MGA)', iata: 'MGA' },
+  { key: 'mazatlan_mzt', label: 'Mazatlan (MZT)', iata: 'MZT' },
+  { key: 'miami_mia', label: 'Miami (MIA)', iata: 'MIA' },
+  { key: 'montego_bay_mbj', label: 'Montego Bay (MBJ)', iata: 'MBJ' },
+  { key: 'palma_de_majorque_pmi', label: 'Palma de Majorque (PMI)', iata: 'PMI' },
+  { key: 'playa_blanca_rih', label: 'Playa Blanca (RIH)', iata: 'RIH' },
+  { key: 'pointe_pitre_ptp', label: 'Pointe-à-Pitre (PTP)', iata: 'PTP' },
+  { key: 'providenciales_pls', label: 'Providenciales (PLS)', iata: 'PLS' },
+  { key: 'puerto_plata_pop', label: 'Puerto Plata (POP)', iata: 'POP' },
+  { key: 'puerto_vallarta_pvr', label: 'Puerto Vallarta (PVR)', iata: 'PVR' },
+  { key: 'punta_cana_puj', label: 'Punta Cana (PUJ)', iata: 'PUJ' },
+  { key: 'samana_azs', label: 'Samana (AZS)', iata: 'AZS' },
+  { key: 'san_salvador_sal', label: 'San Salvador (SAL)', iata: 'SAL' },
+  { key: 'st_martin_sxm', label: 'St-Martin (SXM)', iata: 'SXM' },
+  { key: 'ste_lucie_uvf', label: 'Ste-Lucie (UVF)', iata: 'UVF' },
+  {
+    key: 'toronto_yyz',
+    label: 'Toronto (YYZ) — lorsqu’il y a une escale. Exemple: YUL → YYZ ensuite YYZ → CUN',
+    iata: 'YYZ'
+  },
+  { key: 'tulum_tqo', label: 'Tulum (TQO)', iata: 'TQO' }
+];
+
+export function normalizeAeroportRetourOption(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const slug = raw.toLowerCase().replace(/\s+/g, '_');
+  if (AEROPORT_RETOUR_OPTIONS.some((opt) => opt.key === slug)) return slug;
+  const lower = raw.toLowerCase();
+  if (lower.includes('cancun') || lower.includes('cancún')) return 'cancun_cun';
+  if (lower.includes('freeport')) return 'bahamas_freeport_fpo';
+  if (lower.includes('nassau')) return 'bahamas_nassau_nas';
+  const code = extractIataFromAirportValue(raw);
+  if (code === 'YUL') return null;
+  const hit = AEROPORT_RETOUR_OPTIONS.find((opt) => opt.iata === code);
+  return hit ? hit.key : null;
+}
+
 /** Clé option GHL → libellé affiché boutique */
 export const AEROPORT_LABELS = {
   montral_yul: 'Montréal (YUL)',
@@ -120,7 +173,36 @@ export const AEROPORT_LABELS = {
   ottawa_yow: 'Ottawa (YOW)',
   toronto_yyz: 'Toronto (YYZ)',
   halifax_yhz: 'Halifax (YHZ)',
-  vancouver_yvr: 'Vancouver (YVR)'
+  vancouver_yvr: 'Vancouver (YVR)',
+  antigua_anu: 'Antigua (ANU)',
+  aruba_aua: 'Aruba (AUA)',
+  bahamas_freeport_fpo: 'Bahamas, Freeport (FPO)',
+  bahamas_nassau_nas: 'Bahamas, Nassau (NAS)',
+  cancun_cun: 'Cancun (CUN)',
+  carthagene_ctg: 'Carthagène (CTG)',
+  cozumel_czm: 'Cozumel (CZM)',
+  fort_de_france_fdf: 'Fort de France (FDF)',
+  fort_lauderdale_fll: 'Fort Lauderdale (FLL)',
+  la_romana_lrm: 'La Romana (LRM)',
+  las_vegas_las: 'Las Vegas (LAS)',
+  liberia_lir: 'Liberia (LIR)',
+  los_cabos_sjd: 'Los Cabos (SJD)',
+  managua_mga: 'Managua (MGA)',
+  mazatlan_mzt: 'Mazatlan (MZT)',
+  miami_mia: 'Miami (MIA)',
+  montego_bay_mbj: 'Montego Bay (MBJ)',
+  palma_de_majorque_pmi: 'Palma de Majorque (PMI)',
+  playa_blanca_rih: 'Playa Blanca (RIH)',
+  pointe_pitre_ptp: 'Pointe-à-Pitre (PTP)',
+  providenciales_pls: 'Providenciales (PLS)',
+  puerto_plata_pop: 'Puerto Plata (POP)',
+  puerto_vallarta_pvr: 'Puerto Vallarta (PVR)',
+  punta_cana_puj: 'Punta Cana (PUJ)',
+  samana_azs: 'Samana (AZS)',
+  san_salvador_sal: 'San Salvador (SAL)',
+  st_martin_sxm: 'St-Martin (SXM)',
+  ste_lucie_uvf: 'Ste-Lucie (UVF)',
+  tulum_tqo: 'Tulum (TQO)'
 };
 
 function extractIataFromAirportValue(value) {
@@ -235,7 +317,8 @@ export function formatPropertiesForGhlApi(logicalProps) {
       continue;
     }
     if (key === 'aroport_de_retour') {
-      out[key] = String(value).trim();
+      const v = normalizeAeroportRetourOption(value);
+      if (v) out[key] = v;
       continue;
     }
     if (key === 'fournisseur') {
