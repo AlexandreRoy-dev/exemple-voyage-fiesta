@@ -1200,6 +1200,9 @@ async function mapRecord(record, apiKey, manifest, slug) {
  'hotel_description',
  'hotelDescription'
  ) || String(pickProp(props, 'description_hotel') || '').trim(),
+ inclusions: String(pickProp(props, 'inclusions') || '').trim(),
+ exclusions: String(pickProp(props, 'exclusions') || '').trim(),
+ franchiseBagage: String(pickProp(props, 'franchise_bagage') || pick(props, 'franchiseBagage') || '').trim(),
  forfaitLink: normalizeExternalUrl(
  pickProp(props, 'lien_fiche_fournisseur', 'forfait_link', 'forfaitLink')
  ),

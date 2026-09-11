@@ -39,9 +39,13 @@
     </script>
     <style>
         .sticky-booking { position: sticky; top: 1rem; }
-        .tab-active { border-bottom: 3px solid #F26522; color: #F26522; font-weight: 600; }
-        .product-tab { border-bottom: 3px solid transparent; color: #6b7280; }
-        .product-tab:hover { color: #F26522; }
+        .tab-active { border-bottom: 3px solid #F26522; color: #025091; font-weight: 600; }
+        .product-tab { border-bottom: 3px solid transparent; color: #4b5563; }
+        .product-tab:hover { color: #025091; }
+        #product-tabs [role="tab"]:focus-visible {
+            outline: 2px solid #025091;
+            outline-offset: 2px;
+        }
         .gallery-tile { cursor: pointer; }
         .gallery-tile:hover img { transform: scale(1.03); }
         .gallery-tile img { transition: transform 0.3s ease; }
@@ -271,26 +275,64 @@
             return VoyageFiestaAPI.formatStarsLabel(count);
         }
 
-        function getInclusions(p) {
-            const carrierLabel = VoyageFiestaAPI.formatProductDisplayValue(p, 'carrier');
-            const baggageNote = carrierLabel
-                ? `1 bagage enregistré (selon ${carrierLabel})`
-                : '1 bagage enregistré (selon le transporteur)';
+        function splitFieldLines(text) {
+            return String(text ?? '')
+                .split(/\r?\n/)
+                .map((line) => line.replace(/^[\s•\-–—*]+/, '').trim())
+                .filter(Boolean);
+        }
+
+        function packageTypeKey(p) {
+            return String(p.packageType || '').toLowerCase();
+        }
+
+        function isAllInclusivePackage(p) {
+            const type = packageTypeKey(p);
+            return (type.includes('tout') && type.includes('inclus')) || type.includes('croisi');
+        }
+
+        function getDefaultInclusions(p) {
+            const type = packageTypeKey(p);
+            const lodging = isAllInclusivePackage(p)
+                ? 'Hébergement pour la durée du séjour avec repas et boisson'
+                : 'Hébergement pour la durée du séjour';
             const base = [
                 { icon: 'fa-plane', text: 'Vols aller-retour directs ou avec escales' },
                 { icon: 'fa-bus', text: 'Transferts aéroport → hôtel → aéroport' },
-                { icon: 'fa-hotel', text: 'Hébergement pour la durée du séjour' },
-                { icon: 'fa-suitcase', text: baggageNote },
+                { icon: 'fa-hotel', text: lodging },
                 { icon: 'fa-shield-halved', text: 'Contribution au Fonds FICAV' }
             ];
-            if (p.packageType.includes('Tout-Inclus') || p.packageType.includes('Croisière')) {
-                base.splice(3, 0, { icon: 'fa-utensils', text: 'Formule repas et boissons' });
-            } else if (p.packageType.includes('Plan Européen') || p.packageType.includes('Vol + Hôtel')) {
+            if (type.includes('europ') || (type.includes('vol') && (type.includes('hôtel') || type.includes('hotel')))) {
                 base.splice(3, 0, { icon: 'fa-mug-saucer', text: 'Petit-déjeuner quotidien' });
-            } else if (p.packageType.includes('Circuit')) {
+            } else if (type.includes('circuit')) {
                 base.splice(3, 0, { icon: 'fa-map', text: 'Guide francophone et excursions incluses' });
             }
             return base;
+        }
+
+        function getInclusionItems(p) {
+            const custom = splitFieldLines(p.inclusions);
+            if (custom.length) {
+                return custom.map((text) => ({ icon: 'fa-check', text }));
+            }
+            return getDefaultInclusions(p);
+        }
+
+        function getExclusionItems(p) {
+            const custom = splitFieldLines(p.exclusions);
+            if (custom.length) return custom;
+            return ['Tout ce qui n\'est pas inscrit dans la section « Inclusions »'];
+        }
+
+        function getBaggageItems(p) {
+            const custom = splitFieldLines(p.franchiseBagage || p.franchise_bagage);
+            if (custom.length) return custom;
+            const carrierLabel = VoyageFiestaAPI.formatProductDisplayValue(p, 'carrier');
+            return [
+                carrierLabel
+                    ? `1 bagage enregistré (selon ${carrierLabel})`
+                    : '1 bagage enregistré (selon le transporteur)'
+            ];
         }
 
         function galleryOverlayLabel(count) {
@@ -487,23 +529,43 @@
         }
 
         function bindProductTabs() {
-            const tabs = document.querySelectorAll('[data-product-tab]');
-            const panels = document.querySelectorAll('[data-product-panel]');
-            if (!tabs.length) return;
+            const tablist = document.querySelector('#product-tabs [role="tablist"]');
+            const tabs = Array.from(document.querySelectorAll('#product-tabs [role="tab"]'));
+            const panels = Array.from(document.querySelectorAll('#product-tabs [role="tabpanel"]'));
+            if (!tablist || !tabs.length) return;
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const target = tab.getAttribute('data-product-tab');
-                    tabs.forEach(t => {
-                        t.classList.remove('tab-active');
-                        t.classList.add('product-tab');
-                    });
-                    tab.classList.add('tab-active');
-                    tab.classList.remove('product-tab');
-                    panels.forEach(panel => {
-                        panel.classList.toggle('hidden', panel.getAttribute('data-product-panel') !== target);
-                    });
+            const activateTab = (tab, { focus = false } = {}) => {
+                const target = tab.getAttribute('data-product-tab');
+                tabs.forEach((item) => {
+                    const selected = item === tab;
+                    item.classList.toggle('tab-active', selected);
+                    item.classList.toggle('product-tab', !selected);
+                    item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                    item.tabIndex = selected ? 0 : -1;
                 });
+                panels.forEach((panel) => {
+                    const match = panel.getAttribute('data-product-panel') === target;
+                    panel.classList.toggle('hidden', !match);
+                    panel.hidden = !match;
+                });
+                if (focus) tab.focus();
+            };
+
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => activateTab(tab));
+            });
+
+            tablist.addEventListener('keydown', (event) => {
+                const current = tabs.indexOf(document.activeElement);
+                if (current < 0) return;
+                let next = current;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % tabs.length;
+                else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (current - 1 + tabs.length) % tabs.length;
+                else if (event.key === 'Home') next = 0;
+                else if (event.key === 'End') next = tabs.length - 1;
+                else return;
+                event.preventDefault();
+                tabs[next].focus();
             });
         }
 
@@ -1000,8 +1062,9 @@
             const occupationHtml = buildOccupationPricesHtml(p, isUnavailable);
             const paymentTermsHtml = buildPaymentTermsHtml(p);
             const flightsHtml = buildFlightsSectionHtml(p);
-            const inclusions = getInclusions(p);
-            const packageTabLabel = p.packageType || 'Forfait';
+            const inclusions = getInclusionItems(p);
+            const exclusions = getExclusionItems(p);
+            const baggageItems = getBaggageItems(p);
 
             document.title = `${p.name} - Voyage Fiesta`;
             VoyageFiestaAPI.applySocialMetaTags(VoyageFiestaAPI.buildProductSharePayload(p));
@@ -1202,28 +1265,35 @@
                             ${flightsHtml}
 
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="product-tabs">
-                                <div class="flex flex-wrap border-b">
-                                    <button type="button" data-product-tab="package" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base tab-active">${escapeHtml(packageTabLabel)}</button>
-                                    <button type="button" data-product-tab="hotel" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base product-tab">Détails de l'hôtel</button>
+                                <div class="flex flex-wrap border-b" role="tablist" aria-label="Détails du forfait">
+                                    <button type="button" role="tab" id="tab-details" aria-controls="panel-package" aria-selected="true" tabindex="0" data-product-tab="package" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base tab-active">Détails</button>
+                                    <button type="button" role="tab" id="tab-hotel" aria-controls="panel-hotel" aria-selected="false" tabindex="-1" data-product-tab="hotel" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base product-tab">Détails de l'hôtel</button>
+                                    <button type="button" role="tab" id="tab-baggage" aria-controls="panel-baggage" aria-selected="false" tabindex="-1" data-product-tab="baggage" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base product-tab">Franchise bagage</button>
                                 </div>
-                                <div class="p-6" data-product-panel="package">
+                                <div class="p-6" role="tabpanel" id="panel-package" data-product-panel="package" aria-labelledby="tab-details">
                                     <div class="grid md:grid-cols-2 gap-8">
                                         <div>
-                                            <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-circle-check text-green-500 mr-2"></i> Inclusions</h3>
+                                            <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-circle-check text-green-500 mr-2" aria-hidden="true"></i> Inclusions</h3>
                                             <ul class="space-y-3 text-sm text-gray-600">
-                                                ${inclusions.map(i => `<li class="flex items-start gap-2"><i class="fa-solid ${i.icon} text-xs mt-1"></i> ${i.text}</li>`).join('')}
+                                                ${inclusions.map(i => `<li class="flex items-start gap-2"><i class="fa-solid ${escapeHtml(i.icon)} text-xs mt-1" aria-hidden="true"></i> ${escapeHtml(i.text)}</li>`).join('')}
                                             </ul>
                                         </div>
                                         <div class="bg-gray-50 p-4 rounded-lg">
-                                            <h3 class="font-bold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-circle-xmark text-red-400 mr-2"></i> Exclusions</h3>
+                                            <h3 class="font-bold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-circle-xmark text-red-400 mr-2" aria-hidden="true"></i> Exclusions</h3>
                                             <ul class="space-y-3 text-sm text-gray-500">
-                                                <li>Tout ce qui n'est pas inscrit dans la section « Inclusions »</li>
+                                                ${exclusions.map((text) => `<li>${escapeHtml(text)}</li>`).join('')}
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="p-6 hidden" data-product-panel="hotel">
+                                <div class="p-6 hidden" role="tabpanel" id="panel-hotel" data-product-panel="hotel" aria-labelledby="tab-hotel" hidden>
                                     ${hotelDetailsHtml}
+                                </div>
+                                <div class="p-6 hidden" role="tabpanel" id="panel-baggage" data-product-panel="baggage" aria-labelledby="tab-baggage" hidden>
+                                    <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-suitcase text-brand-orange mr-2" aria-hidden="true"></i> Franchise bagage</h3>
+                                    <ul class="space-y-3 text-sm text-gray-600">
+                                        ${baggageItems.map((text) => `<li class="flex items-start gap-2"><i class="fa-solid fa-suitcase text-xs mt-1" aria-hidden="true"></i> ${escapeHtml(text)}</li>`).join('')}
+                                    </ul>
                                 </div>
                             </div>
 
