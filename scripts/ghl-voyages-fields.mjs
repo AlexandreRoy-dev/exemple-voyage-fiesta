@@ -216,19 +216,50 @@ function extractIataFromAirportValue(value) {
   return '';
 }
 
+function airportLookupCandidates(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return [value.key, value.label, value.value, value.name].filter(Boolean).map((part) => String(part).trim());
+  }
+  const raw = String(value ?? '').trim();
+  return raw ? [raw] : [];
+}
+
 export function formatAeroportLabel(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  const key = raw.toLowerCase().replace(/\s+/g, '_');
-  if (AEROPORT_LABELS[key]) return AEROPORT_LABELS[key];
-  if (AEROPORT_LABELS[raw]) return AEROPORT_LABELS[raw];
-  const code = extractIataFromAirportValue(raw);
+  const candidates = airportLookupCandidates(value);
+  if (!candidates.length) return '';
+
+  for (const candidate of candidates) {
+    const suffix = candidate.includes('.') ? candidate.split('.').pop() : candidate;
+    const key = String(suffix || '').toLowerCase().replace(/\s+/g, '_');
+    if (AEROPORT_LABELS[key]) return AEROPORT_LABELS[key];
+    if (AEROPORT_LABELS[candidate]) return AEROPORT_LABELS[candidate];
+    if (AEROPORT_LABELS[suffix]) return AEROPORT_LABELS[suffix];
+  }
+
+  const joined = candidates.join(' ');
+  const code = extractIataFromAirportValue(joined);
   if (code) {
     for (const label of Object.values(AEROPORT_LABELS)) {
       if (extractIataFromAirportValue(label) === code) return label;
     }
   }
-  return raw;
+
+  const short = joined.match(/^\s*([^()]+?\([A-Za-z]{3}\))/);
+  if (short) return short[1].trim();
+  return String(candidates[0] || '').trim();
+}
+
+/** Toronto (YYZ) in Aéroport de retour = escale, not the holiday destination. */
+export function isConnectionReturnAirport(value) {
+  const candidates = airportLookupCandidates(value).join(' ').toLowerCase();
+  if (!candidates) return false;
+  if (candidates.includes('toronto_yyz') || candidates.includes('toronto (yyz)')) return true;
+  return extractIataFromAirportValue(candidates) === 'YYZ';
+}
+
+export function formatDestinationAirportLabel(value) {
+  if (isConnectionReturnAirport(value)) return '';
+  return formatAeroportLabel(value);
 }
 
 export function normalizeStatutOption(value) {

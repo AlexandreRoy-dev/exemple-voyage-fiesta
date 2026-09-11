@@ -1289,12 +1289,22 @@
     function extractIataCode(value) {
         const raw = String(value || '').trim();
         if (!raw) return '';
-        const paren = raw.match(/\(([A-Za-z]{3})\)\s*$/);
+        const paren = raw.match(/\(([A-Za-z]{3})\)/);
         if (paren) return paren[1].toUpperCase();
         const slug = raw.toLowerCase().replace(/\s+/g, '_').match(/_([a-z]{3})$/);
         if (slug) return slug[1].toUpperCase();
         if (/^[A-Za-z]{3}$/.test(raw)) return raw.toUpperCase();
         return '';
+    }
+
+    function airportLookupCandidates(value) {
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+            return [value.key, value.label, value.value, value.name]
+                .filter(Boolean)
+                .map((part) => String(part).trim());
+        }
+        const raw = String(value ?? '').trim();
+        return raw ? [raw] : [];
     }
 
     function sameAirportLabel(a, b) {
@@ -1326,15 +1336,33 @@
         return formatAirportLabel(p.departureAirport || p.aeroport_depart || '');
     }
 
-    function resolveDestAirportLabel(p) {
+    function isConnectionReturnAirport(value) {
+        const candidates = airportLookupCandidates(value).join(' ').toLowerCase();
+        if (!candidates) return false;
+        if (candidates.includes('toronto_yyz') || candidates.includes('toronto (yyz)')) return true;
+        return extractIataCode(candidates) === 'YYZ';
+    }
+
+    function getDestinationAirportLabel(p) {
         const home = resolveHomeAirportLabel(p);
         const rawReturn = formatAirportLabel(
-            p.returnAirport ?? p.aeroport_retour ?? p.return_airport ?? ''
+            p.destinationAirport
+            ?? p.returnAirport
+            ?? p.aeroport_retour
+            ?? p.return_airport
+            ?? ''
         );
-        const destCity = String(p.subDest || p.destination || p.destination1 || '').trim();
-        if (rawReturn && (!home || !sameAirportLabel(rawReturn, home))) {
-            return enrichCityWithAirport(destCity, rawReturn);
+        if (!rawReturn || isConnectionReturnAirport(rawReturn) || isConnectionReturnAirport(p?.returnAirport)) {
+            return '';
         }
+        if (home && sameAirportLabel(rawReturn, home)) return '';
+        return rawReturn;
+    }
+
+    function resolveDestAirportLabel(p) {
+        const destCity = String(p.subDest || p.destination || p.destination1 || '').trim();
+        const destAirport = getDestinationAirportLabel(p);
+        if (destAirport) return enrichCityWithAirport(destCity, destAirport);
         return destCity;
     }
 
@@ -1376,19 +1404,29 @@
     }
 
     function formatAirportLabel(value) {
-        const raw = String(value || '').trim();
-        if (!raw) return '';
-        const key = raw.toLowerCase().replace(/\s+/g, '_');
         const labels = window.AIRPORT_LABELS || {};
-        if (labels[key]) return labels[key];
-        if (labels[raw]) return labels[raw];
-        const code = extractIataCode(raw);
+        const candidates = airportLookupCandidates(value);
+        if (!candidates.length) return '';
+
+        for (const candidate of candidates) {
+            const suffix = candidate.includes('.') ? candidate.split('.').pop() : candidate;
+            const key = String(suffix || '').toLowerCase().replace(/\s+/g, '_');
+            if (labels[key]) return labels[key];
+            if (labels[candidate]) return labels[candidate];
+            if (labels[suffix]) return labels[suffix];
+        }
+
+        const joined = candidates.join(' ');
+        const code = extractIataCode(joined);
         if (code) {
             for (const label of Object.values(labels)) {
                 if (extractIataCode(label) === code) return label;
             }
         }
-        return raw;
+
+        const short = joined.match(/^\s*([^()]+?\([A-Za-z]{3}\))/);
+        if (short) return short[1].trim();
+        return String(candidates[0] || '').trim();
     }
 
     /** Use GHL flight fields, or build from departure/return dates when routes missing */
@@ -1414,7 +1452,7 @@
             out.to = preferEndpointLabel(formatAirportLabel(out.to), dest);
             if (!out.arriveDate) out.arriveDate = out.departDate || departureDate;
         }
-        if (returnDate || p.subDest || ret.from || ret.to) {
+        if (returnDate || p.subDest || p.returnAirport || p.destinationAirport || ret.from || ret.to) {
             ret.from = preferEndpointLabel(formatAirportLabel(ret.from), dest);
             if (!ret.departDate) ret.departDate = returnDate;
             ret.to = coerceHomeEndpoint(formatAirportLabel(ret.to), home, dest);
@@ -1623,6 +1661,17 @@
         const carrier = p.carrier || '';
         const location = p.location || buildLocationText(subDest, country);
         const taxesAmount = pickOccupationTaxPerPerson(p);
+        const departureAirport = formatAirportLabel(
+            p.departureAirport || p.departure_airport || p.aeroport_depart || ''
+        );
+        const returnAirport = formatAirportLabel(
+            p.returnAirport || p.return_airport || p.aeroport_retour || ''
+        );
+        const destinationAirport = formatAirportLabel(p.destinationAirport || '')
+            || (returnAirport && !isConnectionReturnAirport(returnAirport)
+                && !sameAirportLabel(returnAirport, departureAirport)
+                ? returnAirport
+                : '');
 
         const base = {
             ...p,
@@ -1642,12 +1691,9 @@
                 || formatDestinationLabel(p.destination1 || p.destination || subDest),
             destination: p.destination1 || p.destination || subDest,
             destinationLabel: formatDestinationLabel(p.destination1 || p.destination || subDest),
-            departureAirport: formatAirportLabel(
-                p.departureAirport || p.departure_airport || p.aeroport_depart || ''
-            ),
-            returnAirport: formatAirportLabel(
-                p.returnAirport || p.return_airport || p.aeroport_retour || ''
-            ),
+            departureAirport,
+            returnAirport,
+            destinationAirport,
             departureDate: departureDateValid,
             returnDate: returnDateValid,
             criteria: Array.isArray(p.criteria) ? p.criteria.map(normalizeCriterionValue) : [],
@@ -2039,7 +2085,9 @@
             case 'return_airport':
             case 'returnairport':
             case 'aeroport_retour':
-                return p.returnAirport || formatAirportLabel(value);
+            case 'destination_airport':
+            case 'destinationairport':
+                return p.destinationAirport || getDestinationAirportLabel(p) || formatAirportLabel(value);
             default:
                 return value === undefined || value === null ? '' : String(value);
         }
@@ -2688,6 +2736,7 @@
         normalizeDestinationKey,
         formatDestinationLabel,
         formatAirportLabel,
+        getDestinationAirportLabel,
         matchesAirportFilter,
         matchesDepartureDateFilter,
         matchesCriteriaFilter,

@@ -217,7 +217,7 @@
 
     <script src="config.js?v=52"></script>
     <script src="room-registration.js?v=24"></script>
-    <script src="api.js?v=101"></script>
+    <script src="api.js?v=102"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1235,6 +1235,14 @@
                                         <span class="text-gray-500 shrink-0">Départ de :</span>
                                         <span class="font-bold text-brand-blue text-right">${escapeHtml(p.departureAirport || '-')}</span>
                                     </div>
+                                    ${(() => {
+                                        const arrivalAirport = VoyageFiestaAPI.getDestinationAirportLabel(p) || p.destinationAirport || '';
+                                        if (!arrivalAirport) return '';
+                                        return `<div class="flex justify-between text-sm gap-3">
+                                        <span class="text-gray-500 shrink-0">Arrivée :</span>
+                                        <span class="font-bold text-brand-blue text-right">${escapeHtml(arrivalAirport)}</span>
+                                    </div>`;
+                                    })()}
                                     <div class="flex justify-between text-sm gap-3">
                                         <span class="text-gray-500 shrink-0">Durée :</span>
                                         <span class="font-bold text-brand-blue text-right">${p.durationNights} nuits / ${days} jours</span>
@@ -1566,7 +1574,8 @@
                         `Destination : ${p.destination || p.subDest || '-'}`,
                         `Départ : ${VoyageFiestaAPI.formatDepartureDate(p.departureDate) || 'à confirmer'}`,
                         `Retour : ${VoyageFiestaAPI.formatDepartureDate(p.returnDate) || '-'}`,
-                        `Aéroport : ${p.departureAirport || '-'}`,
+                        `Aéroport de départ : ${p.departureAirport || '-'}`,
+                        `Aéroport d'arrivée : ${VoyageFiestaAPI.getDestinationAirportLabel(p) || p.destinationAirport || '-'}`,
                         `Chambre : ${p.roomCategory || '-'}`,
                         `Fournisseur : ${supplierLabel || '-'}`,
                         `Transporteur : ${carrierLabel || '-'}`
