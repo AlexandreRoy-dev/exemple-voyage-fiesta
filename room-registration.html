@@ -76,7 +76,7 @@
     </main>
 
     <script src="config.js?v=51"></script>
-    <script src="room-registration.js?v=23"></script>
+    <script src="room-registration.js?v=24"></script>
     <script src="api.js?v=99"></script>
     <script>
         (function () {
@@ -272,7 +272,12 @@
                         const thankYou = draft.thankYouUrl || (typeof buildGhlThankYouUrl === 'function'
                             ? buildGhlThankYouUrl(slug)
                             : 'thank-you.html');
-                        const merged = RoomRegistration.mergeReservationPayload(payload, draft);
+                        const merged = RoomRegistration.mergeReservationPayload(payload, {
+                            ...draft,
+                            product,
+                            productName: draft.productName || product?.name || '',
+                            productSlug: slug || draft.productSlug || product?.slug || ''
+                        });
                         formRoot.classList.add('hidden');
                         if (panel) panel.classList.add('hidden');
                         if (submitStatusText) submitStatusText.textContent = 'Envoi de votre demande…';

@@ -439,13 +439,37 @@
 
     function mergeReservationPayload(formPayload, draft = {}) {
         const bookingContext = draft.bookingContext || {};
+        const product = draft.product || {};
         const adults = draft.adults != null ? String(draft.adults) : '';
         const kids = draft.kids != null ? String(draft.kids) : '';
+        const forfaitName = bookingContext.forfait_name
+            || draft.productName
+            || product.name
+            || formPayload.forfait_name
+            || formPayload.nom_du_forfait
+            || '';
+        const forfaitSlug = bookingContext.forfait_slug
+            || draft.productSlug
+            || product.slug
+            || formPayload.forfait_slug
+            || '';
+        const formatDate = global.VoyageFiestaAPI?.formatDepartureDate;
         return {
             ...bookingContext,
             ...formPayload,
-            forfait_slug: bookingContext.forfait_slug || draft.productSlug || formPayload.forfait_slug,
-            forfait_name: bookingContext.forfait_name || draft.productName || formPayload.forfait_name,
+            forfait_slug: forfaitSlug,
+            forfait_name: forfaitName,
+            nom_du_forfait: forfaitName,
+            destination: bookingContext.destination || formPayload.destination || product.destination || product.subDest || '',
+            country: bookingContext.country || formPayload.country || product.country || '',
+            departure_date: bookingContext.departure_date || formPayload.departure_date
+                || (formatDate && product.departureDate ? formatDate(product.departureDate) : '') || '',
+            return_date: bookingContext.return_date || formPayload.return_date
+                || (formatDate && product.returnDate ? formatDate(product.returnDate) : '') || '',
+            departure_airport: bookingContext.departure_airport || formPayload.departure_airport || product.departureAirport || '',
+            room_category: bookingContext.room_category || formPayload.room_category || product.roomCategory || '',
+            supplier: bookingContext.supplier || formPayload.supplier || product.supplierLabel || product.supplier || '',
+            carrier: bookingContext.carrier || formPayload.carrier || product.carrierLabel || product.carrier || '',
             depot_total: formPayload.depot || bookingContext.depot_total,
             nombre_personnes: formPayload.nombre_passagers || bookingContext.nombre_personnes,
             nombre_adultes: bookingContext.nombre_adultes || adults,
