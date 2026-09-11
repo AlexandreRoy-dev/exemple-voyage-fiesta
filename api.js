@@ -2044,6 +2044,7 @@
         const aliases = {
             ac: 'air_canada',
             air_canada_vacations: 'air_canada',
+            air_canada_rouge: 'air_canada_rouge',
             west_jet: 'westjet',
             sunwing_airlines: 'sunwing'
         };

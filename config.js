@@ -12,7 +12,8 @@
         westjet_quebec: 'Vacances WestJet Québec',
         vacances_westjet_quebec: 'Vacances WestJet Québec',
         transat: 'Vacances Transat',
-        vacances_transat: 'Vacances Transat'
+        vacances_transat: 'Vacances Transat',
+        club_med: 'Club Med'
     };
 
     /** Compagnies aériennes - clé normalisée (slug GHL) → nom affiché */
@@ -21,7 +22,8 @@
         westjet: 'WestJet',
         westjet_quebec: 'WestJet',
         sunwing: 'Sunwing Airlines',
-        transat: 'Air Transat'
+        transat: 'Air Transat',
+        air_canada_rouge: 'Air Canada Rouge'
     };
 
     /** Alias clé normalisée → clé utilisée dans SUPPLIER_LOGOS */
@@ -36,7 +38,8 @@
     /** Alias compagnie aérienne → clé logo (assets/suppliers/) */
     window.CARRIER_LOGO_KEY_ALIASES = {
         westjet: 'westjet_quebec',
-        westjet_quebec: 'westjet_quebec'
+        westjet_quebec: 'westjet_quebec',
+        air_canada_rouge: 'air_canada'
     };
 
     /** Logos fournisseurs / compagnies - clé normalisée → chemin relatif (assets/suppliers/) */
@@ -53,7 +56,8 @@
         'air_canada',
         'westjet',
         'westjet_quebec',
-        'transat'
+        'transat',
+        'club_med'
     ];
 
     /** @deprecated Utiliser SUPPLIER_LABELS - conservé pour compatibilité */
@@ -61,7 +65,8 @@
         'Vacances Sunwing',
         'Vacances Air Canada',
         'Vacances WestJet Québec',
-        'Vacances Transat'
+        'Vacances Transat',
+        'Club Med'
     ];
 
     /** Destinations (boutique filter) - libellés affichés; comparés en slug (voir DESTINATION_ALIASES) */
@@ -163,16 +168,22 @@
 
     /** Critères (boutique filter) - labels + GHL keys from field `criteria` */
     window.CRITERIA_OPTIONS = [
-        { label: 'Tout inclus', value: 'tout_inclus_allinclusive' },
-        { label: 'Pour adultes (18+)', value: 'pour_adultes_18' },
+        { label: 'Tout inclus', value: 'tout_inclus' },
+        { label: 'Vol direct (Sans escale)', value: 'vol_direct_sans_escale' },
+        { label: 'Adultes seulement', value: 'adultes_seulement' },
         { label: 'Familial', value: 'familial' },
-        { label: 'Romantique / Lune de miel', value: 'romantique__lune_de_miel' },
+        { label: 'Golf', value: 'golf' },
+        { label: "Jeux d'eau", value: 'jeux_deau' },
+        { label: "Glissade d'eau", value: 'glissade_deau' },
+        { label: 'Vue mer', value: 'vue_mer' },
+        { label: 'Swim Out', value: 'swim_out' },
+        { label: 'Directement sur la plage', value: 'directement_sur_la_plage' },
+        { label: 'Sur la plage', value: 'sur_la_plage' },
         { label: 'Tranquille / Détente', value: 'tranquille__dtente' },
+        { label: 'Romantique / Lune de miel', value: 'romantique__lune_de_miel' },
         { label: 'Animation / Fête', value: 'animation__fte' },
         { label: 'Pour célibataires', value: 'pour_celibataires' },
         { label: 'Adapté aux bébés', value: 'adapt_aux_bbs' },
-        { label: 'Directement sur la plage', value: 'directement_sur_la_plage' },
-        { label: 'Vue sur la mer', value: 'vue_sur_la_mer' },
         { label: 'Deuxième ligne (courte marche)', value: 'deuxime_ligne_courte_marche' },
         { label: 'Près du centre-ville', value: 'prs_du_centreville' },
         { label: 'Isolé / En nature', value: 'isol__en_nature' },
@@ -180,7 +191,6 @@
         { label: 'Plan européen (sans repas)', value: 'plan_europen_sans_repas' },
         { label: 'Boissons de marques premium incluses', value: 'boissons_de_marques_premium_incluses' },
         { label: 'Soupers à la carte illimités', value: 'soupers__la_carte_illimits' },
-        { label: "Glissades d'eau / Parc aquatique", value: 'glissades_deau__parc_aquatique' },
         { label: 'Piscine pour enfants', value: 'piscine_pour_enfants' },
         { label: 'Piscine réservée aux adultes', value: 'piscine_rserve_aux_adultes' },
         { label: 'Piscine à débordement (Infinity)', value: 'piscine__dbordement_infinity' },
@@ -198,7 +208,6 @@
         { label: 'Sports nautiques non motorisés inclus', value: 'sports_nautiques_non_motoriss_inclus' },
         { label: 'Gym / Centre de fitness', value: 'gym__centre_de_fitness' },
         { label: 'Casino sur place', value: 'casino_sur_place' },
-        { label: 'Vol direct (Sans escale)', value: 'vol_direct_sans_escale' },
         { label: 'Transferts aéroport-hôtel inclus', value: 'transferts_aroporthtel_inclus' },
         { label: 'Départ de nuit', value: 'dpart_de_nuit' },
         { label: 'Sièges en classe économique privilège', value: 'siges_en_classe_conomique_privilge' }
@@ -210,7 +219,11 @@
 
     /** GHL auto-slugs that differ from the canonical key (typos / legacy) */
     window.CRITERIA_ALIASES = {
-        pour_clibataires: 'pour_celibataires'
+        pour_clibataires: 'pour_celibataires',
+        tout_inclus_allinclusive: 'tout_inclus',
+        pour_adultes_18: 'adultes_seulement',
+        vue_sur_la_mer: 'vue_mer',
+        glissades_deau__parc_aquatique: 'glissade_deau'
     };
 
     /** @deprecated use CRITERIA_OPTIONS - kept for backward compatibility */

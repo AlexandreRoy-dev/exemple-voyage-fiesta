@@ -284,17 +284,19 @@ export function normalizeStatutOption(value) {
 
 export function normalizeFournisseurOption(value) {
   const s = String(value || '').trim().toLowerCase().replace(/\s+/g, '_');
+  if (s.includes('club_med') || s.includes('clubmed')) return 'club_med';
   if (s.includes('vacances_air_canada') || s.includes('vacances_air_canada')) return 'vacances_air_canada';
   if (s.includes('sunwing')) return 'sunwing';
   if (s.includes('transat')) return 'transat';
-  if (s.includes('westjet')) return 'westjet';
-  if (s.includes('air_canada') || s.includes('air canada')) return 'air_canada';
+  if (s.includes('westjet')) return 'vacances_westjet_quebec';
+  if (s.includes('air_canada') || s.includes('air canada')) return 'vacances_air_canada';
   return s || null;
 }
 
 export function normalizeTransporteurOption(value) {
   const s = String(value || '').trim().toLowerCase();
   if (s.includes('westjet')) return 'westjet';
+  if (s.includes('rouge')) return 'air_canada_rouge';
   if (s.includes('air canada')) return 'air_canada';
   if (s.includes('transat')) return 'transat';
   return s.replace(/\s+/g, '_') || null;
