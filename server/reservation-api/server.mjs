@@ -50,6 +50,12 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+/** Staff inboxes. GHL Internal Notification cannot merge custom/LARGE_TEXT fields. */
+const INTERNAL_NOTIFY_EMAILS = (process.env.INTERNAL_NOTIFY_EMAILS || '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+const GHL_EMAIL_FROM = process.env.GHL_EMAIL_FROM || 'info@promo.voyagefiesta.com';
 
 /**
  * Payload keys → GHL contact custom field keys (without contact. prefix).
@@ -177,14 +183,56 @@ async function lookupOwnerIdBySlug(slug) {
 }
 
 async function resolveAssignedUserId(payload) {
-  const fromPayload = pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
-  if (fromPayload) return fromPayload;
   try {
-    return await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
+    const fromVoyage = await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
+    if (fromVoyage) return fromVoyage;
   } catch (err) {
     console.warn('[reservation] owner lookup failed', err.message);
-    return '';
   }
+  return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
+}
+
+function extractAssignedUserId(contact) {
+  if (!contact || typeof contact !== 'object') return '';
+  const raw = contact.assignedTo ?? contact.assigned_to ?? '';
+  if (raw && typeof raw === 'object') {
+    return String(raw.id || raw.userId || raw.value || '').trim();
+  }
+  return String(raw || '').trim();
+}
+
+async function ghlGetContact(contactId) {
+  if (!contactId) return null;
+  const res = await fetch(`${GHL_API}/contacts/${encodeURIComponent(contactId)}`, {
+    headers: ghlHeaders()
+  });
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => null);
+  return data?.contact || data || null;
+}
+
+async function ghlFindExistingContact({ email, phone }) {
+  const urls = [];
+  if (email) {
+    urls.push(
+      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&email=${encodeURIComponent(email)}`
+    );
+  }
+  if (phone) {
+    urls.push(
+      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&number=${encodeURIComponent(phone)}`
+    );
+  }
+  for (const url of urls) {
+    const res = await fetch(url, { headers: ghlHeaders() });
+    if (!res.ok) continue;
+    const data = await res.json().catch(() => null);
+    const found = data?.contact || data?.contacts?.[0];
+    if (!found?.id) continue;
+    if (extractAssignedUserId(found)) return found;
+    return (await ghlGetContact(found.id)) || found;
+  }
+  return null;
 }
 
 function ghlHeaders(extra = {}) {
@@ -345,6 +393,22 @@ function qa(question, ...values) {
   return `${question}\n→ ${answerOf(...values)}`;
 }
 
+const TERMS_LABEL =
+  'J’ai lu et j’accepte les termes et conditions du document 001-554 et je confirme que toutes les informations fournies sont exactes.';
+
+function termsCheckboxState(payload) {
+  const raw = payload?.terms_and_conditions;
+  if (raw === true || raw === 1) return 'checked';
+  const v = String(raw || '').trim().toLowerCase();
+  if (['true', '1', 'oui', 'on', 'yes', 'accepte', 'accepté'].includes(v)) {
+    return 'checked';
+  }
+  if (Object.prototype.hasOwnProperty.call(payload || {}, 'terms_and_conditions')) {
+    return 'unchecked';
+  }
+  return '';
+}
+
 function hasRoomFormAnswers(payload) {
   return (
     Object.prototype.hasOwnProperty.call(payload, 'assurance_medicale')
@@ -390,12 +454,19 @@ function buildNotes(payload) {
     filled.forEach((row) => lines.push(row));
   };
 
+  const forfaitName = answerOf(payload.forfait_name, payload.nom_du_forfait);
   if (isPreSaleRequest(payload)) {
-    lines.push('Type: Intérêt pré-vente (aucun dépôt)');
+    lines.push(forfaitName && forfaitName !== '—'
+      ? `Type: Intérêt pré-vente (aucun dépôt) — ${forfaitName}`
+      : 'Type: Intérêt pré-vente (aucun dépôt)');
   } else if (isPriceRequest(payload)) {
-    lines.push('Type: Demande de prix (tarif non publié)');
+    lines.push(forfaitName && forfaitName !== '—'
+      ? `Type: Demande de prix (tarif non publié) — ${forfaitName}`
+      : 'Type: Demande de prix (tarif non publié)');
   } else {
-    lines.push('Type: Réservation');
+    lines.push(forfaitName && forfaitName !== '—'
+      ? `Type: Réservation — ${forfaitName}`
+      : 'Type: Réservation');
   }
 
   addSection('Forfait', [
@@ -491,12 +562,20 @@ function buildNotes(payload) {
         'Notes ou demandes particulières',
         payload.notes_extra,
         /Enfant\s+\d+\s*:/i.test(String(payload.notes || '')) ? '' : payload.notes
-      ),
+      )
+    ]);
+  }
+
+  const termsState = termsCheckboxState(payload);
+  if (termsState || (!isPriceRequest(payload) && !isPreSaleRequest(payload))) {
+    addSection('Termes et conditions', [
       qa(
-        'J’ai lu et j’accepte les termes et conditions du document 001-554',
-        payload.terms_and_conditions === 'true' || payload.terms_and_conditions === true
-          ? 'Oui'
-          : payload.terms_and_conditions
+        TERMS_LABEL,
+        termsState === 'checked'
+          ? 'Oui — case cochée'
+          : termsState === 'unchecked'
+            ? 'Non — case non cochée'
+            : 'Non communiqué'
       )
     ]);
   }
@@ -550,10 +629,12 @@ function buildCustomFields(payload) {
     put('paiement_final', formatFrenchLongDate(paymentRaw));
   }
 
-  // Enrich notes custom field with structured note if empty
-  if (!byKey.has('notes')) {
-    const noteText = buildNotes(payload);
-    if (noteText) put('notes', noteText);
+  // Full formulaire note. `notes` is the legacy field; Internal Notifications
+  // do not merge it. Use LARGE_TEXT `note_reservation_interne` instead.
+  const noteText = buildNotes(payload);
+  if (noteText) {
+    put('notes', noteText);
+    put('note_reservation_interne', noteText);
   }
 
   return [...byKey.entries()].map(([key, field_value]) => ({ key, field_value }));
@@ -576,9 +657,9 @@ function buildContactBody(payload, assignedUserId) {
     address1: pick(payload, 'address') || undefined,
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
-    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
-    assignedTo: assignedUserId || undefined
+    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre'
   };
+  if (assignedUserId) body.assignedTo = assignedUserId;
 
   const customFields = buildCustomFields(payload);
   if (customFields.length) body.customFields = customFields;
@@ -602,12 +683,117 @@ async function ghlAddNote(contactId, bodyText) {
   }
 }
 
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function noteEmailHtml(noteText) {
+  return `<pre style="margin:0;white-space:pre-wrap;font-family:verdana,geneva,sans-serif;font-size:14px;line-height:1.5;">${escapeHtml(noteText)}</pre>`;
+}
+
+async function ghlFindContactIdByEmail(email) {
+  const url = `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&email=${encodeURIComponent(email)}`;
+  const res = await fetch(url, { headers: ghlHeaders() });
+  if (!res.ok) return '';
+  const data = await res.json().catch(() => null);
+  return data?.contact?.id || data?.contacts?.[0]?.id || '';
+}
+
+async function ghlEnsureNotifyContact(email) {
+  const existing = await ghlFindContactIdByEmail(email);
+  if (existing) return existing;
+  const res = await fetch(`${GHL_API}/contacts/`, {
+    method: 'POST',
+    headers: ghlHeaders(),
+    body: JSON.stringify({
+      locationId: GHL_LOCATION_ID,
+      email,
+      firstName: 'Notification',
+      lastName: 'Interne',
+      source: 'Notification interne reservation',
+      tags: ['equipe-interne']
+    })
+  });
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (_) {
+    data = null;
+  }
+  if (!res.ok) {
+    console.warn('[reservation] notify contact create failed', res.status, text.slice(0, 300));
+    return '';
+  }
+  return data?.contact?.id || data?.id || '';
+}
+
+async function ghlSendInternalNoteEmail({ noteText, subject }) {
+  if (!noteText || !INTERNAL_NOTIFY_EMAILS.length) return { sent: [] };
+  const html = noteEmailHtml(noteText);
+  const sent = [];
+  for (const email of INTERNAL_NOTIFY_EMAILS) {
+    try {
+      const notifyContactId = await ghlEnsureNotifyContact(email);
+      if (!notifyContactId) continue;
+      const res = await fetch(`${GHL_API}/conversations/messages`, {
+        method: 'POST',
+        headers: ghlHeaders({ Version: '2021-04-15' }),
+        body: JSON.stringify({
+          type: 'Email',
+          contactId: notifyContactId,
+          emailFrom: GHL_EMAIL_FROM,
+          emailTo: email,
+          subject,
+          html,
+          message: noteText
+        })
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        console.warn('[reservation] internal email failed', email, res.status, text.slice(0, 300));
+        continue;
+      }
+      sent.push(email);
+      console.log('[reservation] internal email sent', email);
+    } catch (err) {
+      console.warn('[reservation] internal email error', email, err.message);
+    }
+  }
+  return { sent };
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function ghlRemoveTag(contactId, tag) {
+  if (!contactId || !tag) return;
+  const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
+    method: 'DELETE',
+    headers: ghlHeaders(),
+    body: JSON.stringify({ tags: [tag] })
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn('[reservation] tag remove failed', res.status, text.slice(0, 300));
+  }
+}
+
 /**
- * Add process tags only. Do not delete first — GHL can apply the
- * DELETE after the POST, which leaves reservation-site missing.
+ * Remove then re-add so GHL "Contact Tag" workflows fire (including upserts
+ * on an existing contact that already has the tag). Wait after DELETE so
+ * GHL cannot apply the remove after the add.
  */
 async function ghlApplyTag(contactId, tag) {
   if (!contactId || !tag) return { tagsAdded: [] };
+
+  await ghlRemoveTag(contactId, tag);
+  await sleep(900);
 
   const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
     method: 'POST',
@@ -754,15 +940,27 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
-      const assignedUserId = await resolveAssignedUserId(payload);
-      const body = buildContactBody(payload, assignedUserId);
+      const voyageOwnerId = await resolveAssignedUserId(payload);
+      const existing = await ghlFindExistingContact({ email, phone });
+      const existingAssignedTo = extractAssignedUserId(existing);
+      // Never steal a contact already owned by another agent.
+      const assignOwner = Boolean(voyageOwnerId) && !existingAssignedTo;
+      const body = buildContactBody(payload, assignOwner ? voyageOwnerId : '');
       const noteText = buildNotes(payload);
       const result = await ghlUpsertContact(body);
       const contactId = result?.contact?.id || result?.id || null;
       const tags = resolveContactTags(payload);
 
-      if (contactId && assignedUserId) {
-        await ghlAssignContact(contactId, assignedUserId);
+      let assignedTo = existingAssignedTo;
+      if (contactId && !assignedTo) {
+        assignedTo = extractAssignedUserId(result?.contact) || extractAssignedUserId(await ghlGetContact(contactId));
+      }
+      if (contactId && voyageOwnerId && !assignedTo) {
+        await ghlAssignContact(contactId, voyageOwnerId);
+        assignedTo = voyageOwnerId;
+        console.log('[reservation] assigned voyage owner', contactId, voyageOwnerId);
+      } else if (contactId && existingAssignedTo && voyageOwnerId && existingAssignedTo !== voyageOwnerId) {
+        console.log('[reservation] kept existing assignee', contactId, existingAssignedTo);
       }
 
       let tagsAdded = [];
@@ -775,14 +973,26 @@ const server = http.createServer(async (req, res) => {
         console.warn('[reservation] upsert returned no contact id; tags skipped');
       }
 
+      let notifyEmails = [];
+      if (noteText && INTERNAL_NOTIFY_EMAILS.length) {
+        const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')]
+          .filter(Boolean)
+          .join(' ');
+        const forfait = pick(payload, 'forfait_name', 'nom_du_forfait');
+        const subject = ['Nouvelle reservation', who, forfait].filter(Boolean).join(' — ');
+        const notify = await ghlSendInternalNoteEmail({ noteText, subject });
+        notifyEmails = notify.sent;
+      }
+
       return sendJson(res, 200, {
         ok: true,
         contactId,
         tag: tags[0] || null,
         tags,
-        assignedTo: assignedUserId || null,
+        assignedTo: assignedTo || null,
         requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation',
         tagsAdded,
+        notifyEmails,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0
       });
     } catch (err) {

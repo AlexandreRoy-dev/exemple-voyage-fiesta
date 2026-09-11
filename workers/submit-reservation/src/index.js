@@ -83,6 +83,59 @@ function resolveAssignedUserId(payload) {
   return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
 }
 
+function extractAssignedUserId(contact) {
+  if (!contact || typeof contact !== 'object') return '';
+  const raw = contact.assignedTo ?? contact.assigned_to ?? '';
+  if (raw && typeof raw === 'object') {
+    return String(raw.id || raw.userId || raw.value || '').trim();
+  }
+  return String(raw || '').trim();
+}
+
+async function getContact(apiKey, contactId) {
+  if (!contactId) return null;
+  const res = await fetch(`${GHL_API}/contacts/${encodeURIComponent(contactId)}`, {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      Version: GHL_VERSION,
+      Accept: 'application/json'
+    }
+  });
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => null);
+  return data?.contact || data || null;
+}
+
+async function findExistingContact(apiKey, locationId, { email, phone }) {
+  const urls = [];
+  if (email) {
+    urls.push(
+      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(locationId)}&email=${encodeURIComponent(email)}`
+    );
+  }
+  if (phone) {
+    urls.push(
+      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(locationId)}&number=${encodeURIComponent(phone)}`
+    );
+  }
+  for (const url of urls) {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Version: GHL_VERSION,
+        Accept: 'application/json'
+      }
+    });
+    if (!res.ok) continue;
+    const data = await res.json().catch(() => null);
+    const found = data?.contact || data?.contacts?.[0];
+    if (!found?.id) continue;
+    if (extractAssignedUserId(found)) return found;
+    return (await getContact(apiKey, found.id)) || found;
+  }
+  return null;
+}
+
 function buildNotes(payload) {
   const lines = [];
   const add = (label, value) => {
@@ -91,16 +144,23 @@ function buildNotes(payload) {
     }
   };
 
+  const forfaitName = String(payload.forfait_name || payload.nom_du_forfait || '').trim();
   if (isPreSaleRequest(payload)) {
-    lines.push('Type: Intérêt pré-vente (aucun dépôt)');
+    lines.push(forfaitName
+      ? `Type: Intérêt pré-vente (aucun dépôt) — ${forfaitName}`
+      : 'Type: Intérêt pré-vente (aucun dépôt)');
   } else if (isPriceRequest(payload)) {
-    lines.push('Type: Demande de prix (tarif non publié)');
+    lines.push(forfaitName
+      ? `Type: Demande de prix (tarif non publié) — ${forfaitName}`
+      : 'Type: Demande de prix (tarif non publié)');
+  } else {
+    lines.push(forfaitName ? `Type: Réservation — ${forfaitName}` : 'Type: Réservation');
   }
 
   add('Nom', payload.full_name || [payload.p1_prenom, payload.p1_nom].filter(Boolean).join(' '));
   add('Courriel', payload.p1_email || payload.email || payload.contact_email);
   add('Téléphone', payload.p1_phone || payload.phone || payload.contact_phone);
-  add('Forfait', payload.forfait_name || payload.nom_du_forfait);
+  add('Forfait', forfaitName);
   add('Slug', payload.forfait_slug);
   add('Destination', payload.destination || payload.sub_destination);
   add('Pays', payload.country);
@@ -168,14 +228,13 @@ function buildNotes(payload) {
   return lines.join('\n');
 }
 
-function buildContactBody(payload, locationId, tags, fieldMap) {
+function buildContactBody(payload, locationId, tags, fieldMap, assignedUserId) {
   const firstName = pick(payload, 'p1_prenom', 'full_name', 'contact_prenom');
   const lastName = pick(payload, 'p1_nom', 'last_name', 'contact_nom');
   const email = pick(payload, 'p1_email', 'email', 'contact_email');
   const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
   const priceRequest = isPriceRequest(payload);
   const tagList = Array.isArray(tags) ? tags.filter(Boolean) : (tags ? [tags] : []);
-  const assignedUserId = resolveAssignedUserId(payload);
 
   const body = {
     locationId,
@@ -190,9 +249,9 @@ function buildContactBody(payload, locationId, tags, fieldMap) {
     postalCode: pick(payload, 'postal_code') || undefined,
     source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
     tags: tagList.length ? tagList : undefined,
-    notes: buildNotes(payload) || undefined,
-    assignedTo: assignedUserId || undefined
+    notes: buildNotes(payload) || undefined
   };
+  if (assignedUserId) body.assignedTo = assignedUserId;
 
   const customFields = [];
   if (fieldMap && typeof fieldMap === 'object') {
@@ -370,12 +429,21 @@ export default {
 
     try {
       const tags = resolveContactTags(payload, env);
-      const assignedUserId = resolveAssignedUserId(payload);
-      const body = buildContactBody(payload, locationId, tags, fieldMap);
+      const voyageOwnerId = resolveAssignedUserId(payload);
+      const existing = await findExistingContact(apiKey, locationId, { email, phone });
+      const existingAssignedTo = extractAssignedUserId(existing);
+      const assignOwner = Boolean(voyageOwnerId) && !existingAssignedTo;
+      const body = buildContactBody(payload, locationId, tags, fieldMap, assignOwner ? voyageOwnerId : '');
       const result = await upsertContact(apiKey, body);
       const contactId = result?.contact?.id || result?.id || null;
-      if (contactId && assignedUserId) {
-        await assignContact(apiKey, contactId, assignedUserId);
+      let assignedTo = existingAssignedTo;
+      if (contactId && !assignedTo) {
+        assignedTo = extractAssignedUserId(result?.contact)
+          || extractAssignedUserId(await getContact(apiKey, contactId));
+      }
+      if (contactId && voyageOwnerId && !assignedTo) {
+        await assignContact(apiKey, contactId, voyageOwnerId);
+        assignedTo = voyageOwnerId;
       }
       const tagsAdded = contactId
         ? await applyContactTags(apiKey, contactId, tags)
@@ -385,7 +453,7 @@ export default {
         contactId,
         tag: tags[0] || null,
         tags: tagsAdded,
-        assignedTo: resolveAssignedUserId(payload) || null,
+        assignedTo: assignedTo || null,
         requestType: isPreSaleRequest(payload)
           ? 'demande_prevente'
           : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')
