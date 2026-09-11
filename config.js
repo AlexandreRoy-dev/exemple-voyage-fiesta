@@ -229,6 +229,75 @@
     /** @deprecated use CRITERIA_OPTIONS - kept for backward compatibility */
     window.FILTER_CRITERIA = window.CRITERIA_OPTIONS.map(o => o.label);
 
+    /** Inclusions GHL (MULTIPLE_OPTIONS) — clés + libellés boutique */
+    window.INCLUSION_OPTIONS = [
+        { label: 'Vols aller-retour', value: 'vols_allerretour' },
+        { label: 'Vols directs (sans escale)', value: 'vols_directs' },
+        { label: 'Transferts aéroport-hôtel aller-retour', value: 'transferts_aeroport_hotel' },
+        { label: 'Hébergement pour la durée du séjour', value: 'hebergement' },
+        { label: 'Tout inclus (repas et boissons)', value: 'tout_inclus_repas_boissons' },
+        { label: 'Petit-déjeuner quotidien', value: 'petit_dejeuner' },
+        { label: 'Déjeuners', value: 'dejeuners' },
+        { label: 'Soupers', value: 'soupers' },
+        { label: 'Boissons nationales illimitées', value: 'boissons_nationales' },
+        { label: 'Boissons de marques premium', value: 'boissons_premium' },
+        { label: 'Contribution au Fonds FICAV', value: 'ficav' },
+        { label: 'Taxes et frais aériens', value: 'taxes_frais_aeriens' },
+        { label: "Wi-Fi à l'hôtel", value: 'wifi_hotel' },
+        { label: 'Sports nautiques non motorisés', value: 'sports_nautiques_non_motorises' },
+        { label: 'Club enfants / mini-club', value: 'club_enfants' },
+        { label: 'Accès au spa', value: 'acces_spa' },
+        { label: 'Parties de golf', value: 'golf' },
+        { label: "Pourboires à l'hôtel", value: 'pourboires_hotel' },
+        { label: 'Service aux chambres', value: 'service_chambres' },
+        { label: 'Guide francophone', value: 'guide_francophone' },
+        { label: 'Excursions incluses', value: 'excursions' },
+        { label: '1 bagage enregistré', value: 'bagage_enregistre' },
+        { label: 'Sélection de sièges', value: 'selection_sieges' },
+        { label: 'Assistance voyage 24/7', value: 'assistance_24_7' },
+        { label: 'Assurance voyage', value: 'assurance_voyage' },
+        { label: 'Location de voiture', value: 'location_voiture' },
+        { label: 'Frais de dossier', value: 'frais_dossier' },
+        { label: "Accès salon à l'aéroport", value: 'salon_aeroport' },
+        { label: 'Repas à bord', value: 'repas_bord' },
+        { label: "Nuit d'hôtel (correspondance)", value: 'nuit_connexion' }
+    ];
+
+    /** Exclusions GHL (MULTIPLE_OPTIONS) */
+    window.EXCLUSION_OPTIONS = [
+        { label: 'Pourboires', value: 'pourboires' },
+        { label: 'Excursions optionnelles', value: 'excursions_optionnelles' },
+        { label: 'Boissons de marques premium', value: 'boissons_premium' },
+        { label: 'Spa, massages et soins', value: 'spa_massages' },
+        { label: 'Sports nautiques motorisés', value: 'sports_motorises' },
+        { label: 'Location de voiture', value: 'location_voiture' },
+        { label: 'Assurance voyage', value: 'assurance_voyage' },
+        { label: "Frais de visa ou d'entrée", value: 'visa_entree' },
+        { label: 'Taxes locales / taxe de séjour', value: 'taxes_locales' },
+        { label: 'Wi-Fi', value: 'wifi' },
+        { label: 'Service aux chambres', value: 'service_chambres' },
+        { label: 'Minibar', value: 'minibar' },
+        { label: 'Appels téléphoniques', value: 'appels_telephone' },
+        { label: 'Frais de dossier', value: 'frais_dossier' },
+        { label: 'Bagages supplémentaires', value: 'bagages_supplementaires' },
+        { label: 'Supplément occupation simple', value: 'supplement_simple' },
+        { label: "Frais de départ de l'hôtel", value: 'frais_depart_hotel' },
+        { label: 'Vaccins et frais médicaux', value: 'vaccins' },
+        { label: 'Passeport et documents de voyage', value: 'passeport_documents' },
+        { label: 'Transferts aéroport-hôtel', value: 'transferts' },
+        { label: 'Repas non mentionnés', value: 'repas_non_mentionnes' },
+        { label: 'Activités payantes', value: 'activites_payantes' },
+        { label: 'Dépenses personnelles', value: 'depenses_personnelles' },
+        { label: "Tout ce qui n'est pas inscrit aux inclusions", value: 'autres_non_inscrits' }
+    ];
+
+    window.INCLUSION_BY_VALUE = Object.fromEntries(
+        window.INCLUSION_OPTIONS.map(o => [o.value, o.label])
+    );
+    window.EXCLUSION_BY_VALUE = Object.fromEntries(
+        window.EXCLUSION_OPTIONS.map(o => [o.value, o.label])
+    );
+
     /** Departure airports - synced with GHL field `departure_airport` */
     window.FILTER_AIRPORTS = [
         'Montréal (YUL)',

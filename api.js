@@ -2294,6 +2294,47 @@
         return key;
     }
 
+    function normalizePackageListItems(value) {
+        if (value === undefined || value === null || value === '') return [];
+        const list = Array.isArray(value)
+            ? value
+            : String(value).split(/\r?\n|;|\|/);
+        return list
+            .map((item) => {
+                if (item && typeof item === 'object') {
+                    return String(item.value ?? item.key ?? item.id ?? item.label ?? item.name ?? '').trim();
+                }
+                return String(item || '').replace(/^[\s•\-–—*]+/, '').trim();
+            })
+            .filter(Boolean);
+    }
+
+    function formatPackageListLabel(value, map) {
+        const key = value && typeof value === 'object'
+            ? String(value.value ?? value.key ?? value.label ?? value.name ?? '').trim()
+            : String(value || '').trim();
+        if (!key) return '';
+        if (map && map[key]) return map[key];
+        if (/\s/.test(key) || /[àâäéèêëïîôùûüç]/i.test(key)) return key;
+        return key.replace(/_/g, ' ');
+    }
+
+    function formatInclusionLabel(value) {
+        return formatPackageListLabel(value, window.INCLUSION_BY_VALUE);
+    }
+
+    function formatExclusionLabel(value) {
+        return formatPackageListLabel(value, window.EXCLUSION_BY_VALUE);
+    }
+
+    function getInclusionLabels(product) {
+        return normalizePackageListItems(product?.inclusions).map(formatInclusionLabel).filter(Boolean);
+    }
+
+    function getExclusionLabels(product) {
+        return normalizePackageListItems(product?.exclusions).map(formatExclusionLabel).filter(Boolean);
+    }
+
     function productHasCriterion(product, slug) {
         const wanted = normalizeCriterionValue(slug);
         return (product.criteria || []).some(c => normalizeCriterionValue(c) === wanted);
@@ -2748,6 +2789,11 @@
         getDepartureDateFilterOptions,
         normalizeCriterionValue,
         getCriteriaLabel,
+        normalizePackageListItems,
+        formatInclusionLabel,
+        formatExclusionLabel,
+        getInclusionLabels,
+        getExclusionLabels,
         productHasCriterion,
         getOccupationPrices,
         getOccupationDef,

@@ -374,7 +374,7 @@ export function formatPropertiesForGhlApi(logicalProps) {
       if (v) out[key] = v;
       continue;
     }
-    if (key === 'critres') {
+    if (key === 'critres' || key === 'inclusions' || key === 'exclusions') {
       const items = Array.isArray(value) ? value : [value];
       const valid = items.filter(Boolean).map(String);
       if (valid.length) out[key] = valid;
