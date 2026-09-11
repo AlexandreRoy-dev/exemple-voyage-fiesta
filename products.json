@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-11T15:45:03.470Z",
+  "updatedAt": "2026-09-11T17:00:03.551Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -66,7 +66,8 @@
       "endDate": "2026-12-04T00:00:00.000Z",
       "departureDate": "2027-04-13T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "Montréal (YUL)",
+      "returnAirport": "Cancun (CUN)",
+      "destinationAirport": "Cancun (CUN)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -170,6 +171,7 @@
       "departureDate": "2027-05-21T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Punta Cana (PUJ)",
+      "destinationAirport": "Punta Cana (PUJ)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -271,6 +273,7 @@
       "departureDate": "2027-05-21T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Montréal (YUL)",
+      "destinationAirport": "Montréal (YUL)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -370,6 +373,7 @@
       "departureDate": "2027-01-11T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Roatan (RTB)",
+      "destinationAirport": "Roatan (RTB)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -472,6 +476,7 @@
       "departureDate": "2027-03-15T00:00:00.000Z",
       "departureAirport": "Québec (YQB)",
       "returnAirport": "ROATAN (RTB)",
+      "destinationAirport": "ROATAN (RTB)",
       "flights": {
         "out": {
           "from": "Québec (YQB)",
@@ -572,6 +577,7 @@
       "departureDate": "2027-01-14T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Puerto Plata (POP)",
+      "destinationAirport": "Puerto Plata (POP)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -672,6 +678,7 @@
       "departureDate": "2026-12-06T00:00:00.000Z",
       "departureAirport": "Québec (YQB)",
       "returnAirport": "Cancun (CUN)",
+      "destinationAirport": "Cancun (CUN)",
       "flights": {
         "out": {
           "from": "Québec (YQB)",
@@ -772,6 +779,7 @@
       "departureDate": "2026-12-06T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Cancun (CUN)",
+      "destinationAirport": "Cancun (CUN)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -874,6 +882,7 @@
       "departureDate": "2026-12-20T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Puerto Vallarta (PVR)",
+      "destinationAirport": "Puerto Vallarta (PVR)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -976,6 +985,7 @@
       "departureDate": "2026-12-30T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Cancun (CUN)",
+      "destinationAirport": "Cancun (CUN)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
@@ -1075,19 +1085,20 @@
       "endDate": "2026-12-05T00:00:00.000Z",
       "departureDate": "2027-03-27T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
-      "returnAirport": "Freeport (FPO)",
+      "returnAirport": "Bahamas, Freeport (FPO)",
+      "destinationAirport": "Bahamas, Freeport (FPO)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
           "departDate": "2027-03-27T00:00:00.000Z",
           "departTime": "06:00",
-          "to": "Freeport (FPO)",
+          "to": "Bahamas, Freeport (FPO)",
           "arriveDate": "2027-03-27T00:00:00.000Z",
           "arriveTime": "09:55",
           "number": "WS2952"
         },
         "return": {
-          "from": "Freeport (FPO)",
+          "from": "Bahamas, Freeport (FPO)",
           "departDate": "2027-04-03T00:00:00.000Z",
           "departTime": "10:55",
           "to": "Montréal (YUL)",
@@ -1179,6 +1190,7 @@
       "departureDate": "2026-12-07T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Cozumel (CZM)",
+      "destinationAirport": "Cozumel (CZM)",
       "flights": {
         "out": {
           "from": "Montréal (YUL)",
