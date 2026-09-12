@@ -419,7 +419,6 @@
     window.GHL_PIPELINE_STAGE_ID = '41f6a9bb-52fb-4f82-9ccb-20b717024e71';
     /** Tag appliqué sur les demandes de prix - trigger workflow GHL : Tag Added → demande-prix */
     window.GHL_PRICE_REQUEST_TAG = 'demande-prix';
-    window.GHL_QUICKFORM_TAG = 'quickform';
 
     /**
      * Mapping native form fields → GHL Query Keys (data-q).
@@ -581,7 +580,7 @@
 
     /** Bannière statut pré-vente (GHL statut = Prévente → clé prvente) */
     window.PRE_SALE_BANNER_TITLE = 'Pré-vente';
-    window.PRE_SALE_BANNER_SUBTITLE = 'Manifestez votre intérêt. Aucun dépôt requis pour le moment';
+    window.PRE_SALE_BANNER_SUBTITLE = '';
 
     /** Court formulaire pré-vente (tarif d'occupation non publié) — pas de dépôt */
     window.PRE_SALE_REQUEST_FORM_TITLE = 'Je suis intéressé(e)';
