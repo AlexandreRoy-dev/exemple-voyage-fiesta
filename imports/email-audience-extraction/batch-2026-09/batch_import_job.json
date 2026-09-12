@@ -1,0 +1,2312 @@
+{
+  "agents": [
+    {
+      "first": "Carlos",
+      "last": "Costa",
+      "email": "carlos@voyagefiesta.com",
+      "tag": "import-carlos-costa",
+      "contacts": [
+        {
+          "firstName": "Nadine",
+          "lastName": "Baraton",
+          "email": "nadineb4389@gmail.com",
+          "phone": "+15145690113",
+          "address1": "3233 AVE DU MT ROYAL EST",
+          "city": "Montreal",
+          "state": "QC",
+          "postalCode": "H1Y3L2",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2026-03-30   CUN   1 Pax   2 549.00   CACO"
+        },
+        {
+          "firstName": "Jean Francois",
+          "lastName": "Bedard",
+          "email": "skyawk@me.com",
+          "phone": "+15147120712",
+          "address1": "1173 BOUL DU MILLENAIRE",
+          "city": "St Basile Le Grand",
+          "state": "QC",
+          "postalCode": "J3N1X3",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2025-03-14   CUN   2 Pax   5 100.00   CACO"
+        },
+        {
+          "firstName": "Jean Pierre",
+          "lastName": "Bisaillon",
+          "email": "carlito.voyages@gmail.com",
+          "phone": "+15142492600",
+          "address1": "215 RUE LAFRANCE",
+          "city": "Longueuil",
+          "state": "QC",
+          "postalCode": "J4G1N5",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2025-10-27   CUN   2 Pax   2 618.00   CACO"
+        },
+        {
+          "firstName": "Olivia",
+          "lastName": "Costa",
+          "email": "oliviacosta75@yahoo.com",
+          "phone": "+15142365764",
+          "address1": "915 RUE MARTEL",
+          "city": "Richelieu",
+          "state": "QC",
+          "postalCode": "J3L4M5",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2025-10-19   CUN   2 Pax   2 938.13   CACO"
+        },
+        {
+          "firstName": "Olivia",
+          "lastName": "Costa",
+          "email": "felixgig298@hotmail.com",
+          "phone": "+14384032312",
+          "address1": "1628 DU MILLENAIRE",
+          "city": "St Basile Le Grand",
+          "state": "QC",
+          "postalCode": "J3N1X3",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2024-12-17   CUN   2 Pax   3 036.90   CACO"
+        },
+        {
+          "firstName": "Vicky",
+          "lastName": "Goudreault",
+          "email": "vivigoud@hotmail.com",
+          "phone": "+15794203774",
+          "address1": "209 DES CARDINAUX",
+          "city": "St Paul D Abbostford",
+          "state": "QC",
+          "postalCode": "J0E1A0",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2026-03-16   POP   2 Pax   3 090.00   CACO"
+        },
+        {
+          "firstName": "Marie France",
+          "lastName": "Menard",
+          "email": "mfmenard@hotmail.com",
+          "phone": "+15145670746",
+          "address1": "120 THERRIEN",
+          "city": "St Mathieu De Beloeil",
+          "state": "QC",
+          "postalCode": "J3G0E8",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2025-11-13   POP   2 Pax   2 358.00   CACO"
+        },
+        {
+          "firstName": "Btissam",
+          "lastName": "Qesmi",
+          "email": "info@voyagesfiesta.com",
+          "phone": "+514",
+          "address1": "xxx",
+          "state": "Québec",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2025-10-15   YUL   1 Pax   50.00   CACO"
+        },
+        {
+          "firstName": "Marco",
+          "lastName": "Turcotte",
+          "email": "marcuturcotte1972@outlook.fr",
+          "phone": "+15794203774",
+          "address1": "209 DES CARDINAUX",
+          "city": "St Paul D Abbostford",
+          "state": "QC",
+          "postalCode": "J0E1A0",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2026-03-16   POP   2 Pax   3 090.00   CACO"
+        },
+        {
+          "firstName": "Julie",
+          "lastName": "Vezina",
+          "email": "ciboulette-73@hotmail.com",
+          "phone": "+15149191065",
+          "address1": "1645 RUE JEAN CASGRAIN",
+          "city": "Chambly",
+          "state": "QC",
+          "postalCode": "J3L3J1",
+          "country": "CA",
+          "source": "Import Carlos Costa 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carlos-costa"
+          ],
+          "notes": "2025-03-06   HOG   1 Pax   1 319.00   CACO"
+        }
+      ]
+    },
+    {
+      "first": "Carolann",
+      "last": "Fontaine",
+      "email": "carolann@voyagefiesta.com",
+      "tag": "import-carolann-fontaine",
+      "contacts": [
+        {
+          "firstName": "Belanger",
+          "lastName": "Francine",
+          "email": "belfran555@gmail.com",
+          "phone": "+14506130966",
+          "address1": "16 CH DES JASMINS",
+          "city": "Gore",
+          "state": "QC",
+          "postalCode": "J8H3W8",
+          "country": "CA",
+          "source": "Import Carolann Fontaine 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carolann-fontaine"
+          ],
+          "notes": "2025-11-17   CUN   2 Pax   4 130.00   CAROLA"
+        },
+        {
+          "firstName": "Martine",
+          "lastName": "Lapointe",
+          "email": "martine.327@hotmail.com",
+          "phone": "+14508217466",
+          "address1": "327 RUE MARY",
+          "city": "Lachute",
+          "state": "QC",
+          "postalCode": "J8H4P7",
+          "country": "CA",
+          "source": "Import Carolann Fontaine 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carolann-fontaine"
+          ],
+          "notes": "2026-01-25   MBJ   2 Pax   0.00   CAROLA"
+        },
+        {
+          "firstName": "Lyette",
+          "lastName": "Larocque",
+          "email": "lyettelarocque17@gmail.com",
+          "phone": "+15149835908",
+          "address1": "10 RUE D AILLEBOUST",
+          "city": "Saint Andre D Argenteuil",
+          "state": "QC",
+          "postalCode": "J0V1X0",
+          "country": "CA",
+          "source": "Import Carolann Fontaine 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carolann-fontaine"
+          ],
+          "notes": "2026-01-25   MBJ   2 Pax   0.00   CAROLA"
+        },
+        {
+          "firstName": "Annie",
+          "lastName": "Lauzon",
+          "email": "melicha_59@hotmail.com",
+          "phone": "+14389904301",
+          "address1": "2 ROUTE DES SEIGNEURS",
+          "city": "Saint Andre D Argenteuil",
+          "state": "QC",
+          "postalCode": "J0V1X0",
+          "country": "CA",
+          "source": "Import Carolann Fontaine 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carolann-fontaine"
+          ],
+          "notes": "2026-01-12   MBJ   2 Pax   3 210.00   CAROLA"
+        },
+        {
+          "firstName": "Daniel",
+          "lastName": "Moderie",
+          "email": "carolann@voyagefiesta.com",
+          "phone": "+15149835908",
+          "address1": "10 RUE D AILLEBOUST",
+          "city": "Saint Andre D Argenteuil",
+          "state": "QC",
+          "postalCode": "J0V1X0",
+          "country": "CA",
+          "source": "Import Carolann Fontaine 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carolann-fontaine"
+          ],
+          "notes": "2026-01-25   MBJ   2 Pax   0.00   CAROLA"
+        },
+        {
+          "firstName": "Jessica",
+          "lastName": "St Pierre",
+          "email": "slushie_059@hotmail.com",
+          "phone": "+15145673112",
+          "address1": "8740 RUE MENARD",
+          "city": "Mirabel",
+          "state": "QC",
+          "postalCode": "J7N2A6",
+          "country": "CA",
+          "source": "Import Carolann Fontaine 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-carolann-fontaine"
+          ],
+          "notes": "2026-01-23   VRA   2 Pax   10 456.00   CAROLA"
+        }
+      ]
+    },
+    {
+      "first": "Cindy",
+      "last": "Goulet",
+      "email": "cindy.goulet@voyagefiesta.com",
+      "tag": "import-cindy-goulet",
+      "contacts": [
+        {
+          "firstName": "Jayden",
+          "lastName": "Desilets",
+          "email": "cindy.goulet@voyagefiesta.com",
+          "phone": "+18196882408",
+          "address1": "174 AVENUE RICHARD",
+          "city": "St-Boniface",
+          "state": "QC",
+          "postalCode": "G0X2L0",
+          "country": "CA",
+          "source": "Import Cindy Goulet 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-cindy-goulet"
+          ],
+          "notes": "2026-10-31   PUJ   5 Pax   8 505.00   CINGO"
+        },
+        {
+          "firstName": "Joss",
+          "lastName": "Duhaime",
+          "email": "joss.duhaime@gmail.com",
+          "phone": "+13435512489",
+          "address1": "3655 INDIAN CREEK ROAD",
+          "city": "Cumberland",
+          "state": "ON",
+          "postalCode": "K4B1T6",
+          "country": "CA",
+          "source": "Import Cindy Goulet 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-cindy-goulet"
+          ],
+          "notes": "2026-10-31   PUJ   5 Pax   7 346.00   CINGO"
+        },
+        {
+          "firstName": "Sylvie",
+          "lastName": "Duhaime",
+          "email": "sylvieduhaime@hotmail.com",
+          "phone": "+13435512489",
+          "address1": "3655 INDIAN CREEK ROAD",
+          "city": "Cumberland",
+          "state": "ON",
+          "postalCode": "K4B1T6",
+          "country": "CA",
+          "source": "Import Cindy Goulet 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-cindy-goulet"
+          ],
+          "notes": "2026-10-31   PUJ   5 Pax   7 346.00   CINGO"
+        },
+        {
+          "firstName": "Lonnie",
+          "lastName": "Duhaime Bellerive",
+          "email": "lonnieduhaime@hotmail.com",
+          "phone": "+18196882408",
+          "address1": "174 AVENUE RICHARD",
+          "city": "St-Boniface",
+          "state": "QC",
+          "postalCode": "G0X2L0",
+          "country": "CA",
+          "source": "Import Cindy Goulet 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-cindy-goulet"
+          ],
+          "notes": "2026-10-31   PUJ   5 Pax   8 505.00   CINGO"
+        },
+        {
+          "firstName": "Marianne",
+          "lastName": "Gelinas",
+          "email": "mariannegelinas@hotmail.com",
+          "phone": "+13435512489",
+          "address1": "3655 INDIAN CREEK ROAD",
+          "city": "Cumberland",
+          "state": "ON",
+          "postalCode": "K4B1T6",
+          "country": "CA",
+          "source": "Import Cindy Goulet 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-cindy-goulet"
+          ],
+          "notes": "2026-10-31   PUJ   5 Pax   7 346.00   CINGO"
+        },
+        {
+          "firstName": "Aurelie",
+          "lastName": "Pariseau",
+          "email": "aureliepariseau@gmail.com",
+          "phone": "+18195923401",
+          "address1": "80 RUE KATIMAVIK APP 3",
+          "city": "Gatineau",
+          "state": "QC",
+          "postalCode": "J9J2B8",
+          "country": "CA",
+          "source": "Import Cindy Goulet 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-cindy-goulet"
+          ],
+          "notes": "2026-09-14   PUJ   2 Pax   2 770.00   CINGO"
+        },
+        {
+          "firstName": "Marie Jane",
+          "lastName": "Pariseau",
+          "email": "mariepariseau19@gmail.com",
+          "phone": "+18195923401",
+          "address1": "80 RUE KATIMAVIK APP 3",
+          "city": "Gatineau",
+          "state": "QC",
+          "postalCode": "J9J2B8",
+          "country": "CA",
+          "source": "Import Cindy Goulet 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-cindy-goulet"
+          ],
+          "notes": "2026-09-14   PUJ   2 Pax   2 770.00   CINGO"
+        }
+      ]
+    },
+    {
+      "first": "Danie",
+      "last": "Cantin",
+      "email": "danie@groupereseauvoyages.ca",
+      "tag": "import-danie-cantin",
+      "contacts": [
+        {
+          "firstName": "Benoit",
+          "lastName": "Allaire",
+          "email": "ben_man04@hotmail.com",
+          "phone": "+18197953817",
+          "address1": "8 RUE NICE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T0W8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-05   CUN   6 Pax   13 330.00   DANIE"
+        },
+        {
+          "firstName": "Mathieu",
+          "lastName": "Asselin",
+          "email": "vanessa@gdio.ca",
+          "phone": "+14502788330",
+          "address1": "53, RUE GANNON",
+          "city": "Granby",
+          "state": "QC",
+          "postalCode": "J2H1C1",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-04-14   VRA   4 Pax   3 668.00   DANIE"
+        },
+        {
+          "firstName": "Isabelle",
+          "lastName": "Beaulieu",
+          "email": "elle.beaulieu@hotmail.com",
+          "phone": "+18198160868",
+          "address1": "300 ELVINE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2A1T2",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-07   PUJ   4 Pax   9 116.00   DANIE"
+        },
+        {
+          "firstName": "Claude",
+          "lastName": "Bedard",
+          "email": "c3edard@gmail.com",
+          "phone": "+18193527992",
+          "address1": "14 BOISVERT",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P5L5",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-30   VRA   4 Pax   6 484.00   DANIE"
+        },
+        {
+          "firstName": "Caroline",
+          "lastName": "Belhumeur",
+          "email": "carobelhu@gmail.com",
+          "phone": "+18197954100",
+          "address1": "1121 RUE DES PINSONS",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T0N4",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-03-26   CUN   2 Pax   4 918.00   DANIE"
+        },
+        {
+          "firstName": "Vincent",
+          "lastName": "Bernier",
+          "email": "vinceber2009@hotmail.com",
+          "phone": "+18197405804",
+          "address1": "13 RUE BEAUREGARD",
+          "city": "Warwick",
+          "state": "Québec",
+          "postalCode": "J0A.1M0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-08-28   BNA   6 Pax   5 048.37   DANIE"
+        },
+        {
+          "firstName": "Nathalie",
+          "lastName": "Bertrand",
+          "email": "blackw1974@gmail.com",
+          "phone": "+18193524580",
+          "address1": "94 RUE COMTOIS",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T2Z3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-08-12   MBJ   2 Pax   3 350.00   DANIE"
+        },
+        {
+          "firstName": "Yvon Jr",
+          "lastName": "Bibeau",
+          "email": "fire.143@gmail.com",
+          "phone": "+18193527992",
+          "address1": "14 BOISVERT",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P5L5",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-30   VRA   4 Pax   6 484.00   DANIE"
+        },
+        {
+          "firstName": "Patricia",
+          "lastName": "Boisjoli",
+          "email": "patsyboisjoli@gmail.com",
+          "phone": "+18198160868",
+          "address1": "300 ELVINE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2A1T2",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-07   PUJ   4 Pax   9 116.00   DANIE"
+        },
+        {
+          "firstName": "Annie",
+          "lastName": "Bouchard",
+          "email": "abouchard@ppgca.com",
+          "phone": "+18199607700",
+          "address1": "47 RUE VALERE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T2J7",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-26   PUJ   2 Pax   4 198.00   DANIE"
+        },
+        {
+          "firstName": "Virginie",
+          "lastName": "Bouchard",
+          "email": "virgiboutch@gmail.com",
+          "phone": "+18197401115",
+          "address1": "180 RUE CHAMPAGNE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2C7M3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-08   CUN   4 Pax   6 982.24   DANIE"
+        },
+        {
+          "firstName": "Francis",
+          "lastName": "Bourget",
+          "email": "bourgetf6@hotmail.com",
+          "phone": "+18199604714",
+          "address1": "13 BOUL LEON COUTURE",
+          "city": "St Christophe Arthabaska",
+          "state": "QC",
+          "postalCode": "G6R0J6",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-02-09   CUN   2 Pax   5 667.82   DANIE"
+        },
+        {
+          "firstName": "Guylaine",
+          "lastName": "Bouthillette",
+          "email": "guylainebouthillette@gmail.com",
+          "phone": "+18198160868",
+          "address1": "300 ELVINE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2A1T2",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-07   PUJ   4 Pax   9 116.00   DANIE"
+        },
+        {
+          "firstName": "Derek Joseph",
+          "lastName": "Briere",
+          "email": "derekbriere23@gmail.com",
+          "phone": "+18194610334",
+          "address1": "85 RUE DES HETRES",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T1L3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-12-15   PUJ   4 Pax   4 761.00   DANIE"
+        },
+        {
+          "firstName": "Lison",
+          "lastName": "Cantin",
+          "email": "lcantin@csbf.qc.ca",
+          "phone": "+18194603828",
+          "address1": "10 RANG ADRIEN",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T0A5",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-30   VRA   1 Pax   1 479.00   DANIE"
+        },
+        {
+          "firstName": "Nathalie",
+          "lastName": "Castonguay",
+          "email": "nathalie@graphitek.ca",
+          "phone": "+18193525950",
+          "address1": "17 RUE QUESNEL",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6S1B8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-06   CUN   3 Pax   5 589.00   DANIE"
+        },
+        {
+          "firstName": "Marie Andree",
+          "lastName": "Chabot",
+          "email": "mary_2954@hotmail.com",
+          "phone": "+18194463594",
+          "address1": "1580 RUE LAROCQUE",
+          "city": "Sherbrooke",
+          "state": "QC",
+          "postalCode": "J1H4S3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-12-18   PUJ   4 Pax   7 556.00   DANIE"
+        },
+        {
+          "firstName": "Yan",
+          "lastName": "Chabot",
+          "email": "yanmimi@telwarwick.net",
+          "phone": "+18197402864",
+          "state": "Québec",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   2 Pax   3 625.00   DANIE\n2025-08-28   BNA   6 Pax   5 048.37   DANIE"
+        },
+        {
+          "firstName": "Elisanne Rose Marie",
+          "lastName": "Champagne",
+          "email": "elisanne.champagne@hotmail.com",
+          "phone": "+18197510791",
+          "address1": "16 RUE LAJEUNESSE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-11   PVR   4 Pax   7 268.00   DANIE"
+        },
+        {
+          "firstName": "Dave",
+          "lastName": "Cote",
+          "email": "cote.dave@hotmail.com",
+          "phone": "+14502304050",
+          "address1": "1172 RANG DE LA CHUTE",
+          "city": "Upton",
+          "state": "QC",
+          "postalCode": "J0H2E0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-12-04   CUN   3 Pax   4 289.73   DANIE\n2024-12-07   CUN   3 Pax   5 039.30   DANIE"
+        },
+        {
+          "firstName": "Karine",
+          "lastName": "Cote",
+          "email": "karinecote66@hotmail.com",
+          "phone": "+18198060366",
+          "address1": "VICTORIAVILLE",
+          "state": "QC",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   2 Pax   3 694.00   DANIE\n2025-11-21   CUN   4 Pax   8 535.00   DANIE"
+        },
+        {
+          "firstName": "Katherine",
+          "lastName": "Cote",
+          "email": "cote.katherine@outlook.com",
+          "phone": "+14505015992",
+          "address1": "1361, RANG DE LA CHUTE",
+          "city": "Upton",
+          "state": "QC",
+          "postalCode": "J0H2E0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-04-16   VRA   2 Pax   2 525.00   DANIE"
+        },
+        {
+          "firstName": "Rose Marie",
+          "lastName": "Cote",
+          "email": "rosemariecote4@gmail.com",
+          "phone": "+18197953519",
+          "address1": "59 AVENUE DUNN",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P2S8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-08-23   CUN   2 Pax   3 647.00   DANIE"
+        },
+        {
+          "firstName": "Jerome",
+          "lastName": "Couture",
+          "email": "j.couturemoteur@gmail.com",
+          "phone": "+18197955578",
+          "address1": "220 4E AVENUE",
+          "city": "Ham Nord",
+          "state": "QC",
+          "postalCode": "G0P1A0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-20   PUJ   2 Pax   3 397.91   DANIE"
+        },
+        {
+          "firstName": "Charlene",
+          "lastName": "Croteau",
+          "email": "charlene-20@live.fr",
+          "phone": "+14502304050",
+          "address1": "1172 RANG DE LA CHUTE",
+          "city": "Upton",
+          "state": "QC",
+          "postalCode": "J0H2E0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-16   CUN   4 Pax   7 496.00   DANIE\n2025-12-04   CUN   3 Pax   4 289.73   DANIE\n2024-12-07   CUN   3 Pax   5 039.30   DANIE"
+        },
+        {
+          "firstName": "Christian",
+          "lastName": "Croteau",
+          "email": "christian.croteau@oxygenebf.com",
+          "phone": "+18193527150",
+          "address1": "19 RUE DE LA SERENITE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6S1J3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-03-26   CUN   2 Pax   6 172.00   DANIE"
+        },
+        {
+          "firstName": "Myriam",
+          "lastName": "Croteau",
+          "email": "mcroteau29@gmail.com",
+          "phone": "+14502304050",
+          "address1": "1172 RG DE LA CHUTE",
+          "city": "Upton",
+          "state": "QC",
+          "postalCode": "J0H2E0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-16   CUN   4 Pax   7 496.00   DANIE"
+        },
+        {
+          "firstName": "Raphaele",
+          "lastName": "Croteau",
+          "email": "raphaele.croteau@outlook.com",
+          "phone": "+14502304050",
+          "address1": "1172 RG DE LA CHUTE",
+          "city": "Upton",
+          "state": "QC",
+          "postalCode": "J0H2E0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-16   CUN   4 Pax   7 496.00   DANIE"
+        },
+        {
+          "firstName": "Marika",
+          "lastName": "Damours",
+          "email": "marika.damours@gmail.com",
+          "phone": "+18198188284",
+          "address1": "1495 DU FRAMBOISIER",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2C0H3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-03-07   PUJ   2 Pax   4 209.00   DANIE"
+        },
+        {
+          "firstName": "Eric",
+          "lastName": "Delisle",
+          "email": "ti_del666@hotmail.com",
+          "phone": "+18199607700",
+          "address1": "47 RUE VALERE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T2J7",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-26   PUJ   2 Pax   4 198.00   DANIE"
+        },
+        {
+          "firstName": "Melanie",
+          "lastName": "Desrochers",
+          "email": "melanie.desro@hotmail.com",
+          "phone": "+18195521140",
+          "address1": "324 RUE CATHERINE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T2R8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-01-30   PUJ   2 Pax   3 750.00   DANIE"
+        },
+        {
+          "firstName": "Vanessa",
+          "lastName": "Dion",
+          "email": "vanessa@gdion.ca",
+          "phone": "+14502788330",
+          "address1": "53, RUE GANNON",
+          "city": "Granby",
+          "state": "QC",
+          "postalCode": "J2H1C1",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-04-14   VRA   4 Pax   3 668.00   DANIE"
+        },
+        {
+          "firstName": "Guylaine",
+          "lastName": "Dionne",
+          "email": "guylaine.dionne@hotmail.com",
+          "phone": "+18198160868",
+          "address1": "300 ELVINE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2A1T2",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-07   PUJ   4 Pax   9 116.00   DANIE"
+        },
+        {
+          "firstName": "Marie Helene",
+          "lastName": "Doyle",
+          "email": "mariehdoyle48@gmail.com",
+          "phone": "+18193527992",
+          "address1": "14 BOISVERT",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P5L5",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-30   VRA   4 Pax   6 484.00   DANIE"
+        },
+        {
+          "firstName": "Sarah",
+          "lastName": "Fortin",
+          "email": "sarah.fortin23@gmail.com",
+          "phone": "+18194610334",
+          "address1": "85 RUE DES HETRES",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T1L3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-12-15   PUJ   4 Pax   4 761.00   DANIE"
+        },
+        {
+          "firstName": "Isabelle",
+          "lastName": "Gagne",
+          "email": "annie@imatech-moore.com",
+          "phone": "+18193507754",
+          "address1": "4 RUE DES BERGES APP 1",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6R0Z1",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-05   POP   2 Pax   3 028.00   DANIE"
+        },
+        {
+          "firstName": "Kariane",
+          "lastName": "Gardner",
+          "email": "kariane.gardner23@hotmail.com",
+          "phone": "+18197955578",
+          "address1": "220 4E AVENUE",
+          "city": "Ham Nord",
+          "state": "QC",
+          "postalCode": "G0P1A0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-20   PUJ   2 Pax   3 397.91   DANIE"
+        },
+        {
+          "firstName": "Justin",
+          "lastName": "Gardner Cantin",
+          "email": "jusgard26@hotmail.ca",
+          "phone": "+18198069484",
+          "address1": "59 AVENUE DUNN",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P2S8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-08-23   CUN   2 Pax   3 647.00   DANIE\n2025-08-16   SJD   3 Pax   1 544.91   DANIE"
+        },
+        {
+          "firstName": "Pier Luc",
+          "lastName": "Gardner Cantin",
+          "email": "pgardner29@outlook.com",
+          "phone": "+18197953519",
+          "address1": "59 AVENUE DUNN",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P2S8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-08-16   SJD   2 Pax   1 029.94   DANIE"
+        },
+        {
+          "firstName": "Patrick",
+          "lastName": "Gosselin",
+          "email": "pgosselin@lechesne.com",
+          "phone": "+18197954100",
+          "address1": "1121 RUE DES PINSONS",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T0N4",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-03-26   CUN   2 Pax   4 918.00   DANIE"
+        },
+        {
+          "firstName": "Raphael",
+          "lastName": "Guillemette",
+          "email": "raphaelguillemette07@gmail.com",
+          "phone": "+18193525950",
+          "address1": "17 RUE QUESNEL",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6S1B8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-06   CUN   3 Pax   5 589.00   DANIE"
+        },
+        {
+          "firstName": "William",
+          "lastName": "Guillemette",
+          "email": "williamguillemette05@gmail.com",
+          "phone": "+18193525950",
+          "address1": "17 RUE QUESNEL",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6S1B8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-06   CUN   3 Pax   5 589.00   DANIE"
+        },
+        {
+          "firstName": "Nancy",
+          "lastName": "Hamel",
+          "email": "nhamel08@gmail.com",
+          "phone": "+18193527992",
+          "address1": "14 BOISVERT",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P5L5",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-30   VRA   4 Pax   6 484.00   DANIE"
+        },
+        {
+          "firstName": "Annie",
+          "lastName": "Hebert",
+          "email": "anniehebert19@hotmail.com",
+          "phone": "+18193527150",
+          "address1": "19 RUE DE LA SERENITE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6S1J3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-03-26   CUN   2 Pax   6 172.00   DANIE"
+        },
+        {
+          "firstName": "Alain",
+          "lastName": "Houle",
+          "email": "bulstrode27@hotmail.com",
+          "phone": "+18198068656",
+          "address1": "VICTORIAVILLE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   2 Pax   3 694.00   DANIE\n2025-11-21   CUN   4 Pax   8 535.00   DANIE"
+        },
+        {
+          "firstName": "Raphael Patrice Joseph",
+          "lastName": "Jodoin",
+          "email": "rajo7490@outlook.com",
+          "phone": "+14507792348",
+          "address1": "812 2E RANG",
+          "city": "Ste-Helene De Bagot",
+          "state": "QC",
+          "postalCode": "J0H1M0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-12-04   CUN   4 Pax   4 635.36   DANIE"
+        },
+        {
+          "firstName": "Gabriel",
+          "lastName": "Jutras",
+          "email": "gabrieljutras03@gmail.com",
+          "phone": "+18197953519",
+          "address1": "59 AVENUE DUNN",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P2S8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-08-16   SJD   2 Pax   1 029.94   DANIE"
+        },
+        {
+          "firstName": "Veronika",
+          "lastName": "Kiryanova",
+          "email": "veronika.kiryanova@hotmail.com",
+          "phone": "+15148146086",
+          "address1": "102 RUE ROLAND CHAGNON APP 3",
+          "city": "Saint Basile Le Grand",
+          "state": "QC",
+          "postalCode": "J3N1L4",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2024-10-10   CUN   1 Pax   2 155.00   DANIE"
+        },
+        {
+          "firstName": "Mario",
+          "lastName": "Lachance",
+          "email": "mariolachance1@hotmail.com",
+          "phone": "+18197953817",
+          "address1": "8 RUE NICE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T0W8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-05   CUN   6 Pax   13 330.00   DANIE"
+        },
+        {
+          "firstName": "Mylene",
+          "lastName": "Lacharite",
+          "email": "mylenelacharite33@gmail.com",
+          "phone": "+18193580428",
+          "address1": "33 rue des MERISIERS",
+          "city": "Kingsey Falls",
+          "state": "Québec",
+          "postalCode": "J0A1B0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   4 Pax   7 388.00   DANIE\n2025-08-28   BNA   6 Pax   5 048.37   DANIE"
+        },
+        {
+          "firstName": "Nadia",
+          "lastName": "Lafontaine",
+          "email": "nadou8134@hotmail.com",
+          "phone": "+14502304050",
+          "address1": "1172 RG DE LA CHUTE",
+          "city": "Upton",
+          "state": "QC",
+          "postalCode": "J0H2E0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-16   CUN   4 Pax   7 496.00   DANIE"
+        },
+        {
+          "firstName": "Pascal",
+          "lastName": "Lauzier",
+          "email": "pascal_lauzier@cascades.com",
+          "phone": "+18193501244",
+          "address1": "33 RUE DES MERISIERS",
+          "city": "Kingsey Falls",
+          "state": "Québec",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   4 Pax   7 388.00   DANIE\n2025-08-28   BNA   6 Pax   5 048.37   DANIE"
+        },
+        {
+          "firstName": "Maude",
+          "lastName": "Leblanc",
+          "email": "maudl23@hotmail.com",
+          "phone": "+18197408110",
+          "address1": "16 RUE Lajeunesse",
+          "city": "Victoriaville",
+          "state": "Québec",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-11   PVR   4 Pax   7 268.00   DANIE"
+        },
+        {
+          "firstName": "Ghislaine",
+          "lastName": "Lemelin",
+          "email": "lemelingi@hotmail.com",
+          "phone": "+18194463594",
+          "address1": "1580 RUE LAROCQUE",
+          "city": "Sherbrooke",
+          "state": "QC",
+          "postalCode": "J1H4S3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-12-18   PUJ   4 Pax   7 556.00   DANIE"
+        },
+        {
+          "firstName": "Martin",
+          "lastName": "Levasseur",
+          "email": "martin_levasseur@hotmail.com",
+          "phone": "+18197408128",
+          "address1": "Victoriaville",
+          "state": "Québec",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   2 Pax   3 556.00   DANIE"
+        },
+        {
+          "firstName": "Jessica",
+          "lastName": "Martin",
+          "email": "jessicamartin4114@hotmail.com",
+          "phone": "+18197401115",
+          "address1": "180 RUE CHAMPAGNE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2C7M3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-08   CUN   4 Pax   6 982.24   DANIE"
+        },
+        {
+          "firstName": "Jeremy",
+          "lastName": "Mayer",
+          "email": "danie@groupereseauvoyages.ca",
+          "phone": "+18198064007",
+          "address1": "179 RUE RENAUD",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P7J9",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-08-12   MBJ   2 Pax   1 560.00   DANIE\n2025-08-12   MBJ   2 Pax   1 914.00   DANIE"
+        },
+        {
+          "firstName": "Thierry",
+          "lastName": "Mayer",
+          "email": "thierry.mayer13@gmail.com",
+          "phone": "+18193524580",
+          "address1": "94 RUE COMTOIS",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T2Z3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-08-12   MBJ   2 Pax   3 350.00   DANIE"
+        },
+        {
+          "firstName": "Marie Eve",
+          "lastName": "Michel",
+          "email": "pemat@live.ca",
+          "phone": "+18193500157",
+          "address1": "13 RUE BEAUREGARD",
+          "city": "Warwick",
+          "state": "Québec",
+          "postalCode": "J0A1M0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   2 Pax   3 556.00   DANIE\n2026-02-05   HOG   2 Pax   1 270.00   DANIE\n2025-11-21   CUN   4 Pax   8 535.00   DANIE\n2025-08-28   BNA   6 Pax   5 048.37   DANIE"
+        },
+        {
+          "firstName": "David",
+          "lastName": "Moreau",
+          "email": "dmpat59@hotmail.com",
+          "phone": "+18197953817",
+          "address1": "8 RUE NICE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T0W8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-04-05   CUN   6 Pax   13 330.00   DANIE"
+        },
+        {
+          "firstName": "Mederic",
+          "lastName": "Morissette",
+          "email": "mederic.2003@icloud.com",
+          "phone": "+18197401115",
+          "address1": "180 RUE CHAMPAGNE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2C7M3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-08   CUN   4 Pax   6 982.24   DANIE"
+        },
+        {
+          "firstName": "Jeryka",
+          "lastName": "Pelchat",
+          "email": "jerykapp@icloud.com",
+          "phone": "+14507792348",
+          "address1": "812 2E RANG",
+          "city": "Ste-Helene De Bagot",
+          "state": "QC",
+          "postalCode": "J0H1M0",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-12-04   CUN   4 Pax   4 635.36   DANIE"
+        },
+        {
+          "firstName": "Isabelle",
+          "lastName": "Pellerin",
+          "email": "isa106pel@hotmail.com",
+          "phone": "+18197408391",
+          "address1": "Victoriaville",
+          "state": "Québec",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   2 Pax   3 556.00   DANIE"
+        },
+        {
+          "firstName": "Julie",
+          "lastName": "Poirier",
+          "email": "bambou1@hotmail.com",
+          "phone": "+18193573471",
+          "address1": "31 RUE GRAVEL",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6P7A2",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-08-09   PUJ   2 Pax   5 138.00   DANIE"
+        },
+        {
+          "firstName": "Marie Claude",
+          "lastName": "Poirier",
+          "email": "mary34c@hotmail.com",
+          "phone": "+18197523383",
+          "address1": "121 RUE DE L AMITIE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6S0C9",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-08-09   PUJ   4 Pax   9 651.00   DANIE"
+        },
+        {
+          "firstName": "Marjolaine",
+          "lastName": "Proulx",
+          "email": "marjoafrica@hotmail.fr",
+          "phone": "+18195521140",
+          "address1": "324 RUE CATHERINE",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6T2R8",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-01-30   PUJ   2 Pax   3 750.00   DANIE"
+        },
+        {
+          "firstName": "Arold",
+          "lastName": "Provencher",
+          "email": "arrowpro@outlook.com",
+          "phone": "+18193140317",
+          "address1": "Drummondville",
+          "state": "Québec",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   2 Pax   3 625.00   DANIE"
+        },
+        {
+          "firstName": "Alexandre",
+          "lastName": "Racine",
+          "email": "alexandreracine9@hotmail.com",
+          "phone": "+14502788330",
+          "address1": "53, RUE GANNON",
+          "city": "Granby",
+          "state": "QC",
+          "postalCode": "J2H1C1",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-04-14   VRA   4 Pax   3 668.00   DANIE"
+        },
+        {
+          "firstName": "Guyllaume",
+          "lastName": "Rondeau",
+          "email": "guyllaume.rondeau@hotmail.com",
+          "phone": "+18198188284",
+          "address1": "1495 DU FRAMBOISIER",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2C0H3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-03-07   PUJ   2 Pax   4 209.00   DANIE"
+        },
+        {
+          "firstName": "Jessy",
+          "lastName": "Stmichel",
+          "email": "jessyst_michel@outlook.com",
+          "phone": "+18197401115",
+          "address1": "180 RUE CHAMPAGNE",
+          "city": "Drummondville",
+          "state": "QC",
+          "postalCode": "J2C7M3",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-01-08   CUN   4 Pax   6 982.24   DANIE"
+        },
+        {
+          "firstName": "Sandra",
+          "lastName": "Tardif",
+          "email": "stardif66@hotmail.com",
+          "phone": "+18193506070",
+          "address1": "13 BOUL LEON COUTURE",
+          "city": "St Christophe Arthabaska",
+          "state": "QC",
+          "postalCode": "G6R0J6",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-02-09   CUN   2 Pax   5 667.82   DANIE"
+        },
+        {
+          "firstName": "Dominic",
+          "lastName": "Therrien",
+          "email": "dominictherrien72@gmail.com",
+          "phone": "+18193507754",
+          "address1": "4 RUE DES BERGES APP 1",
+          "city": "Victoriaville",
+          "state": "QC",
+          "postalCode": "G6R0Z5",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2025-11-05   CFG   2 Pax   1 750.00   DANIE"
+        },
+        {
+          "firstName": "Melissa",
+          "lastName": "Trepanier",
+          "email": "phmeli@hotmail.com",
+          "phone": "+18195527223",
+          "address1": "128 RUE LAMY",
+          "city": "Victoriaville",
+          "state": "Québec",
+          "postalCode": "G6P8X6",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   4 Pax   7 388.00   DANIE"
+        },
+        {
+          "firstName": "Stephanie",
+          "lastName": "Trepanier",
+          "email": "stephanietrepanier70@gmail.com",
+          "phone": "+18193523905",
+          "address1": "3E2 RUE LECLERC",
+          "city": "Princceville",
+          "state": "Québec",
+          "postalCode": "G6L4R1",
+          "country": "CA",
+          "source": "Import Danie Cantin 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-danie-cantin"
+          ],
+          "notes": "2026-11-28   PUJ   4 Pax   7 388.00   DANIE"
+        }
+      ]
+    },
+    {
+      "first": "Émilie",
+      "last": "Fauteux",
+      "email": "efauteux@voyagefiesta.com",
+      "tag": "import-emilie-fauteux",
+      "contacts": [
+        {
+          "firstName": "Real",
+          "lastName": "Bordeleau",
+          "email": "my_bordeleau@hotmail.com",
+          "phone": "+14508686534",
+          "address1": "10160 Villeneuve",
+          "city": "Terrebonne",
+          "state": "QC",
+          "postalCode": "J7M1B1",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-03-25   PUJ   1 Pax   2 809.00   EMILIE"
+        },
+        {
+          "firstName": "Bethany",
+          "lastName": "Bouchard",
+          "email": "bethbouchard94@gmail.com",
+          "phone": "+18193429330",
+          "address1": "608 chemin des Carrières",
+          "city": "Stukely-Sud",
+          "state": "Québec",
+          "postalCode": "J0E2J0",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE\n2025-11-11   YUL   2 Pax   516.24   VAL"
+        },
+        {
+          "firstName": "Jacob",
+          "lastName": "Bouchard",
+          "email": "jacobbouchard10@gmail.com",
+          "phone": "+14502780190",
+          "address1": "1537 rue Joseph-Laurin",
+          "city": "Lévis",
+          "state": "Québec",
+          "postalCode": "G6W7W3",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Zackary",
+          "lastName": "Bouchard",
+          "email": "zac.bouch.42@gmail.com",
+          "phone": "+14188050637",
+          "address1": "1537 rue Joseph-Laurin",
+          "city": "Lévis",
+          "state": "Québec",
+          "postalCode": "G6W7W3",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Melanie Audrey",
+          "lastName": "Chretien",
+          "email": "melaniechretien4@gmail.com",
+          "phone": "+15819972873",
+          "address1": "328 Blvd Tache Est",
+          "state": "Québec",
+          "postalCode": "G5V1C7",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2025-08-10   CUN   4 Pax   5 756.00   EMILIE"
+        },
+        {
+          "firstName": "Emilie",
+          "lastName": "Fauteux",
+          "email": "e_fauteux@hotmail.fr",
+          "phone": "+18198490353",
+          "address1": "19 RUE DE COMPTON",
+          "city": "Coaticook",
+          "state": "QC",
+          "postalCode": "J1A2M5",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-04-10   POP   2 Pax   3 416.00   EMILIE"
+        },
+        {
+          "firstName": "Mégane",
+          "lastName": "Grenier",
+          "email": "meganegrenier16190@gmail.com",
+          "phone": "+14505025754",
+          "address1": "16190 boulevard laflamme",
+          "city": "Saint-Hyacinthe",
+          "state": "Québec",
+          "postalCode": "J2T3Y8",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Mathieu",
+          "lastName": "Guimond",
+          "email": "margerieb97@gmail.com",
+          "phone": "+18195740300",
+          "address1": "503 rue Mercier",
+          "city": "Val Des Sources",
+          "state": "Québec",
+          "postalCode": "J1T3E4",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2025-11-25   CUN   2 Pax   2 698.00   EMILIE"
+        },
+        {
+          "firstName": "Kate Cressida",
+          "lastName": "Holbrook",
+          "email": "katewisdom@hotmail.com",
+          "phone": "+14507752873",
+          "address1": "575 chemin réal",
+          "city": "Sutton",
+          "state": "Québec",
+          "postalCode": "J0E2K0",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Mackenzie",
+          "lastName": "Jacobs",
+          "email": "mackenzie.1537@hotmail.com",
+          "phone": "+15794882651",
+          "address1": "684 chemin knowlton",
+          "city": "Knowlton",
+          "state": "Québec",
+          "postalCode": "J0E1V0",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Nathalie",
+          "lastName": "Nolin",
+          "email": "nath19.nn@gmail.com",
+          "phone": "+18198490353",
+          "address1": "19 RUE DE COMPTON",
+          "city": "Coaticook",
+          "state": "QC",
+          "postalCode": "J1A2M5",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-04-10   POP   2 Pax   3 416.00   EMILIE"
+        },
+        {
+          "firstName": "Elizabeth",
+          "lastName": "Plante",
+          "email": "eliplante0@gmail.com",
+          "phone": "+14184500187",
+          "address1": "191 ch de la Rabastaliere Est",
+          "city": "St-Bruno De Montarville",
+          "state": "Québec",
+          "postalCode": "J3V2A7",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Andrew",
+          "lastName": "Sharp",
+          "email": "aprilwisdom7@gmail.com",
+          "phone": "+14505212587",
+          "address1": "88 Chemin Saint Paul",
+          "city": "Lac Brome",
+          "state": "QC",
+          "postalCode": "J0E1V0",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   2 Pax   3 904.00   EMILIE"
+        },
+        {
+          "firstName": "Jean Nicholas",
+          "lastName": "Shooner Pulfer",
+          "email": "elise_kawa@hotmail.com",
+          "phone": "+18192389352",
+          "address1": "1920 route 249",
+          "city": "St Denis De Brompton",
+          "state": "QC",
+          "postalCode": "J0B2P0",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-03-25   PUJ   3 Pax   4 697.00   EMILIE\n2025-11-20   CCC   2 Pax   2 010.00   EMILIE"
+        },
+        {
+          "firstName": "Kelly",
+          "lastName": "Waghorn",
+          "email": "waghornkelly@gmail.com",
+          "phone": "+15142670776",
+          "address1": "3845 rue bel-air",
+          "city": "Saint-Hyacinthe",
+          "state": "Québec",
+          "postalCode": "JS27N8",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "James",
+          "lastName": "Wisdom",
+          "email": "jameswisdom1@gmail.com",
+          "phone": "+15144026824",
+          "address1": "127 rue st-augustin",
+          "city": "Montréal",
+          "state": "Québec",
+          "postalCode": "H4C2N5",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Summer",
+          "lastName": "Wisdom",
+          "email": "summerjane0408@gmail.com",
+          "phone": "+14502049467",
+          "address1": "684 chemin knowlton",
+          "city": "Knowlton",
+          "state": "Québec",
+          "postalCode": "J0E1V0",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        },
+        {
+          "firstName": "Timothy",
+          "lastName": "Wisdom",
+          "email": "tw@eveilcowansville.com",
+          "phone": "+14502048962",
+          "address1": "950 route missisquoi",
+          "city": "Bolton-Est",
+          "state": "Québec",
+          "postalCode": "J0E1G0",
+          "country": "CA",
+          "source": "Import Émilie Fauteux 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emilie-fauteux"
+          ],
+          "notes": "2026-05-12   POP   22 Pax   25 134.00   EMILIE"
+        }
+      ]
+    },
+    {
+      "first": "Emmy",
+      "last": "Maude",
+      "email": "emmy-maude.gv@voyagefiesta.com",
+      "tag": "import-emmy-maude",
+      "contacts": [
+        {
+          "firstName": "Yaliesky",
+          "lastName": "Almagro Blanco",
+          "email": "kicotor06@gmail.com",
+          "phone": "+15819097834",
+          "address1": "3373 RUE JONCAS",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G1E1R5",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-08-18   VRA   1 Pax   610.00   EMMY\n2025-03-22   VRA   1 Pax   1 135.00   EMMY"
+        },
+        {
+          "firstName": "Francois",
+          "lastName": "Belanger",
+          "email": "frankee99@icloud.com",
+          "phone": "+14185592676",
+          "address1": "275 48IEME RUE OUEST",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G1H5G2",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-09-07   VRA   1 Pax   1 115.00   EMMY"
+        },
+        {
+          "firstName": "Rosiane",
+          "lastName": "Berube Hubert",
+          "email": "jeda_2515@hotmail.com",
+          "phone": "+14182647674",
+          "address1": "8420 AVE LESPERANCE APT 202",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2K1M3",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-06-14   CUN   3 Pax   3 747.00   EMMY"
+        },
+        {
+          "firstName": "Nicolas",
+          "lastName": "Bilodeau",
+          "email": "nicolas.bilodeau@gmail.com",
+          "phone": "+15813974719",
+          "address1": "197 RUE MELANIE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L0B3",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-03-08   VRA   3 Pax   3 927.00   EMMY"
+        },
+        {
+          "firstName": "Naomie",
+          "lastName": "Bouchard",
+          "email": "naomiebouchard@hotmail.com",
+          "phone": "+14184734327",
+          "address1": "658 RUE LAURENCE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L2S4",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-03-08   VRA   3 Pax   2 716.23   EMMY"
+        },
+        {
+          "firstName": "Sandra",
+          "lastName": "Bouchard",
+          "email": "sandrabouchard123@gmail.com",
+          "phone": "+15813974719",
+          "address1": "197 RUE MELANIE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L0B3",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-03-08   VRA   3 Pax   3 927.00   EMMY"
+        },
+        {
+          "firstName": "Noemie",
+          "lastName": "Charpentier Leclerc",
+          "email": "noemiechl@outlook.com",
+          "phone": "+14186558879",
+          "address1": "658 RUE LAURENCE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L2S4",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-05-22   CZM   2 Pax   2 970.00   EMMY"
+        },
+        {
+          "firstName": "Melanie",
+          "lastName": "Fortier",
+          "email": "melaniefortier19@hotmail.com",
+          "phone": "+14186615251",
+          "address1": "4513 BOULEVARD SAINTE ANNE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G1C2H8",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-03-16   CUN   2 Pax   3 556.00   EMMY"
+        },
+        {
+          "firstName": "Melanie",
+          "lastName": "Galibois",
+          "email": "meligalini@gmail.com",
+          "phone": "+14184734327",
+          "address1": "658 RUE LAURENCE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L2S4",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-09-06   CUN   2 Pax   3 570.00   EMMY\n2025-03-08   VRA   2 Pax   2 658.00   EMMY"
+        },
+        {
+          "firstName": "Remi",
+          "lastName": "Galibois",
+          "email": "rgalibois@gmail.com",
+          "phone": "+14182592799",
+          "address1": "1 MONTE 14 RUE PRINCIPALE EST",
+          "city": "Berthier-Sur-Mer",
+          "state": "QC",
+          "postalCode": "G0R1E0",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-03-08   VRA   2 Pax   2 618.00   EMMY"
+        },
+        {
+          "firstName": "Thomas",
+          "lastName": "Galibois Vermette",
+          "email": "thomas.g.vermette@gmail.com",
+          "phone": "+14184734327",
+          "address1": "658 RUE LAURENCE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L2S4",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-03-08   VRA   3 Pax   2 716.23   EMMY"
+        },
+        {
+          "firstName": "Francoise",
+          "lastName": "Larouche",
+          "email": "francoise.larouche@gmail.com",
+          "phone": "+14182592799",
+          "address1": "1 MONTE 14 RUE PRINCIPALE EST",
+          "city": "Berthier-Sur-Mer",
+          "state": "QC",
+          "postalCode": "G0R1E0",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-03-08   VRA   2 Pax   2 618.00   EMMY"
+        },
+        {
+          "firstName": "Dalia",
+          "lastName": "Mireault",
+          "email": "emmy-maude.gv@voyagefiesta.com",
+          "phone": "+14182647674",
+          "address1": "8420 AVE LESPERANCE APT 202",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2K1M3",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-06-14   CUN   3 Pax   3 747.00   EMMY"
+        },
+        {
+          "firstName": "Erick Damian",
+          "lastName": "Oviedo Pineda",
+          "email": "erickdamianoviedopineda@gmail.com",
+          "phone": "+14182611871",
+          "address1": "658 RUE LAURENCE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L2S4",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-08-31   VRA   2 Pax   1 780.00   EMMY"
+        },
+        {
+          "firstName": "Gabrielle",
+          "lastName": "Tanguay",
+          "email": "gtanguay@outlook.com",
+          "phone": "+15819941145",
+          "address1": "534 AVENUE ROYAL",
+          "city": "St Joachim",
+          "state": "QC",
+          "postalCode": "G0A3X0",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-03-16   CUN   2 Pax   3 518.00   EMMY\n2025-03-08   VRA   2 Pax   3 078.00   EMMY"
+        },
+        {
+          "firstName": "Carole",
+          "lastName": "Tremblay",
+          "email": "carole.yvon@hotmail.fr",
+          "phone": "+14186615251",
+          "address1": "4513 BOULEVARD SAINTE ANNE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G1C2H8",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-03-16   CUN   2 Pax   3 556.00   EMMY"
+        },
+        {
+          "firstName": "Denis",
+          "lastName": "Turgeon",
+          "email": "turgeon.denis71@gmail.com",
+          "phone": "+18194345055",
+          "address1": "975 AVE ROLAND BEAUDIN",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G1V0J2",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2025-03-22   VRA   1 Pax   1 055.00   EMMY"
+        },
+        {
+          "firstName": "Olivier",
+          "lastName": "Vermette",
+          "email": "oli.vermette1998@outlook.com",
+          "phone": "+15819941145",
+          "address1": "534 AVENUE ROYAL",
+          "city": "St Joachim",
+          "state": "QC",
+          "postalCode": "G0A3X0",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-03-16   CUN   2 Pax   3 518.00   EMMY\n2025-03-08   VRA   2 Pax   3 078.00   EMMY"
+        },
+        {
+          "firstName": "Sylvain",
+          "lastName": "Vermette",
+          "email": "patofblue@hotmail.com",
+          "phone": "+14184734327",
+          "address1": "658 RUE LAURENCE",
+          "city": "Quebec",
+          "state": "QC",
+          "postalCode": "G2L2S4",
+          "country": "CA",
+          "source": "Import Emmy Maude 2026-09",
+          "tags": [
+            "import-conseiller",
+            "import-emmy-maude"
+          ],
+          "notes": "2026-09-06   CUN   2 Pax   3 570.00   EMMY\n2025-03-08   VRA   2 Pax   2 658.00   EMMY"
+        }
+      ]
+    }
+  ]
+}

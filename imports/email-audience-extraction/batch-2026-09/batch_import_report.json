@@ -1,0 +1,652 @@
+{
+  "agents": [
+    {
+      "name": "Carlos Costa",
+      "email": "carlos@voyagefiesta.com",
+      "userId": "pyv5NWBzuH5CsbAYxsJq",
+      "userCreated": false,
+      "userError": null,
+      "total": 10,
+      "created": [
+        {
+          "label": "Nadine Baraton <nadineb4389@gmail.com>",
+          "contactId": "xSliYLvYqL9pjn1twWun"
+        },
+        {
+          "label": "Jean Francois Bedard <skyawk@me.com>",
+          "contactId": "eMCCh1Oeb6O1DPYl42D6"
+        },
+        {
+          "label": "Jean Pierre Bisaillon <carlito.voyages@gmail.com>",
+          "contactId": "byRySoWQERfPwLYKLv1m"
+        },
+        {
+          "label": "Olivia Costa <oliviacosta75@yahoo.com>",
+          "contactId": "QHy707IigzeugcF8ziAW"
+        },
+        {
+          "label": "Olivia Costa <felixgig298@hotmail.com>",
+          "contactId": "kbD5rorPwzSQ5YwWJ7Py"
+        },
+        {
+          "label": "Vicky Goudreault <vivigoud@hotmail.com>",
+          "contactId": "ZblCGHACDfiP82dafLn3"
+        },
+        {
+          "label": "Marie France Menard <mfmenard@hotmail.com>",
+          "contactId": "8zD2NiVqtvW6hpvxbFFB"
+        },
+        {
+          "label": "Marco Turcotte <marcuturcotte1972@outlook.fr>",
+          "contactId": "FYqKzAUD7dBU9KXRnMC9"
+        },
+        {
+          "label": "Julie Vezina <ciboulette-73@hotmail.com>",
+          "contactId": "8UMi5xDSIFEQzljiF3X3"
+        }
+      ],
+      "skipped": [
+        {
+          "label": "Btissam Qesmi <info@voyagesfiesta.com>",
+          "contactId": "69nsJrS4XVt9s6sGymLe"
+        }
+      ],
+      "errors": [],
+      "summary": {
+        "created": 9,
+        "skipped": 1,
+        "errors": 0
+      }
+    },
+    {
+      "name": "Carolann Fontaine",
+      "email": "carolann@voyagefiesta.com",
+      "userId": "re7NLq5U2FLOsvPbmNcb",
+      "userCreated": false,
+      "userError": null,
+      "total": 6,
+      "created": [
+        {
+          "label": "Belanger Francine <belfran555@gmail.com>",
+          "contactId": "tS1I4UWX2I1VKTxuEPlC"
+        },
+        {
+          "label": "Martine Lapointe <martine.327@hotmail.com>",
+          "contactId": "2mLpZ7lnh8OBmNL51tDE"
+        },
+        {
+          "label": "Lyette Larocque <lyettelarocque17@gmail.com>",
+          "contactId": "YnVzHbqo0qmn8wSOG4g2"
+        },
+        {
+          "label": "Annie Lauzon <melicha_59@hotmail.com>",
+          "contactId": "9sYfLN0p6X6orzIaKebn"
+        },
+        {
+          "label": "Daniel Moderie <carolann@voyagefiesta.com>",
+          "contactId": "fw5paqeHGB2QzBuEUJbO"
+        },
+        {
+          "label": "Jessica St Pierre <slushie_059@hotmail.com>",
+          "contactId": "pg6JFdT6HFODyKVIGj1T"
+        }
+      ],
+      "skipped": [],
+      "errors": [],
+      "summary": {
+        "created": 6,
+        "skipped": 0,
+        "errors": 0
+      }
+    },
+    {
+      "name": "Cindy Goulet",
+      "email": "cindy.goulet@voyagefiesta.com",
+      "userId": "XA2w8czrDgWdwZuU7zCo",
+      "userCreated": false,
+      "userError": null,
+      "total": 7,
+      "created": [
+        {
+          "label": "Jayden Desilets <cindy.goulet@voyagefiesta.com>",
+          "contactId": "0iMfiY0YxkFPsPUIJPSp"
+        },
+        {
+          "label": "Joss Duhaime <joss.duhaime@gmail.com>",
+          "contactId": "V0vKyPC425o42QFDiATe"
+        },
+        {
+          "label": "Sylvie Duhaime <sylvieduhaime@hotmail.com>",
+          "contactId": "m3UW1VJlTsIb5dokE9TO"
+        },
+        {
+          "label": "Lonnie Duhaime Bellerive <lonnieduhaime@hotmail.com>",
+          "contactId": "tgxu1sGXorMtDcFbsvjw"
+        },
+        {
+          "label": "Marianne Gelinas <mariannegelinas@hotmail.com>",
+          "contactId": "KljjdQSHz23LG2rXm2EB"
+        },
+        {
+          "label": "Aurelie Pariseau <aureliepariseau@gmail.com>",
+          "contactId": "xby9Uaoa3PuJVlgcklBq"
+        },
+        {
+          "label": "Marie Jane Pariseau <mariepariseau19@gmail.com>",
+          "contactId": "QCFPvOJ3vSkLOxEZXUzm"
+        }
+      ],
+      "skipped": [],
+      "errors": [],
+      "summary": {
+        "created": 7,
+        "skipped": 0,
+        "errors": 0
+      }
+    },
+    {
+      "name": "Danie Cantin",
+      "email": "danie@groupereseauvoyages.ca",
+      "userId": "EnLSOcXL8ITFdm0l24za",
+      "userCreated": false,
+      "userError": null,
+      "total": 74,
+      "created": [
+        {
+          "label": "Benoit Allaire <ben_man04@hotmail.com>",
+          "contactId": "OjNG58qUq9CgDbRy70ZO"
+        },
+        {
+          "label": "Mathieu Asselin <vanessa@gdio.ca>",
+          "contactId": "4dEjRsxaHe8DZ2ze2NLw"
+        },
+        {
+          "label": "Isabelle Beaulieu <elle.beaulieu@hotmail.com>",
+          "contactId": "5TzQHIfxufehMDF9EIow"
+        },
+        {
+          "label": "Claude Bedard <c3edard@gmail.com>",
+          "contactId": "voZUGPYp8vciBLV8BkQd"
+        },
+        {
+          "label": "Caroline Belhumeur <carobelhu@gmail.com>",
+          "contactId": "CI07QobWNrAFA1bvBEs2"
+        },
+        {
+          "label": "Vincent Bernier <vinceber2009@hotmail.com>",
+          "contactId": "XcgNXgyYdDTuRdvhswJR"
+        },
+        {
+          "label": "Nathalie Bertrand <blackw1974@gmail.com>",
+          "contactId": "lFG4XYjCRrodx0IqdWDM"
+        },
+        {
+          "label": "Yvon Jr Bibeau <fire.143@gmail.com>",
+          "contactId": "rPeJGAcdqkdvzkFswkRx"
+        },
+        {
+          "label": "Patricia Boisjoli <patsyboisjoli@gmail.com>",
+          "contactId": "Sl0x3JgSOe40GJnNV7Z1"
+        },
+        {
+          "label": "Annie Bouchard <abouchard@ppgca.com>",
+          "contactId": "WjvV6MOadEIRHlyQIYgy"
+        },
+        {
+          "label": "Virginie Bouchard <virgiboutch@gmail.com>",
+          "contactId": "rVD7SQLzRnhb8bvh3fYm"
+        },
+        {
+          "label": "Francis Bourget <bourgetf6@hotmail.com>",
+          "contactId": "DaC7JkQVTixkxw6pTeA0"
+        },
+        {
+          "label": "Guylaine Bouthillette <guylainebouthillette@gmail.com>",
+          "contactId": "qqhuwTe1jTnn3F9oR2HM"
+        },
+        {
+          "label": "Derek Joseph Briere <derekbriere23@gmail.com>",
+          "contactId": "YmFxvyxfBbw3ywVMXy82"
+        },
+        {
+          "label": "Lison Cantin <lcantin@csbf.qc.ca>",
+          "contactId": "yepTdzZWthl7jsQv5KzD"
+        },
+        {
+          "label": "Nathalie Castonguay <nathalie@graphitek.ca>",
+          "contactId": "J8Y0Ip0WUddXsUfdAFA0"
+        },
+        {
+          "label": "Marie Andree Chabot <mary_2954@hotmail.com>",
+          "contactId": "FVpjPgXWE57yPl3UtChJ"
+        },
+        {
+          "label": "Yan Chabot <yanmimi@telwarwick.net>",
+          "contactId": "PZkqOYW9xxdo1fJ3P2E3"
+        },
+        {
+          "label": "Elisanne Rose Marie Champagne <elisanne.champagne@hotmail.com>",
+          "contactId": "hDxq6a88UmVKQjAd1anM"
+        },
+        {
+          "label": "Dave Cote <cote.dave@hotmail.com>",
+          "contactId": "nKjq425FHdoQbSL3nJ23"
+        },
+        {
+          "label": "Karine Cote <karinecote66@hotmail.com>",
+          "contactId": "3rIpxFaF8rg1Bb5L1J3w"
+        },
+        {
+          "label": "Katherine Cote <cote.katherine@outlook.com>",
+          "contactId": "UqNwoLNxea6ngOJyLrR2"
+        },
+        {
+          "label": "Rose Marie Cote <rosemariecote4@gmail.com>",
+          "contactId": "9xtzXo2yb9ip9tpJ2QV0"
+        },
+        {
+          "label": "Jerome Couture <j.couturemoteur@gmail.com>",
+          "contactId": "rRvTeuUHKb1snjjNFgoU"
+        },
+        {
+          "label": "Charlene Croteau <charlene-20@live.fr>",
+          "contactId": "lyZ28XMIvSZfzxPn3XLL"
+        },
+        {
+          "label": "Christian Croteau <christian.croteau@oxygenebf.com>",
+          "contactId": "FRqtIs0uVX1IHHIh0TAk"
+        },
+        {
+          "label": "Myriam Croteau <mcroteau29@gmail.com>",
+          "contactId": "9aGJONMncY88Yv99MaX8"
+        },
+        {
+          "label": "Raphaele Croteau <raphaele.croteau@outlook.com>",
+          "contactId": "Hjf2Insya1OVej1riM0C"
+        },
+        {
+          "label": "Marika Damours <marika.damours@gmail.com>",
+          "contactId": "r8LBmBbPRgt6tcjPRgMw"
+        },
+        {
+          "label": "Melanie Desrochers <melanie.desro@hotmail.com>",
+          "contactId": "DoKBMx1Dn1kXXwY2YX3G"
+        },
+        {
+          "label": "Sarah Fortin <sarah.fortin23@gmail.com>",
+          "contactId": "FvKq9JNAFsL4Hv2W2voW"
+        },
+        {
+          "label": "Isabelle Gagne <annie@imatech-moore.com>",
+          "contactId": "J63UccFoTg95Mjgykr1l"
+        },
+        {
+          "label": "Justin Gardner Cantin <jusgard26@hotmail.ca>",
+          "contactId": "JKO3663BfdgBtFhdGrKc"
+        },
+        {
+          "label": "Annie Hebert <anniehebert19@hotmail.com>",
+          "contactId": "TGxai42H6LoVQRIC2zxt"
+        },
+        {
+          "label": "Alain Houle <bulstrode27@hotmail.com>",
+          "contactId": "5gKpTn77qJF5mkrZHXH4"
+        },
+        {
+          "label": "Raphael Patrice Joseph Jodoin <rajo7490@outlook.com>",
+          "contactId": "8Cl5rSHvfxUw87N4ceBh"
+        },
+        {
+          "label": "Veronika Kiryanova <veronika.kiryanova@hotmail.com>",
+          "contactId": "RSAmyE8OECn7lkfps7at"
+        },
+        {
+          "label": "Mylene Lacharite <mylenelacharite33@gmail.com>",
+          "contactId": "cdQAonsXCBBfUoksT9h3"
+        },
+        {
+          "label": "Pascal Lauzier <pascal_lauzier@cascades.com>",
+          "contactId": "BywBdVZj9U3IspEJEj8g"
+        },
+        {
+          "label": "Maude Leblanc <maudl23@hotmail.com>",
+          "contactId": "XoqfPAP5LmeGODfVCpbb"
+        },
+        {
+          "label": "Martin Levasseur <martin_levasseur@hotmail.com>",
+          "contactId": "rNPiLVFvoXsbpNit2NNv"
+        },
+        {
+          "label": "Jeremy Mayer <danie@groupereseauvoyages.ca>",
+          "contactId": "jytE1jxbv2UtcoOppKtS"
+        },
+        {
+          "label": "Marie Eve Michel <pemat@live.ca>",
+          "contactId": "J3ZyAQH7BE6ESluSayYn"
+        },
+        {
+          "label": "Jeryka Pelchat <jerykapp@icloud.com>",
+          "contactId": "cPueaGTIKo9ESFvUVEto"
+        },
+        {
+          "label": "Isabelle Pellerin <isa106pel@hotmail.com>",
+          "contactId": "eU7XV2uPQrIkfb09D01t"
+        },
+        {
+          "label": "Julie Poirier <bambou1@hotmail.com>",
+          "contactId": "iTg14YfntIc9lE4vOONQ"
+        },
+        {
+          "label": "Marie Claude Poirier <mary34c@hotmail.com>",
+          "contactId": "NEwSkqqEWyF3blfmgpjw"
+        },
+        {
+          "label": "Arold Provencher <arrowpro@outlook.com>",
+          "contactId": "O5k9zez9vaxnFFxPvSM9"
+        },
+        {
+          "label": "Sandra Tardif <stardif66@hotmail.com>",
+          "contactId": "VfPO2ZaL1rCnxKXwSF3a"
+        },
+        {
+          "label": "Melissa Trepanier <phmeli@hotmail.com>",
+          "contactId": "KJ3LcHIdlM2ylPRQY06h"
+        },
+        {
+          "label": "Stephanie Trepanier <stephanietrepanier70@gmail.com>",
+          "contactId": "KgFXxX4UN8Ej8rZmMu5t"
+        }
+      ],
+      "skipped": [
+        {
+          "label": "Eric Delisle <ti_del666@hotmail.com>",
+          "contactId": "WjvV6MOadEIRHlyQIYgy"
+        },
+        {
+          "label": "Vanessa Dion <vanessa@gdion.ca>",
+          "contactId": "4dEjRsxaHe8DZ2ze2NLw"
+        },
+        {
+          "label": "Guylaine Dionne <guylaine.dionne@hotmail.com>",
+          "contactId": "qqhuwTe1jTnn3F9oR2HM"
+        },
+        {
+          "label": "Marie Helene Doyle <mariehdoyle48@gmail.com>",
+          "contactId": "rPeJGAcdqkdvzkFswkRx"
+        },
+        {
+          "label": "Kariane Gardner <kariane.gardner23@hotmail.com>",
+          "contactId": "rRvTeuUHKb1snjjNFgoU"
+        },
+        {
+          "label": "Pier Luc Gardner Cantin <pgardner29@outlook.com>",
+          "contactId": "9xtzXo2yb9ip9tpJ2QV0"
+        },
+        {
+          "label": "Patrick Gosselin <pgosselin@lechesne.com>",
+          "contactId": "CI07QobWNrAFA1bvBEs2"
+        },
+        {
+          "label": "Raphael Guillemette <raphaelguillemette07@gmail.com>",
+          "contactId": "J8Y0Ip0WUddXsUfdAFA0"
+        },
+        {
+          "label": "William Guillemette <williamguillemette05@gmail.com>",
+          "contactId": "J8Y0Ip0WUddXsUfdAFA0"
+        },
+        {
+          "label": "Nancy Hamel <nhamel08@gmail.com>",
+          "contactId": "rPeJGAcdqkdvzkFswkRx"
+        },
+        {
+          "label": "Gabriel Jutras <gabrieljutras03@gmail.com>",
+          "contactId": "9xtzXo2yb9ip9tpJ2QV0"
+        },
+        {
+          "label": "Mario Lachance <mariolachance1@hotmail.com>",
+          "contactId": "OjNG58qUq9CgDbRy70ZO"
+        },
+        {
+          "label": "Nadia Lafontaine <nadou8134@hotmail.com>",
+          "contactId": "Hjf2Insya1OVej1riM0C"
+        },
+        {
+          "label": "Ghislaine Lemelin <lemelingi@hotmail.com>",
+          "contactId": "FVpjPgXWE57yPl3UtChJ"
+        },
+        {
+          "label": "Jessica Martin <jessicamartin4114@hotmail.com>",
+          "contactId": "rVD7SQLzRnhb8bvh3fYm"
+        },
+        {
+          "label": "Thierry Mayer <thierry.mayer13@gmail.com>",
+          "contactId": "lFG4XYjCRrodx0IqdWDM"
+        },
+        {
+          "label": "David Moreau <dmpat59@hotmail.com>",
+          "contactId": "OjNG58qUq9CgDbRy70ZO"
+        },
+        {
+          "label": "Mederic Morissette <mederic.2003@icloud.com>",
+          "contactId": "rVD7SQLzRnhb8bvh3fYm"
+        },
+        {
+          "label": "Marjolaine Proulx <marjoafrica@hotmail.fr>",
+          "contactId": "DoKBMx1Dn1kXXwY2YX3G"
+        },
+        {
+          "label": "Alexandre Racine <alexandreracine9@hotmail.com>",
+          "contactId": "4dEjRsxaHe8DZ2ze2NLw"
+        },
+        {
+          "label": "Guyllaume Rondeau <guyllaume.rondeau@hotmail.com>",
+          "contactId": "r8LBmBbPRgt6tcjPRgMw"
+        },
+        {
+          "label": "Jessy Stmichel <jessyst_michel@outlook.com>",
+          "contactId": "rVD7SQLzRnhb8bvh3fYm"
+        },
+        {
+          "label": "Dominic Therrien <dominictherrien72@gmail.com>",
+          "contactId": "J63UccFoTg95Mjgykr1l"
+        }
+      ],
+      "errors": [],
+      "summary": {
+        "created": 51,
+        "skipped": 23,
+        "errors": 0
+      }
+    },
+    {
+      "name": "Émilie Fauteux",
+      "email": "efauteux@voyagefiesta.com",
+      "userId": "Kb5V7XmBNVoS8uPMNLD0",
+      "userCreated": false,
+      "userError": null,
+      "total": 18,
+      "created": [
+        {
+          "label": "Real Bordeleau <my_bordeleau@hotmail.com>",
+          "contactId": "okFVVo3kIn0I9Z77EL9P"
+        },
+        {
+          "label": "Jacob Bouchard <jacobbouchard10@gmail.com>",
+          "contactId": "ynPvEfnoktrddRLmtN40"
+        },
+        {
+          "label": "Zackary Bouchard <zac.bouch.42@gmail.com>",
+          "contactId": "qLsezjkGl8UBksm1s6q4"
+        },
+        {
+          "label": "Melanie Audrey Chretien <melaniechretien4@gmail.com>",
+          "contactId": "o5oMCMtLrEHHzFf3KoBa"
+        },
+        {
+          "label": "Emilie Fauteux <e_fauteux@hotmail.fr>",
+          "contactId": "u7oQQCL9QcmbqFl8btwM"
+        },
+        {
+          "label": "Mégane Grenier <meganegrenier16190@gmail.com>",
+          "contactId": "vIvtcIZe5Cp4OyupVXBB"
+        },
+        {
+          "label": "Mathieu Guimond <margerieb97@gmail.com>",
+          "contactId": "ng3p84bMNaY977x73bZn"
+        },
+        {
+          "label": "Kate Cressida Holbrook <katewisdom@hotmail.com>",
+          "contactId": "ZnuuGS4HDonrXp7P0HXX"
+        },
+        {
+          "label": "Mackenzie Jacobs <mackenzie.1537@hotmail.com>",
+          "contactId": "aD31ZnlpbJCUUweUQzgl"
+        },
+        {
+          "label": "Nathalie Nolin <nath19.nn@gmail.com>",
+          "contactId": "7DljaTGTm2QA64CI59Ew"
+        },
+        {
+          "label": "Elizabeth Plante <eliplante0@gmail.com>",
+          "contactId": "9IcWy0CvtuauyJuNMqLE"
+        },
+        {
+          "label": "Andrew Sharp <aprilwisdom7@gmail.com>",
+          "contactId": "HMFG8inrn3OGmrUdBny6"
+        },
+        {
+          "label": "Jean Nicholas Shooner Pulfer <elise_kawa@hotmail.com>",
+          "contactId": "UDJhvBIyblStrrNxyy2r"
+        },
+        {
+          "label": "Kelly Waghorn <waghornkelly@gmail.com>",
+          "contactId": "kfDfPOWobrNuDlHEmPJy"
+        },
+        {
+          "label": "James Wisdom <jameswisdom1@gmail.com>",
+          "contactId": "SGNyhtgwBCDSw3kvPVwK"
+        },
+        {
+          "label": "Summer Wisdom <summerjane0408@gmail.com>",
+          "contactId": "VXCL4No804shuuVakoGm"
+        },
+        {
+          "label": "Timothy Wisdom <tw@eveilcowansville.com>",
+          "contactId": "fm5RMqmq7jxlOfrg2QQ0"
+        }
+      ],
+      "skipped": [
+        {
+          "label": "Bethany Bouchard <bethbouchard94@gmail.com>",
+          "contactId": "WHyWY5jCIyrTf9DL97G7"
+        }
+      ],
+      "errors": [],
+      "summary": {
+        "created": 17,
+        "skipped": 1,
+        "errors": 0
+      }
+    },
+    {
+      "name": "Emmy Maude",
+      "email": "emmy-maude.gv@voyagefiesta.com",
+      "userId": "wMLcKC9vzQXRwy9jrKHn",
+      "userCreated": false,
+      "userError": null,
+      "total": 19,
+      "created": [
+        {
+          "label": "Yaliesky Almagro Blanco <kicotor06@gmail.com>",
+          "contactId": "FHTaVRuskYF55amuKztx"
+        },
+        {
+          "label": "Francois Belanger <frankee99@icloud.com>",
+          "contactId": "GyomDClq8U1eH5c4vX94"
+        },
+        {
+          "label": "Rosiane Berube Hubert <jeda_2515@hotmail.com>",
+          "contactId": "8xdG2OTBp2sijncYzmfw"
+        },
+        {
+          "label": "Nicolas Bilodeau <nicolas.bilodeau@gmail.com>",
+          "contactId": "qECKCSIP5SUrjxBNJ9yV"
+        },
+        {
+          "label": "Naomie Bouchard <naomiebouchard@hotmail.com>",
+          "contactId": "Q35CsFOL8kKA39KtBP4B"
+        },
+        {
+          "label": "Sandra Bouchard <sandrabouchard123@gmail.com>",
+          "contactId": "YEtYNtg97RAeHyEiHEDw"
+        },
+        {
+          "label": "Noemie Charpentier Leclerc <noemiechl@outlook.com>",
+          "contactId": "AGI1h6lCTpvo2epzvqB5"
+        },
+        {
+          "label": "Melanie Fortier <melaniefortier19@hotmail.com>",
+          "contactId": "ZaMCSHyUn5vum8CgCLsd"
+        },
+        {
+          "label": "Melanie Galibois <meligalini@gmail.com>",
+          "contactId": "Y8x7HyYIcOLbBltSKPUy"
+        },
+        {
+          "label": "Remi Galibois <rgalibois@gmail.com>",
+          "contactId": "1VRtKBEllpc0PK7KWSw7"
+        },
+        {
+          "label": "Thomas Galibois Vermette <thomas.g.vermette@gmail.com>",
+          "contactId": "svAnMij0osa1uz7NrbmT"
+        },
+        {
+          "label": "Francoise Larouche <francoise.larouche@gmail.com>",
+          "contactId": "RLCAiZNuHEwZcqTIXgGM"
+        },
+        {
+          "label": "Erick Damian Oviedo Pineda <erickdamianoviedopineda@gmail.com>",
+          "contactId": "F5rE6pcq6ExP39FD9eeB"
+        },
+        {
+          "label": "Gabrielle Tanguay <gtanguay@outlook.com>",
+          "contactId": "sYy8kxYfm4Yaf3GzA3vG"
+        },
+        {
+          "label": "Denis Turgeon <turgeon.denis71@gmail.com>",
+          "contactId": "P4kUXMOz8RewTNsN3pGq"
+        },
+        {
+          "label": "Olivier Vermette <oli.vermette1998@outlook.com>",
+          "contactId": "C6qwiLsCm83s5Q4hpVfZ"
+        },
+        {
+          "label": "Sylvain Vermette <patofblue@hotmail.com>",
+          "contactId": "hQPzLhM1ug9fkolfzOP3"
+        }
+      ],
+      "skipped": [
+        {
+          "label": "Dalia Mireault <emmy-maude.gv@voyagefiesta.com>",
+          "contactId": "8xdG2OTBp2sijncYzmfw"
+        },
+        {
+          "label": "Carole Tremblay <carole.yvon@hotmail.fr>",
+          "contactId": "ZaMCSHyUn5vum8CgCLsd"
+        }
+      ],
+      "errors": [],
+      "summary": {
+        "created": 17,
+        "skipped": 2,
+        "errors": 0
+      }
+    }
+  ],
+  "totals": {
+    "agents": 6,
+    "created": 107,
+    "skipped": 27,
+    "errors": 0
+  }
+}
