@@ -901,23 +901,9 @@
         return { amount, label: 'Occ. double' };
     }
 
-    /** Prix affiché sur la fiche liste - occupation la moins chère. */
+    /** Prix affiché sur la fiche liste — toujours occ. double (même champ que la pastille). */
     function getListingDisplayPrice(p) {
-        const lowest = getLowestOccupationRow(p);
-        if (lowest) {
-            const amount = getOccupationComparableAmount(lowest);
-            if (amount !== null) {
-                return { amount, label: lowest.label };
-            }
-        }
-
-        const base = optionalPrice(p.price);
-        if (base === null) return null;
-        const taxes = getDoubleOccupationTaxTotal(p);
-        return {
-            amount: taxes !== null ? base + taxes : base,
-            label: 'Occ. double'
-        };
+        return getDoubleOccupationDisplayPrice(p);
     }
 
     function clampInt(value, { min = 0, max = 99 } = {}) {
