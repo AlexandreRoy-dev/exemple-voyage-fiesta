@@ -15,11 +15,13 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pickVoyagesUnwrapped, pickRecordName, formatAeroportLabel, formatDestinationAirportLabel } from './ghl-voyages-fields.mjs';
 import { writeSharePages } from './share-pages.mjs';
+import { writeQuickformPages } from './quickform-pages.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const OUTPUT = resolve(ROOT, 'products.json');
 const AGENTS_OUTPUT = resolve(ROOT, 'agents.json');
+const STAFF_OUTPUT = resolve(ROOT, 'staff.json');
 const IMAGES_DIR = resolve(ROOT, 'assets', 'forfaits');
 const MANIFEST_PATH = resolve(IMAGES_DIR, '.manifest.json');
 const API_BASE = 'https://services.leadconnectorhq.com';
@@ -491,6 +493,68 @@ function extractOwnerId(record, props = {}) {
   }
  }
  return '';
+}
+
+async function fetchGhlLocationUsers(apiKey, locationId) {
+ const url = new URL(`${API_BASE}/users/`);
+ url.searchParams.set('locationId', locationId);
+ const res = await fetch(url, {
+  method: 'GET',
+  headers: {
+   Authorization: `Bearer ${apiKey}`,
+   Accept: 'application/json',
+   Version: '2021-07-28'
+  }
+ });
+ if (!res.ok) {
+  const text = await res.text();
+  console.warn(` users/?locationId: HTTP ${res.status} — ${text.slice(0, 180)}`);
+  return [];
+ }
+ const data = await res.json();
+ return data.users || data.data || [];
+}
+
+function loadPreviousStaffById() {
+ try {
+  if (!existsSync(STAFF_OUTPUT)) return {};
+  const data = JSON.parse(readFileSync(STAFF_OUTPUT, 'utf8'));
+  const map = {};
+  for (const agent of data.agents || []) {
+   if (agent.id && agent.slug) map[agent.id] = agent;
+  }
+  return map;
+ } catch {
+  return {};
+ }
+}
+
+function buildStaffProfiles(users, previousById, ownerProfiles) {
+ const usedSlugs = new Set();
+ const merged = new Map();
+
+ for (const owner of ownerProfiles || []) {
+  if (owner?.id) merged.set(owner.id, owner);
+ }
+ for (const user of users || []) {
+  const userId = String(user.id || user.userId || '').trim();
+  if (!userId) continue;
+  const previous = previousById[userId];
+  if (previous?.slug && !usedSlugs.has(previous.slug)) {
+   usedSlugs.add(previous.slug);
+   merged.set(userId, {
+    id: userId,
+    name: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name || previous.name || userId,
+    email: String(user.email || previous.email || '').trim(),
+    phone: String(user.phone || user.phoneNumber || user.mobilePhone || previous.phone || '').trim(),
+    slug: previous.slug
+   });
+   continue;
+  }
+  merged.set(userId, buildOwnerProfile(user, userId, usedSlugs));
+ }
+
+ return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 }
 
 async function fetchGhlUser(apiKey, userId) {
@@ -1347,6 +1411,25 @@ async function main() {
  if (writeJsonIfChanged(AGENTS_OUTPUT, agentsPayload)) {
   console.log(`Wrote ${agents.length} agent(s) to ${AGENTS_OUTPUT}`);
  }
+
+ const locationUsers = await fetchGhlLocationUsers(apiKey, locationId);
+ const previousStaff = loadPreviousStaffById();
+ for (const agent of agents) {
+  if (agent.id && agent.slug && !previousStaff[agent.id]) {
+   previousStaff[agent.id] = agent;
+  }
+ }
+ const staff = buildStaffProfiles(locationUsers, previousStaff, agents);
+ const staffPayload = {
+  updatedAt: new Date().toISOString(),
+  source: 'ghl',
+  locationId,
+  agents: staff
+ };
+ if (writeJsonIfChanged(STAFF_OUTPUT, staffPayload)) {
+  console.log(`Wrote ${staff.length} staff profile(s) to ${STAFF_OUTPUT}`);
+ }
+ writeQuickformPages(staff);
 
  const payload = {
  updatedAt: new Date().toISOString(),

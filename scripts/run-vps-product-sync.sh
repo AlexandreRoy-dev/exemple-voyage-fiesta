@@ -62,7 +62,7 @@ node -e '
 '
 
 paths=()
-for p in products.json agents.json assets/forfaits share; do
+for p in products.json agents.json staff.json assets/forfaits share quickform; do
   if [[ -e "$p" ]]; then
     paths+=("$p")
   fi
@@ -74,12 +74,12 @@ if git diff --staged --quiet; then
   exit 0
 fi
 
-json_changed="$(git diff --staged -- products.json agents.json || true)"
+json_changed="$(git diff --staged -- products.json agents.json staff.json || true)"
 json_real="$(printf '%s\n' "$json_changed" | grep -E '^[+-]' | grep -vE '^[+-]{3} ' | grep -vE '^[+-] *"updatedAt":' || true)"
-other_change="$(git diff --staged --name-only | grep -vE '^(products|agents)\.json$' || true)"
+other_change="$(git diff --staged --name-only | grep -vE '^(products|agents|staff)\.json$' || true)"
 if [[ -z "$json_real" && -z "$other_change" ]]; then
   echo "$LOG_PREFIX only updatedAt changed — skip commit"
-  git restore --staged --worktree -- products.json agents.json
+  git restore --staged --worktree -- products.json agents.json staff.json
   exit 0
 fi
 

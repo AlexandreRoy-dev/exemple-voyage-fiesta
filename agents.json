@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-03T08:15:03.391Z",
+  "updatedAt": "2026-09-11T13:45:03.949Z",
   "source": "ghl",
   "locationId": "V90iyFBbBrCg3tpctRjc",
   "agents": [
@@ -16,6 +16,13 @@
       "email": "Barbara@voyagefiesta.com",
       "phone": "+18736712155",
       "slug": "barbara-delisle"
+    },
+    {
+      "id": "2k9aRsh2OkTdG7TnIiGo",
+      "name": "Yancie Auclair",
+      "email": "yancie@voyagefiesta.com",
+      "phone": "+14505012547",
+      "slug": "yancie-auclair"
     }
   ]
 }

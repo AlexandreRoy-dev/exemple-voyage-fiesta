@@ -47,6 +47,7 @@ const GHL_CONTACT_TAG = process.env.GHL_CONTACT_TAG || 'reservation-site';
 /** Tag Distinct — trigger workflow « Demande de prix » dans GHL */
 const GHL_PRICE_REQUEST_TAG = process.env.GHL_PRICE_REQUEST_TAG || 'demande-prix';
 const GHL_PRE_SALE_REQUEST_TAG = process.env.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
+const GHL_QUICKFORM_TAG = process.env.GHL_QUICKFORM_TAG || 'quickform';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .split(',')
   .map((s) => s.trim())
@@ -153,7 +154,15 @@ function isPriceRequest(payload) {
   return type === 'demande_prix' || type === 'price_request';
 }
 
+function isQuickFormRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'quickform' || type === 'quick_form' || type === 'quick-lead';
+}
+
 function resolveContactTag(payload) {
+  if (isQuickFormRequest(payload)) {
+    return GHL_QUICKFORM_TAG;
+  }
   if (isPreSaleRequest(payload)) {
     return pick(payload, 'contact_tag') || GHL_PRE_SALE_REQUEST_TAG;
   }
@@ -170,6 +179,7 @@ function resolveContactTags(payload) {
 }
 
 let productsCache = { at: 0, products: [] };
+let staffCache = { at: 0, agents: [] };
 
 async function lookupOwnerIdBySlug(slug) {
   const key = String(slug || '').trim();
@@ -186,10 +196,33 @@ async function lookupOwnerIdBySlug(slug) {
   return String(product?.ownerId || product?.owner?.id || '').trim();
 }
 
+async function lookupStaffIdBySlug(slug) {
+  const key = String(slug || '').trim().toLowerCase();
+  if (!key) return '';
+  const now = Date.now();
+  if (now - staffCache.at > 5 * 60 * 1000) {
+    const productsUrl = process.env.PRODUCTS_JSON_URL || 'https://aubaineexpress.voyagefiesta.ca/products.json';
+    const url = process.env.STAFF_JSON_URL
+      || productsUrl.replace(/products\.json(?:\?.*)?$/i, 'staff.json');
+    const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}t=${now}`);
+    if (!res.ok) throw new Error(`staff.json HTTP ${res.status}`);
+    const data = await res.json();
+    staffCache = { at: now, agents: Array.isArray(data?.agents) ? data.agents : [] };
+  }
+  const agent = staffCache.agents.find((a) => {
+    const agentSlug = String(a?.slug || '').trim().toLowerCase();
+    const id = String(a?.id || '').trim().toLowerCase();
+    return (agentSlug && agentSlug === key) || (id && id === key);
+  });
+  return String(agent?.id || '').trim();
+}
+
 async function resolveAssignedUserId(payload) {
   try {
     const fromVoyage = await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
     if (fromVoyage) return fromVoyage;
+    const fromStaff = await lookupStaffIdBySlug(pick(payload, 'agent_slug'));
+    if (fromStaff) return fromStaff;
   } catch (err) {
     console.warn('[reservation] owner lookup failed', err.message);
   }
@@ -459,7 +492,9 @@ function buildNotes(payload) {
   };
 
   const forfaitName = answerOf(payload.forfait_name, payload.nom_du_forfait);
-  if (isPreSaleRequest(payload)) {
+  if (isQuickFormRequest(payload)) {
+    lines.push('Type: Formulaire rapide (quickform)');
+  } else if (isPreSaleRequest(payload)) {
     lines.push(forfaitName && forfaitName !== '—'
       ? `Type: Intérêt pré-vente (aucun dépôt) — ${forfaitName}`
       : 'Type: Intérêt pré-vente (aucun dépôt)');
@@ -490,7 +525,7 @@ function buildNotes(payload) {
     qa('Fournisseur', payload.supplier),
     qa('Transporteur', payload.carrier),
     qa('Promotion', payload.promotion),
-    isPriceRequest(payload) || isPreSaleRequest(payload)
+    isPriceRequest(payload) || isPreSaleRequest(payload) || isQuickFormRequest(payload)
       ? ''
       : qa('Dépôt', payload.depot, payload.depot_total),
     qa('Date de paiement final', payload.paiement_final, payload.final_payment_date)
@@ -571,7 +606,7 @@ function buildNotes(payload) {
   }
 
   const termsState = termsCheckboxState(payload);
-  if (termsState || (!isPriceRequest(payload) && !isPreSaleRequest(payload))) {
+  if (termsState || (!isPriceRequest(payload) && !isPreSaleRequest(payload) && !isQuickFormRequest(payload))) {
     addSection('Termes et conditions', [
       qa(
         TERMS_LABEL,
@@ -661,7 +696,9 @@ function buildContactBody(payload, assignedUserId) {
     address1: pick(payload, 'address') || undefined,
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
-    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre'
+    source: isQuickFormRequest(payload)
+      ? 'Site formulaire rapide'
+      : (priceRequest ? 'Site demande de prix' : 'Site réservation chambre')
   };
   if (assignedUserId) body.assignedTo = assignedUserId;
 
@@ -994,7 +1031,11 @@ const server = http.createServer(async (req, res) => {
         tag: tags[0] || null,
         tags,
         assignedTo: assignedTo || null,
-        requestType: isPriceRequest(payload) ? 'demande_prix' : 'reservation',
+        requestType: isQuickFormRequest(payload)
+          ? 'quickform'
+          : (isPreSaleRequest(payload)
+            ? 'demande_prevente'
+            : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')),
         tagsAdded,
         notifyEmails,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0

@@ -63,7 +63,15 @@ function isPreSaleRequest(payload) {
   return type === 'demande_prevente' || type === 'prevente' || type === 'pre_vente';
 }
 
+function isQuickFormRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'quickform' || type === 'quick_form' || type === 'quick-lead';
+}
+
 function resolveContactTag(payload, env) {
+  if (isQuickFormRequest(payload)) {
+    return env.GHL_QUICKFORM_TAG || 'quickform';
+  }
   if (isPreSaleRequest(payload)) {
     return pick(payload, 'contact_tag') || env.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
   }
@@ -145,7 +153,9 @@ function buildNotes(payload) {
   };
 
   const forfaitName = String(payload.forfait_name || payload.nom_du_forfait || '').trim();
-  if (isPreSaleRequest(payload)) {
+  if (isQuickFormRequest(payload)) {
+    lines.push('Type: Formulaire rapide (quickform)');
+  } else if (isPreSaleRequest(payload)) {
     lines.push(forfaitName
       ? `Type: Intérêt pré-vente (aucun dépôt) — ${forfaitName}`
       : 'Type: Intérêt pré-vente (aucun dépôt)');
@@ -247,7 +257,9 @@ function buildContactBody(payload, locationId, tags, fieldMap, assignedUserId) {
     city: pick(payload, 'city') || undefined,
     state: pick(payload, 'province', 'state') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
-    source: priceRequest ? 'Site demande de prix' : 'Site réservation chambre',
+    source: isQuickFormRequest(payload)
+      ? 'Site formulaire rapide'
+      : (priceRequest ? 'Site demande de prix' : 'Site réservation chambre'),
     tags: tagList.length ? tagList : undefined,
     notes: buildNotes(payload) || undefined
   };
@@ -454,9 +466,11 @@ export default {
         tag: tags[0] || null,
         tags: tagsAdded,
         assignedTo: assignedTo || null,
-        requestType: isPreSaleRequest(payload)
-          ? 'demande_prevente'
-          : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')
+        requestType: isQuickFormRequest(payload)
+          ? 'quickform'
+          : (isPreSaleRequest(payload)
+            ? 'demande_prevente'
+            : (isPriceRequest(payload) ? 'demande_prix' : 'reservation'))
       }, 200, cors);
     } catch (err) {
       return jsonResponse({
