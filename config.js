@@ -582,10 +582,12 @@
     window.PRE_SALE_BANNER_TITLE = 'Pré-vente';
     window.PRE_SALE_BANNER_SUBTITLE = 'Manifestez votre intérêt. Aucun dépôt requis pour le moment';
 
-    /** Formulaire d'intérêt (pré-vente) — pas de dépôt */
+    /** Court formulaire pré-vente (tarif d'occupation non publié) — pas de dépôt */
     window.PRE_SALE_REQUEST_FORM_TITLE = 'Je suis intéressé(e)';
     window.PRE_SALE_REQUEST_FORM_INTRO =
-        'Remplissez ce court formulaire. Un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.';
+        'Le tarif pour cette occupation n\'est pas publié. Un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.';
     window.PRE_SALE_REQUEST_SUBMIT_LABEL = 'Envoyer mon intérêt';
+    window.PRE_SALE_FULL_FORM_TITLE = 'Formulaire pré-vente';
+    window.PRE_SALE_FULL_FORM_CTA = 'REMPLIR LE FORMULAIRE';
     window.GHL_PRE_SALE_REQUEST_TAG = 'demande-prevente';
 })();

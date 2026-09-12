@@ -183,10 +183,25 @@
             </section>`;
     }
 
-    function formHtml(fixedPassengerCount, fixedKidsCount, hideSubmit) {
+    function isPreSaleDraft(draft) {
+        if (!draft || typeof draft !== 'object') return false;
+        if (draft.isPreSale === true) return true;
+        const type = String(
+            draft.requestType
+            || draft.request_type
+            || draft.bookingContext?.request_type
+            || ''
+        ).toLowerCase().trim();
+        if (type === 'demande_prevente' || type === 'prevente' || type === 'pre_vente') return true;
+        const product = draft.product;
+        return Boolean(product && global.VoyageFiestaAPI?.isPreSale?.(product));
+    }
+
+    function formHtml(fixedPassengerCount, fixedKidsCount, hideSubmit, submitLabel) {
         const adults = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(fixedPassengerCount) || 1));
         const kids = Math.max(0, Number(fixedKidsCount) || 0);
         const totalPeople = adults + kids;
+        const primaryLabel = submitLabel || 'RÉSERVER MAINTENANT';
         const extraHint = adults > 1
             ? `Ajoutez les autres adultes de la réservation (${adults} adultes).`
             : 'Ajoutez un autre voyageur seulement s’il voyage avec vous.';
@@ -338,7 +353,7 @@
 
                 <p id="rr-form-error" class="rr-error hidden" role="alert"></p>
                 <div class="rr-actions${hideSubmit ? ' hidden' : ''}">
-                    <button type="submit" class="rr-btn-primary" id="rr-submit">RÉSERVER MAINTENANT</button>
+                    <button type="submit" class="rr-btn-primary" id="rr-submit">${escapeHtml(primaryLabel)}</button>
                 </div>
             </form>`;
     }
@@ -454,9 +469,28 @@
             || formPayload.forfait_slug
             || '';
         const formatDate = global.VoyageFiestaAPI?.formatDepartureDate;
+        const isPreSale = isPreSaleDraft(draft);
+        const fullName = [formPayload.p1_prenom, formPayload.p1_nom].filter(Boolean).join(' ').trim();
+        const preventeTag = draft.contactTag
+            || bookingContext.contact_tag
+            || formPayload.contact_tag
+            || global.GHL_PRE_SALE_REQUEST_TAG
+            || 'demande-prevente';
         return {
             ...bookingContext,
             ...formPayload,
+            ...(isPreSale ? {
+                depot: '',
+                depot_total: '',
+                depot_par_personne: '',
+                deposit_amount: '',
+                request_type: 'demande_prevente',
+                create_opportunity: true,
+                opportunity_name: draft.opportunityName
+                    || bookingContext.opportunity_name
+                    || (fullName ? `Pré-vente - ${fullName}` : 'Pré-vente'),
+                contact_tag: preventeTag
+            } : {}),
             forfait_slug: forfaitSlug,
             forfait_name: forfaitName,
             nom_du_forfait: forfaitName,
@@ -470,7 +504,7 @@
             room_category: bookingContext.room_category || formPayload.room_category || product.roomCategory || '',
             supplier: bookingContext.supplier || formPayload.supplier || product.supplierLabel || product.supplier || '',
             carrier: bookingContext.carrier || formPayload.carrier || product.carrierLabel || product.carrier || '',
-            depot_total: formPayload.depot || bookingContext.depot_total,
+            depot_total: isPreSale ? '' : (formPayload.depot || bookingContext.depot_total),
             nombre_personnes: formPayload.nombre_passagers || bookingContext.nombre_personnes,
             nombre_adultes: bookingContext.nombre_adultes || adults,
             nombre_enfants_2_12: bookingContext.nombre_enfants_2_12 || kids,
@@ -616,7 +650,8 @@
             pricingSummary = '',
             onSubmit,
             summaryHtml = '',
-            hideSubmit = false
+            hideSubmit = false,
+            submitLabel = 'RÉSERVER MAINTENANT'
         } = options;
 
         const perPerson = depositPerPerson != null && Number.isFinite(Number(depositPerPerson))
@@ -625,7 +660,7 @@
 
         root.innerHTML = `
             ${summaryHtml ? `<div class="rr-summary">${summaryHtml}</div>` : ''}
-            ${formHtml(initialPassengerCount, initialKidsCount, hideSubmit)}
+            ${formHtml(initialPassengerCount, initialKidsCount, hideSubmit, submitLabel)}
         `;
 
         const form = root.querySelector('#room-registration-form');
@@ -934,6 +969,7 @@ select.rr-input {
         payloadToGhlFields,
         formDataToPayload,
         mergeReservationPayload,
+        isPreSaleDraft,
         formatDobForGhl,
         injectStyles,
         saveReservationDraft,

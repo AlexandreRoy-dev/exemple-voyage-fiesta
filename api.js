@@ -88,7 +88,7 @@
     function isBookablePackage(p) {
         if (!p || isUnavailablePackage(p)) return false;
         const state = normalizeState(p.state, p.active);
-        // Pré-vente : formulaire d'intérêt seulement (pas de dépôt / réservation)
+        // Pré-vente : même formulaire que la vente, sans dépôt en ligne
         return state === 'actif' || state === 'pre_vente';
     }
 
@@ -97,9 +97,9 @@
         return isActifPackage(p) && !isUnavailablePackage(p);
     }
 
-    /** Formulaire d'intérêt (pré-vente) — pas de paiement. */
-    function usesInterestRequestForm(p) {
-        return isPreSale(p);
+    /** Court formulaire — seulement si le tarif d'occupation n'est pas publié (vente et pré-vente). */
+    function usesInterestRequestForm() {
+        return false;
     }
 
     function escapeHtml(value) {

@@ -215,9 +215,9 @@
 
     <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
 
-    <script src="config.js?v=54"></script>
-    <script src="room-registration.js?v=24"></script>
-    <script src="api.js?v=104"></script>
+    <script src="config.js?v=55"></script>
+    <script src="room-registration.js?v=25"></script>
+    <script src="api.js?v=105"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1305,8 +1305,8 @@
                                        <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
                                     : `<div id="booking-cta-area">
                                         <div id="booking-cta-book">
-                                            <button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 text-lg transition-all">RÉSERVER MAINTENANT</button>
-                                            <p class="text-center text-[10px] text-gray-400 mt-3 px-4">En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>
+                                            <button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 text-lg transition-all">${isPreSale ? escapeHtml(window.PRE_SALE_FULL_FORM_CTA || 'REMPLIR LE FORMULAIRE') : 'RÉSERVER MAINTENANT'}</button>
+                                            <p class="text-center text-[10px] text-gray-400 mt-3 px-4">${isPreSale ? 'Aucun dépôt n\'est requis en pré-vente. En continuant, vous acceptez les conditions générales de vente de Voyage Fiesta.' : 'En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.'}</p>
                                         </div>
                                         <div id="booking-cta-price-request" class="hidden"></div>
                                        </div>`}
@@ -1787,13 +1787,12 @@
                 const occupationId = getSelectedOccupationId();
                 const overrides = getBookingSelectionOverrides();
                 const hasSelection = hasValidBookingSelection();
-                const isPreSale = VoyageFiestaAPI.isPreSale(p);
                 const priceOnRequest = hasSelection && VoyageFiestaAPI.isPriceOnRequestSelection(
                     p,
                     occupationId,
                     overrides || {}
                 );
-                const showRequestForm = isPreSale || priceOnRequest;
+                const showRequestForm = priceOnRequest;
 
                 setButtonEnabled(hasSelection && !showRequestForm);
                 if (hint) hint.classList.toggle('hidden', hasSelection);
@@ -1865,7 +1864,6 @@
             const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
 
             openBtn.addEventListener('click', () => {
-                if (VoyageFiestaAPI.isPreSale(p)) return;
                 if (!hasValidBookingSelection()) return;
                 if (!window.RoomRegistration?.openReservationWindow) return;
 
@@ -1912,8 +1910,11 @@
                 kids = Math.min(4, Math.max(0, kids));
 
                 const incentive = VoyageFiestaAPI.getIncentive(p);
-                const depositPerPerson = breakdown?.depositPerPerson
-                    ?? VoyageFiestaAPI.getDepositPerPerson(p);
+                const isPreSale = VoyageFiestaAPI.isPreSale(p);
+                const preventeTag = window.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
+                const depositPerPerson = isPreSale
+                    ? null
+                    : (breakdown?.depositPerPerson ?? VoyageFiestaAPI.getDepositPerPerson(p));
                 const bookingContext = VoyageFiestaAPI.buildGhlReservationParams(
                     p,
                     occupationId,
@@ -1929,13 +1930,16 @@
                     summaryText,
                     adults,
                     kids,
+                    isPreSale,
+                    requestType: isPreSale ? 'demande_prevente' : undefined,
+                    contactTag: isPreSale ? preventeTag : undefined,
                     depositPerPerson,
                     occupationId,
                     pricingSummary: breakdown?.pricingSummary || bookingContext.sommaire || '',
                     pricing: {
                         bookingLabel,
                         bookingTotalWithTaxes: breakdown.bookingTotalWithTaxes,
-                        totalDeposit: breakdown.totalDeposit,
+                        totalDeposit: isPreSale ? null : breakdown.totalDeposit,
                         depositPerPerson,
                         departureDate: departureText,
                         returnDate: VoyageFiestaAPI.formatDepartureDate(p.returnDate),
@@ -1947,7 +1951,15 @@
                     },
                     bookingContext: {
                         ...bookingContext,
-                        occupation: bookingContext.occupation || bookingLabel
+                        occupation: bookingContext.occupation || bookingLabel,
+                        ...(isPreSale ? {
+                            request_type: 'demande_prevente',
+                            create_opportunity: true,
+                            contact_tag: preventeTag,
+                            depot_total: '',
+                            depot_par_personne: '',
+                            deposit_amount: ''
+                        } : {})
                     },
                     thankYouUrl: thankYou
                 });

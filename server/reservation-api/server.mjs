@@ -46,6 +46,7 @@ const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || '';
 const GHL_CONTACT_TAG = process.env.GHL_CONTACT_TAG || 'reservation-site';
 /** Tag Distinct — trigger workflow « Demande de prix » dans GHL */
 const GHL_PRICE_REQUEST_TAG = process.env.GHL_PRICE_REQUEST_TAG || 'demande-prix';
+const GHL_PRE_SALE_REQUEST_TAG = process.env.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .split(',')
   .map((s) => s.trim())
@@ -153,6 +154,9 @@ function isPriceRequest(payload) {
 }
 
 function resolveContactTag(payload) {
+  if (isPreSaleRequest(payload)) {
+    return pick(payload, 'contact_tag') || GHL_PRE_SALE_REQUEST_TAG;
+  }
   if (isPriceRequest(payload)) {
     return pick(payload, 'contact_tag') || GHL_PRICE_REQUEST_TAG;
   }
