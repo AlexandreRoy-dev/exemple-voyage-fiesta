@@ -33,6 +33,33 @@
         return fields;
     }
 
+    function reservationFetchError(err) {
+        const raw = String(err?.message || err || '');
+        if (/failed to fetch|networkerror|load failed|network request failed/i.test(raw)) {
+            return 'Impossible de joindre le serveur de réservation. Vérifiez votre connexion, puis réessayez.';
+        }
+        return raw || 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.';
+    }
+
+    async function postReservation(apiUrl, payload) {
+        const body = JSON.stringify({ payload });
+        const opts = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body
+        };
+        try {
+            return await fetch(apiUrl, opts);
+        } catch (firstErr) {
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            try {
+                return await fetch(apiUrl, opts);
+            } catch (retryErr) {
+                throw new Error(reservationFetchError(retryErr || firstErr));
+            }
+        }
+    }
+
     async function submitGhlRoomForm({ payload, redirectUrl } = {}) {
         const apiUrl = String(global.GHL_RESERVATION_API_URL || '').trim();
         if (!apiUrl) {
@@ -41,11 +68,7 @@
             );
         }
 
-        const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({ payload })
-        });
+        const res = await postReservation(apiUrl, payload);
 
         let data = null;
         try {
@@ -112,8 +135,8 @@
                         <input class="rr-input" id="extra-nom-${n}" type="text" name="extra_nom_${n}" autocomplete="off" required placeholder="Tremblay">
                     </label>
                     <label class="rr-field" for="extra-dob-${n}">
-                        <span>Date de naissance</span>
-                        <input class="rr-input" id="extra-dob-${n}" type="date" name="extra_dob_${n}">
+                        <span>Date de naissance ${reqMark()}</span>
+                        <input class="rr-input" id="extra-dob-${n}" type="date" name="extra_dob_${n}" required>
                     </label>
                 </div>
             </article>`;
@@ -160,10 +183,25 @@
             </section>`;
     }
 
-    function formHtml(fixedPassengerCount, fixedKidsCount, hideSubmit) {
+    function isPreSaleDraft(draft) {
+        if (!draft || typeof draft !== 'object') return false;
+        if (draft.isPreSale === true) return true;
+        const type = String(
+            draft.requestType
+            || draft.request_type
+            || draft.bookingContext?.request_type
+            || ''
+        ).toLowerCase().trim();
+        if (type === 'demande_prevente' || type === 'prevente' || type === 'pre_vente') return true;
+        const product = draft.product;
+        return Boolean(product && global.VoyageFiestaAPI?.isPreSale?.(product));
+    }
+
+    function formHtml(fixedPassengerCount, fixedKidsCount, hideSubmit, submitLabel) {
         const adults = Math.min(MAX_STRUCTURED_PASSENGERS, Math.max(1, Number(fixedPassengerCount) || 1));
         const kids = Math.max(0, Number(fixedKidsCount) || 0);
         const totalPeople = adults + kids;
+        const primaryLabel = submitLabel || 'RÉSERVER MAINTENANT';
         const extraHint = adults > 1
             ? `Ajoutez les autres adultes de la réservation (${adults} adultes).`
             : 'Ajoutez un autre voyageur seulement s’il voyage avec vous.';
@@ -198,8 +236,8 @@
                             <input class="rr-input" id="contact_nom" type="text" name="contact_nom" required autocomplete="family-name" placeholder="Tremblay" aria-describedby="rr-passport-hint">
                         </label>
                         <label class="rr-field" for="p1_dob">
-                            <span>Date de naissance</span>
-                            <input class="rr-input" id="p1_dob" type="date" name="p1_dob" autocomplete="bday">
+                            <span>Date de naissance ${reqMark()}</span>
+                            <input class="rr-input" id="p1_dob" type="date" name="p1_dob" required autocomplete="bday">
                         </label>
                         <label class="rr-field" for="contact_email">
                             <span>Courriel ${reqMark()}</span>
@@ -230,6 +268,17 @@
                         <label class="rr-field" for="postal_code">
                             <span>Code postal ${reqMark()}</span>
                             <input class="rr-input" id="postal_code" type="text" name="postal_code" required autocomplete="postal-code" placeholder="H2X 1Y3">
+                        </label>
+                    </div>
+                    <div class="rr-stack-fields rr-billing">
+                        <p class="rr-hint" id="rr-cc-address-hint">Adresse de facturation telle qu’elle apparaît sur le relevé de la carte de crédit.</p>
+                        <label class="rr-check" for="cc-address-same">
+                            <input type="checkbox" id="cc-address-same" name="cc_address_same" value="true">
+                            <span>Utiliser la même adresse que ci-dessus</span>
+                        </label>
+                        <label class="rr-field" for="credit_card_address">
+                            <span>Adresse de la carte de crédit ${reqMark()}</span>
+                            <textarea class="rr-input rr-textarea rr-textarea-short" id="credit_card_address" name="credit_card_address" rows="3" required autocomplete="billing street-address" aria-describedby="rr-cc-address-hint" placeholder="Numéro, rue, ville, province, code postal"></textarea>
                         </label>
                     </div>
                 </section>
@@ -304,25 +353,25 @@
 
                 <p id="rr-form-error" class="rr-error hidden" role="alert"></p>
                 <div class="rr-actions${hideSubmit ? ' hidden' : ''}">
-                    <button type="submit" class="rr-btn-primary" id="rr-submit">RÉSERVER MAINTENANT</button>
+                    <button type="submit" class="rr-btn-primary" id="rr-submit">${escapeHtml(primaryLabel)}</button>
                 </div>
             </form>`;
     }
 
+    function collectKids(form) {
+        return [...form.querySelectorAll('[data-kid-row]')].map((row, idx) => ({
+            index: idx + 1,
+            prenom: row.querySelector('[name^="kid_prenom"]')?.value?.trim() || '',
+            nom: row.querySelector('[name^="kid_nom"]')?.value?.trim() || '',
+            dob: formatDobForGhl(row.querySelector('[name^="kid_dob"]')?.value)
+        })).filter((kid) => kid.prenom || kid.nom || kid.dob);
+    }
+
     function collectKidsNotes(form) {
-        const rows = [...form.querySelectorAll('[data-kid-row]')];
-        const lines = [];
-        rows.forEach((row, idx) => {
-            const prenom = row.querySelector('[name^="kid_prenom"]')?.value?.trim();
-            const nom = row.querySelector('[name^="kid_nom"]')?.value?.trim();
-            const dob = formatDobForGhl(row.querySelector('[name^="kid_dob"]')?.value);
-            if (!prenom && !nom && !dob) return;
-            lines.push(
-                `Enfant ${idx + 1}: ${[prenom, nom].filter(Boolean).join(' ')}` +
-                (dob ? ` | ${dob}` : '')
-            );
-        });
-        return lines.join('\n');
+        return collectKids(form).map((kid) => (
+            `Enfant ${kid.index}: ${[kid.prenom, kid.nom].filter(Boolean).join(' ')}` +
+            (kid.dob ? ` | ${kid.dob}` : '')
+        )).join('\n');
     }
 
     function collectExtraTravelers(form) {
@@ -353,6 +402,8 @@
             city: get('city'),
             province: get('province'),
             postal_code: get('postal_code'),
+            credit_card_address: get('credit_card_address'),
+            cc_address_same: form.querySelector('[name="cc_address_same"]')?.checked ? 'true' : '',
             assurance_medicale: get('assurance_medicale'),
             passeport_valide: get('passeport_valide'),
             assurance_annulation: get('assurance_annulation'),
@@ -369,17 +420,16 @@
             payload[`p${traveler.index}_dob`] = traveler.dob;
         });
 
-        const noteParts = [];
-        if (payload.conseiller_voyage) {
-            noteParts.push(`Conseiller voyage : ${payload.conseiller_voyage}`);
-        }
-        if (payload.address2) noteParts.push(`Adresse 2 : ${payload.address2}`);
-        if (payload.province) noteParts.push(`Province : ${payload.province}`);
-        const kidsNotes = collectKidsNotes(form);
-        if (kidsNotes) noteParts.push(kidsNotes);
-        const extra = get('notes_extra');
-        if (extra) noteParts.push(extra);
-        payload.notes = noteParts.filter(Boolean).join('\n\n');
+        const kids = collectKids(form);
+        payload.nombre_enfants = String(kids.length || get('nombre_enfants') || '0');
+        kids.forEach((kid) => {
+            payload[`kid_${kid.index}_prenom`] = kid.prenom;
+            payload[`kid_${kid.index}_nom`] = kid.nom;
+            payload[`kid_${kid.index}_dob`] = kid.dob;
+        });
+
+        payload.notes_extra = get('notes_extra');
+        payload.notes = payload.notes_extra;
 
         return payload;
     }
@@ -404,14 +454,57 @@
 
     function mergeReservationPayload(formPayload, draft = {}) {
         const bookingContext = draft.bookingContext || {};
+        const product = draft.product || {};
         const adults = draft.adults != null ? String(draft.adults) : '';
         const kids = draft.kids != null ? String(draft.kids) : '';
+        const forfaitName = bookingContext.forfait_name
+            || draft.productName
+            || product.name
+            || formPayload.forfait_name
+            || formPayload.nom_du_forfait
+            || '';
+        const forfaitSlug = bookingContext.forfait_slug
+            || draft.productSlug
+            || product.slug
+            || formPayload.forfait_slug
+            || '';
+        const formatDate = global.VoyageFiestaAPI?.formatDepartureDate;
+        const isPreSale = isPreSaleDraft(draft);
+        const fullName = [formPayload.p1_prenom, formPayload.p1_nom].filter(Boolean).join(' ').trim();
+        const preventeTag = draft.contactTag
+            || bookingContext.contact_tag
+            || formPayload.contact_tag
+            || global.GHL_PRE_SALE_REQUEST_TAG
+            || 'demande-prevente';
         return {
             ...bookingContext,
             ...formPayload,
-            forfait_slug: bookingContext.forfait_slug || draft.productSlug || formPayload.forfait_slug,
-            forfait_name: bookingContext.forfait_name || draft.productName || formPayload.forfait_name,
-            depot_total: formPayload.depot || bookingContext.depot_total,
+            ...(isPreSale ? {
+                depot: '',
+                depot_total: '',
+                depot_par_personne: '',
+                deposit_amount: '',
+                request_type: 'demande_prevente',
+                create_opportunity: true,
+                opportunity_name: draft.opportunityName
+                    || bookingContext.opportunity_name
+                    || (fullName ? `Pré-vente - ${fullName}` : 'Pré-vente'),
+                contact_tag: preventeTag
+            } : {}),
+            forfait_slug: forfaitSlug,
+            forfait_name: forfaitName,
+            nom_du_forfait: forfaitName,
+            destination: bookingContext.destination || formPayload.destination || product.destination || product.subDest || '',
+            country: bookingContext.country || formPayload.country || product.country || '',
+            departure_date: bookingContext.departure_date || formPayload.departure_date
+                || (formatDate && product.departureDate ? formatDate(product.departureDate) : '') || '',
+            return_date: bookingContext.return_date || formPayload.return_date
+                || (formatDate && product.returnDate ? formatDate(product.returnDate) : '') || '',
+            departure_airport: bookingContext.departure_airport || formPayload.departure_airport || product.departureAirport || '',
+            room_category: bookingContext.room_category || formPayload.room_category || product.roomCategory || '',
+            supplier: bookingContext.supplier || formPayload.supplier || product.supplierLabel || product.supplier || '',
+            carrier: bookingContext.carrier || formPayload.carrier || product.carrierLabel || product.carrier || '',
+            depot_total: isPreSale ? '' : (formPayload.depot || bookingContext.depot_total),
             nombre_personnes: formPayload.nombre_passagers || bookingContext.nombre_personnes,
             nombre_adultes: bookingContext.nombre_adultes || adults,
             nombre_enfants_2_12: bookingContext.nombre_enfants_2_12 || kids,
@@ -557,7 +650,8 @@
             pricingSummary = '',
             onSubmit,
             summaryHtml = '',
-            hideSubmit = false
+            hideSubmit = false,
+            submitLabel = 'RÉSERVER MAINTENANT'
         } = options;
 
         const perPerson = depositPerPerson != null && Number.isFinite(Number(depositPerPerson))
@@ -566,7 +660,7 @@
 
         root.innerHTML = `
             ${summaryHtml ? `<div class="rr-summary">${summaryHtml}</div>` : ''}
-            ${formHtml(initialPassengerCount, initialKidsCount, hideSubmit)}
+            ${formHtml(initialPassengerCount, initialKidsCount, hideSubmit, submitLabel)}
         `;
 
         const form = root.querySelector('#room-registration-form');
@@ -618,6 +712,29 @@
             payInput.value = `${p} ${n}`.trim();
         }
 
+        function composeHomeAddress() {
+            const line1 = form.querySelector('[name="address"]')?.value?.trim() || '';
+            const line2 = form.querySelector('[name="address2"]')?.value?.trim() || '';
+            const city = form.querySelector('[name="city"]')?.value?.trim() || '';
+            const province = form.querySelector('[name="province"]')?.value?.trim() || '';
+            const postal = form.querySelector('[name="postal_code"]')?.value?.trim() || '';
+            return [line1, line2, [city, province].filter(Boolean).join(', '), postal]
+                .filter(Boolean)
+                .join('\n');
+        }
+
+        function syncCreditCardAddress() {
+            const same = form.querySelector('#cc-address-same');
+            const field = form.querySelector('#credit_card_address');
+            if (!same || !field) return;
+            if (same.checked) {
+                field.value = composeHomeAddress();
+                field.readOnly = true;
+            } else {
+                field.readOnly = false;
+            }
+        }
+
         function extraCount() {
             return extraList.querySelectorAll('[data-extra-traveler]').length;
         }
@@ -647,14 +764,20 @@
 
         form.querySelector('[name="contact_prenom"]')?.addEventListener('input', syncPaymentResponsible);
         form.querySelector('[name="contact_nom"]')?.addEventListener('input', syncPaymentResponsible);
+        form.querySelector('#cc-address-same')?.addEventListener('change', syncCreditCardAddress);
+        ['address', 'address2', 'city', 'province', 'postal_code'].forEach((name) => {
+            form.querySelector(`[name="${name}"]`)?.addEventListener('input', syncCreditCardAddress);
+        });
 
         updateDepot();
         syncPaymentResponsible();
+        syncCreditCardAddress();
         refreshExtraState();
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             clearError();
+            syncCreditCardAddress();
             if (!form.checkValidity()) {
                 form.reportValidity();
                 showError('Veuillez corriger les champs indiqués avant d’envoyer.');
@@ -678,8 +801,7 @@
                 ? global.buildGhlThankYouUrl('')
                 : 'thank-you.html';
             submitGhlRoomForm({ payload, redirectUrl: thankYou }).catch((err) => {
-                showError(err?.message
-                    || 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.');
+                showError(reservationFetchError(err));
             });
         });
 
@@ -759,6 +881,8 @@ select.rr-input {
   padding-right: 2.5rem;
 }
 .rr-textarea { min-height: 7rem; resize: vertical; line-height: 1.55; }
+.rr-textarea-short { min-height: 5.5rem; }
+.rr-billing { margin-top: 1.35rem; padding-top: 1.2rem; border-top: 1px solid #e8eef3; }
 .rr-input:focus, .rr-textarea:focus {
   outline: none; border-color: #025091;
   box-shadow: 0 0 0 3px rgba(2, 80, 145, 0.15);
@@ -845,6 +969,7 @@ select.rr-input {
         payloadToGhlFields,
         formDataToPayload,
         mergeReservationPayload,
+        isPreSaleDraft,
         formatDobForGhl,
         injectStyles,
         saveReservationDraft,

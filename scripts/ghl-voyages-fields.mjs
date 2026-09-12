@@ -22,6 +22,9 @@ export const VOYAGES_FIELDS = {
   categorie_chambre: 'catgorie_de_chambre',
   type_forfait: 'type_de_forfait',
   description_hotel: 'description_hotel',
+  inclusions: 'inclusions',
+  exclusions: 'exclusions',
+  franchise_bagage: 'franchise_bagage',
   criteres: 'critres',
   fournisseur: 'fournisseur',
   transporteur: 'transporteur',
@@ -108,6 +111,59 @@ export function normalizeAeroportOption(value) {
   return null;
 }
 
+/** Options GHL « Aéroport de retour » (aéroport à destination). */
+export const AEROPORT_RETOUR_OPTIONS = [
+  { key: 'antigua_anu', label: 'Antigua (ANU)', iata: 'ANU' },
+  { key: 'aruba_aua', label: 'Aruba (AUA)', iata: 'AUA' },
+  { key: 'bahamas_freeport_fpo', label: 'Bahamas, Freeport (FPO)', iata: 'FPO' },
+  { key: 'bahamas_nassau_nas', label: 'Bahamas, Nassau (NAS)', iata: 'NAS' },
+  { key: 'cancun_cun', label: 'Cancun (CUN)', iata: 'CUN' },
+  { key: 'carthagene_ctg', label: 'Carthagène (CTG)', iata: 'CTG' },
+  { key: 'cozumel_czm', label: 'Cozumel (CZM)', iata: 'CZM' },
+  { key: 'fort_de_france_fdf', label: 'Fort de France (FDF)', iata: 'FDF' },
+  { key: 'fort_lauderdale_fll', label: 'Fort Lauderdale (FLL)', iata: 'FLL' },
+  { key: 'la_romana_lrm', label: 'La Romana (LRM)', iata: 'LRM' },
+  { key: 'las_vegas_las', label: 'Las Vegas (LAS)', iata: 'LAS' },
+  { key: 'liberia_lir', label: 'Liberia (LIR)', iata: 'LIR' },
+  { key: 'los_cabos_sjd', label: 'Los Cabos (SJD)', iata: 'SJD' },
+  { key: 'managua_mga', label: 'Managua (MGA)', iata: 'MGA' },
+  { key: 'mazatlan_mzt', label: 'Mazatlan (MZT)', iata: 'MZT' },
+  { key: 'miami_mia', label: 'Miami (MIA)', iata: 'MIA' },
+  { key: 'montego_bay_mbj', label: 'Montego Bay (MBJ)', iata: 'MBJ' },
+  { key: 'palma_de_majorque_pmi', label: 'Palma de Majorque (PMI)', iata: 'PMI' },
+  { key: 'playa_blanca_rih', label: 'Playa Blanca (RIH)', iata: 'RIH' },
+  { key: 'pointe_pitre_ptp', label: 'Pointe-à-Pitre (PTP)', iata: 'PTP' },
+  { key: 'providenciales_pls', label: 'Providenciales (PLS)', iata: 'PLS' },
+  { key: 'puerto_plata_pop', label: 'Puerto Plata (POP)', iata: 'POP' },
+  { key: 'puerto_vallarta_pvr', label: 'Puerto Vallarta (PVR)', iata: 'PVR' },
+  { key: 'punta_cana_puj', label: 'Punta Cana (PUJ)', iata: 'PUJ' },
+  { key: 'samana_azs', label: 'Samana (AZS)', iata: 'AZS' },
+  { key: 'san_salvador_sal', label: 'San Salvador (SAL)', iata: 'SAL' },
+  { key: 'st_martin_sxm', label: 'St-Martin (SXM)', iata: 'SXM' },
+  { key: 'ste_lucie_uvf', label: 'Ste-Lucie (UVF)', iata: 'UVF' },
+  {
+    key: 'toronto_yyz',
+    label: 'Toronto (YYZ) — lorsqu’il y a une escale. Exemple: YUL → YYZ ensuite YYZ → CUN',
+    iata: 'YYZ'
+  },
+  { key: 'tulum_tqo', label: 'Tulum (TQO)', iata: 'TQO' }
+];
+
+export function normalizeAeroportRetourOption(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  const slug = raw.toLowerCase().replace(/\s+/g, '_');
+  if (AEROPORT_RETOUR_OPTIONS.some((opt) => opt.key === slug)) return slug;
+  const lower = raw.toLowerCase();
+  if (lower.includes('cancun') || lower.includes('cancún')) return 'cancun_cun';
+  if (lower.includes('freeport')) return 'bahamas_freeport_fpo';
+  if (lower.includes('nassau')) return 'bahamas_nassau_nas';
+  const code = extractIataFromAirportValue(raw);
+  if (code === 'YUL') return null;
+  const hit = AEROPORT_RETOUR_OPTIONS.find((opt) => opt.iata === code);
+  return hit ? hit.key : null;
+}
+
 /** Clé option GHL → libellé affiché boutique */
 export const AEROPORT_LABELS = {
   montral_yul: 'Montréal (YUL)',
@@ -117,7 +173,36 @@ export const AEROPORT_LABELS = {
   ottawa_yow: 'Ottawa (YOW)',
   toronto_yyz: 'Toronto (YYZ)',
   halifax_yhz: 'Halifax (YHZ)',
-  vancouver_yvr: 'Vancouver (YVR)'
+  vancouver_yvr: 'Vancouver (YVR)',
+  antigua_anu: 'Antigua (ANU)',
+  aruba_aua: 'Aruba (AUA)',
+  bahamas_freeport_fpo: 'Bahamas, Freeport (FPO)',
+  bahamas_nassau_nas: 'Bahamas, Nassau (NAS)',
+  cancun_cun: 'Cancun (CUN)',
+  carthagene_ctg: 'Carthagène (CTG)',
+  cozumel_czm: 'Cozumel (CZM)',
+  fort_de_france_fdf: 'Fort de France (FDF)',
+  fort_lauderdale_fll: 'Fort Lauderdale (FLL)',
+  la_romana_lrm: 'La Romana (LRM)',
+  las_vegas_las: 'Las Vegas (LAS)',
+  liberia_lir: 'Liberia (LIR)',
+  los_cabos_sjd: 'Los Cabos (SJD)',
+  managua_mga: 'Managua (MGA)',
+  mazatlan_mzt: 'Mazatlan (MZT)',
+  miami_mia: 'Miami (MIA)',
+  montego_bay_mbj: 'Montego Bay (MBJ)',
+  palma_de_majorque_pmi: 'Palma de Majorque (PMI)',
+  playa_blanca_rih: 'Playa Blanca (RIH)',
+  pointe_pitre_ptp: 'Pointe-à-Pitre (PTP)',
+  providenciales_pls: 'Providenciales (PLS)',
+  puerto_plata_pop: 'Puerto Plata (POP)',
+  puerto_vallarta_pvr: 'Puerto Vallarta (PVR)',
+  punta_cana_puj: 'Punta Cana (PUJ)',
+  samana_azs: 'Samana (AZS)',
+  san_salvador_sal: 'San Salvador (SAL)',
+  st_martin_sxm: 'St-Martin (SXM)',
+  ste_lucie_uvf: 'Ste-Lucie (UVF)',
+  tulum_tqo: 'Tulum (TQO)'
 };
 
 function extractIataFromAirportValue(value) {
@@ -131,19 +216,50 @@ function extractIataFromAirportValue(value) {
   return '';
 }
 
+function airportLookupCandidates(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return [value.key, value.label, value.value, value.name].filter(Boolean).map((part) => String(part).trim());
+  }
+  const raw = String(value ?? '').trim();
+  return raw ? [raw] : [];
+}
+
 export function formatAeroportLabel(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  const key = raw.toLowerCase().replace(/\s+/g, '_');
-  if (AEROPORT_LABELS[key]) return AEROPORT_LABELS[key];
-  if (AEROPORT_LABELS[raw]) return AEROPORT_LABELS[raw];
-  const code = extractIataFromAirportValue(raw);
+  const candidates = airportLookupCandidates(value);
+  if (!candidates.length) return '';
+
+  for (const candidate of candidates) {
+    const suffix = candidate.includes('.') ? candidate.split('.').pop() : candidate;
+    const key = String(suffix || '').toLowerCase().replace(/\s+/g, '_');
+    if (AEROPORT_LABELS[key]) return AEROPORT_LABELS[key];
+    if (AEROPORT_LABELS[candidate]) return AEROPORT_LABELS[candidate];
+    if (AEROPORT_LABELS[suffix]) return AEROPORT_LABELS[suffix];
+  }
+
+  const joined = candidates.join(' ');
+  const code = extractIataFromAirportValue(joined);
   if (code) {
     for (const label of Object.values(AEROPORT_LABELS)) {
       if (extractIataFromAirportValue(label) === code) return label;
     }
   }
-  return raw;
+
+  const short = joined.match(/^\s*([^()]+?\([A-Za-z]{3}\))/);
+  if (short) return short[1].trim();
+  return String(candidates[0] || '').trim();
+}
+
+/** Toronto (YYZ) in Aéroport de retour = escale, not the holiday destination. */
+export function isConnectionReturnAirport(value) {
+  const candidates = airportLookupCandidates(value).join(' ').toLowerCase();
+  if (!candidates) return false;
+  if (candidates.includes('toronto_yyz') || candidates.includes('toronto (yyz)')) return true;
+  return extractIataFromAirportValue(candidates) === 'YYZ';
+}
+
+export function formatDestinationAirportLabel(value) {
+  if (isConnectionReturnAirport(value)) return '';
+  return formatAeroportLabel(value);
 }
 
 export function normalizeStatutOption(value) {
@@ -168,17 +284,19 @@ export function normalizeStatutOption(value) {
 
 export function normalizeFournisseurOption(value) {
   const s = String(value || '').trim().toLowerCase().replace(/\s+/g, '_');
+  if (s.includes('club_med') || s.includes('clubmed')) return 'club_med';
   if (s.includes('vacances_air_canada') || s.includes('vacances_air_canada')) return 'vacances_air_canada';
   if (s.includes('sunwing')) return 'sunwing';
   if (s.includes('transat')) return 'transat';
-  if (s.includes('westjet')) return 'westjet';
-  if (s.includes('air_canada') || s.includes('air canada')) return 'air_canada';
+  if (s.includes('westjet')) return 'vacances_westjet_quebec';
+  if (s.includes('air_canada') || s.includes('air canada')) return 'vacances_air_canada';
   return s || null;
 }
 
 export function normalizeTransporteurOption(value) {
   const s = String(value || '').trim().toLowerCase();
   if (s.includes('westjet')) return 'westjet';
+  if (s.includes('rouge')) return 'air_canada_rouge';
   if (s.includes('air canada')) return 'air_canada';
   if (s.includes('transat')) return 'transat';
   return s.replace(/\s+/g, '_') || null;
@@ -232,7 +350,8 @@ export function formatPropertiesForGhlApi(logicalProps) {
       continue;
     }
     if (key === 'aroport_de_retour') {
-      out[key] = String(value).trim();
+      const v = normalizeAeroportRetourOption(value);
+      if (v) out[key] = v;
       continue;
     }
     if (key === 'fournisseur') {
@@ -255,7 +374,7 @@ export function formatPropertiesForGhlApi(logicalProps) {
       if (v) out[key] = v;
       continue;
     }
-    if (key === 'critres') {
+    if (key === 'critres' || key === 'inclusions' || key === 'exclusions') {
       const items = Array.isArray(value) ? value : [value];
       const valid = items.filter(Boolean).map(String);
       if (valid.length) out[key] = valid;

@@ -12,7 +12,8 @@
         westjet_quebec: 'Vacances WestJet Québec',
         vacances_westjet_quebec: 'Vacances WestJet Québec',
         transat: 'Vacances Transat',
-        vacances_transat: 'Vacances Transat'
+        vacances_transat: 'Vacances Transat',
+        club_med: 'Club Med'
     };
 
     /** Compagnies aériennes - clé normalisée (slug GHL) → nom affiché */
@@ -21,7 +22,8 @@
         westjet: 'WestJet',
         westjet_quebec: 'WestJet',
         sunwing: 'Sunwing Airlines',
-        transat: 'Air Transat'
+        transat: 'Air Transat',
+        air_canada_rouge: 'Air Canada Rouge'
     };
 
     /** Alias clé normalisée → clé utilisée dans SUPPLIER_LOGOS */
@@ -36,7 +38,8 @@
     /** Alias compagnie aérienne → clé logo (assets/suppliers/) */
     window.CARRIER_LOGO_KEY_ALIASES = {
         westjet: 'westjet_quebec',
-        westjet_quebec: 'westjet_quebec'
+        westjet_quebec: 'westjet_quebec',
+        air_canada_rouge: 'air_canada'
     };
 
     /** Logos fournisseurs / compagnies - clé normalisée → chemin relatif (assets/suppliers/) */
@@ -53,7 +56,8 @@
         'air_canada',
         'westjet',
         'westjet_quebec',
-        'transat'
+        'transat',
+        'club_med'
     ];
 
     /** @deprecated Utiliser SUPPLIER_LABELS - conservé pour compatibilité */
@@ -61,7 +65,8 @@
         'Vacances Sunwing',
         'Vacances Air Canada',
         'Vacances WestJet Québec',
-        'Vacances Transat'
+        'Vacances Transat',
+        'Club Med'
     ];
 
     /** Destinations (boutique filter) - libellés affichés; comparés en slug (voir DESTINATION_ALIASES) */
@@ -163,16 +168,22 @@
 
     /** Critères (boutique filter) - labels + GHL keys from field `criteria` */
     window.CRITERIA_OPTIONS = [
-        { label: 'Tout inclus', value: 'tout_inclus_allinclusive' },
-        { label: 'Pour adultes (18+)', value: 'pour_adultes_18' },
+        { label: 'Tout inclus', value: 'tout_inclus' },
+        { label: 'Vol direct (Sans escale)', value: 'vol_direct_sans_escale' },
+        { label: 'Adultes seulement', value: 'adultes_seulement' },
         { label: 'Familial', value: 'familial' },
-        { label: 'Romantique / Lune de miel', value: 'romantique__lune_de_miel' },
+        { label: 'Golf', value: 'golf' },
+        { label: "Jeux d'eau", value: 'jeux_deau' },
+        { label: "Glissade d'eau", value: 'glissade_deau' },
+        { label: 'Vue mer', value: 'vue_mer' },
+        { label: 'Swim Out', value: 'swim_out' },
+        { label: 'Directement sur la plage', value: 'directement_sur_la_plage' },
+        { label: 'Sur la plage', value: 'sur_la_plage' },
         { label: 'Tranquille / Détente', value: 'tranquille__dtente' },
+        { label: 'Romantique / Lune de miel', value: 'romantique__lune_de_miel' },
         { label: 'Animation / Fête', value: 'animation__fte' },
         { label: 'Pour célibataires', value: 'pour_celibataires' },
         { label: 'Adapté aux bébés', value: 'adapt_aux_bbs' },
-        { label: 'Directement sur la plage', value: 'directement_sur_la_plage' },
-        { label: 'Vue sur la mer', value: 'vue_sur_la_mer' },
         { label: 'Deuxième ligne (courte marche)', value: 'deuxime_ligne_courte_marche' },
         { label: 'Près du centre-ville', value: 'prs_du_centreville' },
         { label: 'Isolé / En nature', value: 'isol__en_nature' },
@@ -180,7 +191,6 @@
         { label: 'Plan européen (sans repas)', value: 'plan_europen_sans_repas' },
         { label: 'Boissons de marques premium incluses', value: 'boissons_de_marques_premium_incluses' },
         { label: 'Soupers à la carte illimités', value: 'soupers__la_carte_illimits' },
-        { label: "Glissades d'eau / Parc aquatique", value: 'glissades_deau__parc_aquatique' },
         { label: 'Piscine pour enfants', value: 'piscine_pour_enfants' },
         { label: 'Piscine réservée aux adultes', value: 'piscine_rserve_aux_adultes' },
         { label: 'Piscine à débordement (Infinity)', value: 'piscine__dbordement_infinity' },
@@ -198,7 +208,6 @@
         { label: 'Sports nautiques non motorisés inclus', value: 'sports_nautiques_non_motoriss_inclus' },
         { label: 'Gym / Centre de fitness', value: 'gym__centre_de_fitness' },
         { label: 'Casino sur place', value: 'casino_sur_place' },
-        { label: 'Vol direct (Sans escale)', value: 'vol_direct_sans_escale' },
         { label: 'Transferts aéroport-hôtel inclus', value: 'transferts_aroporthtel_inclus' },
         { label: 'Départ de nuit', value: 'dpart_de_nuit' },
         { label: 'Sièges en classe économique privilège', value: 'siges_en_classe_conomique_privilge' }
@@ -210,11 +219,84 @@
 
     /** GHL auto-slugs that differ from the canonical key (typos / legacy) */
     window.CRITERIA_ALIASES = {
-        pour_clibataires: 'pour_celibataires'
+        pour_clibataires: 'pour_celibataires',
+        tout_inclus_allinclusive: 'tout_inclus',
+        pour_adultes_18: 'adultes_seulement',
+        vue_sur_la_mer: 'vue_mer',
+        glissades_deau__parc_aquatique: 'glissade_deau'
     };
 
     /** @deprecated use CRITERIA_OPTIONS - kept for backward compatibility */
     window.FILTER_CRITERIA = window.CRITERIA_OPTIONS.map(o => o.label);
+
+    /** Inclusions GHL (MULTIPLE_OPTIONS) — clés + libellés boutique */
+    window.INCLUSION_OPTIONS = [
+        { label: 'Vols aller-retour', value: 'vols_allerretour' },
+        { label: 'Vols directs (sans escale)', value: 'vols_directs' },
+        { label: 'Transferts aéroport-hôtel aller-retour', value: 'transferts_aeroport_hotel' },
+        { label: 'Hébergement pour la durée du séjour', value: 'hebergement' },
+        { label: 'Tout inclus (repas et boissons)', value: 'tout_inclus_repas_boissons' },
+        { label: 'Petit-déjeuner quotidien', value: 'petit_dejeuner' },
+        { label: 'Déjeuners', value: 'dejeuners' },
+        { label: 'Soupers', value: 'soupers' },
+        { label: 'Boissons nationales illimitées', value: 'boissons_nationales' },
+        { label: 'Boissons de marques premium', value: 'boissons_premium' },
+        { label: 'Contribution au Fonds FICAV', value: 'ficav' },
+        { label: 'Taxes et frais aériens', value: 'taxes_frais_aeriens' },
+        { label: "Wi-Fi à l'hôtel", value: 'wifi_hotel' },
+        { label: 'Sports nautiques non motorisés', value: 'sports_nautiques_non_motorises' },
+        { label: 'Club enfants / mini-club', value: 'club_enfants' },
+        { label: 'Accès au spa', value: 'acces_spa' },
+        { label: 'Parties de golf', value: 'golf' },
+        { label: "Pourboires à l'hôtel", value: 'pourboires_hotel' },
+        { label: 'Service aux chambres', value: 'service_chambres' },
+        { label: 'Guide francophone', value: 'guide_francophone' },
+        { label: 'Excursions incluses', value: 'excursions' },
+        { label: '1 bagage enregistré', value: 'bagage_enregistre' },
+        { label: 'Sélection de sièges', value: 'selection_sieges' },
+        { label: 'Assistance voyage 24/7', value: 'assistance_24_7' },
+        { label: 'Assurance voyage', value: 'assurance_voyage' },
+        { label: 'Location de voiture', value: 'location_voiture' },
+        { label: 'Frais de dossier', value: 'frais_dossier' },
+        { label: "Accès salon à l'aéroport", value: 'salon_aeroport' },
+        { label: 'Repas à bord', value: 'repas_bord' },
+        { label: "Nuit d'hôtel (correspondance)", value: 'nuit_connexion' }
+    ];
+
+    /** Exclusions GHL (MULTIPLE_OPTIONS) */
+    window.EXCLUSION_OPTIONS = [
+        { label: 'Pourboires', value: 'pourboires' },
+        { label: 'Excursions optionnelles', value: 'excursions_optionnelles' },
+        { label: 'Boissons de marques premium', value: 'boissons_premium' },
+        { label: 'Spa, massages et soins', value: 'spa_massages' },
+        { label: 'Sports nautiques motorisés', value: 'sports_motorises' },
+        { label: 'Location de voiture', value: 'location_voiture' },
+        { label: 'Assurance voyage', value: 'assurance_voyage' },
+        { label: "Frais de visa ou d'entrée", value: 'visa_entree' },
+        { label: 'Taxes locales / taxe de séjour', value: 'taxes_locales' },
+        { label: 'Wi-Fi', value: 'wifi' },
+        { label: 'Service aux chambres', value: 'service_chambres' },
+        { label: 'Minibar', value: 'minibar' },
+        { label: 'Appels téléphoniques', value: 'appels_telephone' },
+        { label: 'Frais de dossier', value: 'frais_dossier' },
+        { label: 'Bagages supplémentaires', value: 'bagages_supplementaires' },
+        { label: 'Supplément occupation simple', value: 'supplement_simple' },
+        { label: "Frais de départ de l'hôtel", value: 'frais_depart_hotel' },
+        { label: 'Vaccins et frais médicaux', value: 'vaccins' },
+        { label: 'Passeport et documents de voyage', value: 'passeport_documents' },
+        { label: 'Transferts aéroport-hôtel', value: 'transferts' },
+        { label: 'Repas non mentionnés', value: 'repas_non_mentionnes' },
+        { label: 'Activités payantes', value: 'activites_payantes' },
+        { label: 'Dépenses personnelles', value: 'depenses_personnelles' },
+        { label: "Tout ce qui n'est pas inscrit aux inclusions", value: 'autres_non_inscrits' }
+    ];
+
+    window.INCLUSION_BY_VALUE = Object.fromEntries(
+        window.INCLUSION_OPTIONS.map(o => [o.value, o.label])
+    );
+    window.EXCLUSION_BY_VALUE = Object.fromEntries(
+        window.EXCLUSION_OPTIONS.map(o => [o.value, o.label])
+    );
 
     /** Departure airports - synced with GHL field `departure_airport` */
     window.FILTER_AIRPORTS = [
@@ -235,7 +317,36 @@
         ottawa_yow: 'Ottawa (YOW)',
         toronto_yyz: 'Toronto (YYZ)',
         halifax_yhz: 'Halifax (YHZ)',
-        vancouver_yvr: 'Vancouver (YVR)'
+        vancouver_yvr: 'Vancouver (YVR)',
+        antigua_anu: 'Antigua (ANU)',
+        aruba_aua: 'Aruba (AUA)',
+        bahamas_freeport_fpo: 'Bahamas, Freeport (FPO)',
+        bahamas_nassau_nas: 'Bahamas, Nassau (NAS)',
+        cancun_cun: 'Cancun (CUN)',
+        carthagene_ctg: 'Carthagène (CTG)',
+        cozumel_czm: 'Cozumel (CZM)',
+        fort_de_france_fdf: 'Fort de France (FDF)',
+        fort_lauderdale_fll: 'Fort Lauderdale (FLL)',
+        la_romana_lrm: 'La Romana (LRM)',
+        las_vegas_las: 'Las Vegas (LAS)',
+        liberia_lir: 'Liberia (LIR)',
+        los_cabos_sjd: 'Los Cabos (SJD)',
+        managua_mga: 'Managua (MGA)',
+        mazatlan_mzt: 'Mazatlan (MZT)',
+        miami_mia: 'Miami (MIA)',
+        montego_bay_mbj: 'Montego Bay (MBJ)',
+        palma_de_majorque_pmi: 'Palma de Majorque (PMI)',
+        playa_blanca_rih: 'Playa Blanca (RIH)',
+        pointe_pitre_ptp: 'Pointe-à-Pitre (PTP)',
+        providenciales_pls: 'Providenciales (PLS)',
+        puerto_plata_pop: 'Puerto Plata (POP)',
+        puerto_vallarta_pvr: 'Puerto Vallarta (PVR)',
+        punta_cana_puj: 'Punta Cana (PUJ)',
+        samana_azs: 'Samana (AZS)',
+        san_salvador_sal: 'San Salvador (SAL)',
+        st_martin_sxm: 'St-Martin (SXM)',
+        ste_lucie_uvf: 'Ste-Lucie (UVF)',
+        tulum_tqo: 'Tulum (TQO)'
     };
 
     /** Hotel star filter options (supports half stars) */
@@ -298,10 +409,10 @@
     /** Location ID public (aussi dans products.json) */
     window.GHL_LOCATION_ID = 'V90iyFBbBrCg3tpctRjc';
     /**
-     * API réservation (OVH VPS via tunnel HTTPS - le site est en HTTPS).
-     * Pour une URL stable: pointer un sous-domaine vers 158.69.1.173 + Let's Encrypt.
+     * API réservation (OVH VPS, HTTPS via dashboard.codesurmesure.ca).
+     * Do not point the live form at a trycloudflare URL — browsers treat that as a fetch error.
      */
-    window.GHL_RESERVATION_API_URL = 'https://hart-intelligence-footwear-underground.trycloudflare.com/';
+    window.GHL_RESERVATION_API_URL = 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/';
 
     /** Pipeline « voyage fiesta » - opportunité (si workflow GHL en crée une) */
     window.GHL_PIPELINE_ID = '0epoPtkeq89cfu3KsxDs';
@@ -342,6 +453,7 @@
         p5_dob: 'passager_4_date_de_naissance_lib_copy',
         address: 'address',
         address2: 'address2',
+        credit_card_address: 'credit_card_address',
         city: 'city',
         province: 'province',
         postal_code: 'postal_code',
@@ -471,10 +583,12 @@
     window.PRE_SALE_BANNER_TITLE = 'Pré-vente';
     window.PRE_SALE_BANNER_SUBTITLE = 'Manifestez votre intérêt. Aucun dépôt requis pour le moment';
 
-    /** Formulaire d'intérêt (pré-vente) — pas de dépôt */
+    /** Court formulaire pré-vente (tarif d'occupation non publié) — pas de dépôt */
     window.PRE_SALE_REQUEST_FORM_TITLE = 'Je suis intéressé(e)';
     window.PRE_SALE_REQUEST_FORM_INTRO =
-        'Remplissez ce court formulaire. Un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.';
+        'Le tarif pour cette occupation n\'est pas publié. Un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.';
     window.PRE_SALE_REQUEST_SUBMIT_LABEL = 'Envoyer mon intérêt';
+    window.PRE_SALE_FULL_FORM_TITLE = 'Formulaire pré-vente';
+    window.PRE_SALE_FULL_FORM_CTA = 'REMPLIR LE FORMULAIRE';
     window.GHL_PRE_SALE_REQUEST_TAG = 'demande-prevente';
 })();

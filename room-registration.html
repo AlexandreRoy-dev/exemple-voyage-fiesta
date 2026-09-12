@@ -55,7 +55,7 @@
                 Retour au forfait
             </a>
             <p class="text-xs uppercase tracking-widest text-white/70 mb-1">Voyage Fiesta</p>
-            <h1 class="text-2xl md:text-3xl font-bold">Formulaire de réservation</h1>
+            <h1 id="rr-page-title" class="text-2xl md:text-3xl font-bold">Formulaire de réservation</h1>
             <p id="rr-page-lead" class="text-sm text-white/80 mt-2 leading-relaxed"></p>
         </div>
     </header>
@@ -75,9 +75,9 @@
         </div>
     </main>
 
-    <script src="config.js?v=49"></script>
-    <script src="room-registration.js?v=20"></script>
-    <script src="api.js?v=99"></script>
+    <script src="config.js?v=55"></script>
+    <script src="room-registration.js?v=25"></script>
+    <script src="api.js?v=105"></script>
     <script>
         (function () {
             function esc(s) {
@@ -143,13 +143,18 @@
                     </div>`;
             }
 
-            function renderSidebar(draft, product) {
+            function renderSidebar(draft, product, isPreSale) {
                 const pricing = draft.pricing || {};
                 const adults = Number(draft.adults) || 2;
                 const kids = Number(draft.kids) || 0;
-                const deposit = pricing.totalDeposit != null
-                    ? pricing.totalDeposit
-                    : (draft.depositPerPerson != null ? Number(draft.depositPerPerson) * (adults + kids) : null);
+                const deposit = isPreSale
+                    ? null
+                    : (pricing.totalDeposit != null
+                        ? pricing.totalDeposit
+                        : (draft.depositPerPerson != null ? Number(draft.depositPerPerson) * (adults + kids) : null));
+                const submitLabel = isPreSale
+                    ? (window.PRE_SALE_REQUEST_SUBMIT_LABEL || 'Envoyer mon intérêt')
+                    : 'RÉSERVER MAINTENANT';
                 const incentive = product && window.VoyageFiestaAPI?.getIncentive
                     ? VoyageFiestaAPI.getIncentive(product)
                     : (pricing.incentiveDiscount != null ? { discount: pricing.incentiveDiscount } : null);
@@ -210,8 +215,8 @@
                             <span class="text-2xl font-bold text-brand-orange tabular-nums leading-none">${esc(money(deposit))}</span>
                         </div>` : ''}
                     </div>
-                    <button type="submit" form="room-registration-form" id="rr-sidebar-submit" class="mt-5 w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg text-lg transition-colors">RÉSERVER MAINTENANT</button>
-                    <p class="text-center text-[10px] text-gray-400 mt-3 px-2 leading-relaxed">En envoyant ce formulaire, vous acceptez les conditions générales de vente de Voyage Fiesta.</p>
+                    <button type="submit" form="room-registration-form" id="rr-sidebar-submit" class="mt-5 w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg text-lg transition-colors">${esc(submitLabel)}</button>
+                    <p class="text-center text-[10px] text-gray-400 mt-3 px-2 leading-relaxed">${isPreSale ? 'Aucun dépôt n\'est requis en pré-vente. En envoyant ce formulaire, vous acceptez les conditions générales de vente de Voyage Fiesta.' : 'En envoyant ce formulaire, vous acceptez les conditions générales de vente de Voyage Fiesta.'}</p>
                 `;
             }
 
@@ -229,8 +234,14 @@
                 const submitStatus = document.getElementById('room-submit-status');
                 const submitStatusText = document.getElementById('room-submit-status-text');
                 const lead = document.getElementById('rr-page-lead');
+                const pageTitle = document.getElementById('rr-page-title');
                 const backLink = document.getElementById('rr-back-link');
                 const panel = document.getElementById('rr-booking-panel');
+                const isPreSale = Boolean(
+                    window.RoomRegistration?.isPreSaleDraft?.(draft)
+                    || draft.isPreSale
+                    || draft.requestType === 'demande_prevente'
+                );
 
                 if (slug && backLink) {
                     backLink.href = 'product.html?slug=' + encodeURIComponent(slug);
@@ -242,10 +253,6 @@
                     lead.textContent = draft.productName;
                 }
 
-                if (draft.productName) {
-                    document.title = 'Réservation — ' + draft.productName;
-                }
-
                 let product = null;
                 if (slug && window.VoyageFiestaAPI?.fetchProductBySlug) {
                     try {
@@ -255,24 +262,41 @@
                     }
                 }
 
+                const preventeMode = isPreSale || Boolean(product && window.VoyageFiestaAPI?.isPreSale?.(product));
+                if (preventeMode && pageTitle) {
+                    pageTitle.textContent = window.PRE_SALE_FULL_FORM_TITLE || 'Formulaire pré-vente';
+                }
                 if (product && !draft.summaryText && lead) {
                     lead.textContent = product.name;
-                    document.title = 'Réservation — ' + product.name;
+                }
+                const titleName = draft.productName || product?.name || '';
+                if (titleName) {
+                    document.title = (preventeMode ? 'Pré-vente — ' : 'Réservation — ') + titleName;
                 }
 
-                if (panel) panel.innerHTML = renderSidebar(draft, product);
+                if (panel) panel.innerHTML = renderSidebar(draft, product, preventeMode);
 
                 RoomRegistration.mountForm(formRoot, {
                     initialPassengerCount: Math.min(5, Math.max(1, adults)),
                     initialKidsCount: Math.min(4, Math.max(0, kids)),
-                    depositPerPerson: depositPerPerson != null ? Number(depositPerPerson) : null,
+                    depositPerPerson: preventeMode ? null : (depositPerPerson != null ? Number(depositPerPerson) : null),
                     pricingSummary: draft.pricingSummary || '',
                     hideSubmit: true,
+                    submitLabel: preventeMode
+                        ? (window.PRE_SALE_REQUEST_SUBMIT_LABEL || 'Envoyer mon intérêt')
+                        : 'RÉSERVER MAINTENANT',
                     async onSubmit({ payload }) {
                         const thankYou = draft.thankYouUrl || (typeof buildGhlThankYouUrl === 'function'
                             ? buildGhlThankYouUrl(slug)
                             : 'thank-you.html');
-                        const merged = RoomRegistration.mergeReservationPayload(payload, draft);
+                        const merged = RoomRegistration.mergeReservationPayload(payload, {
+                            ...draft,
+                            product,
+                            isPreSale: preventeMode,
+                            requestType: preventeMode ? 'demande_prevente' : draft.requestType,
+                            productName: draft.productName || product?.name || '',
+                            productSlug: slug || draft.productSlug || product?.slug || ''
+                        });
                         formRoot.classList.add('hidden');
                         if (panel) panel.classList.add('hidden');
                         if (submitStatusText) submitStatusText.textContent = 'Envoi de votre demande…';
@@ -286,9 +310,11 @@
                             formRoot.classList.remove('hidden');
                             if (panel) panel.classList.remove('hidden');
                             submitStatus.classList.add('hidden');
-                            alert(err?.message
-                                ? `Impossible d'envoyer la demande : ${err.message}`
-                                : 'Impossible d\'envoyer la demande. Veuillez réessayer.');
+                            const raw = String(err?.message || '');
+                            const msg = /failed to fetch|networkerror|load failed/i.test(raw)
+                                ? 'Impossible de joindre le serveur de réservation. Vérifiez votre connexion, puis réessayez.'
+                                : (raw || 'Impossible d\'envoyer la demande. Veuillez réessayer.');
+                            alert(`Impossible d'envoyer la demande : ${msg}`);
                         }
                     }
                 });

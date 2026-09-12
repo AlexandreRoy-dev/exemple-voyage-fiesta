@@ -13,7 +13,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pickVoyagesUnwrapped, pickRecordName, formatAeroportLabel } from './ghl-voyages-fields.mjs';
+import { pickVoyagesUnwrapped, pickRecordName, formatAeroportLabel, formatDestinationAirportLabel } from './ghl-voyages-fields.mjs';
 import { writeSharePages } from './share-pages.mjs';
 import { writeQuickformPages } from './quickform-pages.mjs';
 
@@ -1002,14 +1002,14 @@ function preferAirportEndpoint(current, preferred) {
  return cur;
 }
 
-/** GHL aeroport_retour = destination airport; enrich city with IATA when possible. */
+/** GHL aeroport_retour = destination airport, except Toronto (connection). */
 function resolveDestAirportLabel(destLabel, returnAirport, homeLabel) {
  const destCity = String(destLabel || '').trim();
- const ret = String(returnAirport || '').trim();
+ const ret = formatDestinationAirportLabel(returnAirport);
  const home = String(homeLabel || '').trim();
  if (ret && (!home || !sameAirportLabel(ret, home))) {
   const code = extractIataCode(ret);
-  if (/\([A-Za-z]{3}\)\s*$/.test(ret)) return ret;
+  if (/\([A-Za-z]{3}\)/.test(ret)) return formatAeroportLabel(ret);
   if (code && destCity && !extractIataCode(destCity)) return `${destCity} (${code})`;
   return ret || destCity;
  }
@@ -1167,7 +1167,8 @@ async function mapRecord(record, apiKey, manifest, slug) {
  ) || '';
  const rawReturnAirport = pickProp(props, 'aeroport_retour', 'return_airport') || '';
  const departureAirport = formatAeroportLabel(rawDepartureAirport);
- const returnAirport = formatAeroportLabel(rawReturnAirport) || departureAirport;
+ const returnAirport = formatAeroportLabel(rawReturnAirport);
+ const destinationAirport = formatDestinationAirportLabel(rawReturnAirport);
 
  const img = await mirrorImageField({
  apiKey,
@@ -1264,6 +1265,9 @@ async function mapRecord(record, apiKey, manifest, slug) {
  'hotel_description',
  'hotelDescription'
  ) || String(pickProp(props, 'description_hotel') || '').trim(),
+ inclusions: toStringArray(pickProp(props, 'inclusions')),
+ exclusions: toStringArray(pickProp(props, 'exclusions')),
+ franchiseBagage: String(pickProp(props, 'franchise_bagage') || pick(props, 'franchiseBagage') || '').trim(),
  forfaitLink: normalizeExternalUrl(
  pickProp(props, 'lien_fiche_fournisseur', 'forfait_link', 'forfaitLink')
  ),
@@ -1271,11 +1275,12 @@ async function mapRecord(record, apiKey, manifest, slug) {
  departureDate,
  departureAirport,
  returnAirport,
+ destinationAirport,
  flights: mapFlights(props, {
  departureDate,
  returnDate,
  departureAirport,
- returnAirport,
+ returnAirport: destinationAirport,
  subDest,
  destination: destinationLabel || subDest
  }),

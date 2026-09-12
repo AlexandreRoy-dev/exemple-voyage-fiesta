@@ -203,8 +203,8 @@ WantedBy=multi-user.target
     sftp.close()
     c.close()
     print("\nDONE. Point config.js GHL_RESERVATION_API_URL to:")
-    print(f"  http://158.69.1.173/reservation/")
-    print(f"  (or http://158.69.1.173:{PORT}/ if no nginx)")
+    print("  https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/")
+    print(f"  (HTTP fallback: http://158.69.1.173/reservation/ or :{PORT})")
 
 
 if __name__ == "__main__":

@@ -46,11 +46,18 @@ const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || '';
 const GHL_CONTACT_TAG = process.env.GHL_CONTACT_TAG || 'reservation-site';
 /** Tag Distinct — trigger workflow « Demande de prix » dans GHL */
 const GHL_PRICE_REQUEST_TAG = process.env.GHL_PRICE_REQUEST_TAG || 'demande-prix';
+const GHL_PRE_SALE_REQUEST_TAG = process.env.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
 const GHL_QUICKFORM_TAG = process.env.GHL_QUICKFORM_TAG || 'quickform';
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+/** Staff inboxes. GHL Internal Notification cannot merge custom/LARGE_TEXT fields. */
+const INTERNAL_NOTIFY_EMAILS = (process.env.INTERNAL_NOTIFY_EMAILS || '')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+const GHL_EMAIL_FROM = process.env.GHL_EMAIL_FROM || 'info@promo.voyagefiesta.com';
 
 /**
  * Payload keys → GHL contact custom field keys (without contact. prefix).
@@ -137,6 +144,11 @@ function pick(obj, ...keys) {
   return '';
 }
 
+function isPreSaleRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'demande_prevente' || type === 'prevente' || type === 'pre_vente';
+}
+
 function isPriceRequest(payload) {
   const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
   return type === 'demande_prix' || type === 'price_request';
@@ -150,6 +162,9 @@ function isQuickFormRequest(payload) {
 function resolveContactTag(payload) {
   if (isQuickFormRequest(payload)) {
     return GHL_QUICKFORM_TAG;
+  }
+  if (isPreSaleRequest(payload)) {
+    return pick(payload, 'contact_tag') || GHL_PRE_SALE_REQUEST_TAG;
   }
   if (isPriceRequest(payload)) {
     return pick(payload, 'contact_tag') || GHL_PRICE_REQUEST_TAG;
@@ -203,16 +218,58 @@ async function lookupStaffIdBySlug(slug) {
 }
 
 async function resolveAssignedUserId(payload) {
-  const fromPayload = pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
-  if (fromPayload) return fromPayload;
   try {
+    const fromVoyage = await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
+    if (fromVoyage) return fromVoyage;
     const fromStaff = await lookupStaffIdBySlug(pick(payload, 'agent_slug'));
     if (fromStaff) return fromStaff;
-    return await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
   } catch (err) {
     console.warn('[reservation] owner lookup failed', err.message);
-    return '';
   }
+  return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
+}
+
+function extractAssignedUserId(contact) {
+  if (!contact || typeof contact !== 'object') return '';
+  const raw = contact.assignedTo ?? contact.assigned_to ?? '';
+  if (raw && typeof raw === 'object') {
+    return String(raw.id || raw.userId || raw.value || '').trim();
+  }
+  return String(raw || '').trim();
+}
+
+async function ghlGetContact(contactId) {
+  if (!contactId) return null;
+  const res = await fetch(`${GHL_API}/contacts/${encodeURIComponent(contactId)}`, {
+    headers: ghlHeaders()
+  });
+  if (!res.ok) return null;
+  const data = await res.json().catch(() => null);
+  return data?.contact || data || null;
+}
+
+async function ghlFindExistingContact({ email, phone }) {
+  const urls = [];
+  if (email) {
+    urls.push(
+      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&email=${encodeURIComponent(email)}`
+    );
+  }
+  if (phone) {
+    urls.push(
+      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&number=${encodeURIComponent(phone)}`
+    );
+  }
+  for (const url of urls) {
+    const res = await fetch(url, { headers: ghlHeaders() });
+    if (!res.ok) continue;
+    const data = await res.json().catch(() => null);
+    const found = data?.contact || data?.contacts?.[0];
+    if (!found?.id) continue;
+    if (extractAssignedUserId(found)) return found;
+    return (await ghlGetContact(found.id)) || found;
+  }
+  return null;
 }
 
 function ghlHeaders(extra = {}) {
@@ -280,11 +337,36 @@ function normalizeDateFr(value) {
   const str = String(value || '').trim();
   if (!str) return '';
   if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
-  const m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
-  if (!m) return str;
-  const d = m[1].padStart(2, '0');
-  const mo = m[2].padStart(2, '0');
-  return `${m[3]}-${mo}-${d}`;
+  const slash = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+  if (slash) {
+    return `${slash[3]}-${slash[2].padStart(2, '0')}-${slash[1].padStart(2, '0')}`;
+  }
+  const folded = str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/,/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const months = {
+    janvier: '01',
+    fevrier: '02',
+    mars: '03',
+    avril: '04',
+    mai: '05',
+    juin: '06',
+    juillet: '07',
+    aout: '08',
+    septembre: '09',
+    octobre: '10',
+    novembre: '11',
+    decembre: '12'
+  };
+  const longFr = folded.match(/^(\d{1,2})\s+([a-z]+)\s+(\d{4})$/);
+  if (longFr && months[longFr[2]]) {
+    return `${longFr[3]}-${months[longFr[2]]}-${longFr[1].padStart(2, '0')}`;
+  }
+  return '';
 }
 
 /** Long French date for email merge tags (GHL DATE fields render in English). */
@@ -335,60 +417,216 @@ function normalizeFieldValue(fieldKey, value) {
   return str;
 }
 
+function answerOf(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return String(value).trim();
+    }
+  }
+  return '—';
+}
+
+function qa(question, ...values) {
+  return `${question}\n→ ${answerOf(...values)}`;
+}
+
+const TERMS_LABEL =
+  'J’ai lu et j’accepte les termes et conditions du document 001-554 et je confirme que toutes les informations fournies sont exactes.';
+
+function termsCheckboxState(payload) {
+  const raw = payload?.terms_and_conditions;
+  if (raw === true || raw === 1) return 'checked';
+  const v = String(raw || '').trim().toLowerCase();
+  if (['true', '1', 'oui', 'on', 'yes', 'accepte', 'accepté'].includes(v)) {
+    return 'checked';
+  }
+  if (Object.prototype.hasOwnProperty.call(payload || {}, 'terms_and_conditions')) {
+    return 'unchecked';
+  }
+  return '';
+}
+
+function hasRoomFormAnswers(payload) {
+  return (
+    Object.prototype.hasOwnProperty.call(payload, 'assurance_medicale')
+    || Object.prototype.hasOwnProperty.call(payload, 'terms_and_conditions')
+    || Object.prototype.hasOwnProperty.call(payload, 'p1_dob')
+    || Object.prototype.hasOwnProperty.call(payload, 'passeport_valide')
+  );
+}
+
+function collectKidEntries(payload) {
+  const kids = [];
+  for (let i = 1; i <= 8; i++) {
+    const prenom = payload[`kid_${i}_prenom`];
+    const nom = payload[`kid_${i}_nom`];
+    const dob = payload[`kid_${i}_dob`];
+    if (!prenom && !nom && !dob) continue;
+    kids.push({ index: i, prenom, nom, dob });
+  }
+  if (kids.length) return kids;
+
+  const blob = String(payload.notes || '');
+  const re = /Enfant\s+(\d+)\s*:\s*([^\n|]+?)(?:\s*\|\s*(\d{1,2}\/\d{1,2}\/\d{4}))?/g;
+  let match;
+  while ((match = re.exec(blob))) {
+    const nameParts = String(match[2] || '').trim().split(/\s+/).filter(Boolean);
+    kids.push({
+      index: Number(match[1]) || kids.length + 1,
+      prenom: nameParts[0] || '',
+      nom: nameParts.slice(1).join(' '),
+      dob: match[3] || ''
+    });
+  }
+  return kids;
+}
+
 function buildNotes(payload) {
   const lines = [];
-  const add = (label, value) => {
-    if (value !== undefined && value !== null && String(value).trim() !== '') {
-      lines.push(`${label}: ${String(value).trim()}`);
-    }
+  const addSection = (title, rows) => {
+    const filled = (rows || []).filter(Boolean);
+    if (!filled.length) return;
+    if (lines.length) lines.push('');
+    lines.push(`— ${title} —`);
+    filled.forEach((row) => lines.push(row));
   };
 
+  const forfaitName = answerOf(payload.forfait_name, payload.nom_du_forfait);
   if (isQuickFormRequest(payload)) {
     lines.push('Type: Formulaire rapide (quickform)');
+  } else if (isPreSaleRequest(payload)) {
+    lines.push(forfaitName && forfaitName !== '—'
+      ? `Type: Intérêt pré-vente (aucun dépôt) — ${forfaitName}`
+      : 'Type: Intérêt pré-vente (aucun dépôt)');
   } else if (isPriceRequest(payload)) {
-    lines.push('Type: Demande de prix (tarif non publié)');
+    lines.push(forfaitName && forfaitName !== '—'
+      ? `Type: Demande de prix (tarif non publié) — ${forfaitName}`
+      : 'Type: Demande de prix (tarif non publié)');
+  } else {
+    lines.push(forfaitName && forfaitName !== '—'
+      ? `Type: Réservation — ${forfaitName}`
+      : 'Type: Réservation');
   }
 
-  add('Forfait', payload.forfait_name || payload.nom_du_forfait);
-  add('Slug', payload.forfait_slug);
-  add('Occupation', payload.occupation);
-  if (!isPriceRequest(payload)) {
-    add('Dépôt', payload.depot || payload.depot_total);
-  }
-  add('Nombre de passagers', payload.nombre_passagers || payload.nombre_personnes);
-  add('Adultes', payload.nombre_adultes);
-  add('Enfants', payload.nombre_enfants_2_12 || payload.nombre_enfants);
-  add('Infos passagers', payload.infopassager);
-  add('Assurance médicale', payload.assurance_medicale);
-  add('Passeport valide 6 mois', payload.passeport_valide);
-  add('Assurance annulation', payload.assurance_annulation);
-  add('Responsable paiement', payload.payment_responsible);
-  add('Adresse', payload.address);
-  add('Ville', payload.city);
-  add('Code postal', payload.postal_code);
-  add('Paiement final', payload.final_payment_date);
-  add('Conseiller', payload.conseiller_name || payload.agent_slug);
-  add('Conseiller ID', payload.agent_id);
-  add('Conseiller slug', payload.agent_slug);
+  addSection('Forfait', [
+    qa('Forfait', payload.forfait_name, payload.nom_du_forfait),
+    qa('Occupation', payload.occupation),
+    qa('Adultes', payload.nombre_adultes),
+    qa('Enfants', payload.nombre_enfants_2_12, payload.nombre_enfants),
+    qa('Nombre de passagers', payload.nombre_passagers, payload.nombre_personnes),
+    qa('Destination', payload.destination, payload.sub_destination),
+    qa('Pays', payload.country),
+    qa('Date de départ', payload.departure_date),
+    qa('Date de retour', payload.return_date),
+    qa('Aéroport de départ', payload.departure_airport),
+    qa('Aéroport à destination', payload.return_airport),
+    qa('Durée', payload.duration_nights ? `${payload.duration_nights} nuits` : ''),
+    qa('Catégorie de chambre', payload.room_category),
+    qa('Fournisseur', payload.supplier),
+    qa('Transporteur', payload.carrier),
+    qa('Promotion', payload.promotion),
+    isPriceRequest(payload) || isPreSaleRequest(payload) || isQuickFormRequest(payload)
+      ? ''
+      : qa('Dépôt', payload.depot, payload.depot_total),
+    qa('Date de paiement final', payload.paiement_final, payload.final_payment_date)
+  ].filter((row) => row && !row.endsWith('\n→ —')));
 
-  if (payload.sommaire) {
-    lines.push('', '— Sommaire —', String(payload.sommaire).trim());
-  }
-  if (payload.notes) {
-    lines.push('', '— Notes —', String(payload.notes).trim());
-  }
+  const roomForm = hasRoomFormAnswers(payload);
 
-  for (let i = 1; i <= 5; i++) {
+  addSection('Voyageur principal', [
+    qa('Prénom', payload.p1_prenom, payload.contact_prenom, payload.full_name),
+    qa('Nom de famille', payload.p1_nom, payload.contact_nom),
+    qa('Date de naissance', payload.p1_dob, payload.date_of_birth),
+    qa('Courriel', payload.p1_email, payload.email, payload.contact_email),
+    qa('Téléphone', payload.p1_phone, payload.phone, payload.contact_phone),
+    roomForm ? qa('Adresse', payload.address) : '',
+    roomForm ? qa('Adresse 2 (optionnel)', payload.address2) : '',
+    roomForm ? qa('Ville', payload.city) : '',
+    roomForm ? qa('Province', payload.province, payload.state) : '',
+    roomForm ? qa('Code postal', payload.postal_code) : '',
+    roomForm ? qa('Adresse de la carte de crédit', payload.credit_card_address) : ''
+  ]);
+
+  for (let i = 2; i <= 5; i++) {
     const prenom = payload[`p${i}_prenom`];
     const nom = payload[`p${i}_nom`];
-    const bits = [
-      prenom,
-      nom,
-      payload[`p${i}_genre`],
-      payload[`p${i}_dob`],
-      payload[`p${i}_phone`]
-    ].filter(Boolean);
-    if (bits.length) lines.push(`Passager ${i}: ${bits.join(' | ')}`);
+    const dob = payload[`p${i}_dob`];
+    const genre = payload[`p${i}_genre`];
+    const phone = payload[`p${i}_phone`];
+    if (!prenom && !nom && !dob && !genre && !phone) continue;
+    addSection(`Voyageur ${i}`, [
+      qa('Prénom', prenom),
+      qa('Nom de famille', nom),
+      qa('Date de naissance', dob),
+      genre ? qa('Genre', genre) : '',
+      phone ? qa('Téléphone', phone) : ''
+    ]);
+  }
+
+  const kids = collectKidEntries(payload);
+  const kidCount = Math.max(
+    kids.length,
+    Number(payload.nombre_enfants || payload.nombre_enfants_2_12 || 0) || 0
+  );
+  if (roomForm || kids.length) {
+    for (let i = 1; i <= kidCount; i++) {
+      const kid = kids.find((item) => item.index === i) || kids[i - 1] || {};
+      addSection(`Enfant ${i}`, [
+        qa('Prénom', kid.prenom),
+        qa('Nom de famille', kid.nom),
+        qa('Date de naissance', kid.dob)
+      ]);
+    }
+  }
+
+  if (roomForm) {
+    addSection('Assurances et documents', [
+      qa(
+        'Tous les voyageurs sont-ils couverts par une assurance voyage incluant les soins médicaux d’urgence ?',
+        payload.assurance_medicale
+      ),
+      qa(
+        'Le passeport de chaque voyageur est-il valide au moins 6 mois après la date de retour prévue ?',
+        payload.passeport_valide
+      ),
+      qa('Désirez-vous une assurance voyage Annulation ?', payload.assurance_annulation)
+    ]);
+
+    addSection('Notes du formulaire', [
+      qa(
+        'Si vous avez un conseiller Voyages Fiesta veuillez inscrire son nom',
+        payload.conseiller_voyage
+      ),
+      qa(
+        'Notes ou demandes particulières',
+        payload.notes_extra,
+        /Enfant\s+\d+\s*:/i.test(String(payload.notes || '')) ? '' : payload.notes
+      )
+    ]);
+  }
+
+  const termsState = termsCheckboxState(payload);
+  if (termsState || (!isPriceRequest(payload) && !isPreSaleRequest(payload) && !isQuickFormRequest(payload))) {
+    addSection('Termes et conditions', [
+      qa(
+        TERMS_LABEL,
+        termsState === 'checked'
+          ? 'Oui — case cochée'
+          : termsState === 'unchecked'
+            ? 'Non — case non cochée'
+            : 'Non communiqué'
+      )
+    ]);
+  }
+
+  addSection('Conseiller', [
+    qa('Conseiller assigné', payload.conseiller_name, payload.agent_slug),
+    qa('Courriel conseiller', payload.conseiller_email),
+    qa('Téléphone conseiller', payload.conseiller_phone)
+  ].filter((row) => row && !row.endsWith('\n→ —')));
+
+  if (payload.sommaire) {
+    addSection('Sommaire', String(payload.sommaire).trim().split(/\r?\n/));
   }
 
   return lines.join('\n');
@@ -430,10 +668,12 @@ function buildCustomFields(payload) {
     put('paiement_final', formatFrenchLongDate(paymentRaw));
   }
 
-  // Enrich notes custom field with structured note if empty
-  if (!byKey.has('notes')) {
-    const noteText = buildNotes(payload);
-    if (noteText) put('notes', noteText);
+  // Full formulaire note. `notes` is the legacy field; Internal Notifications
+  // do not merge it. Use LARGE_TEXT `note_reservation_interne` instead.
+  const noteText = buildNotes(payload);
+  if (noteText) {
+    put('notes', noteText);
+    put('note_reservation_interne', noteText);
   }
 
   return [...byKey.entries()].map(([key, field_value]) => ({ key, field_value }));
@@ -458,9 +698,9 @@ function buildContactBody(payload, assignedUserId) {
     postalCode: pick(payload, 'postal_code') || undefined,
     source: isQuickFormRequest(payload)
       ? 'Site formulaire rapide'
-      : (priceRequest ? 'Site demande de prix' : 'Site réservation chambre'),
-    assignedTo: assignedUserId || undefined
+      : (priceRequest ? 'Site demande de prix' : 'Site réservation chambre')
   };
+  if (assignedUserId) body.assignedTo = assignedUserId;
 
   const customFields = buildCustomFields(payload);
   if (customFields.length) body.customFields = customFields;
@@ -484,18 +724,117 @@ async function ghlAddNote(contactId, bodyText) {
   }
 }
 
-/**
- * Tag Added workflows only fire when the tag is newly applied.
- * Remove then re-add so re-bookings / retests still trigger.
- */
-async function ghlApplyTag(contactId, tag) {
-  if (!contactId || !tag) return { tagsAdded: [] };
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
-  await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
+function noteEmailHtml(noteText) {
+  return `<pre style="margin:0;white-space:pre-wrap;font-family:verdana,geneva,sans-serif;font-size:14px;line-height:1.5;">${escapeHtml(noteText)}</pre>`;
+}
+
+async function ghlFindContactIdByEmail(email) {
+  const url = `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&email=${encodeURIComponent(email)}`;
+  const res = await fetch(url, { headers: ghlHeaders() });
+  if (!res.ok) return '';
+  const data = await res.json().catch(() => null);
+  return data?.contact?.id || data?.contacts?.[0]?.id || '';
+}
+
+async function ghlEnsureNotifyContact(email) {
+  const existing = await ghlFindContactIdByEmail(email);
+  if (existing) return existing;
+  const res = await fetch(`${GHL_API}/contacts/`, {
+    method: 'POST',
+    headers: ghlHeaders(),
+    body: JSON.stringify({
+      locationId: GHL_LOCATION_ID,
+      email,
+      firstName: 'Notification',
+      lastName: 'Interne',
+      source: 'Notification interne reservation',
+      tags: ['equipe-interne']
+    })
+  });
+  const text = await res.text();
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (_) {
+    data = null;
+  }
+  if (!res.ok) {
+    console.warn('[reservation] notify contact create failed', res.status, text.slice(0, 300));
+    return '';
+  }
+  return data?.contact?.id || data?.id || '';
+}
+
+async function ghlSendInternalNoteEmail({ noteText, subject }) {
+  if (!noteText || !INTERNAL_NOTIFY_EMAILS.length) return { sent: [] };
+  const html = noteEmailHtml(noteText);
+  const sent = [];
+  for (const email of INTERNAL_NOTIFY_EMAILS) {
+    try {
+      const notifyContactId = await ghlEnsureNotifyContact(email);
+      if (!notifyContactId) continue;
+      const res = await fetch(`${GHL_API}/conversations/messages`, {
+        method: 'POST',
+        headers: ghlHeaders({ Version: '2021-04-15' }),
+        body: JSON.stringify({
+          type: 'Email',
+          contactId: notifyContactId,
+          emailFrom: GHL_EMAIL_FROM,
+          emailTo: email,
+          subject,
+          html,
+          message: noteText
+        })
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        console.warn('[reservation] internal email failed', email, res.status, text.slice(0, 300));
+        continue;
+      }
+      sent.push(email);
+      console.log('[reservation] internal email sent', email);
+    } catch (err) {
+      console.warn('[reservation] internal email error', email, err.message);
+    }
+  }
+  return { sent };
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function ghlRemoveTag(contactId, tag) {
+  if (!contactId || !tag) return;
+  const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
     method: 'DELETE',
     headers: ghlHeaders(),
     body: JSON.stringify({ tags: [tag] })
   });
+  if (!res.ok) {
+    const text = await res.text();
+    console.warn('[reservation] tag remove failed', res.status, text.slice(0, 300));
+  }
+}
+
+/**
+ * Remove then re-add so GHL "Contact Tag" workflows fire (including upserts
+ * on an existing contact that already has the tag). Wait after DELETE so
+ * GHL cannot apply the remove after the add.
+ */
+async function ghlApplyTag(contactId, tag) {
+  if (!contactId || !tag) return { tagsAdded: [] };
+
+  await ghlRemoveTag(contactId, tag);
+  await sleep(900);
 
   const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
     method: 'POST',
@@ -597,7 +936,14 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  let pathname = '/';
+  try {
+    const host = String(req.headers.host || 'localhost').replace(/[/\\]/g, '') || 'localhost';
+    pathname = new URL(req.url || '/', `http://${host}`).pathname;
+  } catch (_) {
+    pathname = String(req.url || '/').split('?')[0] || '/';
+  }
+  const url = { pathname };
 
   if (req.method === 'GET' && (url.pathname === '/' || url.pathname === '/health')) {
     return sendJson(res, 200, {
@@ -635,22 +981,48 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
-      const assignedUserId = await resolveAssignedUserId(payload);
-      const body = buildContactBody(payload, assignedUserId);
+      const voyageOwnerId = await resolveAssignedUserId(payload);
+      const existing = await ghlFindExistingContact({ email, phone });
+      const existingAssignedTo = extractAssignedUserId(existing);
+      // Never steal a contact already owned by another agent.
+      const assignOwner = Boolean(voyageOwnerId) && !existingAssignedTo;
+      const body = buildContactBody(payload, assignOwner ? voyageOwnerId : '');
       const noteText = buildNotes(payload);
       const result = await ghlUpsertContact(body);
       const contactId = result?.contact?.id || result?.id || null;
       const tags = resolveContactTags(payload);
 
-      if (contactId && assignedUserId) {
-        await ghlAssignContact(contactId, assignedUserId);
+      let assignedTo = existingAssignedTo;
+      if (contactId && !assignedTo) {
+        assignedTo = extractAssignedUserId(result?.contact) || extractAssignedUserId(await ghlGetContact(contactId));
+      }
+      if (contactId && voyageOwnerId && !assignedTo) {
+        await ghlAssignContact(contactId, voyageOwnerId);
+        assignedTo = voyageOwnerId;
+        console.log('[reservation] assigned voyage owner', contactId, voyageOwnerId);
+      } else if (contactId && existingAssignedTo && voyageOwnerId && existingAssignedTo !== voyageOwnerId) {
+        console.log('[reservation] kept existing assignee', contactId, existingAssignedTo);
       }
 
       let tagsAdded = [];
       if (contactId && tags.length) {
         const tagResult = await ghlApplyTags(contactId, tags);
         tagsAdded = tagResult?.tagsAdded || tags;
+        console.log('[reservation] tagged', contactId, tagsAdded.join(','));
         if (noteText) await ghlAddNote(contactId, noteText);
+      } else if (!contactId) {
+        console.warn('[reservation] upsert returned no contact id; tags skipped');
+      }
+
+      let notifyEmails = [];
+      if (noteText && INTERNAL_NOTIFY_EMAILS.length) {
+        const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')]
+          .filter(Boolean)
+          .join(' ');
+        const forfait = pick(payload, 'forfait_name', 'nom_du_forfait');
+        const subject = ['Nouvelle reservation', who, forfait].filter(Boolean).join(' — ');
+        const notify = await ghlSendInternalNoteEmail({ noteText, subject });
+        notifyEmails = notify.sent;
       }
 
       return sendJson(res, 200, {
@@ -658,11 +1030,14 @@ const server = http.createServer(async (req, res) => {
         contactId,
         tag: tags[0] || null,
         tags,
-        assignedTo: assignedUserId || null,
+        assignedTo: assignedTo || null,
         requestType: isQuickFormRequest(payload)
           ? 'quickform'
-          : (isPriceRequest(payload) ? 'demande_prix' : 'reservation'),
+          : (isPreSaleRequest(payload)
+            ? 'demande_prevente'
+            : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')),
         tagsAdded,
+        notifyEmails,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0
       });
     } catch (err) {
