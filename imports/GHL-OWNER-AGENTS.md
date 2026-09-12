@@ -3,7 +3,8 @@
 Guide admin + conseillers pour les sous-boutiques Voyage Fiesta.
 
 Live master: https://aubaineexpress.voyagefiesta.ca/  
-Sous-boutique: `https://aubaineexpress.voyagefiesta.ca/?agent=<slug>`
+Sous-boutique: `https://aubaineexpress.voyagefiesta.ca/?agent=<slug>`  
+Formulaire rapide (page séparée): `https://aubaineexpress.voyagefiesta.ca/quickform/<slug>.html`
 
 ---
 
@@ -43,7 +44,9 @@ Liste live : `agents.json` (généré, ne pas éditer à la main).
 À la réservation / demande depuis une sous-boutique (ou un forfait avec Owner), le site :
 
 1. **Assigne le contact** au user GHL du conseiller (`assignedTo` = Owner id)
-2. Tag métier seulement : `reservation-site` / `demande-prevente` / `demande-prix` — pas de tag par conseiller
+2. Tag métier seulement : `reservation-site` / `demande-prevente` / `demande-prix` / `quickform` — pas de tag par conseiller
+
+Le formulaire rapide (`/quickform/<slug>.html`) crée le contact, l’assigne au user GHL du conseiller, et applique le tag **`quickform`**. Une automation GHL sur Tag Added → `quickform` suffit pour toute l’équipe.
 
 ### Workflow GHL (une fois pour toute l’équipe)
 

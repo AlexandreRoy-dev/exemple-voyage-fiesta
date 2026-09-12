@@ -61,6 +61,7 @@ Le scope **`users.readonly`** est requis pour enrichir le Owner (conseiller) →
 |----------|-----|
 | Master (tous) | `https://aubaineexpress.voyagefiesta.ca/` |
 | Un conseiller | `https://aubaineexpress.voyagefiesta.ca/?agent=<slug>` |
+| Formulaire rapide (par conseiller) | `https://aubaineexpress.voyagefiesta.ca/quickform/<slug>.html` |
 
 À la réservation / demande d’intérêt, le contact est **assigné au Owner** du forfait. Pas de tag par conseiller. Voir [`imports/GHL-OWNER-AGENTS.md`](imports/GHL-OWNER-AGENTS.md).
 

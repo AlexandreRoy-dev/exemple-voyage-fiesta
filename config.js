@@ -308,6 +308,7 @@
     window.GHL_PIPELINE_STAGE_ID = '41f6a9bb-52fb-4f82-9ccb-20b717024e71';
     /** Tag appliqué sur les demandes de prix - trigger workflow GHL : Tag Added → demande-prix */
     window.GHL_PRICE_REQUEST_TAG = 'demande-prix';
+    window.GHL_QUICKFORM_TAG = 'quickform';
 
     /**
      * Mapping native form fields → GHL Query Keys (data-q).
