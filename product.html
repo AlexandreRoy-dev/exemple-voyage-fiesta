@@ -1407,6 +1407,7 @@
                 <form id="price-request-form" class="space-y-3 rounded-xl border border-blue-100 bg-brand-light/40 p-4" data-request-mode="${isPreSale ? 'prevente' : 'prix'}" novalidate>
                     <p class="text-sm font-semibold text-brand-blue">${escapeHtml(title)}</p>
                     <p class="text-xs text-gray-600 leading-relaxed -mt-1">${escapeHtml(intro)}</p>
+                    <p class="text-xs text-gray-600">Nom, courriel, téléphone et date de naissance sont requis.</p>
                     <div>
                         <label for="pr-name" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Nom complet</label>
                         <input id="pr-name" name="full_name" type="text" autocomplete="name" required
@@ -1425,6 +1426,12 @@
                             class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
                             placeholder="514 555-1234">
                     </div>
+                    <div>
+                        <label for="pr-dob" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Date de naissance <span class="font-semibold normal-case tracking-normal text-gray-600">(requis)</span></label>
+                        <input id="pr-dob" name="p1_dob" type="date" autocomplete="bday" required aria-describedby="pr-dob-error"
+                            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
+                        <p id="pr-dob-error" class="hidden mt-1 text-xs font-medium text-red-700"></p>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label for="pr-adults" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Adultes</label>
@@ -1438,7 +1445,7 @@
                         class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-3.5 rounded-xl shadow-lg hover:scale-[1.01] active:scale-95 text-base transition-all">
                         ${escapeHtml(submitLabel)}
                     </button>
-                    <p id="price-request-status" class="hidden text-center text-xs text-brand-blue font-medium"></p>
+                    <p id="price-request-status" class="hidden text-center text-xs text-brand-blue font-medium" role="status"></p>
                 </form>`;
         }
 
@@ -1523,16 +1530,43 @@
                 const fullName = String(document.getElementById('pr-name')?.value || '').trim();
                 const email = String(document.getElementById('pr-email')?.value || '').trim();
                 const phone = String(document.getElementById('pr-phone')?.value || '').trim();
+                const dobInput = document.getElementById('pr-dob');
+                const dobError = document.getElementById('pr-dob-error');
+                const dobRaw = String(dobInput?.value || '').trim();
                 const adults = Number(document.getElementById('pr-adults')?.value) || 2;
                 const kids = Number(document.getElementById('pr-kids')?.value) || 0;
+                const formatDob = window.RoomRegistration?.formatDobForGhl
+                    || ((value) => String(value || '').trim());
 
-                if (!fullName || !email || !phone) {
+                if (dobError) {
+                    dobError.textContent = '';
+                    dobError.classList.add('hidden');
+                }
+                if (dobInput) dobInput.removeAttribute('aria-invalid');
+
+                if (!fullName || !email || !phone || !dobRaw) {
+                    if (!dobRaw && dobInput) {
+                        if (dobError) {
+                            dobError.textContent = 'Entrez votre date de naissance.';
+                            dobError.classList.remove('hidden');
+                        }
+                        dobInput.setAttribute('aria-invalid', 'true');
+                        dobInput.focus();
+                    } else if (!fullName) {
+                        document.getElementById('pr-name')?.focus();
+                    } else if (!email) {
+                        document.getElementById('pr-email')?.focus();
+                    } else {
+                        document.getElementById('pr-phone')?.focus();
+                    }
                     if (statusEl) {
-                        statusEl.textContent = 'Nom, courriel et téléphone sont requis.';
+                        statusEl.textContent = 'Nom, courriel, téléphone et date de naissance sont requis.';
                         statusEl.classList.remove('hidden');
                     }
                     return;
                 }
+
+                const p1Dob = formatDob(dobRaw);
 
                 const nameParts = fullName.split(/\s+/).filter(Boolean);
                 const firstName = nameParts[0] || fullName;
@@ -1575,6 +1609,8 @@
                     full_name: fullName,
                     p1_prenom: firstName,
                     p1_nom: lastName,
+                    p1_dob: p1Dob,
+                    date_of_birth: p1Dob,
                     p1_email: email,
                     email,
                     p1_phone: phone,
@@ -1610,6 +1646,7 @@
                     sommaire: [
                         `${sommairePrefix} - ${p.name}`,
                         `Nom : ${fullName}`,
+                        `Date de naissance : ${p1Dob}`,
                         `Courriel : ${email}`,
                         `Téléphone : ${phone}`,
                         `Occupation : ${occupationLabel}`,
