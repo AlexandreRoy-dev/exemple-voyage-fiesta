@@ -112,24 +112,20 @@
 
     function renderPreSaleBannerHtml(options = {}) {
         const title = window.PRE_SALE_BANNER_TITLE || 'Pré-vente';
-        const subtitle = window.PRE_SALE_BANNER_SUBTITLE
-            || 'Manifestez votre intérêt. Aucun dépôt requis pour le moment';
+        const subtitle = String(window.PRE_SALE_BANNER_SUBTITLE || '').trim();
         if (options.compact) {
-            // Full-width ribbon on listing cards — must read at a glance
+            // Full-width ribbon on listing cards — title only
             return `<div class="absolute top-0 left-0 right-0 z-20 pointer-events-none" role="status">
                 <div class="bg-brand-blue text-white shadow-lg px-3 py-2.5 sm:py-3 text-center border-b-4 border-brand-orange">
                     <p class="text-base sm:text-lg font-black uppercase tracking-[0.12em] leading-none">
                         <i class="fa-solid fa-clock mr-2" aria-hidden="true"></i>${escapeHtml(title)}
-                    </p>
-                    <p class="mt-1 text-[10px] sm:text-[11px] font-semibold leading-snug opacity-95 normal-case tracking-normal">
-                        Aucun dépôt requis
                     </p>
                 </div>
             </div>`;
         }
         return `<div class="bg-blue-50 text-brand-blue border-2 border-brand-blue/30 rounded-lg p-3 text-center mb-6">
             <p class="font-bold text-sm uppercase tracking-wide"><i class="fa-solid fa-clock mr-2" aria-hidden="true"></i>${escapeHtml(title)}</p>
-            <p class="text-[11px] mt-1 text-gray-600 leading-snug">${escapeHtml(subtitle)}</p>
+            ${subtitle ? `<p class="text-[11px] mt-1 text-gray-600 leading-snug">${escapeHtml(subtitle)}</p>` : ''}
         </div>`;
     }
 
@@ -905,23 +901,9 @@
         return { amount, label: 'Occ. double' };
     }
 
-    /** Prix affiché sur la fiche liste - occupation la moins chère. */
+    /** Prix affiché sur la fiche liste — toujours occ. double (même champ que la pastille). */
     function getListingDisplayPrice(p) {
-        const lowest = getLowestOccupationRow(p);
-        if (lowest) {
-            const amount = getOccupationComparableAmount(lowest);
-            if (amount !== null) {
-                return { amount, label: lowest.label };
-            }
-        }
-
-        const base = optionalPrice(p.price);
-        if (base === null) return null;
-        const taxes = getDoubleOccupationTaxTotal(p);
-        return {
-            amount: taxes !== null ? base + taxes : base,
-            label: 'Occ. double'
-        };
+        return getDoubleOccupationDisplayPrice(p);
     }
 
     function clampInt(value, { min = 0, max = 99 } = {}) {

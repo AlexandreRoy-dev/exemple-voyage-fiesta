@@ -580,7 +580,7 @@
 
     /** Bannière statut pré-vente (GHL statut = Prévente → clé prvente) */
     window.PRE_SALE_BANNER_TITLE = 'Pré-vente';
-    window.PRE_SALE_BANNER_SUBTITLE = 'Manifestez votre intérêt. Aucun dépôt requis pour le moment';
+    window.PRE_SALE_BANNER_SUBTITLE = '';
 
     /** Court formulaire pré-vente (tarif d'occupation non publié) — pas de dépôt */
     window.PRE_SALE_REQUEST_FORM_TITLE = 'Je suis intéressé(e)';
