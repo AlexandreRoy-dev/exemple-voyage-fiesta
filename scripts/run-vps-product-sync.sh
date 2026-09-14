@@ -62,7 +62,7 @@ node -e '
 '
 
 paths=()
-for p in products.json agents.json staff.json assets/forfaits share quickform; do
+for p in products.json agents.json staff.json assets/forfaits share quickform destinations sitemap.xml robots.txt voyages-tout-inclus.html prevente.html departs-montreal.html departs-quebec.html comment-reserver.html a-propos.html contact.html; do
   if [[ -e "$p" ]]; then
     paths+=("$p")
   fi

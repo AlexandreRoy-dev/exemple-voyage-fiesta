@@ -40,7 +40,9 @@ function buildQuickformPageHtml(agent) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
-  <meta name="robots" content="noindex">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="author" content="Voyage Fiesta">
+  <meta name="theme-color" content="#025091">
   <link rel="canonical" href="${escapeHtml(pageUrl)}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Voyage Fiesta">
@@ -48,6 +50,14 @@ function buildQuickformPageHtml(agent) {
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(pageUrl)}">
+  <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
+  <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
+  <meta property="og:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
+  <meta name="twitter:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script>
@@ -101,7 +111,7 @@ export function writeQuickformPages(agents) {
   }
 
   for (const file of readdirSync(QUICKFORM_DIR)) {
-    if (!file.endsWith('.html')) continue;
+    if (!file.endsWith('.html') || file.includes('Jean-pc')) continue;
     const slug = file.slice(0, -5);
     if (!currentSlugs.has(slug)) {
       unlinkSync(resolve(QUICKFORM_DIR, file));

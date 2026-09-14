@@ -128,6 +128,9 @@ export function buildSharePageHtml(product) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="author" content="Voyage Fiesta">
+  <meta name="theme-color" content="#025091">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Voyage Fiesta">
   <meta property="og:locale" content="fr_CA">

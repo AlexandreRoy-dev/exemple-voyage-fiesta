@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { pickVoyagesUnwrapped, pickRecordName, formatAeroportLabel, formatDestinationAirportLabel } from './ghl-voyages-fields.mjs';
 import { writeSharePages } from './share-pages.mjs';
 import { writeQuickformPages } from './quickform-pages.mjs';
+import { writeSeoPages } from './seo-pages.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -1448,6 +1449,7 @@ async function main() {
  console.log(` with owner: ${products.filter(p => p.ownerId).length}`);
 
  writeSharePages(products);
+ writeSeoPages({ products, staff });
 }
 
 /** Répare products.json local — slugs nom-date, sans forfait-sans-nom-* */
@@ -1496,6 +1498,7 @@ function repairProductsJsonSlugs() {
  writeFileSync(OUTPUT, JSON.stringify(data, null, 2) + '\n', 'utf8');
  console.log(`Repaired ${changed} slug(s) in ${OUTPUT}`);
  writeSharePages(sorted);
+ writeSeoPages({ products: sorted, staff: Object.values(loadPreviousStaffById()) });
 }
 
 if (process.argv.includes('--repair-slugs')) {

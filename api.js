@@ -2574,8 +2574,13 @@
 
     function buildProductSharePayload(p) {
         const title = buildProductShareTitle(p);
+        const slug = String(p?.slug || '').trim();
+        const productUrl = slug
+            ? `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`
+            : getSiteBaseUrl();
         return {
             url: getProductShareUrl(p),
+            canonical: productUrl,
             title,
             description: buildProductShareDescription(p),
             image: getProductShareImage(p),
@@ -2586,8 +2591,8 @@
     function buildListingSharePayload() {
         const base = getSiteBaseUrl().replace(/\/$/, '');
         return {
-            url: `${base}/index.html`,
-            title: `Promotions | ${window.SITE_NAME || 'Voyage Fiesta'}`,
+            url: `${base}/`,
+            title: `Aubaines Express — voyages tout inclus au départ du Québec | ${window.SITE_NAME || 'Voyage Fiesta'}`,
             description: window.SITE_DEFAULT_DESCRIPTION || '',
             image: window.SITE_DEFAULT_SHARE_IMAGE || '',
             imageAlt: window.SITE_NAME || 'Voyage Fiesta'
@@ -2608,6 +2613,10 @@
     function applySocialMetaTags(payload) {
         if (!payload || typeof document === 'undefined') return;
         const siteName = window.SITE_NAME || 'Voyage Fiesta';
+        if (payload.title) document.title = payload.title;
+        setDocumentMeta('name', 'robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+        setDocumentMeta('name', 'author', siteName);
+        setDocumentMeta('name', 'theme-color', '#025091');
         setDocumentMeta('property', 'og:type', 'website');
         setDocumentMeta('property', 'og:site_name', siteName);
         setDocumentMeta('property', 'og:locale', 'fr_CA');
@@ -2621,7 +2630,18 @@
         setDocumentMeta('name', 'twitter:title', payload.title);
         setDocumentMeta('name', 'twitter:description', payload.description);
         setDocumentMeta('name', 'twitter:image', payload.image);
+        setDocumentMeta('name', 'twitter:image:alt', payload.imageAlt || payload.title);
         setDocumentMeta('name', 'description', payload.description);
+        const canonicalHref = payload.canonical || payload.url;
+        if (canonicalHref) {
+            let canonical = document.querySelector('link[rel="canonical"]');
+            if (!canonical) {
+                canonical = document.createElement('link');
+                canonical.setAttribute('rel', 'canonical');
+                document.head.appendChild(canonical);
+            }
+            canonical.setAttribute('href', canonicalHref);
+        }
     }
 
     function getSocialShareHref(platform, payload) {

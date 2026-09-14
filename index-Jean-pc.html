@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promotions - Voyage Fiesta</title>
+    <meta name="description" content="Aubaines voyage tout inclus - promotions limitées Voyage Fiesta.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Voyage Fiesta">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:title" content="Promotions - Voyage Fiesta">
+    <meta property="og:description" content="Aubaines voyage tout inclus - promotions limitées Voyage Fiesta.">
+    <meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/">
+    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta property="og:image:alt" content="Voyage Fiesta">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Promotions - Voyage Fiesta">
+    <meta name="twitter:description" content="Aubaines voyage tout inclus - promotions limitées Voyage Fiesta.">
+    <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#025091',
+                            orange: '#F26522',
+                            dark: '#1F2937',
+                            light: '#F9FAFB'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for filters */
+        .filter-scroll::-webkit-scrollbar { width: 6px; }
+        .filter-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+        .filter-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .filter-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .timer-box { font-variant-numeric: tabular-nums; }
+
+        .filter-dropdown { position: relative; }
+        .filter-dropdown-panel {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 4px);
+            z-index: 50;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 0.4rem;
+        }
+        .filter-dropdown.open .filter-dropdown-panel { display: block; }
+        .filter-dropdown.open .filter-dropdown-trigger i { transform: rotate(180deg); }
+        .filter-dropdown-option.hidden-by-search { display: none; }
+        .filter-select {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.35rem 0.55rem;
+            font-size: 0.75rem;
+            background: white;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: #F26522;
+            box-shadow: 0 0 0 2px rgba(242, 101, 34, 0.2);
+        }
+
+        .filters-sidebar {
+            font-size: 0.8125rem;
+            width: 100%;
+            max-width: 100%;
+        }
+        .filters-sidebar__title {
+            font-size: 0.95rem;
+            line-height: 1.2;
+        }
+        .filters-sidebar__body {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem 1rem;
+        }
+        @media (min-width: 768px) {
+            .filters-sidebar__body {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) {
+            .filters-sidebar__body {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+        .filters-sidebar.is-collapsed .filters-sidebar__body {
+            display: none;
+        }
+        .filters-sidebar.is-collapsed {
+            padding-top: 0.65rem;
+            padding-bottom: 0.65rem;
+        }
+        .filters-sidebar.is-collapsed .filters-sidebar__header {
+            margin-bottom: 0;
+        }
+        #toggle-filters {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #1B365D;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        #toggle-filters:hover {
+            background: #f8fafc;
+            border-color: #F26522;
+            color: #F26522;
+        }
+        #toggle-filters .toggle-filters-icon {
+            transition: transform 0.2s ease;
+            font-size: 0.7rem;
+        }
+        .filters-sidebar.is-collapsed #toggle-filters .toggle-filters-icon {
+            transform: rotate(180deg);
+        }
+        #reset-filters {
+            font-size: 0.7rem;
+        }
+        .filters-sidebar.is-collapsed #reset-filters {
+            display: none;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Mode iframe (site client) */
+        html.embed-mode {
+            --embed-chrome-height: 4.25rem;
+            font-size: 106.25%;
+        }
+        html.embed-mode .boutique-hero { display: none; }
+        html.embed-mode main { padding-top: 0.75rem; }
+        html.embed-mode .breadcrumb-inline { display: none; }
+        #listing-back-nav.hidden { display: none !important; }
+        html.embed-mode .embed-chrome {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            background: #ffffff;
+            border-bottom: 2px solid #F26522;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        html.embed-mode .embed-chrome__inner {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0.875rem 1rem;
+        }
+        html.embed-mode .embed-chrome__nav {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 1.0625rem;
+            line-height: 1.45;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+        html.embed-mode .embed-breadcrumb-back {
+            font-size: inherit;
+            font-weight: 600;
+        }
+        html.embed-mode .embed-breadcrumb-back i {
+            font-size: 0.8em;
+        }
+        .breadcrumb-back-link {
+            font-size: inherit;
+            font-weight: 600;
+        }
+        .breadcrumb-back-link i {
+            font-size: 0.8em;
+        }
+        @media (min-width: 640px) {
+            html.embed-mode {
+                --embed-chrome-height: 4.5rem;
+            }
+            html.embed-mode .embed-chrome__nav {
+                font-size: 1.125rem;
+            }
+        }
+        html.embed-mode .filters-sidebar__title { font-size: 0.95rem; }
+        html.embed-mode .filters-sidebar h3 { font-size: 0.75rem; }
+        html.embed-mode .filter-select { font-size: 0.75rem; padding: 0.35rem 0.55rem; }
+        html.embed-mode #products-container .text-xl { font-size: 1.35rem; }
+        html.embed-mode #result-count { font-size: 1.1em; }
+    </style>
+    <script src="embed.js?v=3"></script>
+</head>
+<body class="bg-brand-light text-gray-800 font-sans flex flex-col min-h-screen">
+
+    <header class="embed-chrome hidden" id="embed-chrome" aria-label="Navigation boutique">
+        <div class="embed-chrome__inner">
+            <nav id="embed-breadcrumb" class="embed-chrome__nav" aria-label="Fil d'Ariane">
+                <a href="index.html" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="boutique-hero relative bg-brand-dark">
+        <img src="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1920&fit=crop" alt="Destination de rêve" class="w-full h-36 md:h-44 object-cover">
+        <div class="absolute inset-x-0 top-0 bg-brand-orange/95 text-white text-center py-3 px-4 text-sm md:text-base font-semibold tracking-wide shadow-md">
+            🔥 Les places s'envolent rapidement ! Réservez aujourd'hui et profitez de nos meilleures aubaines voyage à prix exceptionnels.
+        </div>
+    </section>
+
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <nav id="listing-back-nav" class="breadcrumb-inline hidden text-lg sm:text-xl text-gray-600 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
+            <a href="index.html" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
+            </a>
+        </nav>
+
+        <div id="agent-boutique-header" class="hidden mb-6 rounded-lg border border-brand-blue/15 bg-white px-4 py-3.5 shadow-sm" role="region" aria-label="Conseiller">
+            <p class="text-xs font-semibold uppercase tracking-wide text-brand-orange m-0 mb-1">Votre conseiller</p>
+            <p id="agent-boutique-name" class="text-lg sm:text-xl font-bold text-brand-blue m-0"></p>
+            <p id="agent-boutique-contact" class="text-sm text-gray-600 m-0 mt-1.5 flex flex-wrap gap-x-4 gap-y-1"></p>
+        </div>
+
+        <div class="flex flex-col gap-5">
+        <aside id="filters-sidebar" class="filters-sidebar w-full bg-white rounded-lg shadow-md p-3.5 h-fit" data-open="true">
+            <div class="filters-sidebar__header flex justify-between items-center mb-3">
+                <h2 class="filters-sidebar__title font-bold text-brand-blue m-0">
+                    <i class="fa-solid fa-filter mr-1.5 text-xs" aria-hidden="true"></i>Filtres
+                </h2>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" id="reset-filters" class="text-gray-500 hover:text-brand-orange underline">Réinitialiser</button>
+                    <button type="button" id="toggle-filters" aria-expanded="true" aria-controls="filters-sidebar-body" title="Réduire les filtres">
+                        <i class="fa-solid fa-chevron-up toggle-filters-icon" aria-hidden="true"></i>
+                        <span class="sr-only">Réduire ou afficher les filtres</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="filters-sidebar-body" class="filters-sidebar__body">
+            <div id="filter-destinations-wrap"></div>
+
+            <div id="filter-suppliers-wrap"></div>
+
+            <div>
+                <h3 class="font-semibold mb-1.5 text-gray-700 text-xs">Classement Hôtelier</h3>
+                <div class="grid grid-cols-3 sm:grid-cols-5 gap-1" id="filter-stars-wrap">
+                    <button type="button" class="filter-star py-1 border rounded hover:bg-brand-blue hover:text-white transition text-xs" data-star="3">3 <i class="fa-solid fa-star text-[0.6rem]"></i></button>
+                    <button type="button" class="filter-star py-1 border rounded hover:bg-brand-blue hover:text-white transition text-xs" data-star="3.5">3,5 <i class="fa-solid fa-star-half-stroke text-[0.6rem]"></i></button>
+                    <button type="button" class="filter-star py-1 border rounded hover:bg-brand-blue hover:text-white transition text-xs" data-star="4">4 <i class="fa-solid fa-star text-[0.6rem]"></i></button>
+                    <button type="button" class="filter-star py-1 border rounded hover:bg-brand-blue hover:text-white transition text-xs" data-star="4.5">4,5 <i class="fa-solid fa-star-half-stroke text-[0.6rem]"></i></button>
+                    <button type="button" class="filter-star py-1 border rounded hover:bg-brand-blue hover:text-white transition text-xs" data-star="5">5 <i class="fa-solid fa-star text-[0.6rem]"></i></button>
+                </div>
+            </div>
+
+            <div>
+                <label for="filter-duration" class="font-semibold mb-1.5 text-gray-700 text-xs block">Durée</label>
+                <select id="filter-duration" class="filter-select">
+                    <option value="all">Toutes les durées</option>
+                    <option value="7">7 nuits / 8 jours</option>
+                    <option value="14">14 nuits / 15 jours</option>
+                </select>
+            </div>
+
+            <div id="filter-departure-dates-wrap"></div>
+
+            <div id="filter-criteria-wrap"></div>
+
+            <div id="filter-airports-wrap"></div>
+            </div>
+        </aside>
+
+        <section class="w-full min-w-0 relative z-0">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6 min-w-0">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 min-w-0"><span id="result-count">0</span> Forfaits trouvés</h2>
+                <select id="sort-products" class="w-full sm:w-auto shrink-0 border border-gray-300 rounded p-2 text-sm focus:ring-brand-orange">
+                    <option value="price-asc">Trier par : Prix (Bas vers Haut)</option>
+                    <option value="price-desc">Trier par : Prix (Haut vers Bas)</option>
+                    <option value="departure-asc">Trier par : Date de départ</option>
+                </select>
+            </div>
+            
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            </div>
+            <p id="financing-star-note" class="mt-4 text-xs text-gray-500 leading-snug hidden"></p>
+            <div id="loading-state" class="hidden col-span-full text-center py-16 text-gray-500">
+                <i class="fa-solid fa-spinner fa-spin text-3xl text-brand-blue mb-4"></i>
+                <p>Chargement des forfaits...</p>
+            </div>
+            <div id="empty-state" class="hidden col-span-full text-center py-16 text-gray-500">
+                <i class="fa-solid fa-suitcase-rolling text-4xl mb-4 text-gray-300"></i>
+                <p class="text-brand-blue font-semibold mb-2">Aucun forfait disponible pour le moment.</p>
+                <p class="text-sm max-w-md mx-auto">Revenez bientôt pour découvrir nos prochaines aubaines voyage.</p>
+            </div>
+            <div id="error-state" class="hidden col-span-full text-center py-16 text-gray-500">
+                <p class="text-brand-blue font-semibold mb-2">Impossible de charger les forfaits.</p>
+                <p class="text-sm">Veuillez réessayer plus tard.</p>
+            </div>
+        </section>
+        </div>
+
+    </main>
+
+    <script src="config.js?v=55"></script>
+    <script src="api.js?v=105"></script>
+    <script>
+        let products = [];
+        let activeStars = [];
+        let openDropdown = null;
+
+        function escapeHtml(text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function updateDropdownLabel(dropdown) {
+            const labelEl = dropdown.querySelector('.filter-dropdown-label');
+            const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]:checked');
+            const defaultLabel = dropdown.dataset.defaultLabel || 'Toutes';
+            if (!checkboxes.length) {
+                labelEl.textContent = defaultLabel;
+                return;
+            }
+            if (checkboxes.length === 1) {
+                const optionLabel = checkboxes[0].closest('label')?.querySelector('span')?.textContent?.trim();
+                labelEl.textContent = optionLabel || checkboxes[0].value;
+                return;
+            }
+            labelEl.textContent = `${checkboxes.length} sélectionné(s)`;
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.filter-dropdown.open').forEach(el => el.classList.remove('open'));
+            openDropdown = null;
+        }
+
+        function buildSearchableMultiSelect({ containerId, label, options, inputClass, defaultLabel }) {
+            const container = document.getElementById(containerId);
+            const safeDefault = defaultLabel || 'Toutes';
+
+            const normalizedOptions = options.map(opt =>
+                typeof opt === 'string' ? { label: opt, value: opt } : opt
+            );
+
+            const isSupplierFilter = inputClass === 'filter-supplier';
+
+            container.innerHTML = `
+                <div class="filter-dropdown" data-default-label="${escapeHtml(safeDefault)}">
+                    <label class="font-semibold mb-1.5 text-gray-700 text-xs block">${escapeHtml(label)}</label>
+                    <button type="button" class="filter-dropdown-trigger w-full flex items-center justify-between gap-2 border border-gray-300 rounded-md px-2.5 py-1.5 text-xs text-left bg-white hover:border-brand-orange transition-colors">
+                        <span class="filter-dropdown-label truncate">${escapeHtml(safeDefault)}</span>
+                        <i class="fa-solid fa-chevron-down text-[0.65rem] text-gray-400 transition-transform shrink-0"></i>
+                    </button>
+                    <div class="filter-dropdown-panel">
+                        <input type="search" class="filter-dropdown-search w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-xs mb-1.5 focus:outline-none focus:border-brand-orange" placeholder="Rechercher..." autocomplete="off">
+                        <div class="filter-dropdown-options filter-scroll max-h-48 overflow-y-auto space-y-0.5">
+                            ${normalizedOptions.map(({ label: optionLabel, value, logo }) => `
+                                <label class="filter-dropdown-option flex items-center gap-1.5 text-xs px-1.5 py-1 rounded hover:bg-brand-light cursor-pointer">
+                                    <input type="checkbox" value="${escapeHtml(value)}" class="${inputClass} rounded text-brand-orange focus:ring-brand-orange shrink-0 scale-90">
+                                    ${isSupplierFilter && logo
+                                        ? `<img src="${escapeHtml(logo)}" alt="" class="h-4 w-auto max-w-[4.5rem] object-contain shrink-0" loading="lazy">`
+                                        : ''}
+                                    <span class="truncate">${escapeHtml(optionLabel)}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>`;
+
+            const dropdown = container.querySelector('.filter-dropdown');
+            const trigger = dropdown.querySelector('.filter-dropdown-trigger');
+            const searchInput = dropdown.querySelector('.filter-dropdown-search');
+            const optionLabels = dropdown.querySelectorAll('.filter-dropdown-option');
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = dropdown.classList.contains('open');
+                closeAllDropdowns();
+                if (!isOpen) {
+                    dropdown.classList.add('open');
+                    openDropdown = dropdown;
+                    searchInput.value = '';
+                    optionLabels.forEach(opt => opt.classList.remove('hidden-by-search'));
+                    setTimeout(() => searchInput.focus(), 0);
+                }
+            });
+
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.trim().toLowerCase();
+                optionLabels.forEach(opt => {
+                    const text = opt.textContent.trim().toLowerCase();
+                    opt.classList.toggle('hidden-by-search', q && !text.includes(q));
+                });
+            });
+
+            searchInput.addEventListener('click', (e) => e.stopPropagation());
+
+            dropdown.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    updateDropdownLabel(dropdown);
+                    applyFilters();
+                    if (inputClass === 'filter-destination') {
+                        closeAllDropdowns();
+                    }
+                });
+            });
+        }
+
+        function buildFilterUI() {
+            buildSearchableMultiSelect({
+                containerId: 'filter-criteria-wrap',
+                label: 'Critères',
+                options: CRITERIA_OPTIONS,
+                inputClass: 'filter-criteria',
+                defaultLabel: 'Tous les critères'
+            });
+            buildSearchableMultiSelect({
+                containerId: 'filter-airports-wrap',
+                label: 'Aéroport de départ',
+                options: FILTER_AIRPORTS,
+                inputClass: 'filter-airport',
+                defaultLabel: 'Tous les aéroports'
+            });
+
+            document.getElementById('filter-duration').addEventListener('change', applyFilters);
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.filter-dropdown')) {
+                    closeAllDropdowns();
+                }
+            });
+        }
+
+        function buildDestinationFilter(productList) {
+            const options = VoyageFiestaAPI.getDestinationFilterOptions(productList);
+            buildSearchableMultiSelect({
+                containerId: 'filter-destinations-wrap',
+                label: 'Destinations',
+                options,
+                inputClass: 'filter-destination',
+                defaultLabel: 'Toutes les destinations'
+            });
+        }
+
+        function buildSupplierFilter(productList) {
+            const options = VoyageFiestaAPI.getSupplierFilterOptions(productList);
+            buildSearchableMultiSelect({
+                containerId: 'filter-suppliers-wrap',
+                label: 'Fournisseurs',
+                options,
+                inputClass: 'filter-supplier',
+                defaultLabel: 'Tous les fournisseurs'
+            });
+        }
+
+        function buildDepartureDateFilter(productList) {
+            const options = VoyageFiestaAPI.getDepartureDateFilterOptions(productList);
+            buildSearchableMultiSelect({
+                containerId: 'filter-departure-dates-wrap',
+                label: 'Date de départ',
+                options,
+                inputClass: 'filter-departure-date',
+                defaultLabel: 'Toutes les dates'
+            });
+        }
+
+        function renderStars(count) {
+            return VoyageFiestaAPI.renderStarsHtml(count, 'text-sm');
+        }
+
+        function formatTime(ms) {
+            if (ms <= 0) return "Expiré";
+            const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+            return `${days}j ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+        }
+
+        function renderIncentiveBadge(inc) {
+            if (!inc) return '';
+            const financingHtml = inc.financing != null
+                ? `<p class="mt-1 text-[10px] font-medium opacity-95 leading-tight">Financement à partir de ${VoyageFiestaAPI.formatMoney(inc.financing)} / mois*</p>`
+                : '';
+
+            return `
+                <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
+                    <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)} par passager</p>
+                    <p class="mt-0.5">
+                        <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice, { suffixClass: 'text-[0.72em] font-normal opacity-90 whitespace-nowrap' })}</span>
+                        <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoneyPerPerson(inc.price, { suffixClass: 'text-sm font-normal opacity-90 whitespace-nowrap' })}</span>
+                    </p>
+                    ${financingHtml}
+                </div>`;
+        }
+
+        function renderSupplierChip(p) {
+            const label = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+            const logo = VoyageFiestaAPI.getSupplierLogo(p.supplier);
+            if (logo) {
+                return `<span class="inline-flex items-center gap-1.5 bg-white text-gray-700 text-xs px-2 py-1.5 rounded border border-gray-200 mb-1 mr-1" title="${escapeHtml(label)}">
+                    <img src="${escapeHtml(logo)}" alt="${escapeHtml(label)}" class="h-4 w-auto max-w-[4.5rem] object-contain" loading="lazy">
+                </span>`;
+            }
+            return `<span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded border border-gray-200 mb-1 mr-1"><i class="fa-solid fa-plane mr-1"></i> ${escapeHtml(label)}</span>`;
+        }
+
+        function renderProducts(filteredData) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            document.getElementById('result-count').innerText = filteredData.length;
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-16 text-gray-500">
+                    <i class="fa-solid fa-plane-slash text-4xl mb-4 text-gray-300"></i>
+                    <p class="font-medium">Aucun forfait ne correspond à vos filtres.</p>
+                </div>`;
+                return;
+            }
+
+            filteredData.forEach(p => {
+                const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
+                const isVendu = VoyageFiestaAPI.isVendu(p);
+                const isUnavailable = VoyageFiestaAPI.isUnavailablePackage(p);
+                const isPreSale = VoyageFiestaAPI.isPreSale(p);
+                let inventoryBadge = '';
+
+                if (isVendu) {
+                    inventoryBadge = VoyageFiestaAPI.renderVenduBannerHtml({ compact: true });
+                } else if (isSoldOut) {
+                    inventoryBadge = `<div class="absolute top-4 left-4 bg-red-600 text-white font-bold px-3 py-1 rounded shadow-lg z-10 text-sm">COMPLET</div>`;
+                } else if (isPreSale) {
+                    inventoryBadge = VoyageFiestaAPI.renderPreSaleBannerHtml({ compact: true });
+                } else if (p.inventory <= 3) {
+                    inventoryBadge = `<div class="absolute top-4 left-4 bg-brand-orange text-white font-bold px-3 py-1 rounded shadow-lg z-10 text-sm">Reste ${p.inventory} chambre(s) à ce prix !</div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isUnavailable ? 'border-red-200' : ''}${isPreSale ? ' ring-2 ring-brand-blue/40' : ''}`;
+
+                const productUrl = window.VoyageFiestaEmbed
+                    ? window.VoyageFiestaEmbed.boutiqueUrl(`product.html?slug=${encodeURIComponent(p.slug)}`)
+                    : `product.html?slug=${encodeURIComponent(p.slug)}`;
+                const endMs = p.endDate instanceof Date ? p.endDate.getTime() : new Date(p.endDate).getTime();
+                const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
+                const departureLine = departureLabel
+                    ? `<p class="mt-1.5 text-base font-bold text-brand-blue leading-snug"><i class="fa-solid fa-calendar-day mr-1.5 text-brand-orange" aria-hidden="true"></i>Départ ${escapeHtml(departureLabel)}</p>`
+                    : '';
+                const inc = VoyageFiestaAPI.getIncentive(p);
+                const incentiveBadge = renderIncentiveBadge(inc);
+                const hasIncentive = Boolean(incentiveBadge);
+                const listingPrice = VoyageFiestaAPI.getListingDisplayPrice(p);
+                const displayAmount = listingPrice?.amount ?? inc?.price ?? null;
+                const priceLabel = inc?.occupationLabel || listingPrice?.label || 'Occ. double';
+                const financingLine = displayAmount != null
+                    ? VoyageFiestaAPI.renderFinancingFromPriceHtml(displayAmount, {
+                        compact: true,
+                        className: 'mt-1'
+                    })
+                    : '';
+                const strikeHtml = inc?.strikePrice
+                    ? `<p class="text-sm text-gray-400 line-through leading-tight mb-0.5">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice)}</p>`
+                    : '';
+                const priceFooterHtml = displayAmount != null
+                    ? `<div>
+                            <p class="text-xs text-gray-500 mb-1">${escapeHtml(priceLabel)} · à partir de</p>
+                            ${strikeHtml}
+                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(displayAmount)}</p>
+                            ${financingLine}
+                       </div>`
+                    : `<div>
+                            <p class="text-xs text-gray-500 mb-1">Occ. double</p>
+                            <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
+                       </div>`;
+
+                card.innerHTML = `
+                    <a href="${productUrl}" class="relative block group aspect-square overflow-hidden">
+                        ${inventoryBadge}
+                        ${incentiveBadge}
+                        <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 ${hasIncentive ? 'pr-36' : ''}">
+                            <h3 class="text-white text-xl font-bold leading-tight group-hover:text-brand-orange transition-colors">${p.name}</h3>
+                            <div class="flex items-center gap-2 mt-1">${renderStars(p.stars)}</div>
+                        </div>
+                    </a>
+                    <div class="p-5 flex-grow flex flex-col">
+                        ${p.promotion && !isUnavailable ? `<div class="-mx-5 -mt-5 mb-3 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white text-sm font-bold px-5 py-2 flex items-center gap-2"><i class="fa-solid fa-gift" aria-hidden="true"></i><span>${escapeHtml(p.promotion)}</span></div>` : ''}
+                        <div class="mb-3 min-w-0">
+                            <p class="font-semibold text-brand-blue text-base leading-snug break-words"><i class="fa-solid fa-location-dot mr-1"></i> ${p.destinationLabel || p.destination}${p.country ? `, ${p.country}` : ''}</p>
+                            ${departureLine}
+                            <p class="mt-1 text-sm text-gray-500">${p.durationNights} nuits</p>
+                        </div>
+                        <div class="mb-4">
+                            ${renderSupplierChip(p)}
+                            <span class="inline-block bg-brand-light text-brand-blue text-xs px-2 py-1 rounded border border-blue-100 mb-1 mr-1"><i class="fa-solid fa-bed mr-1"></i> ${p.roomCategory}</span>
+                            ${p.departureAirport ? `<span class="inline-block bg-orange-50 text-brand-orange text-xs px-2 py-1 rounded border border-orange-100 mb-1"><i class="fa-solid fa-plane-departure mr-1"></i> ${escapeHtml(p.departureAirport)}</span>` : ''}
+                        </div>
+                        <div class="mt-auto">
+                            <div class="bg-red-50 border border-red-100 rounded-lg p-2 mb-4 text-center">
+                                <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Aubaines Express Voyage se termine dans :</span>
+                                <div class="text-lg font-bold text-red-600 timer-box" data-end="${endMs}">Calcul...</div>
+                            </div>
+                            <div class="flex items-end justify-between gap-3 flex-wrap">
+                                ${priceFooterHtml}
+                                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                                    <div class="flex items-center justify-between sm:justify-end gap-2" onclick="event.stopPropagation()">
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Partager</span>
+                                        ${VoyageFiestaAPI.renderSocialShareButtonsHtml(p, { compact: true })}
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row gap-2">
+                                        <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
+                                            <i class="fa-solid fa-circle-info mr-1"></i> Détail
+                                        </a>
+                                        ${isUnavailable
+                                            ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">${isVendu ? 'Trop tard, Complet!' : 'Complet'}</span>`
+                                            : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                container.appendChild(card);
+            });
+
+            VoyageFiestaAPI.bindSocialShare(container, slug =>
+                filteredData.find(item => item.slug === slug)
+            );
+            updateTimers();
+
+            const starNote = document.getElementById('financing-star-note');
+            if (starNote) {
+                const noteHtml = VoyageFiestaAPI.renderFinancingStarNoteHtml();
+                if (noteHtml && filteredData.length) {
+                    starNote.innerHTML = noteHtml;
+                    starNote.classList.remove('hidden');
+                } else {
+                    starNote.innerHTML = '';
+                    starNote.classList.add('hidden');
+                }
+            }
+        }
+
+        function sortProducts(list) {
+            const mode = document.getElementById('sort-products').value;
+            const sorted = [...list];
+            if (mode === 'price-desc') {
+                sorted.sort((a, b) => b.price - a.price);
+            } else if (mode === 'departure-asc') {
+                sorted.sort((a, b) => VoyageFiestaAPI.departureDateSortKey(a) - VoyageFiestaAPI.departureDateSortKey(b));
+            } else {
+                sorted.sort((a, b) => a.price - b.price);
+            }
+            return sorted;
+        }
+
+        function applyFilters() {
+            const selectedDestinations = Array.from(document.querySelectorAll('.filter-destination:checked')).map(cb => cb.value);
+            const selectedSuppliers = Array.from(document.querySelectorAll('.filter-supplier:checked')).map(cb => cb.value);
+            const selectedAirports = Array.from(document.querySelectorAll('.filter-airport:checked')).map(cb => cb.value);
+            const selectedDepartureDates = Array.from(document.querySelectorAll('.filter-departure-date:checked')).map(cb => cb.value);
+            const durationValue = document.getElementById('filter-duration').value;
+            const selectedCriteria = Array.from(document.querySelectorAll('.filter-criteria:checked')).map(cb => cb.value);
+
+            const filtered = products.filter(p => {
+                if (!VoyageFiestaAPI.matchesDestinationFilter(p, selectedDestinations)) return false;
+                if (!VoyageFiestaAPI.matchesSupplierFilter(p, selectedSuppliers)) return false;
+                if (!VoyageFiestaAPI.matchesAirportFilter(p, selectedAirports)) return false;
+                if (!VoyageFiestaAPI.matchesDepartureDateFilter(p, selectedDepartureDates)) return false;
+                if (!VoyageFiestaAPI.matchesStarsFilter(p, activeStars)) return false;
+                if (durationValue !== 'all' && p.durationNights.toString() !== durationValue) return false;
+                if (!VoyageFiestaAPI.matchesCriteriaFilter(p, selectedCriteria)) return false;
+                return true;
+            });
+
+            renderProducts(sortProducts(filtered));
+            if (window.VoyageFiestaEmbed) window.VoyageFiestaEmbed.notifyParentHeight();
+        }
+
+        document.getElementById('sort-products').addEventListener('change', applyFilters);
+
+        document.querySelectorAll('.filter-star').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget;
+                const starVal = target.getAttribute('data-star');
+                if (activeStars.includes(starVal)) {
+                    activeStars = activeStars.filter(s => s !== starVal);
+                    target.classList.remove('bg-brand-blue', 'text-white');
+                } else {
+                    activeStars.push(starVal);
+                    target.classList.add('bg-brand-blue', 'text-white');
+                }
+                applyFilters();
+            });
+        });
+
+        document.getElementById('reset-filters').addEventListener('click', () => {
+            document.querySelectorAll('.filter-supplier, .filter-criteria, .filter-destination, .filter-airport, .filter-departure-date').forEach(cb => {
+                cb.checked = false;
+            });
+            document.querySelectorAll('.filter-dropdown').forEach(updateDropdownLabel);
+            document.getElementById('filter-duration').value = 'all';
+            activeStars = [];
+            document.querySelectorAll('.filter-star').forEach(btn => btn.classList.remove('bg-brand-blue', 'text-white'));
+            closeAllDropdowns();
+            applyFilters();
+        });
+
+        (function initFiltersCollapse() {
+            const sidebar = document.getElementById('filters-sidebar');
+            const toggle = document.getElementById('toggle-filters');
+            if (!sidebar || !toggle) return;
+
+            function setCollapsed(collapsed) {
+                sidebar.classList.toggle('is-collapsed', collapsed);
+                sidebar.dataset.open = collapsed ? 'false' : 'true';
+                toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                toggle.title = collapsed ? 'Afficher les filtres' : 'Réduire les filtres';
+            }
+
+            // Open by default
+            setCollapsed(false);
+
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                setCollapsed(!sidebar.classList.contains('is-collapsed'));
+            });
+        })();
+
+        function updateTimers() {
+            document.querySelectorAll('.timer-box').forEach(box => {
+                const end = parseInt(box.getAttribute('data-end'));
+                box.innerText = formatTime(end - Date.now());
+            });
+        }
+
+        setInterval(updateTimers, 1000);
+
+        function applyDestinationFromUrl() {
+            const dest = new URLSearchParams(window.location.search).get('destination');
+            if (!dest) return;
+
+            const wanted = VoyageFiestaAPI.normalizeDestinationKey(dest);
+            if (!wanted) return;
+
+            document.querySelectorAll('.filter-destination').forEach(cb => {
+                cb.checked = cb.value === wanted
+                    || VoyageFiestaAPI.normalizeDestinationKey(cb.value) === wanted;
+            });
+            document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+                if (dropdown.querySelector('.filter-destination')) {
+                    updateDropdownLabel(dropdown);
+                }
+            });
+        }
+
+        async function renderAgentBoutiqueHeader(agentKey, listedProducts) {
+            const wrap = document.getElementById('agent-boutique-header');
+            const nameEl = document.getElementById('agent-boutique-name');
+            const contactEl = document.getElementById('agent-boutique-contact');
+            if (!wrap || !nameEl || !contactEl) return;
+
+            if (!agentKey) {
+                wrap.classList.add('hidden');
+                nameEl.textContent = '';
+                contactEl.innerHTML = '';
+                const backNav = document.getElementById('listing-back-nav');
+                if (backNav) backNav.classList.add('hidden');
+                return;
+            }
+
+            const backNav = document.getElementById('listing-back-nav');
+            if (backNav) backNav.classList.remove('hidden');
+
+            const agents = await VoyageFiestaAPI.fetchAgents();
+            const profile = VoyageFiestaAPI.findAgentProfile(agents, agentKey)
+                || VoyageFiestaAPI.resolveAgentFromProducts(listedProducts, agentKey);
+
+            if (!profile || !profile.name) {
+                wrap.classList.add('hidden');
+                return;
+            }
+
+            nameEl.textContent = profile.name;
+            const bits = [];
+            if (profile.phone) {
+                bits.push(`<a class="text-brand-blue hover:underline" href="tel:${escapeHtml(profile.phone)}">${escapeHtml(profile.phone)}</a>`);
+            }
+            if (profile.email) {
+                bits.push(`<a class="text-brand-blue hover:underline" href="mailto:${escapeHtml(profile.email)}">${escapeHtml(profile.email)}</a>`);
+            }
+            contactEl.innerHTML = bits.join('');
+            wrap.classList.remove('hidden');
+        }
+
+        async function init() {
+            if (!window.VoyageFiestaAPI || typeof VoyageFiestaAPI.fetchProducts !== 'function') {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('error-state').classList.remove('hidden');
+                return;
+            }
+            VoyageFiestaAPI.applySocialMetaTags(VoyageFiestaAPI.buildListingSharePayload());
+            buildFilterUI();
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('error-state').classList.add('hidden');
+            try {
+                const agentKey = VoyageFiestaAPI.getAgentQueryParam();
+                products = await VoyageFiestaAPI.fetchProducts({ agent: agentKey });
+                await renderAgentBoutiqueHeader(agentKey, products);
+                buildDestinationFilter(products);
+                buildSupplierFilter(products);
+                buildDepartureDateFilter(products);
+                applyDestinationFromUrl();
+                if (!products.length) {
+                    document.getElementById('empty-state').classList.remove('hidden');
+                    document.getElementById('result-count').innerText = '0';
+                    document.getElementById('products-container').innerHTML = '';
+                } else {
+                    applyFilters();
+                }
+            } catch (err) {
+                document.getElementById('error-state').classList.remove('hidden');
+            } finally {
+                document.getElementById('loading-state').classList.add('hidden');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyage Fiesta</title>
+    <meta name="description" content="Forfait voyage - Voyage Fiesta">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Voyage Fiesta">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:title" content="Voyage Fiesta">
+    <meta property="og:description" content="Forfait voyage - Voyage Fiesta">
+    <meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/product.html">
+    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta property="og:image:alt" content="Voyage Fiesta">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Voyage Fiesta">
+    <meta name="twitter:description" content="Forfait voyage - Voyage Fiesta">
+    <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            blue: '#025091',
+                            orange: '#F26522',
+                            dark: '#1F2937',
+                            light: '#F3F7FA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sticky-booking { position: sticky; top: 1rem; }
+        .tab-active { border-bottom: 3px solid #F26522; color: #025091; font-weight: 600; }
+        .product-tab { border-bottom: 3px solid transparent; color: #4b5563; }
+        .product-tab:hover { color: #025091; }
+        #product-tabs [role="tab"]:focus-visible {
+            outline: 2px solid #025091;
+            outline-offset: 2px;
+        }
+        .gallery-tile { cursor: pointer; }
+        .gallery-tile:hover img { transform: scale(1.03); }
+        .gallery-tile img { transition: transform 0.3s ease; }
+        #gallery-lightbox:not(.hidden) { display: flex; }
+        .occupation-option {
+            display: block;
+            min-height: 3.25rem;
+            padding: 0.875rem 1rem;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            user-select: none;
+            cursor: pointer;
+        }
+        .occupation-option.is-selected {
+            border-color: #F26522;
+            background-color: #fff7ed;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .occupation-option-indicator {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #d1d5db;
+            border-radius: 9999px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .occupation-option.is-selected .occupation-option-indicator {
+            border-color: #F26522;
+        }
+        .occupation-option.is-selected .occupation-option-indicator::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            background: #F26522;
+            border-radius: 9999px;
+        }
+        .occupation-radio {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        .occupation-summary-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+        .occupation-price-stack .price-main {
+            font-variant-numeric: tabular-nums;
+        }
+        @media (max-width: 1023px) {
+            .sticky-booking { position: static; top: auto; }
+            #open-reservation { min-height: 3rem; touch-action: manipulation; }
+        }
+        @supports (padding: max(0px)) {
+            @media (max-width: 1023px) {
+                body.product-has-booking { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+            }
+        }
+        html.embed-mode .product-countdown-bar { display: none; }
+
+        html.embed-mode {
+            --embed-chrome-height: 4.25rem;
+            font-size: 106.25%;
+        }
+        html.embed-mode .product-breadcrumb-inline { display: none; }
+        html.embed-mode .embed-chrome {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            background: #ffffff;
+            border-bottom: 2px solid #F26522;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+        html.embed-mode .embed-chrome__inner {
+            max-width: 80rem;
+            margin: 0 auto;
+            padding: 0.875rem 1rem;
+        }
+        html.embed-mode .embed-chrome__nav {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 1.0625rem;
+            line-height: 1.45;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
+        html.embed-mode .embed-breadcrumb-back {
+            font-size: inherit;
+            font-weight: 600;
+        }
+        html.embed-mode .embed-breadcrumb-back i {
+            font-size: 0.8em;
+        }
+        .breadcrumb-back-link {
+            font-size: inherit;
+            font-weight: 600;
+        }
+        .breadcrumb-back-link i {
+            font-size: 0.8em;
+        }
+        @media (min-width: 640px) {
+            html.embed-mode {
+                --embed-chrome-height: 4.5rem;
+            }
+            html.embed-mode .embed-chrome__nav {
+                font-size: 1.125rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            html.embed-mode .sticky-booking { top: calc(var(--embed-chrome-height) + 0.75rem); }
+        }
+        @media (max-width: 1023px) {
+            .flight-leg-grid { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+            .flight-leg-center { min-width: 0; }
+        }
+    </style>
+                <script src="embed.js?v=3"></script>
+</head>
+<body class="bg-brand-light text-gray-800 font-sans product-has-booking">
+
+    <header class="embed-chrome hidden" id="embed-chrome" aria-label="Navigation boutique">
+        <div class="embed-chrome__inner">
+            <nav id="embed-breadcrumb" class="embed-chrome__nav" aria-label="Fil d'Ariane"></nav>
+        </div>
+    </header>
+
+    <div class="product-countdown-bar bg-red-600 text-white py-2 overflow-hidden">
+        <div class="container mx-auto px-4 flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-center">
+            <span class="font-bold animate-pulse text-sm md:text-base">🔥 OFFRE AUBAINES EXPRESS VOYAGE :</span>
+            <div id="countdown" class="font-mono font-bold text-lg tracking-tighter shrink-0">00j 00h 00m 00s</div>
+        </div>
+    </div>
+
+    <div id="product-content"></div>
+
+    <div id="not-found" class="hidden container mx-auto px-4 py-24 text-center">
+        <h1 class="text-2xl font-bold text-brand-blue mb-4">Forfait introuvable</h1>
+        <p class="text-gray-600 mb-6">Ce produit n'existe pas ou n'est plus disponible.</p>
+        <a href="index.html" class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors">Retour aux promotions</a>
+    </div>
+
+    <div id="gallery-lightbox" class="hidden fixed inset-0 z-[110] bg-black/95 flex-col" role="dialog" aria-modal="true" aria-label="Galerie photos">
+        <div class="flex justify-between items-center px-4 py-3 text-white shrink-0">
+            <span id="gallery-lightbox-counter" class="text-sm font-medium"></span>
+            <button type="button" id="gallery-lightbox-close" class="text-3xl leading-none text-white/80 hover:text-white" aria-label="Fermer">&times;</button>
+        </div>
+        <div class="relative flex-grow flex items-center justify-center px-4 pb-4 min-h-0">
+            <button type="button" id="gallery-lightbox-prev" class="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full" aria-label="Photo précédente">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <img id="gallery-lightbox-image" src="" alt="" class="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl">
+            <button type="button" id="gallery-lightbox-next" class="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full" aria-label="Photo suivante">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://link.msgsndr.com/js/form_embed.js" type="text/javascript"></script>
+
+    <script src="config.js?v=55"></script>
+    <script src="room-registration.js?v=25"></script>
+    <script src="api.js?v=105"></script>
+    <script>
+        const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
+        const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
+        const BEFORE_TAX_LABEL = () => VoyageFiestaAPI.getBeforeTaxesLabel();
+        const BEFORE_TAX_LABEL_PP = () => VoyageFiestaAPI.getBeforeTaxesLabel({ perPerson: true });
+        const PRICING_LEGAL_NOTE = () => `Tarifs par passager · le total inclut ${TAX_LABEL().toLowerCase()}.`;
+
+        const criteriaIcons = {
+            tout_inclus: 'fa-utensils',
+            tout_inclus_allinclusive: 'fa-utensils',
+            adultes_seulement: 'fa-cocktail',
+            pour_adultes_18: 'fa-cocktail',
+            golf: 'fa-golf-ball-tee',
+            jeux_deau: 'fa-water',
+            glissade_deau: 'fa-water-ladder',
+            vue_mer: 'fa-water',
+            swim_out: 'fa-person-swimming',
+            sur_la_plage: 'fa-umbrella-beach',
+            familial: 'fa-users',
+            romantique__lune_de_miel: 'fa-heart',
+            tranquille__dtente: 'fa-spa',
+            animation__fte: 'fa-music',
+            pour_celibataires: 'fa-champagne-glasses',
+            adapt_aux_bbs: 'fa-baby',
+            directement_sur_la_plage: 'fa-umbrella-beach',
+            vue_sur_la_mer: 'fa-water',
+            deuxime_ligne_courte_marche: 'fa-person-walking',
+            prs_du_centreville: 'fa-city',
+            isol__en_nature: 'fa-tree',
+            tout_inclus_allinclusive: 'fa-utensils',
+            djeuners_inclus: 'fa-mug-saucer',
+            plan_europen_sans_repas: 'fa-bed',
+            boissons_de_marques_premium_incluses: 'fa-wine-glass',
+            soupers__la_carte_illimits: 'fa-utensils',
+            glissades_deau__parc_aquatique: 'fa-water-ladder',
+            piscine_pour_enfants: 'fa-child-reaching',
+            piscine_rserve_aux_adultes: 'fa-person-swimming',
+            piscine__dbordement_infinity: 'fa-water',
+            prendre_un_verre_dans_la_piscine_swim_up_bar: 'fa-martini-glass-citrus',
+            section_privilge__club_slect: 'fa-star',
+            spa__centre_de_bientre: 'fa-spa',
+            wifi_gratuit_partout: 'fa-wifi',
+            wifi_gratuit_au_lobby_seulement: 'fa-wifi',
+            service_aux_chambres_24h: 'fa-bell-concierge',
+            rcemment_rnov: 'fa-hammer',
+            accessible_en_fauteuil_roulant: 'fa-wheelchair',
+            parcours_de_golf__proximit: 'fa-golf-ball-tee',
+            centre_de_plonge_padi: 'fa-water',
+            tennis: 'fa-table-tennis-paddle-ball',
+            sports_nautiques_non_motoriss_inclus: 'fa-sailboat',
+            gym__centre_de_fitness: 'fa-dumbbell',
+            casino_sur_place: 'fa-dice',
+            vol_direct_sans_escale: 'fa-plane',
+            transferts_aroporthtel_inclus: 'fa-bus',
+            dpart_de_nuit: 'fa-moon',
+            siges_en_classe_conomique_privilge: 'fa-chair'
+        };
+
+        function renderStars(count) {
+            return VoyageFiestaAPI.renderStarsHtml(count);
+        }
+
+        function formatStarsText(count) {
+            return VoyageFiestaAPI.formatStarsLabel(count);
+        }
+
+        function splitFieldLines(text) {
+            return VoyageFiestaAPI.normalizePackageListItems(text);
+        }
+
+        const inclusionIcons = {
+            vols_allerretour: 'fa-plane',
+            vols_directs: 'fa-plane-up',
+            transferts_aeroport_hotel: 'fa-bus',
+            hebergement: 'fa-hotel',
+            tout_inclus_repas_boissons: 'fa-utensils',
+            petit_dejeuner: 'fa-mug-saucer',
+            dejeuners: 'fa-utensils',
+            soupers: 'fa-utensils',
+            boissons_nationales: 'fa-wine-glass',
+            boissons_premium: 'fa-martini-glass-citrus',
+            ficav: 'fa-shield-halved',
+            taxes_frais_aeriens: 'fa-receipt',
+            wifi_hotel: 'fa-wifi',
+            sports_nautiques_non_motorises: 'fa-sailboat',
+            club_enfants: 'fa-child-reaching',
+            acces_spa: 'fa-spa',
+            golf: 'fa-golf-ball-tee',
+            pourboires_hotel: 'fa-hand-holding-dollar',
+            service_chambres: 'fa-bell-concierge',
+            guide_francophone: 'fa-language',
+            excursions: 'fa-map',
+            bagage_enregistre: 'fa-suitcase',
+            selection_sieges: 'fa-chair',
+            assistance_24_7: 'fa-headset',
+            assurance_voyage: 'fa-file-shield',
+            location_voiture: 'fa-car',
+            frais_dossier: 'fa-folder-open',
+            salon_aeroport: 'fa-couch',
+            repas_bord: 'fa-plane-circle-check',
+            nuit_connexion: 'fa-bed'
+        };
+
+        function packageTypeKey(p) {
+            return String(p.packageType || '').toLowerCase();
+        }
+
+        function isAllInclusivePackage(p) {
+            const type = packageTypeKey(p);
+            return (type.includes('tout') && type.includes('inclus')) || type.includes('croisi');
+        }
+
+        function getDefaultInclusions(p) {
+            const type = packageTypeKey(p);
+            const lodging = isAllInclusivePackage(p)
+                ? 'Hébergement pour la durée du séjour avec repas et boisson'
+                : 'Hébergement pour la durée du séjour';
+            const base = [
+                { icon: 'fa-plane', text: 'Vols aller-retour directs ou avec escales' },
+                { icon: 'fa-bus', text: 'Transferts aéroport → hôtel → aéroport' },
+                { icon: 'fa-hotel', text: lodging },
+                { icon: 'fa-shield-halved', text: 'Contribution au Fonds FICAV' }
+            ];
+            if (type.includes('europ') || (type.includes('vol') && (type.includes('hôtel') || type.includes('hotel')))) {
+                base.splice(3, 0, { icon: 'fa-mug-saucer', text: 'Petit-déjeuner quotidien' });
+            } else if (type.includes('circuit')) {
+                base.splice(3, 0, { icon: 'fa-map', text: 'Guide francophone et excursions incluses' });
+            }
+            return base;
+        }
+
+        function getInclusionItems(p) {
+            const custom = splitFieldLines(p.inclusions);
+            if (custom.length) {
+                return custom.map((key) => ({
+                    icon: inclusionIcons[key] || 'fa-check',
+                    text: VoyageFiestaAPI.formatInclusionLabel(key)
+                }));
+            }
+            return getDefaultInclusions(p);
+        }
+
+        function getExclusionItems(p) {
+            const custom = splitFieldLines(p.exclusions);
+            if (custom.length) {
+                return custom.map((key) => VoyageFiestaAPI.formatExclusionLabel(key));
+            }
+            return ['Tout ce qui n\'est pas inscrit dans la section « Inclusions »'];
+        }
+
+        function getBaggageItems(p) {
+            const custom = splitFieldLines(p.franchiseBagage || p.franchise_bagage);
+            if (custom.length) return custom;
+            const carrierLabel = VoyageFiestaAPI.formatProductDisplayValue(p, 'carrier');
+            return [
+                carrierLabel
+                    ? `1 bagage enregistré (selon ${carrierLabel})`
+                    : '1 bagage enregistré (selon le transporteur)'
+            ];
+        }
+
+        function galleryOverlayLabel(count) {
+            if (count <= 1) return '';
+            const extra = count - 3;
+            if (extra > 0) return `+${extra} photo${extra > 1 ? 's' : ''}`;
+            return `${count} photo${count > 1 ? 's' : ''}`;
+        }
+
+        function buildProductGalleryHtml(p, gallery) {
+            const count = gallery.length;
+            const main = gallery[0];
+            const thumb1 = gallery[1] || gallery[0];
+            const thumb2 = gallery[2] || gallery[1] || gallery[0];
+            const overlayLabel = galleryOverlayLabel(count);
+            const alt = escapeHtml(p.name);
+
+            const overlayHtml = overlayLabel
+                ? `<button type="button" class="gallery-open absolute inset-0 z-10 bg-black/45 hover:bg-black/55 flex items-center justify-center transition-colors border-0 p-0 cursor-pointer" data-gallery-index="0" aria-label="Ouvrir la galerie (${count} photos)">
+                        <span class="text-white font-bold text-sm drop-shadow">${overlayLabel}</span>
+                   </button>`
+                : '';
+
+            return `
+                <div class="rounded-xl overflow-hidden border border-gray-100 shadow-sm min-w-0" id="product-gallery">
+                    <div class="grid grid-cols-1 md:grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-0.5 sm:gap-2 md:h-96 bg-gray-200 md:bg-transparent">
+                        <button type="button" class="gallery-open gallery-tile relative block w-full min-w-0 min-h-[220px] md:min-h-0 md:h-full bg-gray-300 rounded-t-xl md:rounded-l-xl md:rounded-tr-none overflow-hidden border-0 p-0 text-left aspect-[16/10] md:aspect-auto" data-gallery-index="0" aria-label="Ouvrir la photo principale">
+                            <img src="${main}" class="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="${alt}">
+                            <span class="absolute bottom-4 left-4 z-[1] bg-black/60 text-white px-3 py-1 rounded-full text-xs pointer-events-none">${escapeHtml(p.subDest)}</span>
+                        </button>
+                        <div class="hidden md:grid grid-rows-2 gap-2 h-full min-h-0 min-w-0">
+                            <button type="button" class="gallery-open gallery-tile relative block w-full min-w-0 min-h-0 h-full bg-gray-300 rounded-tr-xl overflow-hidden border-0 p-0" data-gallery-index="${Math.min(1, count - 1)}" aria-label="Ouvrir la galerie">
+                                <img src="${thumb1}" class="absolute inset-0 w-full h-full object-cover pointer-events-none" alt="Chambre - ${alt}">
+                            </button>
+                            <div class="relative min-h-0 h-full min-w-0 rounded-br-xl overflow-hidden bg-gray-300">
+                                <button type="button" class="gallery-open gallery-tile absolute inset-0 z-0 border-0 p-0 w-full h-full" data-gallery-index="${Math.min(2, count - 1)}" aria-label="Ouvrir la galerie">
+                                    <img src="${thumb2}" class="w-full h-full object-cover pointer-events-none" alt="Activités - ${alt}">
+                                </button>
+                                ${overlayHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        let activeGallery = [];
+        let activeGalleryAlt = '';
+        let gallerySlideIndex = 0;
+
+        function bindGalleryViewer(gallery, altText) {
+            activeGallery = gallery;
+            activeGalleryAlt = altText || 'Photo';
+
+            const lightbox = document.getElementById('gallery-lightbox');
+            const imageEl = document.getElementById('gallery-lightbox-image');
+            const counterEl = document.getElementById('gallery-lightbox-counter');
+            const prevBtn = document.getElementById('gallery-lightbox-prev');
+            const nextBtn = document.getElementById('gallery-lightbox-next');
+            const closeBtn = document.getElementById('gallery-lightbox-close');
+
+            function renderSlide() {
+                if (!activeGallery.length) return;
+                imageEl.src = activeGallery[gallerySlideIndex];
+                imageEl.alt = `${activeGalleryAlt} - photo ${gallerySlideIndex + 1}`;
+                counterEl.textContent = `${gallerySlideIndex + 1} / ${activeGallery.length}`;
+                prevBtn.classList.toggle('hidden', activeGallery.length <= 1);
+                nextBtn.classList.toggle('hidden', activeGallery.length <= 1);
+            }
+
+            function openLightbox(index) {
+                if (!activeGallery.length) return;
+                gallerySlideIndex = Math.max(0, Math.min(index, activeGallery.length - 1));
+                renderSlide();
+                lightbox.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeLightbox() {
+                lightbox.classList.add('hidden');
+                imageEl.src = '';
+                document.body.style.overflow = '';
+            }
+
+            function step(delta) {
+                if (activeGallery.length <= 1) return;
+                gallerySlideIndex = (gallerySlideIndex + delta + activeGallery.length) % activeGallery.length;
+                renderSlide();
+            }
+
+            document.querySelectorAll('.gallery-open').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const index = parseInt(btn.getAttribute('data-gallery-index') || '0', 10);
+                    openLightbox(Number.isNaN(index) ? 0 : index);
+                };
+            });
+
+            closeBtn.onclick = closeLightbox;
+            prevBtn.onclick = () => step(-1);
+            nextBtn.onclick = () => step(1);
+            lightbox.onclick = (e) => {
+                if (e.target === lightbox) closeLightbox();
+            };
+
+            if (!window.__galleryKeysBound) {
+                window.__galleryKeysBound = true;
+                document.addEventListener('keydown', (e) => {
+                    const lb = document.getElementById('gallery-lightbox');
+                    if (!lb || lb.classList.contains('hidden')) return;
+                    if (e.key === 'Escape') window.__galleryClose?.();
+                    if (e.key === 'ArrowLeft') window.__galleryStep?.(-1);
+                    if (e.key === 'ArrowRight') window.__galleryStep?.(1);
+                });
+            }
+
+            window.__galleryStep = step;
+            window.__galleryClose = closeLightbox;
+        }
+
+        function escapeHtml(text) {
+            return String(text ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function formatHotelDescription(text) {
+            const trimmed = String(text ?? '').trim();
+            if (!trimmed) return '';
+            return escapeHtml(trimmed)
+                .split(/\n{2,}/)
+                .map(p => `<p class="mb-3 last:mb-0 leading-relaxed">${p.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+        }
+
+        function buildHotelDetailsHtml(p, criteriaHtml) {
+            const description = formatHotelDescription(p.hotelDescription);
+            const forfaitLink = VoyageFiestaAPI.normalizeExternalUrl(p.forfaitLink ?? p.forfait_link);
+            const forfaitLinkHtml = forfaitLink
+                ? `<p class="mt-4 mb-0">
+                        <a href="${escapeHtml(forfaitLink)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-brand-blue font-semibold hover:text-brand-orange underline underline-offset-2 transition-colors">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs" aria-hidden="true"></i>
+                            Consultez la fiche complète de l'hôtel ici
+                        </a>
+                   </p>`
+                : '';
+            const fallbackDescription = `
+                <p class="leading-relaxed text-gray-600 mb-3">
+                    ${escapeHtml(p.name)} est situé à ${escapeHtml(p.location || p.subDest || p.destination)}.
+                    ${p.stars ? `Cet établissement classé ${formatStarsText(p.stars)} ` : 'Cet établissement '}
+                    vous accueille pour un séjour de ${p.durationNights} nuit${p.durationNights > 1 ? 's' : ''}
+                    ${p.subDest ? ` à ${escapeHtml(p.subDest)}` : ''}${p.country ? `, ${escapeHtml(p.country)}` : ''}.
+                </p>
+                ${p.roomCategory ? `<p class="leading-relaxed text-gray-600">Catégorie de chambre incluse : <strong>${escapeHtml(p.roomCategory)}</strong>.</p>` : ''}`;
+
+            const facts = [
+                { label: 'Classification', value: p.stars ? formatStarsText(p.stars) : null },
+                { label: 'Type de chambre', value: p.roomCategory },
+                { label: 'Destination', value: [p.destinationLabel || p.destination, p.country].filter(Boolean).join(', ') },
+                { label: 'Emplacement', value: p.location || p.subDest }
+            ].filter(item => item.value);
+
+            const factsHtml = facts.length
+                ? `<div class="grid sm:grid-cols-2 gap-3 mb-6">
+                        ${facts.map(f => `
+                            <div class="bg-brand-light rounded-lg px-4 py-3 border border-blue-100">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">${escapeHtml(f.label)}</p>
+                                <p class="text-sm font-semibold text-brand-blue">${escapeHtml(f.value)}</p>
+                            </div>`).join('')}
+                   </div>`
+                : '';
+
+            return `
+                <div class="md:flex gap-6">
+                    <div class="md:w-2/5 mb-4 md:mb-0">
+                        <img src="${p.imgRoom || p.img}" alt="Chambre - ${escapeHtml(p.name)}" class="w-full h-56 md:h-full min-h-[14rem] object-cover rounded-xl border border-gray-100">
+                    </div>
+                    <div class="md:w-3/5">
+                        <h3 class="font-bold text-brand-blue text-lg mb-3">${escapeHtml(p.name)}</h3>
+                        <div class="text-sm text-gray-600 mb-5">
+                            ${description || fallbackDescription}
+                            ${forfaitLinkHtml}
+                        </div>
+                        ${factsHtml}
+                        ${criteriaHtml ? `
+                            <div class="pt-4 border-t border-gray-200">
+                                <h4 class="font-bold text-xs uppercase text-gray-400 mb-3 tracking-widest">Commodités &amp; critères</h4>
+                                <div class="flex flex-wrap gap-2">${criteriaHtml}</div>
+                            </div>` : ''}
+                    </div>
+                </div>`;
+        }
+
+        function bindProductTabs() {
+            const tablist = document.querySelector('#product-tabs [role="tablist"]');
+            const tabs = Array.from(document.querySelectorAll('#product-tabs [role="tab"]'));
+            const panels = Array.from(document.querySelectorAll('#product-tabs [role="tabpanel"]'));
+            if (!tablist || !tabs.length) return;
+
+            const activateTab = (tab, { focus = false } = {}) => {
+                const target = tab.getAttribute('data-product-tab');
+                tabs.forEach((item) => {
+                    const selected = item === tab;
+                    item.classList.toggle('tab-active', selected);
+                    item.classList.toggle('product-tab', !selected);
+                    item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                    item.tabIndex = selected ? 0 : -1;
+                });
+                panels.forEach((panel) => {
+                    const match = panel.getAttribute('data-product-panel') === target;
+                    panel.classList.toggle('hidden', !match);
+                    panel.hidden = !match;
+                });
+                if (focus) tab.focus();
+            };
+
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => activateTab(tab));
+            });
+
+            tablist.addEventListener('keydown', (event) => {
+                const current = tabs.indexOf(document.activeElement);
+                if (current < 0) return;
+                let next = current;
+                if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (current + 1) % tabs.length;
+                else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (current - 1 + tabs.length) % tabs.length;
+                else if (event.key === 'Home') next = 0;
+                else if (event.key === 'End') next = tabs.length - 1;
+                else return;
+                event.preventDefault();
+                tabs[next].focus();
+            });
+        }
+
+        function buildFlightLegHtml(label, leg, carrier, airlineLogo) {
+            if (!VoyageFiestaAPI.flightLegHasData(leg)) return '';
+
+            const departDate = VoyageFiestaAPI.formatFlightDate(leg.departDate);
+            const arriveDate = VoyageFiestaAPI.formatFlightDate(leg.arriveDate);
+            const departTime = VoyageFiestaAPI.formatFlightTime(leg.departTime);
+            const arriveTime = VoyageFiestaAPI.formatFlightTime(leg.arriveTime);
+            const airlineHtml = airlineLogo
+                ? `<img src="${escapeHtml(airlineLogo)}" alt="${escapeHtml(carrier || 'Compagnie')}" class="h-8 w-auto max-w-[6rem] mx-auto object-contain mb-2">`
+                : `<p class="text-xs font-black tracking-widest text-brand-blue uppercase mb-2">${escapeHtml(carrier || 'Compagnie')}</p>`;
+
+            return `
+                <div class="border border-gray-200 rounded-lg overflow-hidden mb-4 last:mb-0">
+                    <div class="bg-brand-blue text-white text-xs font-bold tracking-widest px-4 py-2 uppercase">${label}</div>
+                    <div class="flight-leg-grid grid grid-cols-[1fr_auto_1fr] gap-2 items-center px-3 sm:px-4 py-5 bg-white min-w-0">
+                        <div class="text-left min-w-0">
+                            <p class="font-bold text-brand-blue text-sm leading-tight break-words">${leg.from || '-'}</p>
+                            ${departDate ? `<p class="text-xs text-gray-600 mt-1">${departDate}</p>` : ''}
+                            <p class="text-sm font-semibold text-gray-800 mt-0.5">${departTime}</p>
+                        </div>
+                        <div class="flight-leg-center text-center px-1 sm:px-2 min-w-0 sm:min-w-[5.5rem] shrink-0">
+                            ${airlineHtml}
+                            <div class="flex items-center gap-1 text-brand-blue">
+                                <span class="flex-1 h-px bg-brand-blue/40"></span>
+                                <i class="fa-solid fa-plane text-sm"></i>
+                                <span class="flex-1 h-px bg-brand-blue/40"></span>
+                            </div>
+                            ${leg.number ? `<p class="text-xs font-bold text-brand-blue mt-2">${leg.number}</p>` : `<p class="text-xs text-gray-500 mt-2 italic">${VoyageFiestaAPI.formatFlightNumber(leg.number)}</p>`}
+                        </div>
+                        <div class="text-right min-w-0">
+                            <p class="font-bold text-brand-blue text-sm leading-tight break-words">${leg.to || '-'}</p>
+                            ${arriveDate ? `<p class="text-xs text-gray-600 mt-1">${arriveDate}</p>` : ''}
+                            <p class="text-sm font-semibold text-gray-800 mt-0.5">${arriveTime}</p>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function buildFlightsSectionHtml(p) {
+            if (!VoyageFiestaAPI.hasFlights(p)) return '';
+
+            const flights = VoyageFiestaAPI.getEffectiveFlights(p);
+            const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier || 'le fournisseur';
+            const carrier = p.carrierLabel || VoyageFiestaAPI.formatCarrierLabel(p.carrier) || 'Compagnie aérienne';
+            const airlineLogo = flights.airlineLogo || '';
+            const supplierKey = VoyageFiestaAPI.normalizeSupplierKey(p.supplier);
+            const carrierKey = VoyageFiestaAPI.normalizeCarrierKey(p.carrier);
+            const viaSupplierNote = supplierLabel && supplierKey && carrierKey && supplierKey !== carrierKey
+                ? ` <span class="text-gray-500 font-normal">(via ${escapeHtml(supplierLabel)})</span>`
+                : '';
+            const outHtml = buildFlightLegHtml('Aller', flights.out, carrier, airlineLogo);
+            const returnHtml = buildFlightLegHtml('Retour', flights.return, carrier, airlineLogo);
+
+            if (!outHtml && !returnHtml) return '';
+
+            const logoHeaderHtml = airlineLogo
+                ? `<img src="${escapeHtml(airlineLogo)}" alt="${escapeHtml(carrier)}" class="h-10 w-auto max-w-[9rem] object-contain shrink-0">`
+                : '';
+
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-bold text-brand-blue mb-1">Vols</h3>
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5">
+                        ${logoHeaderHtml}
+                        <p class="text-sm text-gray-600">Vols aller-retour avec <strong>${escapeHtml(carrier)}</strong>${viaSupplierNote}&nbsp;:</p>
+                    </div>
+                    ${outHtml}
+                    ${returnHtml}
+                    <p class="text-[11px] text-gray-500 leading-relaxed mt-4">
+                        Les horaires de vol sont sujets à changement sans préavis. Veuillez vérifier auprès de la compagnie aérienne pour les bagages autorisés et les frais applicables.
+                    </p>
+                </div>`;
+        }
+
+        function buildPaymentTermsHtml(p) {
+            const terms = VoyageFiestaAPI.getPaymentTerms(p);
+            if (!terms) return '';
+
+            const parts = [];
+            if (terms.deposit !== null) {
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-hand-holding-dollar text-brand-orange text-xs mt-0.5"></i> Dépôt de <strong>${VoyageFiestaAPI.formatMoney(terms.deposit)}</strong> par passager requis</li>`);
+            }
+            if (terms.finalPaymentDate) {
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-calendar-check text-brand-blue text-xs mt-0.5"></i> Paiement final : <strong>${VoyageFiestaAPI.formatDepartureDate(terms.finalPaymentDate)}</strong></li>`);
+            }
+            parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-receipt text-gray-400 text-xs mt-0.5"></i> ${PRICING_LEGAL_NOTE()}</li>`);
+            const financingUrl = VoyageFiestaAPI.getFinancingApplyUrl();
+            if (financingUrl) {
+                const financingLabel = window.FINANCING_INFO_LABEL || 'Financement sur demande';
+                const financingLinkText = window.FINANCING_INFO_LINK_TEXT || 'Demander un financement';
+                parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-credit-card text-brand-blue text-xs mt-0.5"></i> <span>${escapeHtml(financingLabel)} - <a href="${escapeHtml(financingUrl)}" target="_blank" rel="noopener noreferrer" class="text-brand-blue font-semibold hover:underline">${escapeHtml(financingLinkText)}</a></span></li>`);
+            }
+            const listing = VoyageFiestaAPI.getListingDisplayPrice(p);
+            if (listing?.amount != null) {
+                const monthly = VoyageFiestaAPI.getFinancingMonthlyAmount(listing.amount);
+                if (monthly != null) {
+                    parts.push(`<li class="flex items-start gap-2"><i class="fa-solid fa-calendar-days text-brand-orange text-xs mt-0.5"></i> <span>Financement à partir de <strong>${VoyageFiestaAPI.formatMoney(monthly)}</strong> / mois*</span></li>`);
+                }
+            }
+            if (!parts.length) return '';
+
+            return `
+                <div class="mb-6 pb-6 border-b border-gray-100">
+                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter mb-3">Modalités de paiement</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">${parts.join('')}</ul>
+                    <div class="mt-3">${VoyageFiestaAPI.renderFinancingStarNoteHtml({ compact: true })}</div>
+                </div>`;
+        }
+
+        function renderOccupationPriceStack(row, isSoldOut, options = {}) {
+            if (options.hidePrice) return '';
+            const priceClass = isSoldOut ? 'text-gray-400 line-through' : 'text-brand-blue';
+            const amount = row.totalWithTaxes ?? row.price;
+            if (amount == null) return '';
+            const financingHtml = isSoldOut
+                ? ''
+                : VoyageFiestaAPI.renderFinancingFromPriceHtml(amount, {
+                    compact: true,
+                    className: 'mt-1 sm:text-right',
+                    strongClass: 'font-semibold text-brand-blue'
+                });
+            return `
+                <span class="occupation-price-stack text-left sm:text-right shrink-0 sm:pl-2 pl-8">
+                    <span class="price-main block text-base font-bold ${priceClass} leading-none tabular-nums">${VoyageFiestaAPI.formatMoneyPerPerson(amount)}</span>
+                    ${financingHtml}
+                </span>`;
+        }
+
+        function buildComponentUnitPriceTableBody(p) {
+            const taxes = p.taxesAmount ?? null;
+            const info = VoyageFiestaAPI.getChildPricingInfo(p);
+            const occPrices = VoyageFiestaAPI.getOccupationPrices(p);
+            const rows = [];
+            const contactLabel = VoyageFiestaAPI.getPriceOnRequestLabel();
+
+            const pushRow = (labelHtml, price, perChild) => {
+                if (price == null) {
+                    rows.push(`
+                    <tr class="border-b border-gray-100 last:border-0">
+                        <td class="py-2.5 pr-2 text-sm text-gray-700 leading-snug">${labelHtml}</td>
+                        <td colspan="3" class="py-2.5 pl-2 text-sm text-right italic text-gray-500 font-medium">${escapeHtml(contactLabel)}</td>
+                    </tr>`);
+                    return;
+                }
+                const total = taxes != null ? price + taxes : null;
+                const priceCell = perChild
+                    ? VoyageFiestaAPI.formatMoneyPerChild(price)
+                    : VoyageFiestaAPI.formatMoneyPerPerson(price);
+                const totalCell = total != null
+                    ? (perChild ? VoyageFiestaAPI.formatMoneyPerChild(total) : VoyageFiestaAPI.formatMoneyPerPerson(total))
+                    : '-';
+                rows.push(`
+                    <tr class="border-b border-gray-100 last:border-0">
+                        <td class="py-2.5 pr-2 text-sm text-gray-700 leading-snug">${labelHtml}</td>
+                        <td class="py-2.5 px-2 text-sm text-right text-gray-800">${priceCell}</td>
+                        <td class="py-2.5 px-2 text-sm text-right text-gray-600">${taxes != null ? VoyageFiestaAPI.formatMoneyPerPerson(taxes) : '-'}</td>
+                        <td class="py-2.5 pl-2 text-sm text-right font-semibold text-brand-blue">${totalCell}</td>
+                    </tr>`);
+            };
+
+            ['simple', 'double', 'triple', 'quad'].forEach((id) => {
+                const occ = occPrices.find((r) => r.id === id);
+                if (!occ) return;
+                pushRow(escapeHtml(occ.label), occ.price, false);
+            });
+            if (!occPrices.some((r) => ['simple', 'double', 'triple', 'quad'].includes(r.id))) {
+                const fallback = occPrices.find((r) => !r.isChildOccupation);
+                pushRow(escapeHtml(fallback?.label || 'Occ. double'), fallback?.price ?? null, false);
+            }
+
+            if (info.has212) {
+                pushRow(
+                    escapeHtml(VoyageFiestaAPI.getChildPriceLabel('212', 0, info.hasSecond212, { generic: info.has212 && !info.has1317Price })),
+                    info.child212First,
+                    true
+                );
+            }
+            if (info.has1317Price) {
+                pushRow(
+                    escapeHtml(VoyageFiestaAPI.getChildPriceLabel('1317', 0, info.hasSecond1317, { generic: !info.has212 && info.has1317Price })),
+                    info.child1317First,
+                    true
+                );
+            }
+            // Pas de prix enfant → pas de ligne / options enfants
+
+            return rows.join('');
+        }
+
+        function buildComponentUnitPriceTableHtml(p) {
+            return `
+                <div class="overflow-x-auto max-w-full mb-4">
+                    <table class="w-full text-left min-w-0 sm:min-w-[18rem]">
+                        <thead>
+                            <tr class="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-200">
+                                <th class="pb-2 font-bold">Tarif</th>
+                                <th class="pb-2 font-bold text-right">${BEFORE_TAX_LABEL()}</th>
+                                <th class="pb-2 font-bold text-right">${TAX_LABEL_PP()}</th>
+                                <th class="pb-2 font-bold text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>${buildComponentUnitPriceTableBody(p)}</tbody>
+                    </table>
+                </div>`;
+        }
+
+        function getBookingSelectionOverrides() {
+            const adultsEl = document.getElementById('passenger-adults');
+            if (adultsEl) {
+                const overrides = {
+                    adults: Number(adultsEl.value) || 2
+                };
+                const kidsEl = document.getElementById('passenger-kids');
+                if (kidsEl) {
+                    overrides.children212 = Number(kidsEl.value) || 0;
+                    overrides.children1317 = 0;
+                }
+                return overrides;
+            }
+
+            const select = document.getElementById('deposit-people-count');
+            if (select) {
+                if (select.value === 'autres') return { isAutres: true };
+                const totalPeople = Number(select.value);
+                if (!Number.isFinite(totalPeople) || totalPeople <= 0) return null;
+                return VoyageFiestaAPI.splitPeopleCountForComponentPricing(
+                    window.__activeProduct,
+                    totalPeople
+                );
+            }
+
+            return null;
+        }
+
+        function buildAdultChildSelectionHtml(p, isSoldOut) {
+            const childInfo = VoyageFiestaAPI.getChildPricingInfo(p);
+            const maxAdults = VoyageFiestaAPI.getMaxAdultCount(p);
+            const defaultAdults = maxAdults >= 2 ? 2 : 1;
+            const depositPerPerson = VoyageFiestaAPI.getDepositPerPerson(p);
+            const depositNote = depositPerPerson
+                ? `Dépôt de ${VoyageFiestaAPI.formatMoney(depositPerPerson)} par passager.`
+                : '';
+
+            const adultOptions = [];
+            for (let n = 1; n <= maxAdults; n++) {
+                adultOptions.push(
+                    `<option value="${n}"${n === defaultAdults ? ' selected' : ''}>${n} adulte${n > 1 ? 's' : ''}</option>`
+                );
+            }
+
+            let kidsHtml = '';
+            if (childInfo.hasKids) {
+                const kidOptions = [];
+                for (let n = 0; n <= childInfo.maxKids; n++) {
+                    kidOptions.push(
+                        `<option value="${n}"${n === 0 ? ' selected' : ''}>${n} enfant${n > 1 ? 's' : ''}</option>`
+                    );
+                }
+                kidsHtml = `
+                    <div>
+                        <label for="passenger-kids" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">
+                            Enfants
+                        </label>
+                        <select id="passenger-kids" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''}>
+                            ${kidOptions.join('')}
+                        </select>
+                    </div>`;
+            }
+
+            const travelerGridClass = childInfo.hasKids
+                ? 'grid grid-cols-1 sm:grid-cols-2 gap-3'
+                : 'grid grid-cols-1 gap-3';
+
+            return `
+                <div class="space-y-3" id="occupation-picker" aria-labelledby="occupation-picker-label">
+                    <p id="occupation-picker-label" class="text-xs font-bold text-gray-600 uppercase tracking-tighter">
+                        Voyageurs <span class="text-brand-orange">*</span>
+                    </p>
+                    ${depositNote ? `<p id="deposit-per-person-note" class="text-[11px] text-gray-500 leading-snug">${depositNote}</p>` : ''}
+                    <div class="${travelerGridClass}">
+                        <div>
+                            <label for="passenger-adults" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">
+                                Adultes
+                            </label>
+                            <select id="passenger-adults" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20 ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}" ${isSoldOut ? 'disabled' : ''} required>
+                                ${adultOptions.join('')}
+                            </select>
+                        </div>
+                        ${kidsHtml}
+                    </div>
+                    <p class="text-[10px] text-gray-500 italic">Le total du forfait se calcule selon votre sélection ci-dessus.</p>
+                    <div id="occupation-summary" class="hidden"></div>
+                </div>`;
+        }
+
+        function renderOccupationSummaryCard(row, breakdown) {
+            if (breakdown?.isAutres || breakdown?.priceOnRequest) {
+                const title = breakdown?.bookingLabel || row?.label || 'Occupation';
+                const contactLabel = VoyageFiestaAPI.getPriceOnRequestLabel();
+                return `
+                    <div class="occupation-summary-card mt-3">
+                        <div class="px-4 py-3 bg-brand-light border-b border-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-info text-brand-orange text-sm" aria-hidden="true"></i>
+                            <span class="font-semibold text-brand-blue text-sm">${escapeHtml(title)}</span>
+                        </div>
+                        <div class="px-4 py-4 bg-white">
+                            <p class="text-base font-bold text-brand-blue">${escapeHtml(contactLabel)}</p>
+                            <p class="text-xs text-gray-600 mt-1 leading-relaxed">Tarif non publié pour cette occupation - laissez vos coordonnées ci-dessous.</p>
+                        </div>
+                    </div>`;
+            }
+
+            const rows = [];
+            const pushRow = (label, amount, options = {}) => {
+                if (amount === null || amount === undefined) return;
+                const perPerson = options.perPerson !== false;
+                const perChild = options.perChild === true;
+                const formatted = perChild
+                    ? VoyageFiestaAPI.formatMoneyPerChild(amount)
+                    : (perPerson ? VoyageFiestaAPI.formatMoneyPerPerson(amount) : VoyageFiestaAPI.formatMoney(amount));
+                rows.push(`
+                    <div class="flex items-baseline justify-between gap-4 text-sm ${options.className || ''}">
+                        <span class="${options.labelClass || 'text-gray-500'}">${escapeHtml(label)}</span>
+                        <span class="font-medium tabular-nums shrink-0 ${options.amountClass || 'text-gray-800'}">${formatted}</span>
+                    </div>`);
+            };
+
+            if (breakdown?.useComponentPricing) {
+                // Détail ligne par ligne masqué - le tableau tarifaire couvre l'obligation d'affichage.
+            } else if (breakdown) {
+                pushRow(BEFORE_TAX_LABEL_PP(), breakdown.totalBeforeTaxes);
+                if (breakdown.totalTaxes !== null) {
+                    pushRow(TAX_LABEL_PP(), breakdown.totalTaxes);
+                }
+                if (breakdown.totalWithTaxes != null) {
+                    pushRow('Total / pass.', breakdown.totalWithTaxes, {
+                        className: 'pt-1 border-t border-gray-100',
+                        labelClass: 'text-gray-600 font-medium'
+                    });
+                }
+            } else if (row.totalWithTaxes != null) {
+                pushRow(BEFORE_TAX_LABEL_PP(), row.price);
+                if (row.taxes != null) pushRow(TAX_LABEL_PP(), row.taxes);
+                pushRow('Total / pass.', row.totalWithTaxes, {
+                    className: 'pt-1 border-t border-gray-100',
+                    labelClass: 'text-gray-600 font-medium'
+                });
+            } else {
+                pushRow(BEFORE_TAX_LABEL_PP(), row.price);
+            }
+
+            const depositAmount = breakdown?.totalDeposit ?? null;
+            const summaryTitle = breakdown?.bookingLabel
+                || (breakdown?.useComponentPricing && breakdown.totalPeople
+                    ? VoyageFiestaAPI.formatPassengerCountLabel(breakdown.totalPeople)
+                    : (row?.label || ''));
+            const detailHtml = rows.length
+                ? `<div class="px-4 py-3 space-y-2 border-b border-gray-100">${rows.join('')}</div>`
+                : '';
+
+            if (breakdown?.useComponentPricing && depositAmount !== null) {
+                const forfaitLabel = breakdown.bookingLabel || summaryTitle;
+                const forfaitHtml = forfaitLabel ? `
+                    <div class="px-4 py-2.5 border-t border-gray-100 text-sm text-gray-600">
+                        <span>Forfait · ${escapeHtml(forfaitLabel)}</span>
+                    </div>` : '';
+
+                return `
+                    <div class="occupation-summary-card mt-3">
+                        <div class="px-4 py-3 bg-brand-light border-b border-gray-100 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-green-600 text-sm" aria-hidden="true"></i>
+                            <span class="font-semibold text-brand-blue text-sm">${escapeHtml(summaryTitle)}</span>
+                        </div>
+                        <div class="px-4 py-3 flex items-baseline justify-between gap-4 bg-orange-50">
+                            <span class="text-sm font-bold text-brand-orange">Dépôt à payer</span>
+                            <span class="text-2xl font-bold text-brand-orange tabular-nums leading-none">${VoyageFiestaAPI.formatMoney(depositAmount)}</span>
+                        </div>
+                        ${forfaitHtml}
+                    </div>`;
+            }
+
+            const hasBookingTotal = breakdown?.bookingTotalWithTaxes != null
+                && (breakdown?.useComponentPricing || breakdown?.totalPeople > 1);
+            const footerLabel = hasBookingTotal
+                ? `Forfait · ${breakdown.bookingLabel || summaryTitle}`
+                : (breakdown?.totalWithTaxes != null || row?.totalWithTaxes != null ? 'Total / pass.' : 'Prix / pass.');
+            const footerAmount = hasBookingTotal
+                ? breakdown.bookingTotalWithTaxes
+                : (breakdown?.totalWithTaxes ?? row?.totalWithTaxes ?? breakdown?.totalBeforeTaxes ?? row?.price);
+            const footerAmountHtml = hasBookingTotal
+                ? VoyageFiestaAPI.formatMoney(footerAmount)
+                : VoyageFiestaAPI.formatMoneyPerPerson(footerAmount);
+            const perPersonForFinance = breakdown?.totalWithTaxes
+                ?? row?.totalWithTaxes
+                ?? breakdown?.totalBeforeTaxes
+                ?? row?.price;
+            const financingHtml = VoyageFiestaAPI.renderFinancingFromPriceHtml(perPersonForFinance, {
+                compact: true,
+                className: 'px-4 py-2 border-t border-gray-100'
+            });
+
+            return `
+                <div class="occupation-summary-card mt-3">
+                    <div class="px-4 py-3 bg-brand-light border-b border-gray-100 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-green-600 text-sm" aria-hidden="true"></i>
+                        <span class="font-semibold text-brand-blue text-sm">${escapeHtml(summaryTitle)}</span>
+                    </div>
+                    ${detailHtml}
+                    <div class="px-4 py-3 flex items-baseline justify-between gap-4 bg-brand-light/60">
+                        <span class="text-sm font-bold text-gray-800">${escapeHtml(footerLabel)}</span>
+                        <span class="text-2xl font-bold text-brand-blue tabular-nums leading-none">${footerAmountHtml}</span>
+                    </div>
+                    ${financingHtml}
+                    ${depositAmount !== null ? `
+                        <div class="px-4 py-2.5 bg-orange-50 border-t border-orange-100 flex items-baseline justify-between gap-4">
+                            <span class="text-xs font-semibold text-brand-orange uppercase tracking-wide">Dépôt requis</span>
+                            <span class="text-sm font-bold text-brand-orange tabular-nums">${VoyageFiestaAPI.formatMoney(depositAmount)}</span>
+                        </div>` : ''}
+                </div>`;
+        }
+
+        function buildOccupationSelectionHtml(p, isSoldOut) {
+            if (VoyageFiestaAPI.productHasChildUnitPricing(p)) {
+                return buildAdultChildSelectionHtml(p, isSoldOut);
+            }
+
+            const rows = VoyageFiestaAPI.getOccupationPrices(p);
+
+            if (!rows.length) {
+                return `<p class="text-sm text-gray-500 italic">Tarifs sur demande.</p>`;
+            }
+
+            return `
+                <div class="space-y-3" id="occupation-picker" role="radiogroup" aria-labelledby="occupation-picker-label">
+                    <p id="occupation-picker-label" class="text-xs font-bold text-gray-600 uppercase tracking-tighter">
+                        Choisissez votre occ. <span class="text-brand-orange">*</span>
+                    </p>
+                    ${rows.map(row => `
+                        <label class="occupation-option relative rounded-xl border border-gray-200 transition-colors active:scale-[0.99] ${isSoldOut ? 'opacity-50 pointer-events-none' : ''}">
+                            <input type="radio" name="occ" value="${row.id}" class="occupation-radio" ${isSoldOut ? 'disabled' : ''} required>
+                            <span class="occupation-option-body flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full pointer-events-none">
+                                <span class="flex items-center gap-3 min-w-0 pr-2">
+                                    <span class="occupation-option-indicator" aria-hidden="true"></span>
+                                    <span class="text-sm font-medium text-gray-700 leading-snug">${escapeHtml(VoyageFiestaAPI.getOccupationPickerLabel(row.id, p))}</span>
+                                </span>
+                                ${renderOccupationPriceStack(row, isSoldOut)}
+                            </span>
+                        </label>
+                    `).join('')}
+                    <p id="occupation-required-hint" class="text-xs text-brand-orange font-medium pt-1 leading-relaxed">
+                        <i class="fa-solid fa-circle-info mr-1"></i> Touchez une option ci-dessus avant de réserver.
+                    </p>
+                    <div id="occupation-summary" class="hidden"></div>
+                </div>`;
+        }
+
+        function buildOccupationPricesHtml(p, isSoldOut) {
+            const rows = VoyageFiestaAPI.getOccupationPrices(p);
+            if (!rows.length) {
+                return buildOccupationSelectionHtml(p, isSoldOut);
+            }
+
+            const hasTaxes = rows.some(r => r.taxes != null);
+            const incentive = VoyageFiestaAPI.getIncentive(p);
+
+            let headerHtml = '';
+            if (incentive) {
+                headerHtml = `
+                    <div class="mb-4 p-3 rounded-lg bg-brand-light border border-blue-100 text-sm">
+                        <p class="text-red-600 font-bold"><i class="fa-solid fa-tag mr-1"></i> Offre Aubaines Express : économisez ${VoyageFiestaAPI.formatMoney(incentive.discount)} par passager</p>
+                    </div>`;
+            }
+
+            // Occ. double + Enfant seulement si un tarif enfant est publié
+            let tableHtml = '';
+            if (hasTaxes) {
+                tableHtml = `
+                    ${buildComponentUnitPriceTableHtml(p)}
+                    <p class="text-[10px] text-gray-500 mb-4 italic">${PRICING_LEGAL_NOTE()}</p>`;
+            }
+
+            return headerHtml + tableHtml + buildOccupationSelectionHtml(p, isSoldOut);
+        }
+
+        function renderProduct(p) {
+            const isSoldOut = VoyageFiestaAPI.isSoldOut(p);
+            const isVendu = VoyageFiestaAPI.isVendu(p);
+            const isUnavailable = VoyageFiestaAPI.isUnavailablePackage(p);
+            const isPreSale = VoyageFiestaAPI.isPreSale(p);
+            const days = p.durationNights + 1;
+            const occupationHtml = buildOccupationPricesHtml(p, isUnavailable);
+            const paymentTermsHtml = buildPaymentTermsHtml(p);
+            const flightsHtml = buildFlightsSectionHtml(p);
+            const inclusions = getInclusionItems(p);
+            const exclusions = getExclusionItems(p);
+            const baggageItems = getBaggageItems(p);
+
+            document.title = `${p.name} - Voyage Fiesta`;
+            VoyageFiestaAPI.applySocialMetaTags(VoyageFiestaAPI.buildProductSharePayload(p));
+            if (window.VoyageFiestaEmbed) {
+                VoyageFiestaEmbed.initEmbedChrome();
+                VoyageFiestaEmbed.patchLinks(document.getElementById('embed-chrome'));
+            }
+
+            let inventoryHtml = '';
+            if (isVendu) {
+                inventoryHtml = VoyageFiestaAPI.renderVenduBannerHtml();
+            } else if (isSoldOut) {
+                inventoryHtml = `
+                    <div class="bg-red-50 text-red-700 border border-red-200 rounded-lg p-3 text-center mb-6">
+                        <p class="font-bold text-sm"><i class="fa-solid fa-ban mr-2"></i> Forfait complet</p>
+                        <p class="text-[10px] uppercase font-bold">Aucune chambre disponible à ce prix</p>
+                    </div>`;
+            } else if (isPreSale) {
+                inventoryHtml = VoyageFiestaAPI.renderPreSaleBannerHtml();
+            } else if (p.inventory <= 3) {
+                inventoryHtml = `
+                    <div class="bg-orange-50 text-brand-orange border border-orange-100 rounded-lg p-3 text-center mb-6">
+                        <p class="font-bold text-sm"><i class="fa-solid fa-fire-flame-curved mr-2"></i> Il ne reste que <span class="text-lg">${p.inventory}</span> chambre(s) !</p>
+                        <p class="text-[10px] uppercase font-bold">À ce prix exceptionnel</p>
+                    </div>`;
+            } else {
+                inventoryHtml = `
+                    <div class="bg-orange-50 text-brand-orange border border-orange-100 rounded-lg p-3 text-center mb-6">
+                        <p class="font-bold text-sm"><i class="fa-solid fa-fire-flame-curved mr-2"></i> Il reste <span class="text-lg">${p.inventory}</span> chambres !</p>
+                        <p class="text-[10px] uppercase font-bold">À ce prix exceptionnel</p>
+                    </div>`;
+            }
+
+            const criteriaHtml = p.criteria.map(c => {
+                const key = VoyageFiestaAPI.normalizeCriterionValue(c);
+                const label = VoyageFiestaAPI.getCriteriaLabel(key);
+                const icon = criteriaIcons[key] || 'fa-tag';
+                return `<span class="bg-white border px-3 py-1 rounded-full text-xs font-medium"><i class="fa-solid ${icon} mr-1"></i> ${label}</span>`;
+            }).join('');
+
+            const seoHtml = (p.seoTags || []).map(t =>
+                `<span class="bg-brand-light text-brand-blue px-3 py-1 rounded text-[10px] font-bold">${t}</span>`
+            ).join('');
+
+            const metaCards = [
+                { icon: 'fa-plane-up', label: 'Transporteur', value: VoyageFiestaAPI.formatProductDisplayValue(p, 'carrier') },
+                { icon: 'fa-bed', label: 'Type de chambre', value: p.roomCategory }
+            ].filter(c => String(c.value || '').trim());
+
+            const metaCardsHtml = metaCards.length
+                ? `<div class="grid ${metaCards.length > 1 ? 'md:grid-cols-2' : ''} gap-6">
+                        ${metaCards.map(c => `
+                            <div class="bg-white p-6 rounded-xl border border-gray-100 flex items-center gap-4">
+                                <div class="bg-brand-light p-3 rounded-full text-brand-blue text-2xl shrink-0"><i class="fa-solid ${c.icon}"></i></div>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-gray-400 uppercase">${c.label}</p>
+                                    <p class="font-bold text-brand-blue truncate">${escapeHtml(c.value)}</p>
+                                </div>
+                            </div>`).join('')}
+                   </div>`
+                : '';
+
+            const seoSectionHtml = (p.seoTags || []).length
+                ? `<section class="container mx-auto px-4 py-12">
+                        <div class="bg-white p-6 rounded-xl border border-gray-100">
+                            <h5 class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest">Catégories et Tags SEO</h5>
+                            <div class="flex flex-wrap gap-2">${seoHtml}</div>
+                        </div>
+                   </section>`
+                : '';
+
+            const hotelDetailsHtml = buildHotelDetailsHtml(p, criteriaHtml);
+            const gallery = VoyageFiestaAPI.buildProductGallery(p);
+            const galleryHtml = buildProductGalleryHtml(p, gallery);
+            const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
+            const returnLabel = VoyageFiestaAPI.formatDepartureDate(p.returnDate);
+            const breadcrumbLocation = [p.destinationLabel || p.destination, p.country]
+                .filter(Boolean)
+                .filter((part, index, arr) => index === 0 || part !== arr[0])
+                .join(', ');
+            const breadcrumbDestKey = VoyageFiestaAPI.normalizeDestinationKey(
+                p.destinationLabel || p.destination || p.subDest || ''
+            );
+            const breadcrumbDestParam = encodeURIComponent(breadcrumbDestKey || p.destinationLabel || p.destination || '');
+
+            const embedBreadcrumbItems = [
+                { back: true, href: 'index.html' }
+            ];
+            if (breadcrumbLocation) {
+                embedBreadcrumbItems.push({
+                    label: breadcrumbLocation,
+                    href: `index.html?destination=${breadcrumbDestParam}`
+                });
+            }
+            embedBreadcrumbItems.push({ label: p.name, current: true });
+
+            const embedBreadcrumbEl = document.getElementById('embed-breadcrumb');
+            if (embedBreadcrumbEl) {
+                embedBreadcrumbEl.innerHTML = VoyageFiestaAPI.renderEmbedBreadcrumbHtml(embedBreadcrumbItems);
+            }
+
+            document.getElementById('product-content').innerHTML = `
+                <section class="container mx-auto px-4 py-6">
+                    <nav class="product-breadcrumb-inline text-lg sm:text-xl text-gray-600 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
+                        <a href="index.html" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
+                            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
+                        </a>
+                        ${breadcrumbLocation ? `
+                            <span aria-hidden="true">/</span>
+                            <a href="index.html?destination=${breadcrumbDestParam}" class="hover:underline">${escapeHtml(breadcrumbLocation)}</a>` : ''}
+                        <span aria-hidden="true">/</span>
+                        <span class="text-brand-blue font-bold">${escapeHtml(p.name)}</span>
+                    </nav>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 order-1 lg:order-none space-y-6 min-w-0">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div class="flex flex-wrap justify-between items-start gap-4">
+                                    <div>
+                                        ${isVendu ? '<div class="inline-block bg-red-700 text-white font-bold px-3 py-1 rounded text-sm mb-3">Trop tard, Complet!</div>' : ''}
+                                        ${isSoldOut && !isVendu ? '<div class="inline-block bg-red-600 text-white font-bold px-3 py-1 rounded text-sm mb-3">COMPLET</div>' : ''}
+                                        ${!isUnavailable && isPreSale ? '<div class="inline-block bg-brand-blue text-white font-bold px-3 py-1 rounded text-sm mb-3 uppercase tracking-wide"><i class="fa-solid fa-clock mr-1.5"></i> Pré-vente</div>' : ''}
+                                        <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue">${p.name}</h1>
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <div class="flex text-yellow-400 text-sm">${renderStars(p.stars)}</div>
+                                            <span class="text-gray-500 text-sm">(${formatStarsText(p.stars)})</span>
+                                        </div>
+                                        <p class="text-gray-600 mt-2"><i class="fa-solid fa-location-dot text-brand-orange"></i> ${p.location}</p>
+                                        ${departureLabel ? `<p class="mt-2 text-lg font-bold text-brand-blue"><i class="fa-solid fa-calendar-day mr-1.5 text-brand-orange" aria-hidden="true"></i>Départ ${departureLabel}</p>` : ''}
+                                        <div class="mt-4 pt-4 border-t border-gray-100">
+                                            ${VoyageFiestaAPI.renderSocialShareButtonsHtml(p)}
+                                        </div>
+                                    </div>
+                                    <div class="bg-brand-light p-3 rounded-lg border border-blue-100 flex items-center gap-3 min-w-0">
+                                        <div class="text-right min-w-0 flex-1">
+                                            <p class="text-xs text-gray-500 font-bold uppercase">Fournisseur</p>
+                                            ${(() => {
+                                                const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+                                                const supplierLogo = VoyageFiestaAPI.getSupplierLogo(p.supplier);
+                                                if (supplierLogo) {
+                                                    return `<img src="${escapeHtml(supplierLogo)}" alt="${escapeHtml(supplierLabel)}" class="h-10 w-auto max-w-[9rem] object-contain object-right ml-auto mt-1" loading="lazy">`;
+                                                }
+                                                return `<p class="text-sm font-bold text-brand-blue">${escapeHtml(supplierLabel)}</p>`;
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            ${galleryHtml}
+                        </div>
+
+                        <div class="lg:col-span-1 order-2 lg:order-none lg:row-span-2">
+                            <div class="bg-white rounded-2xl shadow-xl border-2 ${isUnavailable ? 'border-gray-300 opacity-90' : 'border-brand-blue'} p-4 sm:p-6 sticky-booking" id="booking-panel">
+                                ${inventoryHtml}
+
+                                <div class="space-y-4 mb-6 border-b pb-6">
+                                    <div class="flex justify-between text-sm gap-3">
+                                        <span class="text-gray-500 shrink-0">Date de départ :</span>
+                                        <span class="font-bold text-brand-blue text-right">${departureLabel || 'À confirmer'}</span>
+                                    </div>
+                                    ${returnLabel ? `
+                                    <div class="flex justify-between text-sm gap-3">
+                                        <span class="text-gray-500 shrink-0">Date de retour :</span>
+                                        <span class="font-bold text-brand-blue text-right">${returnLabel}</span>
+                                    </div>` : ''}
+                                    <div class="flex justify-between text-sm gap-3">
+                                        <span class="text-gray-500 shrink-0">Départ de :</span>
+                                        <span class="font-bold text-brand-blue text-right">${escapeHtml(p.departureAirport || '-')}</span>
+                                    </div>
+                                    ${(() => {
+                                        const arrivalAirport = VoyageFiestaAPI.getDestinationAirportLabel(p) || p.destinationAirport || '';
+                                        if (!arrivalAirport) return '';
+                                        return `<div class="flex justify-between text-sm gap-3">
+                                        <span class="text-gray-500 shrink-0">Arrivée :</span>
+                                        <span class="font-bold text-brand-blue text-right">${escapeHtml(arrivalAirport)}</span>
+                                    </div>`;
+                                    })()}
+                                    <div class="flex justify-between text-sm gap-3">
+                                        <span class="text-gray-500 shrink-0">Durée :</span>
+                                        <span class="font-bold text-brand-blue text-right">${p.durationNights} nuits / ${days} jours</span>
+                                    </div>
+                                </div>
+
+                                ${paymentTermsHtml}
+
+                                <div class="space-y-4 mb-6 sm:mb-8">
+                                    <h4 class="font-bold text-sm text-gray-700 uppercase tracking-tighter">Tarifs par passager</h4>
+                                    ${occupationHtml}
+                                </div>
+
+                                ${isUnavailable
+                                    ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">${isVendu ? 'Trop tard, Complet!' : 'COMPLET'}</button>
+                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
+                                    : `<div id="booking-cta-area">
+                                        <div id="booking-cta-book">
+                                            <button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 text-lg transition-all">${isPreSale ? escapeHtml(window.PRE_SALE_FULL_FORM_CTA || 'REMPLIR LE FORMULAIRE') : 'RÉSERVER MAINTENANT'}</button>
+                                            <p class="text-center text-[10px] text-gray-400 mt-3 px-4">${isPreSale ? 'Aucun dépôt n\'est requis en pré-vente. En continuant, vous acceptez les conditions générales de vente de Voyage Fiesta.' : 'En cliquant sur réserver, vous acceptez les conditions générales de vente de Voyage Fiesta.'}</p>
+                                        </div>
+                                        <div id="booking-cta-price-request" class="hidden"></div>
+                                       </div>`}
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2 order-3 lg:order-none space-y-6 min-w-0">
+                            ${flightsHtml}
+
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="product-tabs">
+                                <div class="flex flex-wrap border-b" role="tablist" aria-label="Détails du forfait">
+                                    <button type="button" role="tab" id="tab-details" aria-controls="panel-package" aria-selected="true" tabindex="0" data-product-tab="package" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base tab-active">Détails</button>
+                                    <button type="button" role="tab" id="tab-hotel" aria-controls="panel-hotel" aria-selected="false" tabindex="-1" data-product-tab="hotel" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base product-tab">Détails de l'hôtel</button>
+                                    <button type="button" role="tab" id="tab-baggage" aria-controls="panel-baggage" aria-selected="false" tabindex="-1" data-product-tab="baggage" class="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base product-tab">Franchise bagage</button>
+                                </div>
+                                <div class="p-6" role="tabpanel" id="panel-package" data-product-panel="package" aria-labelledby="tab-details">
+                                    <div class="grid md:grid-cols-2 gap-8">
+                                        <div>
+                                            <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-circle-check text-green-500 mr-2" aria-hidden="true"></i> Inclusions</h3>
+                                            <ul class="space-y-3 text-sm text-gray-600">
+                                                ${inclusions.map(i => `<li class="flex items-start gap-2"><i class="fa-solid ${escapeHtml(i.icon)} text-xs mt-1" aria-hidden="true"></i> ${escapeHtml(i.text)}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                        <div class="bg-gray-50 p-4 rounded-lg">
+                                            <h3 class="font-bold text-gray-700 mb-4 flex items-center"><i class="fa-solid fa-circle-xmark text-red-400 mr-2" aria-hidden="true"></i> Exclusions</h3>
+                                            <ul class="space-y-3 text-sm text-gray-500">
+                                                ${exclusions.map((text) => `<li>${escapeHtml(text)}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6 hidden" role="tabpanel" id="panel-hotel" data-product-panel="hotel" aria-labelledby="tab-hotel" hidden>
+                                    ${hotelDetailsHtml}
+                                </div>
+                                <div class="p-6 hidden" role="tabpanel" id="panel-baggage" data-product-panel="baggage" aria-labelledby="tab-baggage" hidden>
+                                    <h3 class="font-bold text-brand-blue mb-4 flex items-center"><i class="fa-solid fa-suitcase text-brand-orange mr-2" aria-hidden="true"></i> Franchise bagage</h3>
+                                    <ul class="space-y-3 text-sm text-gray-600">
+                                        ${baggageItems.map((text) => `<li class="flex items-start gap-2"><i class="fa-solid fa-suitcase text-xs mt-1" aria-hidden="true"></i> ${escapeHtml(text)}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            ${metaCardsHtml}
+                        </div>
+                    </div>
+                </section>
+
+                ${seoSectionHtml}`;
+
+            startCountdown(new Date(p.endDate));
+            bindProductTabs();
+            bindGalleryViewer(gallery, p.name);
+            bindPassengerSelection(p);
+            bindReservationWindow(p);
+            VoyageFiestaAPI.bindSocialShare(document.getElementById('product-content'), () => p);
+        }
+
+        function buildPriceRequestFormHtml(p, adults, kids, options = {}) {
+            const isPreSale = Boolean(options.isPreSale);
+            const maxAdults = VoyageFiestaAPI.getMaxAdultCount(p);
+            const childInfo = VoyageFiestaAPI.getChildPricingInfo(p);
+            const maxKids = childInfo.hasKids ? childInfo.maxKids : 0;
+            const adultOpts = [];
+            for (let n = 1; n <= maxAdults; n++) {
+                adultOpts.push(
+                    `<option value="${n}"${n === adults ? ' selected' : ''}>${n} adulte${n > 1 ? 's' : ''}</option>`
+                );
+            }
+            const kidOpts = [];
+            if (maxKids > 0) {
+                for (let n = 0; n <= maxKids; n++) {
+                    kidOpts.push(
+                        `<option value="${n}"${n === Math.min(kids, maxKids) ? ' selected' : ''}>${n} enfant${n > 1 ? 's' : ''}</option>`
+                    );
+                }
+            }
+            const kidsField = maxKids > 0
+                ? `<div>
+                        <label for="pr-kids" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Enfants</label>
+                        <select id="pr-kids" name="nombre_enfants" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
+                            ${kidOpts.join('')}
+                        </select>
+                    </div>`
+                : `<input type="hidden" id="pr-kids" name="nombre_enfants" value="0">`;
+
+            const title = isPreSale
+                ? (window.PRE_SALE_REQUEST_FORM_TITLE || 'Je suis intéressé(e)')
+                : 'Demande de prix';
+            const intro = isPreSale
+                ? (window.PRE_SALE_REQUEST_FORM_INTRO
+                    || 'Remplissez ce court formulaire. Un conseiller vous recontactera. Aucun dépôt n\'est requis en pré-vente.')
+                : 'Remplissez ce court formulaire - un conseiller vous recontactera.';
+            const submitLabel = isPreSale
+                ? (window.PRE_SALE_REQUEST_SUBMIT_LABEL || 'Envoyer mon intérêt')
+                : 'Demander un prix';
+
+            return `
+                <form id="price-request-form" class="space-y-3 rounded-xl border border-blue-100 bg-brand-light/40 p-4" data-request-mode="${isPreSale ? 'prevente' : 'prix'}" novalidate>
+                    <p class="text-sm font-semibold text-brand-blue">${escapeHtml(title)}</p>
+                    <p class="text-xs text-gray-600 leading-relaxed -mt-1">${escapeHtml(intro)}</p>
+                    <p class="text-xs text-gray-600">Nom, courriel, téléphone et date de naissance sont requis.</p>
+                    <div>
+                        <label for="pr-name" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Nom complet</label>
+                        <input id="pr-name" name="full_name" type="text" autocomplete="name" required
+                            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                            placeholder="Prénom et nom">
+                    </div>
+                    <div>
+                        <label for="pr-email" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Courriel</label>
+                        <input id="pr-email" name="email" type="email" autocomplete="email" required
+                            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                            placeholder="vous@exemple.com">
+                    </div>
+                    <div>
+                        <label for="pr-phone" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Téléphone</label>
+                        <input id="pr-phone" name="phone" type="tel" autocomplete="tel" required
+                            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                            placeholder="514 555-1234">
+                    </div>
+                    <div>
+                        <label for="pr-dob" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Date de naissance <span class="font-semibold normal-case tracking-normal text-gray-600">(requis)</span></label>
+                        <input id="pr-dob" name="p1_dob" type="date" autocomplete="bday" required aria-describedby="pr-dob-error"
+                            class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
+                        <p id="pr-dob-error" class="hidden mt-1 text-xs font-medium text-red-700"></p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="pr-adults" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Adultes</label>
+                            <select id="pr-adults" name="nombre_adultes" class="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-800 focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20">
+                                ${adultOpts.join('')}
+                            </select>
+                        </div>
+                        ${kidsField}
+                    </div>
+                    <button type="submit" id="price-request-submit"
+                        class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-3.5 rounded-xl shadow-lg hover:scale-[1.01] active:scale-95 text-base transition-all">
+                        ${escapeHtml(submitLabel)}
+                    </button>
+                    <p id="price-request-status" class="hidden text-center text-xs text-brand-blue font-medium" role="status"></p>
+                </form>`;
+        }
+
+        function syncTravelerSelectsFromPriceRequest() {
+            const prAdults = document.getElementById('pr-adults');
+            const prKids = document.getElementById('pr-kids');
+            const adultsEl = document.getElementById('passenger-adults');
+            const kidsEl = document.getElementById('passenger-kids');
+            if (prAdults && adultsEl && adultsEl.value !== prAdults.value) {
+                adultsEl.value = prAdults.value;
+            }
+            if (prKids && kidsEl && kidsEl.value !== prKids.value) {
+                kidsEl.value = prKids.value;
+            }
+        }
+
+        function setBookingCtaMode(p, showRequestForm) {
+            const bookEl = document.getElementById('booking-cta-book');
+            const requestEl = document.getElementById('booking-cta-price-request');
+            const depositNote = document.getElementById('deposit-per-person-note');
+            if (!bookEl || !requestEl) return;
+
+            const isPreSale = VoyageFiestaAPI.isPreSale(p);
+            if (depositNote) depositNote.classList.toggle('hidden', showRequestForm || isPreSale);
+
+            if (showRequestForm) {
+                bookEl.classList.add('hidden');
+                const adults = Number(document.getElementById('passenger-adults')?.value)
+                    || Number(document.getElementById('pr-adults')?.value)
+                    || 2;
+                const kids = Number(document.getElementById('passenger-kids')?.value)
+                    || Number(document.getElementById('pr-kids')?.value)
+                    || 0;
+                const existingForm = requestEl.querySelector('#price-request-form');
+                const desiredMode = isPreSale ? 'prevente' : 'prix';
+                const needsRebuild = !existingForm
+                    || existingForm.getAttribute('data-request-mode') !== desiredMode;
+                if (needsRebuild) {
+                    requestEl.innerHTML = buildPriceRequestFormHtml(p, adults, kids, { isPreSale });
+                    requestEl.classList.remove('hidden');
+                    bindPriceRequestForm(p);
+                } else {
+                    const prAdults = document.getElementById('pr-adults');
+                    const prKids = document.getElementById('pr-kids');
+                    if (prAdults && String(prAdults.value) !== String(adults)) prAdults.value = String(adults);
+                    if (prKids && prKids.tagName === 'SELECT' && String(prKids.value) !== String(kids)) {
+                        prKids.value = String(kids);
+                    }
+                    requestEl.classList.remove('hidden');
+                }
+            } else {
+                requestEl.classList.add('hidden');
+                requestEl.innerHTML = '';
+                bookEl.classList.remove('hidden');
+            }
+        }
+
+        function bindPriceRequestForm(p) {
+            const form = document.getElementById('price-request-form');
+            if (!form || form.dataset.bound === '1') return;
+            form.dataset.bound = '1';
+
+            const isPreSale = VoyageFiestaAPI.isPreSale(p)
+                || form.getAttribute('data-request-mode') === 'prevente';
+            const submitLabel = isPreSale
+                ? (window.PRE_SALE_REQUEST_SUBMIT_LABEL || 'Envoyer mon intérêt')
+                : 'Demander un prix';
+
+            ['pr-adults', 'pr-kids'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el || el.tagName !== 'SELECT') return;
+                el.addEventListener('change', () => {
+                    syncTravelerSelectsFromPriceRequest();
+                    document.getElementById('passenger-adults')?.dispatchEvent(new Event('change'));
+                });
+            });
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const submitBtn = document.getElementById('price-request-submit');
+                const statusEl = document.getElementById('price-request-status');
+                const fullName = String(document.getElementById('pr-name')?.value || '').trim();
+                const email = String(document.getElementById('pr-email')?.value || '').trim();
+                const phone = String(document.getElementById('pr-phone')?.value || '').trim();
+                const dobInput = document.getElementById('pr-dob');
+                const dobError = document.getElementById('pr-dob-error');
+                const dobRaw = String(dobInput?.value || '').trim();
+                const adults = Number(document.getElementById('pr-adults')?.value) || 2;
+                const kids = Number(document.getElementById('pr-kids')?.value) || 0;
+                const formatDob = window.RoomRegistration?.formatDobForGhl
+                    || ((value) => String(value || '').trim());
+
+                if (dobError) {
+                    dobError.textContent = '';
+                    dobError.classList.add('hidden');
+                }
+                if (dobInput) dobInput.removeAttribute('aria-invalid');
+
+                if (!fullName || !email || !phone || !dobRaw) {
+                    if (!dobRaw && dobInput) {
+                        if (dobError) {
+                            dobError.textContent = 'Entrez votre date de naissance.';
+                            dobError.classList.remove('hidden');
+                        }
+                        dobInput.setAttribute('aria-invalid', 'true');
+                        dobInput.focus();
+                    } else if (!fullName) {
+                        document.getElementById('pr-name')?.focus();
+                    } else if (!email) {
+                        document.getElementById('pr-email')?.focus();
+                    } else {
+                        document.getElementById('pr-phone')?.focus();
+                    }
+                    if (statusEl) {
+                        statusEl.textContent = 'Nom, courriel, téléphone et date de naissance sont requis.';
+                        statusEl.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                const p1Dob = formatDob(dobRaw);
+
+                const nameParts = fullName.split(/\s+/).filter(Boolean);
+                const firstName = nameParts[0] || fullName;
+                const lastName = nameParts.slice(1).join(' ');
+                const occupationLabel = VoyageFiestaAPI.buildBookingOccupationLabel(
+                    VoyageFiestaAPI.getOccupationDef(VoyageFiestaAPI.adultCountToOccupationId(adults)),
+                    kids,
+                    0,
+                    adults
+                );
+                const requestType = isPreSale ? 'demande_prevente' : 'demande_prix';
+                const opportunityName = isPreSale
+                    ? `Pré-vente - ${fullName}`
+                    : `Demande de prix - ${fullName}`;
+                const sommairePrefix = isPreSale ? 'Intérêt pré-vente' : 'Demande de prix';
+                const notesLabel = isPreSale
+                    ? `Intérêt pré-vente (aucun dépôt) - ${p.name} - ${occupationLabel}`
+                    : `Demande de prix (tarif non publié) - ${p.name} - ${occupationLabel}`;
+
+                const agentCtx = VoyageFiestaAPI.resolveBookingAgentContext(p);
+                const formatFlightLeg = (leg) => {
+                    if (!leg) return '';
+                    const date = VoyageFiestaAPI.formatDepartureDate(leg.departDate || leg.depart_date) || '';
+                    const from = [leg.from, leg.departTime || leg.depart_time].filter(Boolean).join(' ');
+                    const to = [leg.to, leg.arriveTime || leg.arrive_time].filter(Boolean).join(' ');
+                    return [leg.number, date, from && to ? `${from} → ${to}` : ''].filter(Boolean).join(' | ');
+                };
+                const supplierLabel = p.supplierLabel
+                    || (typeof VoyageFiestaAPI.formatSupplierLabel === 'function'
+                        ? VoyageFiestaAPI.formatSupplierLabel(p.supplier)
+                        : p.supplier);
+                const carrierLabel = p.carrierLabel
+                    || (typeof VoyageFiestaAPI.formatCarrierLabel === 'function'
+                        ? VoyageFiestaAPI.formatCarrierLabel(p.carrier)
+                        : p.carrier);
+                const payload = {
+                    request_type: requestType,
+                    create_opportunity: true,
+                    opportunity_name: opportunityName,
+                    full_name: fullName,
+                    p1_prenom: firstName,
+                    p1_nom: lastName,
+                    p1_dob: p1Dob,
+                    date_of_birth: p1Dob,
+                    p1_email: email,
+                    email,
+                    p1_phone: phone,
+                    phone,
+                    nombre_adultes: String(adults),
+                    nombre_enfants_2_12: String(kids),
+                    nombre_enfants: String(kids),
+                    nombre_passagers: String(adults + kids),
+                    nombre_personnes: String(adults + kids),
+                    occupation: occupationLabel,
+                    forfait_slug: p.slug,
+                    forfait_name: p.name,
+                    nom_du_forfait: p.name,
+                    destination: p.destination || p.destination1 || p.subDest || '',
+                    sub_destination: p.subDest || '',
+                    country: p.country || '',
+                    departure_date: VoyageFiestaAPI.formatDepartureDate(p.departureDate) || '',
+                    return_date: VoyageFiestaAPI.formatDepartureDate(p.returnDate) || '',
+                    departure_airport: p.departureAirport || '',
+                    return_airport: p.returnAirport || '',
+                    duration_nights: p.durationNights != null ? String(p.durationNights) : '',
+                    room_category: p.roomCategory || '',
+                    supplier: supplierLabel || '',
+                    carrier: carrierLabel || '',
+                    package_type: p.packageType || '',
+                    promotion: p.promotion || '',
+                    forfait_link: p.forfaitLink || '',
+                    vol_aller: formatFlightLeg(p.flights?.out),
+                    vol_retour: formatFlightLeg(p.flights?.return),
+                    final_payment_date: (VoyageFiestaAPI.formatGhlFormDate
+                        ? VoyageFiestaAPI.formatGhlFormDate(p.finalPaymentDate)
+                        : p.finalPaymentDate) || '',
+                    sommaire: [
+                        `${sommairePrefix} - ${p.name}`,
+                        `Nom : ${fullName}`,
+                        `Date de naissance : ${p1Dob}`,
+                        `Courriel : ${email}`,
+                        `Téléphone : ${phone}`,
+                        `Occupation : ${occupationLabel}`,
+                        `Adultes : ${adults}`,
+                        `Enfants : ${kids}`,
+                        `Destination : ${p.destination || p.subDest || '-'}`,
+                        `Départ : ${VoyageFiestaAPI.formatDepartureDate(p.departureDate) || 'à confirmer'}`,
+                        `Retour : ${VoyageFiestaAPI.formatDepartureDate(p.returnDate) || '-'}`,
+                        `Aéroport de départ : ${p.departureAirport || '-'}`,
+                        `Aéroport d'arrivée : ${VoyageFiestaAPI.getDestinationAirportLabel(p) || p.destinationAirport || '-'}`,
+                        `Chambre : ${p.roomCategory || '-'}`,
+                        `Fournisseur : ${supplierLabel || '-'}`,
+                        `Transporteur : ${carrierLabel || '-'}`
+                    ].join('\n'),
+                    notes: notesLabel,
+                    pipeline_id: window.GHL_PIPELINE_ID || '',
+                    pipeline_stage_id: window.GHL_PIPELINE_STAGE_ID || '',
+                    contact_tag: isPreSale
+                        ? (window.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente')
+                        : (window.GHL_PRICE_REQUEST_TAG || 'demande-prix'),
+                    agent_slug: agentCtx.agent_slug,
+                    agent_id: agentCtx.agent_id,
+                    conseiller_name: agentCtx.conseiller_name,
+                    conseiller_email: agentCtx.conseiller_email,
+                    conseiller_phone: agentCtx.conseiller_phone,
+                    conseiller_tag: agentCtx.conseiller_tag,
+                    contact_tags: agentCtx.contact_tags
+                };
+
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Envoi…';
+                }
+                if (statusEl) {
+                    statusEl.textContent = 'Envoi de votre demande…';
+                    statusEl.classList.remove('hidden');
+                }
+
+                try {
+                    if (!window.RoomRegistration?.submitGhlRoomForm) {
+                        throw new Error('Soumission non disponible.');
+                    }
+                    const thankYou = typeof buildGhlThankYouUrl === 'function'
+                        ? buildGhlThankYouUrl(p.slug)
+                        : 'thank-you.html';
+                    await RoomRegistration.submitGhlRoomForm({
+                        payload,
+                        redirectUrl: thankYou
+                    });
+                } catch (err) {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = submitLabel;
+                    }
+                    if (statusEl) {
+                        statusEl.textContent = err?.message
+                            ? `Impossible d'envoyer : ${err.message}`
+                            : 'Impossible d\'envoyer la demande. Réessayez.';
+                    }
+                }
+            });
+        }
+
+        function setButtonEnabled(enabled) {
+            const openBtn = document.getElementById('open-reservation');
+            if (!openBtn) return;
+            openBtn.disabled = !enabled;
+            openBtn.classList.toggle('opacity-50', !enabled);
+            openBtn.classList.toggle('cursor-not-allowed', !enabled);
+            openBtn.classList.toggle('hover:bg-brand-blue', enabled);
+            openBtn.classList.toggle('hover:scale-[1.02]', enabled);
+            openBtn.classList.toggle('active:scale-95', enabled);
+        }
+
+        function getSelectedOccupationId() {
+            const adultsEl = document.getElementById('passenger-adults');
+            if (adultsEl && window.__activeProduct) {
+                const adults = Number(adultsEl.value) || 2;
+                return VoyageFiestaAPI.getOccupationIdForAdultCount(adults, window.__activeProduct);
+            }
+
+            const select = document.getElementById('deposit-people-count');
+            if (select) {
+                if (!select.value) return null;
+                return select.value === 'autres' ? 'autres' : 'double';
+            }
+
+            const radio = document.querySelector('input[name="occ"]:checked');
+            return radio ? radio.value : null;
+        }
+
+        function hasValidBookingSelection() {
+            if (document.getElementById('passenger-adults')) return true;
+
+            const select = document.getElementById('deposit-people-count');
+            if (select) return Boolean(select.value);
+
+            return Boolean(document.querySelector('input[name="occ"]:checked'));
+        }
+
+        function buildGhlIframeSrc(p) {
+            const occupationId = getSelectedOccupationId();
+            const overrides = getBookingSelectionOverrides();
+            const formParams = VoyageFiestaAPI.buildGhlReservationParams(p, occupationId, overrides);
+            const iframeKeys = window.GHL_FORM_IFRAME_KEYS;
+            const params = new URLSearchParams();
+            Object.entries(formParams).forEach(([key, value]) => {
+                if (iframeKeys && !iframeKeys.includes(key)) return;
+                if (value !== undefined && value !== null && value !== '') params.set(key, value);
+            });
+            const thankYouUrl = typeof buildGhlThankYouUrl === 'function'
+                ? buildGhlThankYouUrl(p.slug)
+                : '';
+            if (thankYouUrl) params.set('redirect_url', thankYouUrl);
+            const sep = GHL_FORM_EMBED_URL.includes('?') ? '&' : '?';
+            return GHL_FORM_EMBED_URL + sep + params.toString();
+        }
+
+        function syncOccupationVisuals() {
+            document.querySelectorAll('.occupation-option').forEach(label => {
+                const input = label.querySelector('input[name="occ"], input[name="deposit-group"]');
+                label.classList.toggle('is-selected', Boolean(input?.checked));
+                if (input) label.setAttribute('aria-checked', input.checked ? 'true' : 'false');
+            });
+        }
+
+        function bindPassengerSelection(p) {
+            const openBtn = document.getElementById('open-reservation');
+            if (!openBtn || VoyageFiestaAPI.isUnavailablePackage(p)) return;
+
+            window.__activeProduct = p;
+
+            const hint = document.getElementById('occupation-required-hint');
+            const summary = document.getElementById('occupation-summary');
+
+            function updateSelection() {
+                syncOccupationVisuals();
+                const occupationId = getSelectedOccupationId();
+                const overrides = getBookingSelectionOverrides();
+                const hasSelection = hasValidBookingSelection();
+                const priceOnRequest = hasSelection && VoyageFiestaAPI.isPriceOnRequestSelection(
+                    p,
+                    occupationId,
+                    overrides || {}
+                );
+                const showRequestForm = priceOnRequest;
+
+                setButtonEnabled(hasSelection && !showRequestForm);
+                if (hint) hint.classList.toggle('hidden', hasSelection);
+                setBookingCtaMode(p, showRequestForm);
+
+                if (summary) {
+                    if (hasSelection && occupationId) {
+                        const row = occupationId !== 'autres'
+                            ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
+                            : null;
+                        let breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
+                        if (priceOnRequest) {
+                            const adults = Number(overrides?.adults)
+                                || Number(document.getElementById('passenger-adults')?.value)
+                                || 2;
+                            const kids = Number(overrides?.children212 || 0)
+                                + Number(overrides?.children1317 || 0);
+                            breakdown = {
+                                priceOnRequest: true,
+                                isAutres: occupationId === 'autres' || overrides?.isAutres,
+                                bookingLabel: VoyageFiestaAPI.buildBookingOccupationLabel(
+                                    VoyageFiestaAPI.getOccupationDef(
+                                        VoyageFiestaAPI.adultCountToOccupationId(adults)
+                                    ),
+                                    kids,
+                                    0,
+                                    adults
+                                ),
+                                totalDeposit: null,
+                                depositPerPerson: null,
+                                bookingTotalWithTaxes: null,
+                                totalWithTaxes: null,
+                                totalBeforeTaxes: null
+                            };
+                        }
+                        if (breakdown) {
+                            summary.classList.remove('hidden');
+                            summary.innerHTML = renderOccupationSummaryCard(row, breakdown);
+                        } else {
+                            summary.classList.add('hidden');
+                            summary.innerHTML = '';
+                        }
+                    } else {
+                        summary.classList.add('hidden');
+                        summary.innerHTML = '';
+                    }
+                }
+            }
+
+            const depositSelect = document.getElementById('deposit-people-count');
+            if (depositSelect) depositSelect.addEventListener('change', updateSelection);
+
+            ['passenger-adults', 'passenger-kids'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', updateSelection);
+            });
+
+            document.querySelectorAll('input[name="occ"]').forEach(input => {
+                input.addEventListener('change', updateSelection);
+            });
+
+            updateSelection();
+        }
+
+        function bindReservationWindow(p) {
+            const openBtn = document.getElementById('open-reservation');
+            if (!openBtn) return;
+
+            const supplierLabel = p.supplierLabel || VoyageFiestaAPI.formatSupplierLabel(p.supplier) || p.supplier;
+
+            openBtn.addEventListener('click', () => {
+                if (!hasValidBookingSelection()) return;
+                if (!window.RoomRegistration?.openReservationWindow) return;
+
+                const occupationId = getSelectedOccupationId();
+                const overrides = getBookingSelectionOverrides() || {};
+                if (VoyageFiestaAPI.isPriceOnRequestSelection(p, occupationId, overrides)) return;
+                const row = occupationId && occupationId !== 'autres'
+                    ? VoyageFiestaAPI.getSelectedOccupationRow(p, occupationId)
+                    : null;
+                const breakdown = VoyageFiestaAPI.getOccupationPricingBreakdown(p, occupationId, overrides);
+                if (!breakdown || breakdown.bookingTotalWithTaxes == null) return;
+
+                const departureText = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
+                const bookingLabel = breakdown.bookingLabel || row?.label || '';
+                const priceLine = `${VoyageFiestaAPI.formatMoney(breakdown.bookingTotalWithTaxes)} total · ${bookingLabel}`;
+                const summaryText = `${p.name} — ${priceLine}${departureText ? ' · Départ ' + departureText : ''} · ${p.departureAirport || ''} · ${supplierLabel || ''}`.replace(/ ·  · /g, ' · ').trim();
+
+                let adults = Number(breakdown?.adults ?? overrides.adults);
+                let kids = Number(breakdown?.children212 ?? overrides.children212 ?? 0)
+                    + Number(breakdown?.children1317 ?? overrides.children1317 ?? 0);
+
+                const adultsEl = document.getElementById('passenger-adults');
+                const kidsEl = document.getElementById('passenger-kids');
+                if (adultsEl) adults = Number(adultsEl.value) || adults;
+                if (kidsEl) kids = Number(kidsEl.value) || 0;
+
+                if (overrides.isAutres) {
+                    adults = 2;
+                    kids = 0;
+                } else if (!Number.isFinite(adults) || adults < 1) {
+                    const total = Number(breakdown?.totalPeople ?? overrides.totalPeople);
+                    if (Number.isFinite(total) && total > 0 && kids >= 0 && total > kids) {
+                        adults = total - kids;
+                    } else if (Number.isFinite(total) && total > 0) {
+                        adults = total;
+                        kids = 0;
+                    } else {
+                        adults = 2;
+                        kids = 0;
+                    }
+                }
+
+                adults = Math.min(5, Math.max(1, adults));
+                kids = Math.min(4, Math.max(0, kids));
+
+                const incentive = VoyageFiestaAPI.getIncentive(p);
+                const isPreSale = VoyageFiestaAPI.isPreSale(p);
+                const preventeTag = window.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
+                const depositPerPerson = isPreSale
+                    ? null
+                    : (breakdown?.depositPerPerson ?? VoyageFiestaAPI.getDepositPerPerson(p));
+                const bookingContext = VoyageFiestaAPI.buildGhlReservationParams(
+                    p,
+                    occupationId,
+                    overrides
+                ) || {};
+                const thankYou = typeof buildGhlThankYouUrl === 'function'
+                    ? buildGhlThankYouUrl(p.slug)
+                    : 'thank-you.html';
+
+                RoomRegistration.openReservationWindow({
+                    productName: p.name,
+                    productSlug: p.slug,
+                    summaryText,
+                    adults,
+                    kids,
+                    isPreSale,
+                    requestType: isPreSale ? 'demande_prevente' : undefined,
+                    contactTag: isPreSale ? preventeTag : undefined,
+                    depositPerPerson,
+                    occupationId,
+                    pricingSummary: breakdown?.pricingSummary || bookingContext.sommaire || '',
+                    pricing: {
+                        bookingLabel,
+                        bookingTotalWithTaxes: breakdown.bookingTotalWithTaxes,
+                        totalDeposit: isPreSale ? null : breakdown.totalDeposit,
+                        depositPerPerson,
+                        departureDate: departureText,
+                        returnDate: VoyageFiestaAPI.formatDepartureDate(p.returnDate),
+                        departureAirport: p.departureAirport || '',
+                        durationNights: p.durationNights,
+                        location: p.location || '',
+                        incentiveDiscount: incentive?.discount ?? null,
+                        occupation: bookingContext.occupation || bookingLabel
+                    },
+                    bookingContext: {
+                        ...bookingContext,
+                        occupation: bookingContext.occupation || bookingLabel,
+                        ...(isPreSale ? {
+                            request_type: 'demande_prevente',
+                            create_opportunity: true,
+                            contact_tag: preventeTag,
+                            depot_total: '',
+                            depot_par_personne: '',
+                            deposit_amount: ''
+                        } : {})
+                    },
+                    thankYouUrl: thankYou
+                });
+            });
+        }
+
+        function startCountdown(endDate) {
+            const display = document.getElementById('countdown');
+            const end = endDate instanceof Date ? endDate : new Date(endDate);
+            if (Number.isNaN(end.getTime())) {
+                display.textContent = 'OFFRE TERMINÉE';
+                return;
+            }
+            function tick() {
+                const ms = end.getTime() - Date.now();
+                if (ms <= 0) {
+                    display.textContent = 'OFFRE TERMINÉE';
+                    return;
+                }
+                const days = Math.floor(ms / 86400000);
+                const hours = Math.floor((ms % 86400000) / 3600000);
+                const minutes = Math.floor((ms % 3600000) / 60000);
+                const seconds = Math.floor((ms % 60000) / 1000);
+                display.textContent =
+                    `${String(days).padStart(2, '0')}j ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+            }
+            tick();
+            setInterval(tick, 1000);
+        }
+
+        async function init() {
+            const params = new URLSearchParams(window.location.search);
+            const slug = params.get('slug');
+            if (!slug) {
+                document.getElementById('not-found').classList.remove('hidden');
+                document.querySelector('.product-countdown-bar')?.classList.add('hidden');
+                return;
+            }
+
+            const product = await VoyageFiestaAPI.fetchProductBySlug(slug);
+
+            if (product) {
+                document.getElementById('not-found').classList.add('hidden');
+                renderProduct(product);
+                if (window.VoyageFiestaEmbed) {
+                    window.VoyageFiestaEmbed.patchLinks();
+                    window.VoyageFiestaEmbed.notifyParentHeight();
+                }
+            } else {
+                document.getElementById('not-found').classList.remove('hidden');
+                document.querySelector('.product-countdown-bar')?.classList.add('hidden');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

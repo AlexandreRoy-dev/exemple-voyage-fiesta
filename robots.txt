@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aubaineexpress.voyagefiesta.ca/sitemap.xml

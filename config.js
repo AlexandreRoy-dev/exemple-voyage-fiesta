@@ -357,7 +357,7 @@
 
     window.SITE_NAME = window.SITE_NAME || 'Voyage Fiesta';
     window.SITE_DEFAULT_DESCRIPTION = window.SITE_DEFAULT_DESCRIPTION
-        || 'Aubaines voyage tout inclus - promotions limitées Voyage Fiesta.';
+        || 'Forfaits tout inclus au départ de Montréal ou Québec : Cancún, Punta Cana, Riviera Maya et plus. Prix d’occupation publiés par Voyage Fiesta.';
     window.SITE_DEFAULT_SHARE_IMAGE = window.SITE_DEFAULT_SHARE_IMAGE
         || 'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
 

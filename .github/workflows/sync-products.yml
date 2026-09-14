@@ -65,7 +65,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           paths=()
-          for p in products.json agents.json staff.json assets/forfaits share quickform; do
+          for p in products.json agents.json staff.json assets/forfaits share quickform destinations sitemap.xml robots.txt voyages-tout-inclus.html prevente.html departs-montreal.html departs-quebec.html comment-reserver.html a-propos.html contact.html; do
             if [ -e "$p" ]; then
               paths+=("$p")
             fi
@@ -73,7 +73,7 @@ jobs:
           git add -- "${paths[@]}"
 
           if git diff --staged --quiet; then
-            echo "No changes to products.json, agents.json, staff.json, share pages, quickform or images"
+            echo "No changes to products, staff, share, quickform, SEO pages or images"
             exit 0
           fi
 
