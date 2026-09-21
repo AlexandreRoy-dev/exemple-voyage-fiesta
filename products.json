@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-19T13:00:41.283Z",
+  "updatedAt": "2026-09-21T09:30:10.889Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -134,7 +134,7 @@
       "criteria": [
         "directement_sur_la_plage"
       ],
-      "inventory": 2,
+      "inventory": 1,
       "price": 1199,
       "priceOccSimple": null,
       "priceOccTriple": null,
@@ -1145,8 +1145,8 @@
       "id": "6aae816c419f757e44ef07c1",
       "slug": "royalton-negril-2026-12-19",
       "name": "ROYALTON NEGRIL",
-      "state": "actif",
-      "active": "actif",
+      "state": "vendu",
+      "active": "vendu",
       "destTag": "",
       "subDest": "NEGRIL",
       "destination1": "NEGRIL",
@@ -1163,7 +1163,7 @@
         "vol_direct_sans_escale",
         "tout_inclus"
       ],
-      "inventory": 1,
+      "inventory": 0,
       "price": 2049,
       "priceOccSimple": null,
       "priceOccTriple": null,
@@ -2019,8 +2019,8 @@
         "vol_direct_sans_escale",
         "tout_inclus"
       ],
-      "inventory": 2,
-      "price": 1358,
+      "inventory": 1,
+      "price": 1489,
       "priceOccSimple": null,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
