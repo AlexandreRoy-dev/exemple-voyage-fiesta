@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-25T18:30:03.265Z",
+  "updatedAt": "2026-09-25T19:00:03.580Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -1689,7 +1689,7 @@
         "vol_direct_sans_escale"
       ],
       "inventory": 2,
-      "price": 1112,
+      "price": 1063,
       "priceOccSimple": null,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
@@ -1726,7 +1726,7 @@
       "exclusions": [],
       "franchiseBagage": "",
       "forfaitLink": "https://revesdesoleil.vacancesaircanada.com/hotel/melia-cozumel",
-      "endDate": "2026-09-15T00:00:00.000Z",
+      "endDate": "2026-09-25T00:00:00.000Z",
       "departureDate": "2026-12-07T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "Cozumel (CZM)",
