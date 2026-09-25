@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-25T18:15:03.426Z",
+  "updatedAt": "2026-09-25T18:30:03.265Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -1196,7 +1196,7 @@
       "exclusions": [],
       "franchiseBagage": "",
       "forfaitLink": "https://www.sunwing.ca/fr/hotel/st-maarten/saint-martin/sonesta-maho-beach-resort-casino-and-spa",
-      "endDate": "2026-09-21T00:00:00.000Z",
+      "endDate": "2026-09-29T00:00:00.000Z",
       "departureDate": "2026-12-10T00:00:00.000Z",
       "departureAirport": "Montréal (YUL)",
       "returnAirport": "St-Martin (SXM)",
