@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-29T12:15:03.028Z",
+  "updatedAt": "2026-09-29T12:30:04.257Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -1259,7 +1259,7 @@
       "criteria": [
         "directement_sur_la_plage"
       ],
-      "inventory": 2,
+      "inventory": 1,
       "price": 1479,
       "priceOccSimple": null,
       "priceOccTriple": null,
