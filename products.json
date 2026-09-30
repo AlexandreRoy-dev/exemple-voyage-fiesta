@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-30T13:45:02.861Z",
+  "updatedAt": "2026-09-30T16:15:03.265Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -542,7 +542,7 @@
         "vol_direct_sans_escale",
         "tranquille__dtente"
       ],
-      "inventory": 8,
+      "inventory": 2,
       "price": 1618,
       "priceOccSimple": null,
       "priceOccTriple": null,
@@ -1158,7 +1158,7 @@
         "vol_direct_sans_escale",
         "tout_inclus"
       ],
-      "inventory": 1,
+      "inventory": 2,
       "price": 1658,
       "priceOccSimple": null,
       "priceOccTriple": null,
@@ -1190,7 +1190,7 @@
       "taxChild212": null,
       "taxChild1317": null,
       "packageType": "toutinclus",
-      "promotion": "1 DERNIÈRE CHAMBRE",
+      "promotion": "2 DERNIÈRE CHAMBRE",
       "hotelDescription": "Aperçu de la propriété\n• Propriété à quelques pas seulement des boutiques et de la vie nocturne locales\n• Vues à couper le souffle de la mer et accès rapide à la plage de sable blanc\n• Idéal autant pour les familles que les couples, avec des commodités pour tous\n\nSitué sur la côte sud-ouest de Sint Maarten, le Sonesta Maho Beach Resort, Casino & Spa est un hôtel tout compris parfait pour les vacances en famille et les escapades romantiques. Les vacanciers de tous les âges pourront profiter d’une multitude d’activités et de commodités. Les enfants adoreront jouer au miniclub Beach House et au parc aquatique pour enfants pendant que vous vous ferez bronzer au bord d’une vaste piscine dotée d’un bar ouvert. Détendez-vous sur la plage artificielle de l’hôtel ou sur le sable blanc de la célèbre plage Maho à proximité et découvrez les charmants magasins et restaurants locaux, situés à quelques minutes seulement. Vous aurez le choix entre plusieurs restaurants qui proposent de tout, notamment des pizzas cuites au four et des spécialités caribéennes. À la fin d’une journée magique au paradis, tentez votre chance au Casino Royale, situé près de l’hôtel à Maho Village, avant de vous reposer dans votre spacieuse chambre dotée de commodités pratiques, telles qu’un joli balcon.",
       "inclusions": [],
       "exclusions": [],
@@ -1670,8 +1670,8 @@
       "id": "6a3853dcc9025e2db441d210",
       "slug": "zel-cozumel-2026-12-07",
       "name": "ZEL COZUMEL",
-      "state": "actif",
-      "active": "actif",
+      "state": "vendu",
+      "active": "vendu",
       "destTag": "",
       "subDest": "Cozumel",
       "destination1": "Cozumel",
@@ -1688,7 +1688,7 @@
         "sur_la_plage",
         "vol_direct_sans_escale"
       ],
-      "inventory": 2,
+      "inventory": 0,
       "price": 1063,
       "priceOccSimple": null,
       "priceOccTriple": null,
