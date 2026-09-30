@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-29T12:30:04.257Z",
+  "updatedAt": "2026-09-30T13:45:02.861Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -116,8 +116,8 @@
       "id": "6aa4036536a0a91885cbcb66",
       "slug": "grand-palladium-colonial-resort-spa-2027-04-13",
       "name": "GRAND PALLADIUM COLONIAL RESORT & SPA",
-      "state": "actif",
-      "active": "actif",
+      "state": "vendu",
+      "active": "vendu",
       "destTag": "",
       "subDest": "Cancun (CUN)",
       "destination1": "Cancun (CUN)",
@@ -133,7 +133,7 @@
         "tout_inclus",
         "vol_direct_sans_escale"
       ],
-      "inventory": 5,
+      "inventory": 0,
       "price": 1199,
       "priceOccSimple": null,
       "priceOccTriple": null,
