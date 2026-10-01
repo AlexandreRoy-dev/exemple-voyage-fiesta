@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-30T16:30:15.603Z",
+  "updatedAt": "2026-10-01T11:30:03.626Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -8,8 +8,8 @@
       "id": "6aa5203c499d6eea0e61da7b",
       "slug": "grand-palladium-colonial-2027-04-06",
       "name": "GRAND PALLADIUM COLONIAL",
-      "state": "actif",
-      "active": "actif",
+      "state": "vendu",
+      "active": "vendu",
       "destTag": "",
       "subDest": "RIVIERA MAYA",
       "destination1": "RIVIERA MAYA",
@@ -24,7 +24,7 @@
       "criteria": [
         "directement_sur_la_plage"
       ],
-      "inventory": 1,
+      "inventory": 0,
       "price": 1199,
       "priceOccSimple": null,
       "priceOccTriple": null,
