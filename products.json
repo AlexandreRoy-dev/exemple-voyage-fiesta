@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-08T17:30:03.795Z",
+  "updatedAt": "2026-10-13T17:30:07.233Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -423,8 +423,8 @@
       "id": "6a3853de3468e0295c7be776",
       "slug": "henry-morgan-beach-hotel-2027-01-11",
       "name": "HENRY MORGAN BEACH HOTEL",
-      "state": "actif",
-      "active": "actif",
+      "state": "vendu",
+      "active": "vendu",
       "destTag": "",
       "subDest": "Roatan",
       "destination1": "Roatan",
@@ -439,7 +439,7 @@
       "criteria": [
         "tout_inclus"
       ],
-      "inventory": 1,
+      "inventory": 0,
       "price": 1358,
       "priceOccSimple": null,
       "priceOccTriple": null,
