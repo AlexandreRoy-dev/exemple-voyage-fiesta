@@ -30,11 +30,11 @@ function buildQuickformPageHtml(agent) {
   const slug = String(agent.slug || '').trim();
   const pageUrl = `${SITE_BASE}/quickform/${encodeURIComponent(slug)}.html`;
   const boutiqueUrl = `${SITE_BASE}/?agent=${encodeURIComponent(slug)}`;
-  const title = `Formulaire de contact — ${name}`;
+  const title = `Formulaire de contact : ${name}`;
   const description = `Laissez vos coordonnées pour ${name}. Un conseiller Voyage Fiesta vous rappellera.`;
 
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-CA">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,28 +50,16 @@ function buildQuickformPageHtml(agent) {
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(pageUrl)}">
-  <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta property="og:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
+  <meta property="og:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+  <meta property="og:image:secure_url" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+  <meta property="og:image:alt" content="${escapeHtml(name)}, Voyage Fiesta">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
-  <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta name="twitter:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="twitter:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+  <meta name="twitter:image:alt" content="${escapeHtml(name)}, Voyage Fiesta">
+  <link rel="stylesheet" href="/assets/tailwind.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: {
-            brand: { blue: '#025091', orange: '#F26522', dark: '#1F2937', light: '#F3F7FA' }
-          }
-        }
-      }
-    };
-  </script>
   <script>
     window.QUICKFORM_AGENT = {
       id: ${escapeJs(agent.id)},
@@ -83,9 +71,9 @@ function buildQuickformPageHtml(agent) {
   </script>
 </head>
 <body class="text-gray-800 font-sans min-h-screen">
-  <div id="quickform-root"></div>
+  <div id="quickform-root"><h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0">Formulaire de contact</h1></div>
   <script src="../config.js?v=50"></script>
-  <script src="../quickform.js?v=1"></script>
+  <script src="../quickform.js?v=2"></script>
   <script>
     if (window.VoyageFiestaQuickform) {
       window.VoyageFiestaQuickform.mount({

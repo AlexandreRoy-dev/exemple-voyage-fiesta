@@ -13,7 +13,7 @@ const SHARE_DIR = resolve(ROOT, 'share');
 
 export const SITE_BASE = (process.env.BOUTIQUE_BASE_URL || 'https://aubaineexpress.voyagefiesta.ca').replace(/\/$/, '');
 export const DEFAULT_SHARE_IMAGE =
-  'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
+  'https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg';
 
 function escapeHtml(value) {
   return String(value || '')
@@ -35,7 +35,7 @@ function isPlaceholderImage(src) {
   return !src || /placeholder|msgsndr-private/i.test(String(src));
 }
 
-function pickShareImage(product) {
+export function pickShareImage(product) {
   const candidates = [
     product.img,
     ...(Array.isArray(product.images) ? product.images : []),
@@ -109,12 +109,12 @@ export function buildShareDescription(product) {
   if (displayPrice != null) {
     parts.push(`à partir de ${formatMoney(displayPrice)}/pass.`);
   }
-  return parts.filter(Boolean).join(' · ') || 'Forfait voyage tout inclus — Voyage Fiesta';
+  return parts.filter(Boolean).join(' · ') || 'Forfait voyage tout inclus : Voyage Fiesta';
 }
 
 export function buildSharePageHtml(product) {
   const slug = String(product.slug || '').trim();
-  const productUrl = `${SITE_BASE}/product.html?slug=${encodeURIComponent(slug)}`;
+  const productUrl = `${SITE_BASE}/forfaits/${encodeURIComponent(slug)}.html`;
   const shareUrl = `${SITE_BASE}/share/${encodeURIComponent(slug)}.html`;
   const title = buildShareTitle(product);
   const description = buildShareDescription(product);
@@ -122,13 +122,13 @@ export function buildSharePageHtml(product) {
   const imageAlt = product.name || 'Voyage Fiesta';
 
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-CA">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="robots" content="noindex, follow">
   <meta name="author" content="Voyage Fiesta">
   <meta name="theme-color" content="#025091">
   <meta property="og:type" content="website">
@@ -144,7 +144,8 @@ export function buildSharePageHtml(product) {
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
-  <link rel="canonical" href="${escapeHtml(shareUrl)}">
+  <meta name="twitter:image:alt" content="${escapeHtml(imageAlt)}">
+  <link rel="canonical" href="${escapeHtml(productUrl)}">
   <script>
     (function () {
       var ua = navigator.userAgent || '';
@@ -154,7 +155,8 @@ export function buildSharePageHtml(product) {
   </script>
 </head>
 <body>
-  <p><a href="${escapeHtml(productUrl)}">Voir le forfait — ${escapeHtml(product.name)}</a></p>
+  <h1>${escapeHtml(product.name || 'Forfait tout inclus')}</h1>
+  <p><a href="${escapeHtml(productUrl)}">Voir le forfait : ${escapeHtml(product.name || '')}</a></p>
 </body>
 </html>
 `;

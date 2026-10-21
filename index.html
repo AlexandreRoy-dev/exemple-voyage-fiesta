@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-CA">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,46 +9,48 @@
     <meta name="author" content="Voyage Fiesta">
     <meta name="theme-color" content="#025091">
     <link rel="canonical" href="https://aubaineexpress.voyagefiesta.ca/">
+    <script>
+        (function () {
+            try {
+                if (new URLSearchParams(location.search).get('embed') === '1') {
+                    var robots = document.querySelector('meta[name="robots"]');
+                    if (robots) robots.setAttribute('content', 'noindex, nofollow');
+                }
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Voyage Fiesta">
     <meta property="og:locale" content="fr_CA">
     <meta property="og:title" content="Aubaines Express — voyages tout inclus au départ du Québec | Voyage Fiesta">
     <meta property="og:description" content="Forfaits tout inclus au départ de Montréal ou Québec : Cancún, Punta Cana, Riviera Maya et plus. Prix d’occupation publiés par Voyage Fiesta.">
     <meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/">
-    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
-    <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
-    <meta property="og:image:alt" content="Plage et mer des Caraïbes — Aubaines Express Voyage Fiesta">
+    <meta property="og:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+    <meta property="og:image:secure_url" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+    <meta property="og:image:alt" content="Vue aérienne d'une plage de sable blanc et d'une mer turquoise">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Aubaines Express — voyages tout inclus au départ du Québec | Voyage Fiesta">
     <meta name="twitter:description" content="Forfaits tout inclus au départ de Montréal ou Québec : Cancún, Punta Cana, Riviera Maya et plus. Prix d’occupation publiés par Voyage Fiesta.">
-    <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
-    <meta name="twitter:image:alt" content="Plage et mer des Caraïbes — Aubaines Express Voyage Fiesta">
+    <meta name="twitter:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+    <meta name="twitter:image:alt" content="Vue aérienne d'une plage de sable blanc et d'une mer turquoise">
     <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"TravelAgency","name":"Voyage Fiesta","url":"https://aubaineexpress.voyagefiesta.ca/","description":"Boutique Aubaines Express : forfaits tout inclus au départ du Québec.","areaServed":"CA","availableLanguage":"fr"}
+    {"@context":"https://schema.org","@type":"TravelAgency","name":"Voyage Fiesta","alternateName":"Aubaines Express","url":"https://aubaineexpress.voyagefiesta.ca/","description":"Boutique Aubaines Express : forfaits tout inclus au départ du Québec.","image":"https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg","areaServed":{"@type":"AdministrativeArea","name":"Québec"},"availableLanguage":"fr-CA"}
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/assets/tailwind-home.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            blue: '#025091',
-                            orange: '#F26522',
-                            dark: '#1F2937',
-                            light: '#F9FAFB'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
+        .seo-sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         /* Custom Scrollbar for filters */
         .filter-scroll::-webkit-scrollbar { width: 6px; }
         .filter-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -231,7 +233,7 @@
     <header class="embed-chrome hidden" id="embed-chrome" aria-label="Navigation boutique">
         <div class="embed-chrome__inner">
             <nav id="embed-breadcrumb" class="embed-chrome__nav" aria-label="Fil d'Ariane">
-                <a href="index.html" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
+                <a href="/" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
                 </a>
             </nav>
@@ -239,15 +241,16 @@
     </header>
 
     <section class="boutique-hero relative bg-brand-dark">
-        <img src="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1920&fit=crop" alt="Destination de rêve" class="w-full h-36 md:h-44 object-cover">
+        <img src="/assets/hero-plage.webp" width="1600" height="1068" alt="Vue aérienne d'une plage de sable blanc et d'une mer turquoise" class="w-full h-36 md:h-44 object-cover">
         <div class="absolute inset-x-0 top-0 bg-brand-orange/95 text-white text-center py-3 px-4 text-sm md:text-base font-semibold tracking-wide shadow-md">
             🔥 Les places s'envolent rapidement ! Réservez aujourd'hui et profitez de nos meilleures aubaines voyage à prix exceptionnels.
         </div>
     </section>
 
     <main class="container mx-auto px-4 py-8 flex-grow">
+        <h1 class="seo-sr-only">Aubaines Express : voyages tout inclus au départ du Québec</h1>
         <nav id="listing-back-nav" class="breadcrumb-inline hidden text-lg sm:text-xl text-gray-600 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
-            <a href="index.html" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
+            <a href="/" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
             </a>
         </nav>
@@ -357,7 +360,7 @@
     </footer>
 
     <script src="config.js?v=57"></script>
-    <script src="api.js?v=108"></script>
+    <script src="api.js?v=109"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -596,9 +599,10 @@
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col lg:transition-transform lg:hover:-translate-y-1 ${isUnavailable ? 'border-red-200' : ''}${isPreSale ? ' ring-2 ring-brand-blue/40' : ''}`;
 
+                const productPath = `/forfaits/${encodeURIComponent(p.slug)}.html`;
                 const productUrl = window.VoyageFiestaEmbed
-                    ? window.VoyageFiestaEmbed.boutiqueUrl(`product.html?slug=${encodeURIComponent(p.slug)}`)
-                    : `product.html?slug=${encodeURIComponent(p.slug)}`;
+                    ? window.VoyageFiestaEmbed.boutiqueUrl(productPath)
+                    : productPath;
                 const endMs = p.endDate instanceof Date ? p.endDate.getTime() : new Date(p.endDate).getTime();
                 const departureLabel = VoyageFiestaAPI.formatDepartureDate(p.departureDate);
                 const departureLine = departureLabel
