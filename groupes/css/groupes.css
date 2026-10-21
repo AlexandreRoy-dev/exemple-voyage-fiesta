@@ -266,11 +266,14 @@ h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin: 0 0 0.8rem; }
   display: flex;
   align-items: end;
   background:
-    linear-gradient(90deg, rgba(1, 32, 58, 0.88), rgba(2, 80, 145, 0.28)),
+    linear-gradient(180deg, rgba(5, 16, 32, 0.2) 0%, rgba(5, 16, 32, 0.45) 38%, rgba(5, 16, 32, 0.94) 100%),
+    linear-gradient(90deg, rgba(5, 16, 32, 0.78), rgba(5, 16, 32, 0.35) 72%),
     var(--hero, #025091) center/cover no-repeat;
 }
 .detail-hero .wrap { padding: 2.2rem 0; }
-.detail-hero h1 { margin-bottom: 0.6rem; }
+.detail-hero h1 { margin-bottom: 0.6rem; color: #fff; }
+.detail-hero .price { color: #fff; }
+.detail-hero .was { color: rgba(255, 255, 255, 0.82); }
 .meta { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; align-items: baseline; }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.25rem; padding: 1.5rem 0 2.5rem; }
 .panel { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem 1.2rem; margin-bottom: 1rem; }
