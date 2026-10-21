@@ -224,7 +224,9 @@ h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin: 0 0 0.8rem; }
   flex-direction: column;
   min-width: 0;
 }
-.card img { aspect-ratio: 16/10; object-fit: cover; width: 100%; background: #dbe7f1; }
+.card-media { display: block; background: #dbe7f1; }
+.card img, .card-fallback { aspect-ratio: 16/10; object-fit: cover; width: 100%; background: #dbe7f1; }
+.card-fallback { display: block; background: linear-gradient(160deg, #013864, #4aa3d8); }
 .card-body { padding: 0.85rem 0.9rem 1rem; display: flex; flex-direction: column; gap: 0.35rem; flex: 1; }
 .card .eyebrow { color: var(--orange); margin: 0; }
 .card h2, .card h3 { margin: 0; font-size: 1.02rem; }
@@ -275,7 +277,7 @@ h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin: 0 0 0.8rem; }
 .panel h2 { margin: 0 0 0.7rem; font-size: 1.25rem; color: var(--blue-dark); }
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .gallery button { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 8px; overflow: hidden; }
-.gallery img { aspect-ratio: 4/3; object-fit: cover; width: 100%; }
+.gallery img { aspect-ratio: 4/3; object-fit: cover; width: 100%; background: #dbe7f1; }
 .panel ul { margin: 0; padding-left: 1.1rem; }
 .panel li + li { margin-top: 0.25rem; }
 table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }

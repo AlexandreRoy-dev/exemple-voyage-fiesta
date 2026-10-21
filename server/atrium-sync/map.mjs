@@ -96,34 +96,143 @@ function indexBy(list, key) {
   return map;
 }
 
-function imageUrl(value) {
-  if (!value) return '';
-  if (typeof value === 'string') return value.trim();
-  return String(pick(value, 'url', 'image', 'src', 'lien', 'url_img', 'url_img_main') || '').trim();
+function normName(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 }
 
-function mapImages(group, hotel, ship) {
-  const raw = []
-    .concat(group?.list_image || [])
-    .concat(group?.images || [])
-    .concat(hotel?.list_image || [])
-    .concat(hotel?.images || [])
-    .concat(hotel?.alts_img || [])
-    .concat(ship?.alts_img || [])
-    .concat(ship?.list_photo || []);
-  const urls = [];
-  const push = (url, alt) => {
-    const clean = String(url || '').trim();
-    if (!clean || urls.some((item) => item.url === clean)) return;
-    urls.push({ url: clean, alt: String(alt || '').trim() });
-  };
-  push(imageUrl(pick(group, 'image', 'image_principale', 'url_img', 'photo')));
-  push(imageUrl(pick(hotel, 'url_img', 'image', 'photo', 'url_img_main')));
-  push(imageUrl(pick(ship, 'url_img_main', 'image')));
-  for (const item of raw) {
-    if (typeof item === 'string') push(item);
-    else push(imageUrl(item), pick(item, 'alt', 'titre', 'titre_fr', 'legende'));
+function indexShips(list) {
+  const byId = new Map();
+  const byName = new Map();
+  for (const item of list || []) {
+    const id = pick(item, 'id_navire', 'id');
+    if (id !== undefined && id !== null && id !== '') byId.set(String(id), item);
+    const name = normName(pick(item, 'nom', 'navire_nom', 'name'));
+    if (name && !byName.has(name)) byName.set(name, item);
   }
+  return { byId, byName };
+}
+
+function indexMedia(list, folder) {
+  const byShip = new Map();
+  for (const item of list || []) {
+    if (!item || typeof item !== 'object') continue;
+    const id = pick(item, 'id_navire', 'navire_id');
+    if (id === undefined || id === null || id === '') continue;
+    const key = String(id);
+    if (!byShip.has(key)) byShip.set(key, []);
+    byShip.get(key).push({ ...item, folder });
+  }
+  return byShip;
+}
+
+const IMAGE_HOST = 'https://vascoinc.com';
+const MAX_IMAGES = 30;
+const MEDIA_KEYS = [
+  'list_image', 'list_photo', 'images', 'photos', 'alts_img', 'galerie',
+  'medias', 'liste_photos', 'list_img', 'list_visuel', 'visuels'
+];
+
+function padId(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  return String(Math.trunc(n)).padStart(8, '0');
+}
+
+function hotelCdnUrl(hotelId, photoId) {
+  const hotel = padId(hotelId);
+  const photo = padId(photoId);
+  if (!hotel || !photo) return '';
+  return `${IMAGE_HOST}/upimg/hotel/hotel_${hotel}_${photo}.jpg`;
+}
+
+function resolveImageRef(value, folder) {
+  if (value == null) return '';
+  let raw = String(value).trim();
+  if (!raw || raw === '0' || raw === 'null') return '';
+  if (/^https?:\/\//i.test(raw)) {
+    if (/\.(jpe?g|png|webp|gif|avif)(\?|#|$)/i.test(raw) || /\/upimg\//i.test(raw) || /vascoinc\.com/i.test(raw)) return raw;
+    return '';
+  }
+  if (raw.startsWith('//')) return `https:${raw}`;
+  raw = raw.replace(/^\/+/, '');
+  if (raw.startsWith('upimg/')) return `${IMAGE_HOST}/${raw}`;
+  if (/^(hotel|bateau|cabine|pont|groupenew)\//i.test(raw)) return `${IMAGE_HOST}/upimg/${raw}`;
+  if (/^hotel_\d{4,8}_\d{4,8}\.(jpe?g|png|webp)$/i.test(raw)) return `${IMAGE_HOST}/upimg/hotel/${raw}`;
+  if (/^\d{5,8}_\d+_[A-Za-z0-9]+\.(jpe?g|png|webp)$/i.test(raw)) return `${IMAGE_HOST}/upimg/groupenew/${raw}`;
+  if (/^\d+_[A-Za-z0-9_-]*\.(jpe?g|png|webp)$/i.test(raw)) {
+    return `${IMAGE_HOST}/upimg/${folder || 'bateau'}/${raw}`;
+  }
+  return '';
+}
+
+function photoIdOf(item) {
+  if (!item || typeof item !== 'object') return null;
+  return asNumber(pick(item, 'id_photo', 'id_image', 'photo_id', 'id_img'));
+}
+
+function isPrincipal(item) {
+  if (!item || typeof item !== 'object') return false;
+  const flag = pick(item, 'principale', 'principal', 'main', 'is_main', 'cover');
+  return flag === true || flag === 1 || flag === '1' || flag === 'true';
+}
+
+function pushImage(list, url, alt) {
+  const clean = String(url || '').trim();
+  if (!clean || list.length >= MAX_IMAGES || list.some((item) => item.url === clean)) return;
+  list.push({ url: clean, alt: String(alt || '').replace(/\s+/g, ' ').trim() });
+}
+
+function imagesFromValue(value, folder, hotelId, list, alt = '') {
+  if (value == null || value === '') return;
+  if (typeof value === 'string' || typeof value === 'number') {
+    const text = String(value).trim();
+    const url = resolveImageRef(text, folder)
+      || (hotelId && /^\d+$/.test(text) ? hotelCdnUrl(hotelId, text) : '');
+    pushImage(list, url, alt);
+    return;
+  }
+  if (Array.isArray(value)) {
+    const ordered = [...value].sort((a, b) => Number(isPrincipal(b)) - Number(isPrincipal(a)));
+    for (const item of ordered) imagesFromValue(item, folder, hotelId, list, alt);
+    return;
+  }
+  if (typeof value !== 'object') return;
+  const file = pick(value, 'url', 'image', 'src', 'lien', 'fichier', 'file', 'path', 'nom_fichier', 'url_img', 'url_img_main', 'photo', 'img', 'visuel', 'lien_img', 'url_photo');
+  const id = photoIdOf(value);
+  const itemAlt = pick(value, 'alt', 'titre', 'titre_fr', 'legende') || alt;
+  const url = resolveImageRef(file, folder) || (hotelId && id ? hotelCdnUrl(hotelId, id) : '');
+  pushImage(list, url, itemAlt);
+}
+
+function scanNamedMedia(record, folder, hotelId, list) {
+  if (!record || typeof record !== 'object') return;
+  for (const [key, value] of Object.entries(record)) {
+    if (MEDIA_KEYS.includes(key)) continue;
+    if (!/photo|image|img|fichier|visuel|galerie|media/i.test(key)) continue;
+    if (/description|secret|texte/i.test(key)) continue;
+    imagesFromValue(value, folder, hotelId, list);
+  }
+}
+
+function mapImages(group, hotel, ship, extra = []) {
+  const urls = [];
+  const hotelId = pick(hotel, 'id_hotel', 'id') || pick(group, 'id_hotel');
+  imagesFromValue(pick(group, 'image', 'image_principale', 'url_img', 'photo', 'fichier', 'url_img_main'), 'groupenew', hotelId, urls);
+  for (const key of MEDIA_KEYS) imagesFromValue(group?.[key], 'groupenew', hotelId, urls);
+  scanNamedMedia(group, 'groupenew', hotelId, urls);
+  imagesFromValue(pick(hotel, 'url_img', 'image', 'photo', 'url_img_main', 'fichier'), 'hotel', hotelId, urls);
+  for (const key of MEDIA_KEYS) imagesFromValue(hotel?.[key], 'hotel', hotelId, urls);
+  scanNamedMedia(hotel, 'hotel', hotelId, urls);
+  imagesFromValue(pick(ship, 'url_img_main', 'image', 'photo', 'fichier'), 'bateau', null, urls);
+  for (const key of MEDIA_KEYS) imagesFromValue(ship?.[key], 'bateau', null, urls);
+  scanNamedMedia(ship, 'bateau', null, urls);
+  const orderedExtra = [...extra].sort((a, b) => Number(isPrincipal(b)) - Number(isPrincipal(a)));
+  for (const item of orderedExtra) imagesFromValue(item, item?.folder || 'bateau', null, urls);
   return urls;
 }
 
@@ -229,7 +338,7 @@ function mapHotel(hotel) {
     chaine: String(pick(hotel, 'chaine', 'chaîne', 'chain', 'marque') || '').trim(),
     etoiles: asNumber(pick(hotel, 'etoiles', 'étoiles', 'classification', 'stars')),
     services: asList(pick(hotel, 'services', 'caracteristiques', 'equipements', 'amenities')),
-    image: imageUrl(pick(hotel, 'url_img', 'image', 'photo', 'url_img_main'))
+    image: resolveImageRef(pick(hotel, 'url_img', 'image', 'photo', 'url_img_main', 'fichier'), 'hotel')
   };
 }
 
@@ -243,7 +352,7 @@ function mapShip(ship, line) {
     nom,
     compagnie: String(pick(ship, 'nom_compagnie') || pick(line, 'nom_fr', 'nom') || '').trim(),
     description: String(pick(ship, 'description_titre_fr', 'description_fr', 'description') || pick(line, 'description_fr') || '').trim(),
-    image: imageUrl(pick(ship, 'url_img_main', 'image')),
+    image: resolveImageRef(pick(ship, 'url_img_main', 'image', 'fichier'), 'bateau'),
     passagers: asNumber(ship?.nb_passager),
     equipage: asNumber(ship?.nb_equipage),
     tonnage: asNumber(ship?.tonnage),
@@ -264,12 +373,21 @@ function mapGroup(group, index, lookups) {
   const id = pick(group, 'id_groupe', 'id');
   if (id === undefined || id === null || id === '') return null;
   const hotel = lookups.hotels.get(String(pick(group, 'id_hotel') || '')) || null;
-  const ship = lookups.ships.get(String(pick(group, 'id_navire') || '')) || null;
+  const shipId = pick(group, 'id_navire', 'id_bateau', 'navire_id', 'id_ship');
+  const shipNameRaw = pick(group, 'navire_nom', 'nom_navire', 'bateau');
+  const ship = lookups.ships.byId.get(String(shipId || ''))
+    || lookups.ships.byName.get(normName(shipNameRaw))
+    || null;
   const line = lookups.lines.get(String(pick(group, 'id_compagnie', 'id_compagnie_cruise') || ship?.id_compagnie || '')) || null;
   const title = String(pick(group, 'titre', 'nom', 'nom_groupe', 'titre_fr', 'name') || '').trim();
   if (!title) return null;
   const dates = mapDates(group);
-  const images = mapImages(group, hotel, ship);
+  const shipKey = String(pick(ship, 'id_navire', 'id') || shipId || '');
+  const extraMedia = []
+    .concat(lookups.photos.get(shipKey) || [])
+    .concat(lookups.cabines.get(shipKey) || [])
+    .concat(lookups.ponts.get(shipKey) || []);
+  const images = mapImages(group, hotel, ship, extraMedia);
   const type = asType(pick(group, 'type', 'type_groupe', 'categorie'));
   const hotelName = String(pick(group, 'nom_hotel') || hotel?.nom || pick(mapHotel(hotel) || {}, 'nom') || '').trim();
   const shipName = String(pick(group, 'navire_nom') || ship?.nom || '').trim();
@@ -301,7 +419,7 @@ function mapGroup(group, index, lookups) {
     hotel: hotelName,
     hotelId: mappedHotel?.id ?? null,
     navire: shipName,
-    navireId: ship?.id_navire ?? null,
+    navireId: pick(ship, 'id_navire', 'id') ?? null,
     compagnie: lineName,
     pointsForts: asList(pick(group, 'points_forts', 'pointsForts', 'texte_points', 'highlights')),
     inclusions: asList(pick(group, 'inclusions', 'texte_inclusions', 'inclus')),
@@ -324,8 +442,11 @@ export function mapCatalog(input, { generatedAt = new Date().toISOString() } = {
   const lines = Array.isArray(input?.compagnies) ? input.compagnies : Array.isArray(input?.lines) ? input.lines : [];
   const lookups = {
     hotels: indexBy(hotels, 'id_hotel'),
-    ships: indexBy(ships, 'id_navire'),
-    lines: indexBy(lines, 'id_compagnie')
+    ships: indexShips(ships),
+    lines: indexBy(lines, 'id_compagnie'),
+    photos: indexMedia(input?.photos, 'bateau'),
+    cabines: indexMedia(input?.cabines, 'cabine'),
+    ponts: indexMedia(input?.ponts, 'pont')
   };
   const groups = groupes
     .map((group, index) => mapGroup(group, index, lookups))
