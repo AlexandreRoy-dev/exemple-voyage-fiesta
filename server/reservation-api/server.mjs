@@ -6,17 +6,74 @@
  *   GHL_API_KEY=pit-...
  *   GHL_LOCATION_ID=V90iyFBbBrCg3tpctRjc
  *   PORT=3847
- *   ALLOWED_ORIGINS=https://aubaineexpress.voyagefiesta.ca,https://promofiesta.roymarketing.ca
+ *   BIND_HOST=127.0.0.1
+ *   ALLOWED_ORIGINS=https://aubaineexpress.voyagefiesta.ca,https://voyagefiesta.com,https://www.voyagefiesta.com
  *   GHL_CONTACT_TAG=reservation-site
+ *   GHL_GROUPE_TAG=demande-groupe
+ *   GHL_GROUPE_NOTIFY=0
+ *   GHL_GROUPE_DEFAULT_OWNER=
+ *   DRY_RUN=0
+ *   GROUPES_JSON_PATH=/opt/voyage-fiesta-reservation/groupes.json
  */
 import http from 'node:http';
 import { readFileSync, existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const GHL_API = 'https://services.leadconnectorhq.com';
 const GHL_VERSION = '2021-07-28';
+const requestConfig = new AsyncLocalStorage();
+
+const DEFAULT_ORIGINS = [
+  'https://aubaineexpress.voyagefiesta.ca',
+  'https://www.aubaineexpress.voyagefiesta.ca',
+  'https://voyagefiesta.com',
+  'https://www.voyagefiesta.com',
+  'https://promofiesta.roymarketing.ca'
+];
+
+function envFlag(value) {
+  return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+}
+
+export function readConfig(env = process.env) {
+  const originRaw = env.ALLOWED_ORIGINS == null || String(env.ALLOWED_ORIGINS).trim() === ''
+    ? DEFAULT_ORIGINS.join(',')
+    : String(env.ALLOWED_ORIGINS);
+  return {
+    port: Number(env.PORT || 3847),
+    host: env.BIND_HOST || env.HOST || '127.0.0.1',
+    ghlApi: String(env.GHL_API_BASE || 'https://services.leadconnectorhq.com').replace(/\/$/, ''),
+    apiKey: env.GHL_API_KEY || '',
+    locationId: env.GHL_LOCATION_ID || '',
+    contactTag: env.GHL_CONTACT_TAG || 'reservation-site',
+    priceTag: env.GHL_PRICE_REQUEST_TAG || 'demande-prix',
+    preSaleTag: env.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente',
+    quickformTag: env.GHL_QUICKFORM_TAG || 'quickform',
+    groupeTag: env.GHL_GROUPE_TAG || 'demande-groupe',
+    groupeNotify: envFlag(env.GHL_GROUPE_NOTIFY),
+    groupeDefaultOwner: String(env.GHL_GROUPE_DEFAULT_OWNER || '').trim(),
+    origins: originRaw.split(',').map((item) => item.trim()).filter(Boolean),
+    notifyEmails: String(env.INTERNAL_NOTIFY_EMAILS || '')
+      .split(',')
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean),
+    emailFrom: env.GHL_EMAIL_FROM || 'info@promo.voyagefiesta.com',
+    dryRun: envFlag(env.DRY_RUN),
+    groupesJsonPath: env.GROUPES_JSON_PATH || join(__dirname, 'groupes.json'),
+    productsJsonUrl: env.PRODUCTS_JSON_URL || 'https://aubaineexpress.voyagefiesta.ca/products.json',
+    staffJsonUrl: env.STAFF_JSON_URL || '',
+    tagDelayMs: env.GHL_TAG_DELAY_MS == null || env.GHL_TAG_DELAY_MS === ''
+      ? 900
+      : Number(env.GHL_TAG_DELAY_MS),
+    blockLiveGhl: envFlag(env.GHL_BLOCK_LIVE)
+  };
+}
+
+function cfg() {
+  return requestConfig.getStore() || readConfig();
+}
 
 function loadEnvFile() {
   const envPath = join(__dirname, '.env');
@@ -39,25 +96,6 @@ function loadEnvFile() {
 }
 
 loadEnvFile();
-
-const PORT = Number(process.env.PORT || 3847);
-const GHL_API_KEY = process.env.GHL_API_KEY || '';
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID || '';
-const GHL_CONTACT_TAG = process.env.GHL_CONTACT_TAG || 'reservation-site';
-/** Tag Distinct — trigger workflow « Demande de prix » dans GHL */
-const GHL_PRICE_REQUEST_TAG = process.env.GHL_PRICE_REQUEST_TAG || 'demande-prix';
-const GHL_PRE_SALE_REQUEST_TAG = process.env.GHL_PRE_SALE_REQUEST_TAG || 'demande-prevente';
-const GHL_QUICKFORM_TAG = process.env.GHL_QUICKFORM_TAG || 'quickform';
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '*')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
-/** Staff inboxes. GHL Internal Notification cannot merge custom/LARGE_TEXT fields. */
-const INTERNAL_NOTIFY_EMAILS = (process.env.INTERNAL_NOTIFY_EMAILS || '')
-  .split(',')
-  .map((s) => s.trim().toLowerCase())
-  .filter(Boolean);
-const GHL_EMAIL_FROM = process.env.GHL_EMAIL_FROM || 'info@promo.voyagefiesta.com';
 
 /**
  * Payload keys → GHL contact custom field keys (without contact. prefix).
@@ -114,9 +152,22 @@ const CUSTOM_FIELD_KEYS = {
 };
 
 function pickCorsOrigin(reqOrigin) {
-  if (ALLOWED_ORIGINS.includes('*')) return reqOrigin || '*';
-  if (reqOrigin && ALLOWED_ORIGINS.includes(reqOrigin)) return reqOrigin;
-  return ALLOWED_ORIGINS[0] || '*';
+  const origins = cfg().origins;
+  if (origins.includes('*')) return reqOrigin || '*';
+  if (reqOrigin && origins.includes(reqOrigin)) return reqOrigin;
+  if (reqOrigin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(reqOrigin)) return reqOrigin;
+  return origins[0] || 'https://aubaineexpress.voyagefiesta.ca';
+}
+
+function ghlUrl(path) {
+  return `${cfg().ghlApi}${path}`;
+}
+
+async function ghlFetch(url, options) {
+  if (/leadconnectorhq\.com/i.test(String(url)) && (cfg().blockLiveGhl || envFlag(process.env.GHL_BLOCK_LIVE))) {
+    throw new Error('Appel GHL réel bloqué');
+  }
+  return fetch(url, options);
 }
 
 function setCors(res, req) {
@@ -159,23 +210,75 @@ function isQuickFormRequest(payload) {
   return type === 'quickform' || type === 'quick_form' || type === 'quick-lead';
 }
 
+function isGroupeRequest(payload) {
+  const type = String(payload?.request_type || payload?.type || '').toLowerCase().trim();
+  return type === 'demande_groupe' || type === 'demande-groupe' || type === 'groupe';
+}
+
+function requestTypeName(payload) {
+  if (isGroupeRequest(payload)) return 'demande_groupe';
+  if (isQuickFormRequest(payload)) return 'quickform';
+  if (isPreSaleRequest(payload)) return 'demande_prevente';
+  if (isPriceRequest(payload)) return 'demande_prix';
+  return 'reservation';
+}
+
+function requestDryRun(payload, input) {
+  return cfg().dryRun || envFlag(payload?.dry_run) || envFlag(input?.dry_run);
+}
+
+function shouldNotify(payload) {
+  if (!cfg().notifyEmails.length) return false;
+  if (isGroupeRequest(payload) && !cfg().groupeNotify) return false;
+  return true;
+}
+
 function resolveContactTag(payload) {
   if (isQuickFormRequest(payload)) {
-    return GHL_QUICKFORM_TAG;
+    return cfg().quickformTag;
   }
   if (isPreSaleRequest(payload)) {
-    return pick(payload, 'contact_tag') || GHL_PRE_SALE_REQUEST_TAG;
+    return pick(payload, 'contact_tag') || cfg().preSaleTag;
   }
   if (isPriceRequest(payload)) {
-    return pick(payload, 'contact_tag') || GHL_PRICE_REQUEST_TAG;
+    return pick(payload, 'contact_tag') || cfg().priceTag;
   }
-  return GHL_CONTACT_TAG;
+  return cfg().contactTag;
+}
+
+function collectExtraTags(payload) {
+  const tags = [];
+  const add = (value) => {
+    const tag = String(value || '').trim();
+    if (tag && !tags.includes(tag)) tags.push(tag);
+  };
+  const list = payload?.tags ?? payload?.contact_tags;
+  if (Array.isArray(list)) list.forEach(add);
+  return tags;
 }
 
 /** Process tags only. Owner routing is assignedTo, never a conseiller tag. */
 function resolveContactTags(payload) {
+  if (isGroupeRequest(payload)) {
+    const tags = [];
+    const add = (value) => {
+      const tag = String(value || '').trim();
+      if (!tag || tag === 'demande-prix' || tag === cfg().priceTag) return;
+      if (!tags.includes(tag)) tags.push(tag);
+    };
+    add(cfg().groupeTag);
+    const id = pick(payload, 'groupe_id', 'id_groupe', 'group_id');
+    if (id) add(`groupe-${id}`);
+    collectExtraTags(payload).forEach(add);
+    add(pick(payload, 'contact_tag'));
+    return tags;
+  }
   const primary = resolveContactTag(payload);
-  return primary ? [primary] : [];
+  const tags = primary ? [primary] : [];
+  for (const tag of collectExtraTags(payload)) {
+    if (!tags.includes(tag)) tags.push(tag);
+  }
+  return tags;
 }
 
 let productsCache = { at: 0, products: [] };
@@ -185,12 +288,12 @@ async function lookupOwnerIdBySlug(slug) {
   const key = String(slug || '').trim();
   if (!key) return '';
   const now = Date.now();
-  if (now - productsCache.at > 5 * 60 * 1000) {
-    const url = process.env.PRODUCTS_JSON_URL || 'https://aubaineexpress.voyagefiesta.ca/products.json';
+  const url = cfg().productsJsonUrl;
+  if (productsCache.url !== url || now - productsCache.at > 5 * 60 * 1000) {
     const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}t=${now}`);
     if (!res.ok) throw new Error(`products.json HTTP ${res.status}`);
     const data = await res.json();
-    productsCache = { at: now, products: Array.isArray(data?.products) ? data.products : [] };
+    productsCache = { at: now, url, products: Array.isArray(data?.products) ? data.products : [] };
   }
   const product = productsCache.products.find((p) => String(p?.slug || '') === key);
   return String(product?.ownerId || product?.owner?.id || '').trim();
@@ -200,14 +303,14 @@ async function lookupStaffIdBySlug(slug) {
   const key = String(slug || '').trim().toLowerCase();
   if (!key) return '';
   const now = Date.now();
-  if (now - staffCache.at > 5 * 60 * 1000) {
-    const productsUrl = process.env.PRODUCTS_JSON_URL || 'https://aubaineexpress.voyagefiesta.ca/products.json';
-    const url = process.env.STAFF_JSON_URL
-      || productsUrl.replace(/products\.json(?:\?.*)?$/i, 'staff.json');
+  const productsUrl = cfg().productsJsonUrl;
+  const url = cfg().staffJsonUrl
+    || productsUrl.replace(/products\.json(?:\?.*)?$/i, 'staff.json');
+  if (staffCache.url !== url || now - staffCache.at > 5 * 60 * 1000) {
     const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}t=${now}`);
     if (!res.ok) throw new Error(`staff.json HTTP ${res.status}`);
     const data = await res.json();
-    staffCache = { at: now, agents: Array.isArray(data?.agents) ? data.agents : [] };
+    staffCache = { at: now, url, agents: Array.isArray(data?.agents) ? data.agents : [] };
   }
   const agent = staffCache.agents.find((a) => {
     const agentSlug = String(a?.slug || '').trim().toLowerCase();
@@ -218,6 +321,9 @@ async function lookupStaffIdBySlug(slug) {
 }
 
 async function resolveAssignedUserId(payload) {
+  if (isGroupeRequest(payload)) {
+    return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to') || cfg().groupeDefaultOwner || '';
+  }
   try {
     const fromVoyage = await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
     if (fromVoyage) return fromVoyage;
@@ -240,7 +346,7 @@ function extractAssignedUserId(contact) {
 
 async function ghlGetContact(contactId) {
   if (!contactId) return null;
-  const res = await fetch(`${GHL_API}/contacts/${encodeURIComponent(contactId)}`, {
+  const res = await ghlFetch(`${ghlUrl('')}/contacts/${encodeURIComponent(contactId)}`, {
     headers: ghlHeaders()
   });
   if (!res.ok) return null;
@@ -252,16 +358,16 @@ async function ghlFindExistingContact({ email, phone }) {
   const urls = [];
   if (email) {
     urls.push(
-      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&email=${encodeURIComponent(email)}`
+      `${ghlUrl('')}/contacts/search/duplicate?locationId=${encodeURIComponent(cfg().locationId)}&email=${encodeURIComponent(email)}`
     );
   }
   if (phone) {
     urls.push(
-      `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&number=${encodeURIComponent(phone)}`
+      `${ghlUrl('')}/contacts/search/duplicate?locationId=${encodeURIComponent(cfg().locationId)}&number=${encodeURIComponent(phone)}`
     );
   }
   for (const url of urls) {
-    const res = await fetch(url, { headers: ghlHeaders() });
+    const res = await ghlFetch(url, { headers: ghlHeaders() });
     if (!res.ok) continue;
     const data = await res.json().catch(() => null);
     const found = data?.contact || data?.contacts?.[0];
@@ -274,7 +380,7 @@ async function ghlFindExistingContact({ email, phone }) {
 
 function ghlHeaders(extra = {}) {
   return {
-    Authorization: `Bearer ${GHL_API_KEY}`,
+    Authorization: `Bearer ${cfg().apiKey}`,
     Version: GHL_VERSION,
     Accept: 'application/json',
     'Content-Type': 'application/json',
@@ -481,7 +587,39 @@ function collectKidEntries(payload) {
   return kids;
 }
 
+function buildGroupeNotes(payload) {
+  const rows = ['Type: Demande de groupe', 'Source: Site groupes Atrium', '', 'Voyage'];
+  const add = (label, ...values) => {
+    const value = values.map((item) => (item == null ? '' : String(item).trim())).find(Boolean);
+    if (value) rows.push(`${label}: ${value}`);
+  };
+  add('Identifiant', payload.groupe_id, payload.id_groupe);
+  add('Titre', payload.groupe_titre, payload.forfait_name, payload.nom_du_forfait);
+  add('Catégorie', payload.groupe_type, payload.categorie);
+  add('Destination', payload.destination);
+  add('Pays', payload.country);
+  add('Date de départ', payload.departure_date, payload.date_depart);
+  add('Date de retour', payload.return_date);
+  add('Durée', payload.duration_label, payload.duration_nights ? `${payload.duration_nights} nuits` : '');
+  add('Prix à partir de', payload.prix_appel, payload.price);
+  add('Hôtel ou navire', payload.hotel, payload.navire, payload.provider);
+  add('Compagnie', payload.compagnie);
+  add('Lien', payload.groupe_url, payload.forfait_link);
+  rows.push('', 'Coordonnées');
+  add('Nom', payload.full_name, [payload.p1_prenom, payload.p1_nom].filter(Boolean).join(' '));
+  add('Courriel', payload.email, payload.p1_email);
+  add('Téléphone', payload.phone, payload.p1_phone);
+  add('Adultes', payload.nombre_adultes);
+  add('Enfants', payload.nombre_enfants);
+  add('Message', payload.message, payload.notes_message);
+  rows.push('', 'Consentement');
+  const terms = termsCheckboxState(payload);
+  add('Conditions acceptées', terms === 'checked' ? 'oui' : terms === 'unchecked' ? 'non' : '');
+  return rows.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
 function buildNotes(payload) {
+  if (isGroupeRequest(payload)) return buildGroupeNotes(payload);
   const lines = [];
   const addSection = (title, rows) => {
     const filled = (rows || []).filter(Boolean);
@@ -687,7 +825,7 @@ function buildContactBody(payload, assignedUserId) {
   const priceRequest = isPriceRequest(payload);
 
   const body = {
-    locationId: GHL_LOCATION_ID,
+    locationId: cfg().locationId,
     firstName: firstName || undefined,
     lastName: lastName || undefined,
     name: [firstName, lastName].filter(Boolean).join(' ') || undefined,
@@ -696,9 +834,11 @@ function buildContactBody(payload, assignedUserId) {
     address1: pick(payload, 'address') || undefined,
     city: pick(payload, 'city') || undefined,
     postalCode: pick(payload, 'postal_code') || undefined,
-    source: isQuickFormRequest(payload)
-      ? 'Site formulaire rapide'
-      : (priceRequest ? 'Site demande de prix' : 'Site réservation chambre')
+    source: isGroupeRequest(payload)
+      ? 'Site groupes Atrium'
+      : (isQuickFormRequest(payload)
+        ? 'Site formulaire rapide'
+        : (priceRequest ? 'Site demande de prix' : 'Site réservation chambre'))
   };
   if (assignedUserId) body.assignedTo = assignedUserId;
 
@@ -713,7 +853,7 @@ function buildContactBody(payload, assignedUserId) {
 
 async function ghlAddNote(contactId, bodyText) {
   if (!contactId || !bodyText) return;
-  const res = await fetch(`${GHL_API}/contacts/${contactId}/notes`, {
+  const res = await ghlFetch(`${ghlUrl('')}/contacts/${contactId}/notes`, {
     method: 'POST',
     headers: ghlHeaders(),
     body: JSON.stringify({ body: bodyText })
@@ -737,8 +877,8 @@ function noteEmailHtml(noteText) {
 }
 
 async function ghlFindContactIdByEmail(email) {
-  const url = `${GHL_API}/contacts/search/duplicate?locationId=${encodeURIComponent(GHL_LOCATION_ID)}&email=${encodeURIComponent(email)}`;
-  const res = await fetch(url, { headers: ghlHeaders() });
+  const url = `${ghlUrl('')}/contacts/search/duplicate?locationId=${encodeURIComponent(cfg().locationId)}&email=${encodeURIComponent(email)}`;
+  const res = await ghlFetch(url, { headers: ghlHeaders() });
   if (!res.ok) return '';
   const data = await res.json().catch(() => null);
   return data?.contact?.id || data?.contacts?.[0]?.id || '';
@@ -747,11 +887,11 @@ async function ghlFindContactIdByEmail(email) {
 async function ghlEnsureNotifyContact(email) {
   const existing = await ghlFindContactIdByEmail(email);
   if (existing) return existing;
-  const res = await fetch(`${GHL_API}/contacts/`, {
+  const res = await ghlFetch(`${ghlUrl('')}/contacts/`, {
     method: 'POST',
     headers: ghlHeaders(),
     body: JSON.stringify({
-      locationId: GHL_LOCATION_ID,
+      locationId: cfg().locationId,
       email,
       firstName: 'Notification',
       lastName: 'Interne',
@@ -774,20 +914,20 @@ async function ghlEnsureNotifyContact(email) {
 }
 
 async function ghlSendInternalNoteEmail({ noteText, subject }) {
-  if (!noteText || !INTERNAL_NOTIFY_EMAILS.length) return { sent: [] };
+  if (!noteText || !cfg().notifyEmails.length) return { sent: [] };
   const html = noteEmailHtml(noteText);
   const sent = [];
-  for (const email of INTERNAL_NOTIFY_EMAILS) {
+  for (const email of cfg().notifyEmails) {
     try {
       const notifyContactId = await ghlEnsureNotifyContact(email);
       if (!notifyContactId) continue;
-      const res = await fetch(`${GHL_API}/conversations/messages`, {
+      const res = await ghlFetch(`${ghlUrl('')}/conversations/messages`, {
         method: 'POST',
         headers: ghlHeaders({ Version: '2021-04-15' }),
         body: JSON.stringify({
           type: 'Email',
           contactId: notifyContactId,
-          emailFrom: GHL_EMAIL_FROM,
+          emailFrom: cfg().emailFrom,
           emailTo: email,
           subject,
           html,
@@ -814,7 +954,7 @@ function sleep(ms) {
 
 async function ghlRemoveTag(contactId, tag) {
   if (!contactId || !tag) return;
-  const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
+  const res = await ghlFetch(`${ghlUrl('')}/contacts/${contactId}/tags`, {
     method: 'DELETE',
     headers: ghlHeaders(),
     body: JSON.stringify({ tags: [tag] })
@@ -834,9 +974,9 @@ async function ghlApplyTag(contactId, tag) {
   if (!contactId || !tag) return { tagsAdded: [] };
 
   await ghlRemoveTag(contactId, tag);
-  await sleep(900);
+  await sleep(Number.isFinite(cfg().tagDelayMs) ? cfg().tagDelayMs : 900);
 
-  const res = await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
+  const res = await ghlFetch(`${ghlUrl('')}/contacts/${contactId}/tags`, {
     method: 'POST',
     headers: ghlHeaders(),
     body: JSON.stringify({ tags: [tag] })
@@ -868,7 +1008,7 @@ async function ghlApplyTags(contactId, tags) {
 
 async function ghlAssignContact(contactId, userId) {
   if (!contactId || !userId) return;
-  const res = await fetch(`${GHL_API}/contacts/${contactId}`, {
+  const res = await ghlFetch(`${ghlUrl('')}/contacts/${contactId}`, {
     method: 'PUT',
     headers: ghlHeaders(),
     body: JSON.stringify({ assignedTo: userId })
@@ -880,14 +1020,14 @@ async function ghlAssignContact(contactId, userId) {
 }
 
 async function ghlUpsertContact(body) {
-  let res = await fetch(`${GHL_API}/contacts/upsert`, {
+  let res = await ghlFetch(`${ghlUrl('')}/contacts/upsert`, {
     method: 'POST',
     headers: ghlHeaders(),
     body: JSON.stringify(body)
   });
 
   if (res.status === 404 || res.status === 405) {
-    res = await fetch(`${GHL_API}/contacts/`, {
+    res = await ghlFetch(`${ghlUrl('')}/contacts/`, {
       method: 'POST',
       headers: ghlHeaders(),
       body: JSON.stringify(body)
@@ -928,7 +1068,7 @@ function readBody(req) {
   });
 }
 
-const server = http.createServer(async (req, res) => {
+async function handleRequest(req, res) {
   setCors(res, req);
 
   if (req.method === 'OPTIONS') {
@@ -949,19 +1089,33 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, {
       ok: true,
       service: 'voyage-fiesta-reservation',
-      configured: Boolean(GHL_API_KEY && GHL_LOCATION_ID),
-      tag: GHL_CONTACT_TAG
+      configured: Boolean(cfg().apiKey && cfg().locationId),
+      tag: cfg().contactTag
     });
   }
 
-  if (req.method === 'POST' && (url.pathname === '/' || url.pathname === '/submit')) {
-    if (!GHL_API_KEY || !GHL_LOCATION_ID) {
-      return sendJson(res, 500, {
+  if ((req.method === 'GET' || req.method === 'HEAD') && url.pathname === '/groupes.json') {
+    const file = cfg().groupesJsonPath;
+    if (!existsSync(file)) {
+      return sendJson(res, 404, {
         ok: false,
-        error: 'API non configurée (GHL_API_KEY / GHL_LOCATION_ID).'
+        error: 'Les groupes ne sont pas disponibles pour le moment.'
       });
     }
+    try {
+      const raw = readFileSync(file);
+      res.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Content-Length': raw.length,
+        'Cache-Control': 'public, max-age=300'
+      });
+      return res.end(req.method === 'HEAD' ? undefined : raw);
+    } catch (_) {
+      return sendJson(res, 500, { ok: false, error: 'Lecture du catalogue impossible.' });
+    }
+  }
 
+  if (req.method === 'POST' && (url.pathname === '/' || url.pathname === '/submit')) {
     let input;
     try {
       input = await readBody(req);
@@ -970,7 +1124,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     const payload = input?.payload || input;
-    if (!payload || typeof payload !== 'object') {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
       return sendJson(res, 400, { ok: false, error: 'payload manquant' });
     }
 
@@ -978,6 +1132,34 @@ const server = http.createServer(async (req, res) => {
     const phone = pick(payload, 'p1_phone', 'phone', 'contact_phone');
     if (!email && !phone) {
       return sendJson(res, 400, { ok: false, error: 'Courriel ou téléphone requis' });
+    }
+
+    if (requestDryRun(payload, input)) {
+      const tags = resolveContactTags(payload);
+      const note = buildNotes(payload);
+      const assignedPreview = isGroupeRequest(payload)
+        ? (pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to') || cfg().groupeDefaultOwner || '')
+        : '';
+      const contact = buildContactBody(payload, assignedPreview);
+      return sendJson(res, 200, {
+        ok: true,
+        dryRun: true,
+        requestType: requestTypeName(payload),
+        contact,
+        tags,
+        tag: tags[0] || null,
+        note,
+        assignedTo: assignedPreview || null,
+        notify: shouldNotify(payload),
+        ownerPolicy: "Un contact qui a déjà un propriétaire n'est pas réassigné. Cet essai ne consulte pas GHL."
+      });
+    }
+
+    if (!cfg().apiKey || !cfg().locationId) {
+      return sendJson(res, 500, {
+        ok: false,
+        error: 'API non configurée (GHL_API_KEY / GHL_LOCATION_ID).'
+      });
     }
 
     try {
@@ -1015,12 +1197,14 @@ const server = http.createServer(async (req, res) => {
       }
 
       let notifyEmails = [];
-      if (noteText && INTERNAL_NOTIFY_EMAILS.length) {
+      if (noteText && shouldNotify(payload)) {
         const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')]
           .filter(Boolean)
           .join(' ');
-        const forfait = pick(payload, 'forfait_name', 'nom_du_forfait');
-        const subject = ['Nouvelle reservation', who, forfait].filter(Boolean).join(' — ');
+        const forfait = pick(payload, 'forfait_name', 'nom_du_forfait', 'groupe_titre');
+        const subject = isGroupeRequest(payload)
+          ? ['Nouvelle demande de groupe', who, forfait].filter(Boolean).join(' | ')
+          : ['Nouvelle reservation', who, forfait].filter(Boolean).join(' — ');
         const notify = await ghlSendInternalNoteEmail({ noteText, subject });
         notifyEmails = notify.sent;
       }
@@ -1031,11 +1215,7 @@ const server = http.createServer(async (req, res) => {
         tag: tags[0] || null,
         tags,
         assignedTo: assignedTo || null,
-        requestType: isQuickFormRequest(payload)
-          ? 'quickform'
-          : (isPreSaleRequest(payload)
-            ? 'demande_prevente'
-            : (isPriceRequest(payload) ? 'demande_prix' : 'reservation')),
+        requestType: requestTypeName(payload),
         tagsAdded,
         notifyEmails,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0
@@ -1050,11 +1230,20 @@ const server = http.createServer(async (req, res) => {
   }
 
   sendJson(res, 404, { ok: false, error: 'Not found' });
-});
+}
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[voyage-fiesta-reservation] listening on :${PORT}`);
-  if (!GHL_API_KEY || !GHL_LOCATION_ID) {
-    console.warn('[voyage-fiesta-reservation] WARNING: missing GHL_API_KEY or GHL_LOCATION_ID');
-  }
-});
+export function createServer(env = process.env) {
+  const config = readConfig(env);
+  return http.createServer((req, res) => requestConfig.run(config, () => handleRequest(req, res)));
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  const config = readConfig();
+  const server = createServer(process.env);
+  server.listen(config.port, config.host, () => {
+    console.log(`[voyage-fiesta-reservation] listening on ${config.host}:${config.port}`);
+    if (!config.apiKey || !config.locationId) {
+      console.warn('[voyage-fiesta-reservation] WARNING: missing GHL_API_KEY or GHL_LOCATION_ID');
+    }
+  });
+}

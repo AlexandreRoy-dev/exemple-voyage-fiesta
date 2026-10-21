@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Deploy Voyage Fiesta reservation API to the OVH VPS (same host as DuProprio)."""
+"""Deploy Voyage Fiesta reservation API to the OVH VPS (same host as DuProprio).
+
+Merges new keys into the remote .env. It does not drop INTERNAL_NOTIFY_EMAILS
+or rewrite ALLOWED_ORIGINS. Prefer the manual steps in
+server/reservation-api/README.md when adding ATRIUM_API_KEY.
+"""
 from __future__ import annotations
 
 import os
@@ -25,6 +30,41 @@ DUPRO_ENV = next((p for p in _DUPRO_CANDIDATES if p.exists()), _DUPRO_CANDIDATES
 REMOTE_DIR = "/opt/voyage-fiesta-reservation"
 SERVICE_NAME = "voyage-fiesta-reservation"
 PORT = 3847
+
+
+def merge_env(existing: str, required: dict[str, str], defaults: dict[str, str]) -> str:
+    """Update required keys, keep every other line, append missing defaults."""
+    lines = existing.splitlines()
+    values: dict[str, str] = {}
+    order: list[tuple[str, str]] = []
+    for line in lines:
+        raw = line.strip()
+        if not raw or raw.startswith("#") or "=" not in line:
+            order.append(("raw", line))
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        values[key] = value.strip()
+        order.append(("key", key))
+    for key, value in required.items():
+        values[key] = value
+        if ("key", key) not in order:
+            order.append(("key", key))
+    for key, value in defaults.items():
+        if key not in values:
+            values[key] = value
+            order.append(("key", key))
+    out: list[str] = []
+    seen: set[str] = set()
+    for kind, item in order:
+        if kind == "raw":
+            out.append(item)
+            continue
+        if item in seen:
+            continue
+        seen.add(item)
+        out.append(f"{item}={values[item]}")
+    return "\n".join(out).rstrip() + "\n"
 
 
 def load_env(path: Path) -> dict[str, str]:
@@ -105,25 +145,43 @@ def main() -> None:
     # Ensure remote dir
     sudo(c, f"mkdir -p {REMOTE_DIR} && chown ubuntu:ubuntu {REMOTE_DIR}", password)
 
+    sudo(c, f"mkdir -p {REMOTE_DIR}/atrium-sync && chown -R ubuntu:ubuntu {REMOTE_DIR}", password)
     for name in ("server.mjs", "package.json"):
         local = API_DIR / name
         remote = f"{REMOTE_DIR}/{name}"
         print(f"upload {name} -> {remote}", flush=True)
         sftp.put(str(local), remote)
+    sync_dir = ROOT / "server" / "atrium-sync"
+    for name in ("sync.mjs", "map.mjs"):
+        remote = f"{REMOTE_DIR}/atrium-sync/{name}"
+        print(f"upload atrium-sync/{name} -> {remote}", flush=True)
+        sftp.put(str(sync_dir / name), remote)
 
-    # Write .env on server only
-    env_body = "\n".join(
-        [
-            f"GHL_API_KEY={api_key}",
-            f"GHL_LOCATION_ID={location_id}",
-            f"PORT={PORT}",
-            "ALLOWED_ORIGINS=*",
-            "GHL_CONTACT_TAG=reservation-site",
-            "GHL_PRICE_REQUEST_TAG=demande-prix",
-            "",
-        ]
-    )
     env_remote = f"{REMOTE_DIR}/.env"
+    existing = ""
+    try:
+        with sftp.file(env_remote, "r") as f:
+            existing = f.read().decode("utf-8", errors="replace")
+    except IOError:
+        existing = ""
+    env_body = merge_env(
+        existing,
+        {
+            "GHL_API_KEY": api_key,
+            "GHL_LOCATION_ID": location_id,
+        },
+        {
+            "PORT": str(PORT),
+            "BIND_HOST": "127.0.0.1",
+            "GHL_CONTACT_TAG": "reservation-site",
+            "GHL_PRICE_REQUEST_TAG": "demande-prix",
+            "GHL_GROUPE_TAG": "demande-groupe",
+            "GHL_GROUPE_NOTIFY": "0",
+            "GHL_GROUPE_DEFAULT_OWNER": "",
+            "DRY_RUN": "0",
+            "GROUPES_JSON_PATH": f"{REMOTE_DIR}/groupes.json",
+        },
+    )
     with sftp.file(env_remote, "w") as f:
         f.write(env_body)
     run(c, f"chmod 600 {env_remote}")
