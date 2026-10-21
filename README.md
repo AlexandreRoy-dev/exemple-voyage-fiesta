@@ -273,6 +273,50 @@ L'ancien webhook Make.com n'est plus utilisé par le frontend. La sync passe ent
 
 Pour une sync quasi instantanée à l'avenir : webhook GHL → `repository_dispatch` sur le workflow GitHub.
 
+## Groupes Atrium (`/groupes/`)
+
+Pages statiques du catalogue Groupe Atrium, sur le même domaine (aucun DNS nouveau):
+
+| Page | Rôle |
+|------|------|
+| `/groupes/` | Accueil, moteurs de recherche, aperçu des groupes |
+| `/groupes/forfaits-sud/` | Liste et filtres, forfaits sud |
+| `/groupes/croisieres/` | Liste et filtres, croisières |
+| `/groupes/voyages/` | Liste et filtres, voyages |
+| `/groupes/groupe/?id=<id>&slug=<slug>` | Fiche (galerie, inclusions, tarifs, hôtel ou navire) et demande |
+
+Les liens sont calculés depuis le dossier `groupes/`. Un futur `groupes.voyagefiesta.ca` qui sert ce dossier à la racine ne demande que `canonicalOrigin` dans `groupes/config.js`, plus l'origine dans `ALLOWED_ORIGINS`.
+
+Le catalogue public est `GET https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/groupes.json`, produit sur le VPS par `server/atrium-sync` (cron 1 à 2 h). La clé Atrium ne va ni dans le navigateur ni dans git. En local, ou avec `?fixture=1`, les pages lisent `groupes/data/groupes.json`. Si le JSON manque, un message indique d'appeler le 514-856-6614; les moteurs de recherche restent affichés.
+
+Moteurs (codes Fiesta): forfaits sud Softvoyage `code_ag=VAS`, `alias=BY4`; vols trvlbooking `plCode=VAS605`; croisières cruisepowered `plCode=VAS605`, `cruise_agence=605`; voitures trvlbooking `plCode=VAS605`.
+
+La demande (`demande_groupe`) part vers reservation-api avec le groupe choisi. Étiquettes: `demande-groupe` et `groupe-<id>`. Jamais `demande-prix`. Détail, variables et commandes VPS: [`server/reservation-api/README.md`](server/reservation-api/README.md) et [`server/atrium-sync/README.md`](server/atrium-sync/README.md).
+
+Iframe depuis voyagefiesta.com (hauteur automatique, même message que la boutique):
+
+```html
+<iframe id="vf-groupes" src="https://aubaineexpress.voyagefiesta.ca/groupes/?embed=1" style="width:100%;border:0" title="Groupes Voyage Fiesta"></iframe>
+<script>
+window.addEventListener('message', (event) => {
+  if (event.origin !== 'https://aubaineexpress.voyagefiesta.ca') return;
+  if (!event.data || event.data.type !== 'voyage-fiesta-resize') return;
+  const frame = document.getElementById('vf-groupes');
+  if (frame) frame.style.height = event.data.height + 'px';
+});
+</script>
+```
+
+Tests (aucun appel GHL réel):
+
+```bash
+node --test --test-concurrency=1 \
+  server/reservation-api/server.test.mjs \
+  server/atrium-sync/map.test.mjs \
+  server/atrium-sync/sync.test.mjs \
+  groupes/js/catalog.test.mjs
+```
+
 ## Checklist de mise en production
 
 1. Ajouter les 3 secrets GitHub dans le repo

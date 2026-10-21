@@ -1,0 +1,34 @@
+name: Groupes Atrium
+
+on:
+  push:
+    paths:
+      - 'groupes/**'
+      - 'server/atrium-sync/**'
+      - 'server/reservation-api/**'
+      - 'scripts/deploy-reservation-api-vps.py'
+      - '.github/workflows/groupes-tests.yml'
+  pull_request:
+    paths:
+      - 'groupes/**'
+      - 'server/atrium-sync/**'
+      - 'server/reservation-api/**'
+      - 'scripts/deploy-reservation-api-vps.py'
+      - '.github/workflows/groupes-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Catalog, sync and reservation tests
+        run: >-
+          node --test --test-concurrency=1
+          server/reservation-api/server.test.mjs
+          server/atrium-sync/map.test.mjs
+          server/atrium-sync/sync.test.mjs
+          groupes/js/catalog.test.mjs

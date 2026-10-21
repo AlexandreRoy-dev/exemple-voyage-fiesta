@@ -26,3 +26,71 @@ Secrets live only in `/opt/voyage-fiesta-reservation/.env` on the VPS (chmod 600
 
 Contacts get tag `reservation-site` + notes with deposit / assurances / passengers.
 Automate on that tag in GHL.
+
+`quickform` and `agent_slug` keep their current tags, source and owner lookup. `demande_prix` still uses `demande-prix` (that tag starts a client workflow; do not reuse it for groups).
+
+## Groupes Atrium
+
+`GET /groupes.json` serves the file at `GROUPES_JSON_PATH` (default: `groupes.json` next to `server.mjs`). The sync that writes it is [`../atrium-sync/README.md`](../atrium-sync/README.md).
+
+`POST /` with `request_type: demande_groupe` creates or updates the contact, adds tags `demande-groupe` and `groupe-<id>`, and writes a note whose source is `Site groupes Atrium`. A contact that already has an owner is not reassigned. `GHL_GROUPE_DEFAULT_OWNER` applies only when the owner is empty. The tag `demande-prix` is never sent for this type, even if the client includes it.
+
+`GHL_GROUPE_NOTIFY` defaults to off. Set `GHL_GROUPE_NOTIFY=1` to send the internal email to `INTERNAL_NOTIFY_EMAILS`. Other request types are unchanged.
+
+`DRY_RUN=1`, or `"dry_run": true` on the request, returns `{ ok, dryRun, contact, tags, note, assignedTo, notify }` and does not call GoHighLevel. The API key is not required in that mode.
+
+`BIND_HOST` (or `HOST`) defaults to `127.0.0.1`. Nginx and the Cloudflare tunnel already proxy `127.0.0.1:3847`. A direct call to the public port 3847 from outside the VPS stops working with this default. Set `BIND_HOST=0.0.0.0` only if that raw port is still required.
+
+When `ALLOWED_ORIGINS` is empty or unset, the allowed origins are:
+
+- `https://aubaineexpress.voyagefiesta.ca`
+- `https://www.aubaineexpress.voyagefiesta.ca`
+- `https://voyagefiesta.com`
+- `https://www.voyagefiesta.com`
+- `https://promofiesta.roymarketing.ca`
+
+`http://localhost` and `http://127.0.0.1` (any port) stay allowed. An explicit `ALLOWED_ORIGINS=*` still allows every origin. The production file uses `*`; do not delete that line unless you mean to replace it with the list above.
+
+## Deploy on the VPS (manual)
+
+Do not rely on a blind run of `scripts/deploy-reservation-api-vps.py` for this release. The script now merges `.env` instead of replacing it, and it uploads `atrium-sync/sync.mjs` and `map.mjs`, but it still rewrites the systemd unit. The steps below keep `INTERNAL_NOTIFY_EMAILS` and the current origins.
+
+```bash
+ssh ubuntu@158.69.1.173
+sudo systemctl stop voyage-fiesta-reservation
+cd /opt/voyage-fiesta-reservation
+cp -a server.mjs server.mjs.bak-$(date +%Y%m%d)
+cp -a .env .env.bak-$(date +%Y%m%d)
+```
+
+From this repo, copy `server/reservation-api/server.mjs`, `server/reservation-api/package.json`, `server/atrium-sync/sync.mjs` and `server/atrium-sync/map.mjs` to the server (`atrium-sync/` next to `server.mjs`). Then append, without removing existing lines:
+
+```bash
+BIND_HOST=127.0.0.1
+GROUPES_JSON_PATH=/opt/voyage-fiesta-reservation/groupes.json
+ATRIUM_API_KEY=the-atrium-key
+ATRIUM_API_BASE=https://api.groupeatrium.com/v3
+ATRIUM_OUTPUT=/opt/voyage-fiesta-reservation/groupes.json
+GHL_GROUPE_TAG=demande-groupe
+GHL_GROUPE_NOTIFY=0
+GHL_GROUPE_DEFAULT_OWNER=
+DRY_RUN=0
+```
+
+`GHL_GROUPE_NOTIFY=0` disables the internal email for `demande_groupe` only. Set it to `1` when that mail should go to `INTERNAL_NOTIFY_EMAILS`. Leave `GHL_GROUPE_DEFAULT_OWNER` empty so new contacts stay unassigned. Do not set `ATRIUM_API_KEY` in git.
+
+```bash
+chmod 600 /opt/voyage-fiesta-reservation/.env
+sudo systemctl restart voyage-fiesta-reservation
+curl -sS http://127.0.0.1:3847/health
+cd /opt/voyage-fiesta-reservation && /usr/bin/node atrium-sync/sync.mjs
+curl -sS http://127.0.0.1:3847/groupes.json | head -c 180
+```
+
+Cron, user `ubuntu`:
+
+```cron
+17 */2 * * * cd /opt/voyage-fiesta-reservation && /usr/bin/node atrium-sync/sync.mjs >> /var/log/atrium-sync.log 2>&1
+```
+
+Until that first sync succeeds, `/groupes/` shows a clear unavailable message. The search engines still work, because their lists ship with the static site.
