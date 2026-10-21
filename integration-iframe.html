@@ -90,7 +90,7 @@
     <script>
         (function () {
             var base = window.BOUTIQUE_BASE_URL || (location.origin + location.pathname.replace(/[^/]+$/, '').replace(/\/$/, ''));
-            var embedUrl = window.BOUTIQUE_EMBED_URL || (base + '/index.html?embed=1');
+            var embedUrl = window.BOUTIQUE_EMBED_URL || (base + '/?embed=1');
 
             var recommended = [
                 '<!-- Aubaines Voyage Fiesta -->',
@@ -140,8 +140,8 @@
             document.getElementById('snippet-simple').textContent = simple;
 
             var direct = document.getElementById('direct-link');
-            direct.href = base + '/index.html';
-            direct.textContent = base + '/index.html';
+            direct.href = base + '/';
+            direct.textContent = base + '/';
 
             document.getElementById('demo-iframe').src = embedUrl;
 

@@ -15,13 +15,13 @@
     <meta property="og:title" content="Réservation d’un forfait | Voyage Fiesta">
     <meta property="og:description" content="Formulaire de réservation ou d’intérêt Voyage Fiesta : occupants, coordonnées et forfait choisi.">
     <meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/room-registration.html">
-    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
-    <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta property="og:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
+    <meta property="og:image:secure_url" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
     <meta property="og:image:alt" content="Réservation Voyage Fiesta">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Réservation d’un forfait | Voyage Fiesta">
     <meta name="twitter:description" content="Formulaire de réservation ou d’intérêt Voyage Fiesta : occupants, coordonnées et forfait choisi.">
-    <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta name="twitter:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
     <meta name="twitter:image:alt" content="Réservation Voyage Fiesta">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -69,7 +69,7 @@
 <body class="text-gray-800 font-sans min-h-screen">
     <header class="bg-brand-blue text-white py-6 px-4">
         <div class="max-w-6xl mx-auto">
-            <a id="rr-back-link" href="index.html" class="inline-flex items-center gap-2 text-xs text-white/80 hover:text-white mb-3">
+            <a id="rr-back-link" href="/" class="inline-flex items-center gap-2 text-xs text-white/80 hover:text-white mb-3">
                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
                 Retour au forfait
             </a>
@@ -263,7 +263,7 @@
                 );
 
                 if (slug && backLink) {
-                    backLink.href = 'product.html?slug=' + encodeURIComponent(slug);
+                    backLink.href = '/forfaits/' + encodeURIComponent(slug) + '.html';
                 }
 
                 if (draft.summaryText && lead) {

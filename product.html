@@ -9,19 +9,29 @@
     <meta name="author" content="Voyage Fiesta">
     <meta name="theme-color" content="#025091">
     <link rel="canonical" href="https://aubaineexpress.voyagefiesta.ca/product.html">
+    <script>
+      /* Each package has a static canonical page under /forfaits/. */
+      (function () {
+        var slug = new URLSearchParams(location.search).get('slug');
+        if (!slug) return;
+        var link = document.querySelector('link[rel="canonical"]');
+        if (!link) return;
+        link.href = 'https://aubaineexpress.voyagefiesta.ca/forfaits/' + encodeURIComponent(slug) + '.html';
+      })();
+    </script>
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Voyage Fiesta">
     <meta property="og:locale" content="fr_CA">
     <meta property="og:title" content="Forfait tout inclus | Voyage Fiesta">
     <meta property="og:description" content="Fiche d’un forfait tout inclus Voyage Fiesta : hôtel, dates, occupations et prix publiés dans GoHighLevel.">
     <meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/product.html">
-    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
-    <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta property="og:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
+    <meta property="og:image:secure_url" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
     <meta property="og:image:alt" content="Forfait tout inclus Voyage Fiesta">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Forfait tout inclus | Voyage Fiesta">
     <meta name="twitter:description" content="Fiche d’un forfait tout inclus Voyage Fiesta : hôtel, dates, occupations et prix publiés dans GoHighLevel.">
-    <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta name="twitter:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
     <meta name="twitter:image:alt" content="Forfait tout inclus Voyage Fiesta">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -195,12 +205,16 @@
         </div>
     </div>
 
-    <div id="product-content"></div>
+    <div id="product-content">
+        <section class="container mx-auto px-4 py-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue">Forfait tout inclus</h1>
+        </section>
+    </div>
 
     <div id="not-found" class="hidden container mx-auto px-4 py-24 text-center">
-        <h1 class="text-2xl font-bold text-brand-blue mb-4">Forfait introuvable</h1>
+        <h2 class="text-2xl font-bold text-brand-blue mb-4">Forfait introuvable</h2>
         <p class="text-gray-600 mb-6">Ce produit n'existe pas ou n'est plus disponible.</p>
-        <a href="index.html" class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors">Retour aux promotions</a>
+        <a href="/" class="bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-6 rounded transition-colors">Retour aux promotions</a>
     </div>
 
     <div id="gallery-lightbox" class="hidden fixed inset-0 z-[110] bg-black/95 flex-col" role="dialog" aria-modal="true" aria-label="Galerie photos">
@@ -1212,18 +1226,16 @@
                 .filter(Boolean)
                 .filter((part, index, arr) => index === 0 || part !== arr[0])
                 .join(', ');
-            const breadcrumbDestKey = VoyageFiestaAPI.normalizeDestinationKey(
+            const destPageHref = VoyageFiestaAPI.getDestinationPageHref(
                 p.destinationLabel || p.destination || p.subDest || ''
             );
-            const breadcrumbDestParam = encodeURIComponent(breadcrumbDestKey || p.destinationLabel || p.destination || '');
-
             const embedBreadcrumbItems = [
-                { back: true, href: 'index.html' }
+                { back: true, href: '/' }
             ];
-            if (breadcrumbLocation) {
+            if (breadcrumbLocation && destPageHref && destPageHref !== '/') {
                 embedBreadcrumbItems.push({
                     label: breadcrumbLocation,
-                    href: `index.html?destination=${breadcrumbDestParam}`
+                    href: destPageHref
                 });
             }
             embedBreadcrumbItems.push({ label: p.name, current: true });
@@ -1236,12 +1248,12 @@
             document.getElementById('product-content').innerHTML = `
                 <section class="container mx-auto px-4 py-6">
                     <nav class="product-breadcrumb-inline text-lg sm:text-xl text-gray-600 mb-4 flex gap-2 flex-wrap items-center" aria-label="Fil d'Ariane">
-                        <a href="index.html" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
+                        <a href="/" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
                             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
                         </a>
-                        ${breadcrumbLocation ? `
+                        ${breadcrumbLocation && destPageHref && destPageHref !== '/' ? `
                             <span aria-hidden="true">/</span>
-                            <a href="index.html?destination=${breadcrumbDestParam}" class="hover:underline">${escapeHtml(breadcrumbLocation)}</a>` : ''}
+                            <a href="${destPageHref}" class="hover:underline">${escapeHtml(breadcrumbLocation)}</a>` : ''}
                         <span aria-hidden="true">/</span>
                         <span class="text-brand-blue font-bold">${escapeHtml(p.name)}</span>
                     </nav>
@@ -1325,7 +1337,7 @@
 
                                 ${isUnavailable
                                     ? `<button disabled class="w-full bg-gray-400 text-white font-bold py-4 rounded-xl shadow-lg cursor-not-allowed text-lg">${isVendu ? 'Trop tard, Complet!' : 'COMPLET'}</button>
-                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="index.html" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
+                                       <p class="text-center text-[10px] text-gray-400 mt-4 px-4"><a href="/" class="text-brand-blue hover:underline">Retour aux promotions</a></p>`
                                     : `<div id="booking-cta-area">
                                         <div id="booking-cta-book">
                                             <button type="button" id="open-reservation" class="w-full bg-brand-orange hover:bg-brand-blue text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 text-lg transition-all">${isPreSale ? escapeHtml(window.PRE_SALE_FULL_FORM_CTA || 'REMPLIR LE FORMULAIRE') : 'RÉSERVER MAINTENANT'}</button>
@@ -2015,7 +2027,7 @@
 
         async function init() {
             const params = new URLSearchParams(window.location.search);
-            const slug = params.get('slug');
+            const slug = params.get('slug') || window.VF_PAGE_SLUG || '';
             if (!slug) {
                 document.getElementById('not-found').classList.remove('hidden');
                 document.querySelector('.product-countdown-bar')?.classList.add('hidden');

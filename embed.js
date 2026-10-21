@@ -26,7 +26,8 @@
             if (agent && !u.searchParams.has('agent')) {
                 u.searchParams.set('agent', agent);
             }
-            const path = u.pathname.replace(/^\//, '');
+            let path = u.pathname.replace(/\/index\.html$/i, '/');
+            if (!path.startsWith('/')) path = '/' + path;
             return path + u.search + u.hash;
         } catch (_) {
             return href;

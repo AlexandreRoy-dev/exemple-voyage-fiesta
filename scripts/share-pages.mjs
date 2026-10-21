@@ -12,8 +12,7 @@ const ROOT = resolve(__dirname, '..');
 const SHARE_DIR = resolve(ROOT, 'share');
 
 export const SITE_BASE = (process.env.BOUTIQUE_BASE_URL || 'https://aubaineexpress.voyagefiesta.ca').replace(/\/$/, '');
-export const DEFAULT_SHARE_IMAGE =
-  'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
+export const DEFAULT_SHARE_IMAGE = `${SITE_BASE}/assets/hero-caraibes.jpg`;
 
 function escapeHtml(value) {
   return String(value || '')
@@ -109,12 +108,13 @@ export function buildShareDescription(product) {
   if (displayPrice != null) {
     parts.push(`à partir de ${formatMoney(displayPrice)}/pass.`);
   }
-  return parts.filter(Boolean).join(' · ') || 'Forfait voyage tout inclus — Voyage Fiesta';
+  return parts.filter(Boolean).join(' · ') || 'Forfait voyage tout inclus, Voyage Fiesta';
 }
 
 export function buildSharePageHtml(product) {
   const slug = String(product.slug || '').trim();
-  const productUrl = `${SITE_BASE}/product.html?slug=${encodeURIComponent(slug)}`;
+  const productUrl = `${SITE_BASE}/forfaits/${encodeURIComponent(slug)}.html`;
+  const canonicalUrl = productUrl;
   const shareUrl = `${SITE_BASE}/share/${encodeURIComponent(slug)}.html`;
   const title = buildShareTitle(product);
   const description = buildShareDescription(product);
@@ -144,7 +144,8 @@ export function buildSharePageHtml(product) {
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
-  <link rel="canonical" href="${escapeHtml(shareUrl)}">
+  <meta name="twitter:image:alt" content="${escapeHtml(imageAlt)}">
+  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
   <script>
     (function () {
       var ua = navigator.userAgent || '';
@@ -154,7 +155,11 @@ export function buildSharePageHtml(product) {
   </script>
 </head>
 <body>
-  <p><a href="${escapeHtml(productUrl)}">Voir le forfait — ${escapeHtml(product.name)}</a></p>
+  <main>
+    <h1>${escapeHtml(product.name || 'Forfait tout inclus')}</h1>
+    <p>${escapeHtml(description)}</p>
+    <p><a href="${escapeHtml(productUrl)}">Voir le forfait ${escapeHtml(product.name || '')}</a></p>
+  </main>
 </body>
 </html>
 `;

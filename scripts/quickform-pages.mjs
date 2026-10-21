@@ -30,7 +30,7 @@ function buildQuickformPageHtml(agent) {
   const slug = String(agent.slug || '').trim();
   const pageUrl = `${SITE_BASE}/quickform/${encodeURIComponent(slug)}.html`;
   const boutiqueUrl = `${SITE_BASE}/?agent=${encodeURIComponent(slug)}`;
-  const title = `Formulaire de contact — ${name}`;
+  const title = `Formulaire de contact : ${name}`;
   const description = `Laissez vos coordonnées pour ${name}. Un conseiller Voyage Fiesta vous rappellera.`;
 
   return `<!DOCTYPE html>
@@ -50,14 +50,14 @@ function buildQuickformPageHtml(agent) {
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(pageUrl)}">
-  <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta property="og:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
+  <meta property="og:image" content="${SITE_BASE}/assets/hero-caraibes.jpg">
+  <meta property="og:image:secure_url" content="${SITE_BASE}/assets/hero-caraibes.jpg">
+  <meta property="og:image:alt" content="${escapeHtml(name)}, Voyage Fiesta">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
-  <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta name="twitter:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
+  <meta name="twitter:image" content="${SITE_BASE}/assets/hero-caraibes.jpg">
+  <meta name="twitter:image:alt" content="${escapeHtml(name)}, Voyage Fiesta">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script>
@@ -83,7 +83,12 @@ function buildQuickformPageHtml(agent) {
   </script>
 </head>
 <body class="text-gray-800 font-sans min-h-screen">
-  <div id="quickform-root"></div>
+  <div id="quickform-root">
+    <main class="mx-auto max-w-xl px-4 py-10">
+      <h1 class="text-2xl font-bold text-brand-blue md:text-3xl">Formulaire de contact pour ${escapeHtml(name)}</h1>
+      <p class="mt-3 text-gray-600">Laissez vos coordonnées. Un conseiller Voyage Fiesta vous rappellera.</p>
+    </main>
+  </div>
   <script src="../config.js?v=50"></script>
   <script src="../quickform.js?v=1"></script>
   <script>

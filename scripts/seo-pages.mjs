@@ -1,19 +1,40 @@
 /**
  * Static SEO landing pages, robots.txt, and sitemap for Aubaines Express.
  * Regenerated from products.json so destination lists stay current.
+ *
+ * Each package also gets forfaits/{slug}.html: product.html with a unique
+ * title, description, canonical and TouristTrip JSON-LD in the raw HTML.
+ * The only price written here is occupation double (field price), plus
+ * taxesAmount when that tax is a positive number. Empty occupancies stay
+ * on request. Run: node scripts/generate-seo-pages.mjs
  */
 
-import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DEST_DIR = resolve(ROOT, 'destinations');
+const FORFAIT_DIR = resolve(ROOT, 'forfaits');
 
 export const SITE_BASE = (process.env.BOUTIQUE_BASE_URL || 'https://aubaineexpress.voyagefiesta.ca').replace(/\/$/, '');
-export const DEFAULT_SHARE_IMAGE =
-  'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
+export const DEFAULT_SHARE_IMAGE = `${SITE_BASE}/assets/hero-caraibes.jpg`;
+const HERO_ALT = 'Vue aérienne d’une côte tropicale : plage de sable blanc, mer turquoise et palmiers';
+
+/** Display names from config.js SUPPLIER_LABELS. Unknown keys are omitted, not guessed. */
+const SUPPLIER_LABELS = {
+  sunwing: 'Vacances Sunwing',
+  vacances_sunwing: 'Vacances Sunwing',
+  air_canada: 'Vacances Air Canada',
+  vacances_air_canada: 'Vacances Air Canada',
+  westjet: 'Vacances WestJet Québec',
+  westjet_quebec: 'Vacances WestJet Québec',
+  vacances_westjet_quebec: 'Vacances WestJet Québec',
+  transat: 'Vacances Transat',
+  vacances_transat: 'Vacances Transat',
+  club_med: 'Club Med',
+};
 
 function escapeHtml(value) {
   return String(value || '')
@@ -436,7 +457,7 @@ function footerHtml() {
   ];
   return `<footer class="mt-auto border-t border-slate-200 bg-white">
   <div class="mx-auto max-w-6xl px-4 py-10">
-    <p class="text-lg font-semibold text-brand-blue">Voyage Fiesta — Aubaines Express</p>
+    <p class="text-lg font-semibold text-brand-blue">Voyage Fiesta, Aubaines Express</p>
     <p class="mt-1 text-sm text-slate-600">Forfaits tout inclus au départ du Québec, aux tarifs d’occupation publiés.</p>
     <nav class="mt-6" aria-label="Destinations">
       <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Destinations</p>
@@ -493,7 +514,7 @@ function productCards(products) {
   return `<ul class="grid gap-4 md:grid-cols-2">
     ${products
       .map((p) => {
-        const href = `/product.html?slug=${encodeURIComponent(p.slug)}`;
+        const href = `/forfaits/${encodeURIComponent(p.slug)}.html`;
         const dest = p.destination || p.subDest || '';
         const country = p.country || '';
         const nights = p.durationNights ? `${p.durationNights} nuits` : '';
@@ -505,7 +526,7 @@ function productCards(products) {
         const priceHtml =
           price != null
             ? `<p class="mt-2 text-base font-semibold text-brand-blue">À partir de ${escapeHtml(formatMoney(price))} / passager <span class="block text-xs font-normal text-slate-500">occupation double, taxes incluses si publiées</span></p>`
-            : `<p class="mt-2 text-sm text-slate-600">Prix selon l’occupation publiée — voir la fiche</p>`;
+            : `<p class="mt-2 text-sm text-slate-600">Prix selon l’occupation publiée. Voir la fiche.</p>`;
         return `<li>
       <article class="h-full rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-lg font-semibold text-brand-blue"><a class="hover:underline" href="${escapeHtml(href)}">${escapeHtml(p.name || 'Forfait')}</a></h2>
@@ -535,7 +556,7 @@ function renderPage({ title, description, url, h1, paragraphs, products, listing
             '@type': 'ListItem',
             position: i + 1,
             name: p.name,
-            url: `${SITE_BASE}/product.html?slug=${encodeURIComponent(p.slug)}`,
+            url: `${SITE_BASE}/forfaits/${encodeURIComponent(p.slug)}.html`,
           })),
         }
       : undefined,
@@ -666,10 +687,229 @@ ${renderMeta({
 `;
 }
 
+function supplierLabel(product) {
+  const raw = String(product.supplier || '').trim();
+  if (!raw) return '';
+  const key = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  return SUPPLIER_LABELS[key] || SUPPLIER_LABELS[raw] || '';
+}
+
+function packageUrl(slug) {
+  return `${SITE_BASE}/forfaits/${encodeURIComponent(slug)}.html`;
+}
+
+function publishedDoublePrice(product) {
+  const base = Number(product.price);
+  if (!Number.isFinite(base)) return null;
+  const taxes = Number(product.taxesAmount ?? product.taxes_amount ?? product.taxes_par_personne);
+  const taxesIncluded = Number.isFinite(taxes) && taxes > 0;
+  return {
+    amount: taxesIncluded ? base + taxes : base,
+    taxesIncluded,
+  };
+}
+
+function availabilityUrl(product) {
+  const raw = fold(product.active || product.state || '');
+  if (raw === 'vendu' || raw === 'complet' || raw === 'complet_sold_out' || raw === 'sold_out') {
+    return 'https://schema.org/SoldOut';
+  }
+  if (raw === 'pre_vente' || raw === 'prevente') return 'https://schema.org/PreOrder';
+  return 'https://schema.org/InStock';
+}
+
+function buildPackageTitle(product) {
+  const name = String(product.name || 'Forfait tout inclus').trim();
+  const when = formatDepartureDate(product.departureDate);
+  if (when) return `${name} | Départ ${when} | Voyage Fiesta`;
+  return `${name} | Forfait tout inclus | Voyage Fiesta`;
+}
+
+function buildPackageDescription(product) {
+  const name = String(product.name || 'Ce forfait').trim();
+  const destination = product.destination || product.subDest || product.destination1 || '';
+  const country = product.country && fold(product.country) !== fold(destination) ? product.country : '';
+  const place = [destination, country].filter(Boolean).join(', ');
+  const details = [];
+  if (place) details.push(place);
+  if (product.durationNights) details.push(`${product.durationNights} nuits`);
+  const when = formatDepartureDate(product.departureDate);
+  if (when) details.push(`départ le ${when}`);
+  if (product.departureAirport) details.push(`depuis ${product.departureAirport}`);
+  let sentence = `Forfait tout inclus ${name}`;
+  sentence += details.length ? ` : ${details.join(', ')}.` : '.';
+  const price = publishedDoublePrice(product);
+  if (price) {
+    const taxes = price.taxesIncluded
+      ? ', taxes et frais aériens inclus'
+      : '';
+    sentence += ` Occupation double : ${formatMoney(price.amount)} par personne${taxes}.`;
+  } else {
+    sentence += ' Tarif selon l’occupation publiée.';
+  }
+  return sentence;
+}
+
+function hotelParagraphs(product) {
+  const text = String(product.hotelDescription || '').replace(/\r\n/g, '\n').trim();
+  if (!text) return [];
+  return text
+    .split(/\n+/)
+    .map((line) => line.replace(/^[•*\-\s]+/, '').trim())
+    .filter(Boolean);
+}
+
+function buildPackageJsonLd(product, pageUrl, description, image) {
+  const destination = product.destination || product.subDest || product.destination1 || '';
+  const data = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristTrip',
+    name: product.name || 'Forfait tout inclus',
+    description,
+    url: pageUrl,
+    image,
+    provider: {
+      '@type': 'TravelAgency',
+      name: 'Voyage Fiesta',
+      url: `${SITE_BASE}/`,
+    },
+  };
+  if (destination) {
+    data.itinerary = { '@type': 'Place', name: destination };
+  }
+  const when = product.departureDate ? new Date(product.departureDate) : null;
+  if (when && !Number.isNaN(when.getTime())) data.startDate = when.toISOString().slice(0, 10);
+  const price = publishedDoublePrice(product);
+  if (price) {
+    data.offers = {
+      '@type': 'Offer',
+      priceCurrency: 'CAD',
+      price: String(Math.round(price.amount)),
+      url: pageUrl,
+      availability: availabilityUrl(product),
+      description: price.taxesIncluded
+        ? 'Occupation double, par personne, taxes et frais aériens inclus.'
+        : 'Occupation double, par personne.',
+    };
+  }
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
+function buildPackagePage(product) {
+  const slug = String(product.slug || '').trim();
+  const url = packageUrl(slug);
+  const title = buildPackageTitle(product);
+  const description = buildPackageDescription(product);
+  const image = pickImage(product);
+  const usingFallback = image === DEFAULT_SHARE_IMAGE;
+  const destination = product.destination || product.subDest || product.destination1 || '';
+  const imageAlt = usingFallback ? HERO_ALT : [product.name, destination].filter(Boolean).join(', ');
+  const when = formatDepartureDate(product.departureDate);
+  const back = formatDepartureDate(product.returnDate);
+  const supplier = supplierLabel(product);
+  const facts = [
+    destination && ['Destination', destination],
+    product.country && ['Pays', product.country],
+    product.durationNights && ['Durée', `${product.durationNights} nuits`],
+    when && ['Départ', when],
+    back && ['Retour', back],
+    product.departureAirport && ['Aéroport de départ', product.departureAirport],
+    supplier && ['Fournisseur', supplier],
+    Number.isFinite(Number(product.stars)) && ['Classification', `${String(product.stars).replace('.', ',')} étoiles`],
+  ].filter(Boolean);
+  const price = publishedDoublePrice(product);
+  const priceHtml = price
+    ? `<p class="mt-4 text-lg font-semibold text-brand-blue">Occupation double : ${escapeHtml(formatMoney(price.amount))} par personne <span class="block text-sm font-normal text-slate-600">${price.taxesIncluded ? 'Taxes et frais aériens inclus.' : 'Avant taxes et frais aériens.'}</span></p>`
+    : `<p class="mt-4 text-base text-slate-700">Tarif selon l’occupation publiée. <a class="font-semibold text-brand-blue hover:underline" href="/contact.html">Veuillez nous contacter</a>.</p>`;
+  const factHtml = facts.length
+    ? `<dl class="mt-6 grid gap-3 sm:grid-cols-2">${facts
+        .map(
+          ([label, value]) =>
+            `<div class="rounded-lg border border-slate-200 bg-white px-4 py-3"><dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">${escapeHtml(label)}</dt><dd class="mt-1 text-sm font-medium text-brand-blue">${escapeHtml(value)}</dd></div>`
+        )
+        .join('')}</dl>`
+    : '';
+  const about = hotelParagraphs(product)
+    .map((line) => `<p class="mt-3 max-w-3xl text-base leading-relaxed text-slate-700">${escapeHtml(line)}</p>`)
+    .join('\n    ');
+  const staticSummary = `<section class="container mx-auto px-4 py-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue">${escapeHtml(product.name || 'Forfait tout inclus')}</h1>
+            <p class="mt-4 max-w-3xl text-base leading-relaxed text-gray-700">${escapeHtml(description)}</p>
+            ${priceHtml}
+            ${factHtml}
+            ${about ? `<section class="mt-8"><h2 class="text-xl font-semibold text-brand-blue">L’hôtel</h2>${about}</section>` : ''}
+        </section>`;
+  const templatePath = resolve(ROOT, 'product.html');
+  let html = readFileSync(templatePath, 'utf8');
+  const replaceOnce = (from, to) => {
+    if (!html.includes(from)) throw new Error(`Package template is missing: ${from.slice(0, 90)}`);
+    html = html.replace(from, to);
+  };
+  replaceOnce('<meta charset="UTF-8">', '<meta charset="UTF-8">\n    <base href="/">');
+  replaceOnce(
+    '<title>Forfait tout inclus | Voyage Fiesta</title>',
+    `<title>${escapeHtml(title)}</title>`
+  );
+  html = html.replaceAll(
+    'Fiche d’un forfait tout inclus Voyage Fiesta : hôtel, dates, occupations et prix publiés dans GoHighLevel.',
+    escapeHtml(description)
+  );
+  replaceOnce(
+    '<meta property="og:title" content="Forfait tout inclus | Voyage Fiesta">',
+    `<meta property="og:title" content="${escapeHtml(title)}">`
+  );
+  replaceOnce(
+    '<meta name="twitter:title" content="Forfait tout inclus | Voyage Fiesta">',
+    `<meta name="twitter:title" content="${escapeHtml(title)}">`
+  );
+  replaceOnce(
+    '<link rel="canonical" href="https://aubaineexpress.voyagefiesta.ca/product.html">',
+    `<link rel="canonical" href="${escapeHtml(url)}">`
+  );
+  replaceOnce(
+    '<meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/product.html">',
+    `<meta property="og:url" content="${escapeHtml(url)}">`
+  );
+  html = html.replaceAll('https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg', escapeHtml(image));
+  html = html.replaceAll('Forfait tout inclus Voyage Fiesta', escapeHtml(imageAlt));
+  replaceOnce(
+    '<div id="product-content">\n        <section class="container mx-auto px-4 py-6">\n            <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue">Forfait tout inclus</h1>\n        </section>\n    </div>',
+    `<div id="product-content">\n        ${staticSummary}\n    </div>`
+  );
+  replaceOnce('</head>', `    <script>window.VF_PAGE_SLUG=${JSON.stringify(slug)};</script>\n</head>`);
+  replaceOnce(
+    '</head>',
+    `    <script type="application/ld+json">${buildPackageJsonLd(product, url, description, image)}</script>\n</head>`
+  );
+  return html;
+}
+
+function writePackagePages(products) {
+  mkdirSync(FORFAIT_DIR, { recursive: true });
+  const keep = new Set();
+  for (const product of products || []) {
+    const slug = String(product.slug || '').trim();
+    if (!slug) continue;
+    writeFileSync(resolve(FORFAIT_DIR, `${slug}.html`), buildPackagePage(product), 'utf8');
+    keep.add(`${slug}.html`);
+  }
+  if (!existsSync(FORFAIT_DIR)) return;
+  for (const file of readdirSync(FORFAIT_DIR)) {
+    if (file.endsWith('.html') && !keep.has(file)) unlinkSync(resolve(FORFAIT_DIR, file));
+  }
+}
+
 function writeRobots() {
   writeFileSync(
     resolve(ROOT, 'robots.txt'),
-    `User-agent: *\nAllow: /\n\nSitemap: ${SITE_BASE}/sitemap.xml\n`,
+    `# Filter URLs (/index.html and ?destination=) use the homepage canonical.
+# Package pages live under /forfaits/. Do not block CSS or images.
+
+User-agent: *
+Allow: /
+
+Sitemap: ${SITE_BASE}/sitemap.xml
+`,
     'utf8'
   );
 }
@@ -682,7 +922,7 @@ function writeSitemap({ products, staff, extraUrls }) {
     ...extraUrls.map((loc) => ({ loc, priority: '0.8' })),
     ...products
       .filter((p) => p.slug)
-      .map((p) => ({ loc: `${SITE_BASE}/product.html?slug=${encodeURIComponent(p.slug)}`, priority: '0.7' })),
+      .map((p) => ({ loc: `${SITE_BASE}/forfaits/${encodeURIComponent(p.slug)}.html`, priority: '0.7' })),
     ...((staff || [])
       .map((a) => String(a.slug || '').trim())
       .filter(Boolean)
@@ -729,7 +969,7 @@ export function writeSeoPages({ products = [], staff = [] } = {}) {
       h1: page.h1,
       paragraphs: page.paragraphs,
       products: matched,
-      listingHref: `/index.html?destination=${encodeURIComponent(page.listingParam)}`,
+      listingHref: '/',
       image: pickImage(matched[0] || {}),
     });
     writeFileSync(resolve(DEST_DIR, `${page.slug}.html`), html, 'utf8');
@@ -758,6 +998,12 @@ export function writeSeoPages({ products = [], staff = [] } = {}) {
       'utf8'
     );
     extraUrls.push(page.url);
+  }
+
+  writePackagePages(products);
+  for (const product of products || []) {
+    const slug = String(product.slug || '').trim();
+    if (slug) extraUrls.push(packageUrl(slug));
   }
 
   writeRobots();

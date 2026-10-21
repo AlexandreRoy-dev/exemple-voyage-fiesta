@@ -10,6 +10,7 @@
  */
 
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -839,6 +840,20 @@ function saveManifest(manifest) {
  writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
 }
 
+function compressMirroredImage(absolutePath) {
+ const script = resolve(ROOT, 'scripts/compress-public-images.py');
+ if (!existsSync(script) || !existsSync(absolutePath)) return '';
+ const result = spawnSync('python3', [script, '--file', absolutePath], { encoding: 'utf8' });
+ if (result.status !== 0) {
+  const detail = (result.stderr || result.stdout || '').trim();
+  console.log(` Image compression skipped${detail ? `: ${detail}` : ''}`);
+  return '';
+ }
+ const lines = String(result.stdout || '').trim().split('\n').map((line) => line.trim()).filter(Boolean);
+ const produced = lines[lines.length - 1] || '';
+ return produced.startsWith('assets/') ? produced : '';
+}
+
 async function downloadGhlFile(apiKey, sourceUrl) {
  const attempts = [
  { Authorization: `Bearer ${apiKey}`, Accept: '*/*' },
@@ -886,9 +901,14 @@ async function mirrorImageField({ apiKey, slug, field, uploadValue, urlOverride,
  mkdirSync(IMAGES_DIR, { recursive: true });
  const bytes = await downloadGhlFile(apiKey, sourceUrl);
  writeFileSync(absolutePath, bytes);
- manifest[relativePath] = sourceHash;
- console.log(` Mirrored image: ${relativePath}`);
- return relativePath;
+ const compressed = compressMirroredImage(absolutePath);
+ const storedPath = compressed || relativePath;
+ if (storedPath !== relativePath) {
+  delete manifest[relativePath];
+ }
+ manifest[storedPath] = sourceHash;
+ console.log(` Mirrored image: ${storedPath}`);
+ return storedPath;
 }
 
 function normalizeUploadList(value) {

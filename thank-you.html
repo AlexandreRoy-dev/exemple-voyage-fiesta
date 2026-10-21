@@ -15,13 +15,13 @@
     <meta property="og:title" content="Demande envoyée | Voyage Fiesta">
     <meta property="og:description" content="Votre demande Voyage Fiesta a été transmise. Un conseiller vous contactera pour la suite du dossier.">
     <meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/thank-you.html">
-    <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
-    <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta property="og:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
+    <meta property="og:image:secure_url" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
     <meta property="og:image:alt" content="Confirmation Voyage Fiesta">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Demande envoyée | Voyage Fiesta">
     <meta name="twitter:description" content="Votre demande Voyage Fiesta a été transmise. Un conseiller vous contactera pour la suite du dossier.">
-    <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop">
+    <meta name="twitter:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-caraibes.jpg">
     <meta name="twitter:image:alt" content="Confirmation Voyage Fiesta">
     <script>
         (function () {
@@ -88,10 +88,10 @@
                     Un conseiller Aubaines Express Voyage vous contactera sous peu pour confirmer les détails de votre forfait et les prochaines étapes (dépôt, paiement final, documents).
                 </p>
                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <a id="thank-you-forfait-link" href="index.html" class="hidden bg-brand-blue hover:bg-brand-orange text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                    <a id="thank-you-forfait-link" href="/" class="hidden bg-brand-blue hover:bg-brand-orange text-white font-semibold py-3 px-6 rounded-xl transition-colors">
                         Voir le forfait
                     </a>
-                    <a href="index.html" class="bg-brand-orange hover:bg-brand-blue text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                    <a href="/" class="bg-brand-orange hover:bg-brand-blue text-white font-semibold py-3 px-6 rounded-xl transition-colors">
                         Retour aux promotions
                     </a>
                 </div>
@@ -128,7 +128,7 @@
             forfaitEl.classList.remove('hidden');
 
             const link = document.getElementById('thank-you-forfait-link');
-            link.href = `product.html?slug=${encodeURIComponent(slug)}`;
+            link.href = `/forfaits/${encodeURIComponent(slug)}.html`;
             link.classList.remove('hidden');
 
             document.title = `Merci - ${product.name} | Voyage Fiesta`;

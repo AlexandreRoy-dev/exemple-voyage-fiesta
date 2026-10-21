@@ -2501,7 +2501,7 @@
         return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} - <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
     }
 
-    function renderEmbedRootLinkHtml(href = 'index.html') {
+    function renderEmbedRootLinkHtml(href = '/') {
         return `<a href="${escapeShareAttr(href)}" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
         </a>`;
@@ -2517,9 +2517,9 @@
                 return `${sep}<span class="text-brand-blue font-semibold truncate">${escapeHtml(item.label)}</span>`;
             }
             if (item.back) {
-                return `${sep}${renderEmbedRootLinkHtml(item.href || 'index.html')}`;
+                return `${sep}${renderEmbedRootLinkHtml(item.href || '/')}`;
             }
-            const href = item.href || 'index.html';
+            const href = item.href || '/';
             return `${sep}<a href="${escapeShareAttr(href)}" class="text-brand-blue hover:underline shrink-0">${escapeHtml(item.label)}</a>`;
         }).join('');
     }
@@ -2533,9 +2533,36 @@
     }
 
     function getProductPageUrl(p) {
+        return getProductCanonicalUrl(p);
+    }
+
+    const DESTINATION_PAGE_BY_KEY = {
+        cancun: '/destinations/cancun.html',
+        riviera_maya: '/destinations/riviera-maya.html',
+        playacar: '/destinations/playacar.html',
+        punta_cana: '/destinations/punta-cana.html',
+        samana: '/destinations/samana.html',
+        puerto_plata: '/destinations/puerto-plata.html',
+        roatan: '/destinations/roatan.html',
+        cozumel: '/destinations/cozumel.html',
+        freeport: '/destinations/freeport.html',
+        bahamas: '/destinations/bahamas.html',
+        riviera_nayarit: '/destinations/riviera-nayarit.html',
+        puerto_vallarta: '/destinations/riviera-nayarit.html',
+        mexique: '/destinations/mexique.html',
+        republique_dominicaine: '/destinations/republique-dominicaine.html',
+        honduras: '/destinations/honduras.html'
+    };
+
+    function getDestinationPageHref(value) {
+        const key = normalizeDestinationKey(value);
+        return (key && DESTINATION_PAGE_BY_KEY[key]) || '/';
+    }
+
+    function getProductCanonicalUrl(p) {
         const slug = String(p?.slug || '').trim();
         if (!slug) return getSiteBaseUrl();
-        return `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`;
+        return `${getSiteBaseUrl().replace(/\/$/, '')}/forfaits/${encodeURIComponent(slug)}.html`;
     }
 
     /** Static share page - crawlers (Facebook) read OG tags here, not product.html JS. */
@@ -2574,13 +2601,9 @@
 
     function buildProductSharePayload(p) {
         const title = buildProductShareTitle(p);
-        const slug = String(p?.slug || '').trim();
-        const productUrl = slug
-            ? `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`
-            : getSiteBaseUrl();
         return {
             url: getProductShareUrl(p),
-            canonical: productUrl,
+            canonical: getProductCanonicalUrl(p),
             title,
             description: buildProductShareDescription(p),
             image: getProductShareImage(p),
@@ -2588,11 +2611,32 @@
         };
     }
 
+    /**
+     * Filter URLs are not separate pages. A destination-only query points at
+     * that destination page; every other filter stays on the homepage.
+     * og:url stays the homepage so a shared listing does not advertise a filter URL.
+     */
+    function listingCanonicalUrl() {
+        const base = getSiteBaseUrl().replace(/\/$/, '');
+        if (typeof window === 'undefined' || !window.location) return `${base}/`;
+        const params = new URLSearchParams(window.location.search);
+        const keys = [];
+        params.forEach((_value, key) => {
+            if (key !== 'embed') keys.push(key);
+        });
+        if (keys.length === 1 && keys[0] === 'destination') {
+            const href = getDestinationPageHref(params.get('destination'));
+            if (href && href !== '/') return `${base}${href}`;
+        }
+        return `${base}/`;
+    }
+
     function buildListingSharePayload() {
         const base = getSiteBaseUrl().replace(/\/$/, '');
         return {
             url: `${base}/`,
-            title: `Aubaines Express — voyages tout inclus au départ du Québec | ${window.SITE_NAME || 'Voyage Fiesta'}`,
+            canonical: listingCanonicalUrl(),
+            title: `Aubaines Express : voyages tout inclus au départ du Québec | ${window.SITE_NAME || 'Voyage Fiesta'}`,
             description: window.SITE_DEFAULT_DESCRIPTION || '',
             image: window.SITE_DEFAULT_SHARE_IMAGE || '',
             imageAlt: window.SITE_NAME || 'Voyage Fiesta'
@@ -2778,6 +2822,7 @@
         getDestinationFilterOptions,
         formatDestinationLabelFromKey,
         normalizeDestinationKey,
+        getDestinationPageHref,
         formatDestinationLabel,
         formatAirportLabel,
         getDestinationAirportLabel,

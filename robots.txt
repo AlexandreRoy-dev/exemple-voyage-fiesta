@@ -1,3 +1,6 @@
+# Filter URLs (/index.html and ?destination=) use the homepage canonical.
+# Package pages live under /forfaits/. Do not block CSS or images.
+
 User-agent: *
 Allow: /
 
