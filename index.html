@@ -245,7 +245,7 @@
         </div>
     </section>
 
-    <main class="container mx-auto px-4 py-8 flex-grow">
+    <main class="container mx-auto px-4 py-8 flex-grow min-[1200px]:max-w-[1200px] xl:max-w-screen-xl 2xl:max-w-screen-2xl">
         <nav id="listing-back-nav" class="breadcrumb-inline hidden text-lg sm:text-xl text-gray-600 flex flex-wrap items-center gap-2 mb-6" aria-label="Fil d'Ariane">
             <a href="index.html" class="breadcrumb-back-link text-brand-blue hover:underline inline-flex items-center gap-2 font-semibold">
                 <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
@@ -316,7 +316,7 @@
                 </select>
             </div>
             
-            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 min-[1200px]:grid-cols-4 gap-6 min-[1200px]:gap-4">
             </div>
             <p id="financing-star-note" class="mt-4 text-xs text-gray-500 leading-snug hidden"></p>
             <div id="loading-state" class="hidden col-span-full text-center py-16 text-gray-500">
@@ -542,11 +542,11 @@
                 : '';
 
             return `
-                <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 text-right max-w-[11rem] leading-tight">
-                    <p class="text-[11px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)} par passager</p>
+                <div class="absolute bottom-3 right-3 z-10 bg-red-600 text-white rounded-md shadow-lg px-3 py-2 min-[1200px]:px-2 min-[1200px]:py-1.5 text-right max-w-[11rem] min-[1200px]:max-w-[7.75rem] leading-tight">
+                    <p class="text-[11px] min-[1200px]:text-[10px] font-semibold">Rabais de ${VoyageFiestaAPI.formatMoney(inc.discount)} par passager</p>
                     <p class="mt-0.5">
-                        <span class="text-sm line-through opacity-90">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice, { suffixClass: 'text-[0.72em] font-normal opacity-90 whitespace-nowrap' })}</span>
-                        <span class="text-2xl font-black ml-1">${VoyageFiestaAPI.formatMoneyPerPerson(inc.price, { suffixClass: 'text-sm font-normal opacity-90 whitespace-nowrap' })}</span>
+                        <span class="text-sm min-[1200px]:text-xs line-through opacity-90">${VoyageFiestaAPI.formatMoneyPerPerson(inc.strikePrice, { suffixClass: 'text-[0.72em] font-normal opacity-90 whitespace-nowrap' })}</span>
+                        <span class="text-2xl min-[1200px]:text-lg font-black ml-1">${VoyageFiestaAPI.formatMoneyPerPerson(inc.price, { suffixClass: 'text-sm min-[1200px]:text-xs font-normal opacity-90 whitespace-nowrap' })}</span>
                     </p>
                     ${financingHtml}
                 </div>`;
@@ -623,21 +623,21 @@
                     ? `<div>
                             <p class="text-xs text-gray-500 mb-1">${escapeHtml(priceLabel)} · à partir de</p>
                             ${strikeHtml}
-                            <p class="text-3xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(displayAmount)}</p>
+                            <p class="text-3xl min-[1200px]:text-2xl font-bold text-gray-900">${VoyageFiestaAPI.formatMoneyPerPerson(displayAmount)}</p>
                             ${financingLine}
                        </div>`
                     : `<div>
                             <p class="text-xs text-gray-500 mb-1">Occ. double</p>
-                            <p class="text-3xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
+                            <p class="text-3xl min-[1200px]:text-2xl font-bold text-gray-900">${p.price}$<span class="text-sm font-normal text-gray-500">/pers</span></p>
                        </div>`;
 
                 card.innerHTML = `
-                    <a href="${productUrl}" class="relative block group aspect-square overflow-hidden">
+                    <a href="${productUrl}" class="relative block group aspect-square min-[1200px]:aspect-[4/3] overflow-hidden">
                         ${inventoryBadge}
                         ${incentiveBadge}
                         <img src="${p.img}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 ${hasIncentive ? 'pr-36' : ''}">
-                            <h3 class="text-white text-xl font-bold leading-tight group-hover:text-brand-orange transition-colors">${p.name}</h3>
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12 ${hasIncentive ? 'pr-36 min-[1200px]:pr-[9.5rem]' : ''}">
+                            <h3 class="text-white text-xl min-[1200px]:text-lg font-bold leading-tight group-hover:text-brand-orange transition-colors">${p.name}</h3>
                             <div class="flex items-center gap-2 mt-1">${renderStars(p.stars)}</div>
                         </div>
                     </a>
@@ -658,20 +658,20 @@
                                 <span class="text-xs text-red-800 font-bold uppercase tracking-wider block mb-1">Aubaines Express Voyage se termine dans :</span>
                                 <div class="text-lg font-bold text-red-600 timer-box" data-end="${endMs}">Calcul...</div>
                             </div>
-                            <div class="flex items-end justify-between gap-3 flex-wrap">
+                            <div class="flex items-end justify-between gap-3 flex-wrap min-[1200px]:flex-col min-[1200px]:items-stretch">
                                 ${priceFooterHtml}
-                                <div class="flex flex-col gap-2 w-full sm:w-auto">
+                                <div class="flex flex-col gap-2 w-full sm:w-auto min-[1200px]:w-full">
                                     <div class="flex items-center justify-between sm:justify-end gap-2" onclick="event.stopPropagation()">
                                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Partager</span>
                                         ${VoyageFiestaAPI.renderSocialShareButtonsHtml(p, { compact: true })}
                                     </div>
-                                    <div class="flex flex-col sm:flex-row gap-2">
-                                        <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm">
+                                    <div class="flex flex-col sm:flex-row gap-2 min-[1200px]:w-full">
+                                        <a href="${productUrl}" class="inline-block text-center border-2 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-white font-medium py-2 px-4 rounded transition-colors text-sm min-[1200px]:flex-1 min-[1200px]:px-2">
                                             <i class="fa-solid fa-circle-info mr-1"></i> Détail
                                         </a>
                                         ${isUnavailable
-                                            ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default">${isVendu ? 'Trop tard, Complet!' : 'Complet'}</span>`
-                                            : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm">Réserver</a>`}
+                                            ? `<span class="inline-block text-center bg-red-600 text-white font-medium py-2 px-4 rounded text-sm cursor-default min-[1200px]:flex-1 min-[1200px]:px-2">${isVendu ? 'Trop tard, Complet!' : 'Complet'}</span>`
+                                            : `<a href="${productUrl}" class="inline-block text-center bg-brand-blue hover:bg-brand-orange text-white font-medium py-2 px-4 rounded transition-colors text-sm min-[1200px]:flex-1 min-[1200px]:px-2">Réserver</a>`}
                                     </div>
                                 </div>
                             </div>
