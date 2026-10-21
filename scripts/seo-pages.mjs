@@ -6,14 +6,14 @@
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isVisiblePackage, packageCanonicalUrl, writePackagePages } from './package-pages.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const DEST_DIR = resolve(ROOT, 'destinations');
 
 export const SITE_BASE = (process.env.BOUTIQUE_BASE_URL || 'https://aubaineexpress.voyagefiesta.ca').replace(/\/$/, '');
-export const DEFAULT_SHARE_IMAGE =
-  'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
+export const DEFAULT_SHARE_IMAGE = 'https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg';
 
 function escapeHtml(value) {
   return String(value || '')
@@ -493,7 +493,7 @@ function productCards(products) {
   return `<ul class="grid gap-4 md:grid-cols-2">
     ${products
       .map((p) => {
-        const href = `/product.html?slug=${encodeURIComponent(p.slug)}`;
+        const href = packageCanonicalUrl(p.slug).replace(SITE_BASE, '');
         const dest = p.destination || p.subDest || '';
         const country = p.country || '';
         const nights = p.durationNights ? `${p.durationNights} nuits` : '';
@@ -535,7 +535,7 @@ function renderPage({ title, description, url, h1, paragraphs, products, listing
             '@type': 'ListItem',
             position: i + 1,
             name: p.name,
-            url: `${SITE_BASE}/product.html?slug=${encodeURIComponent(p.slug)}`,
+            url: packageCanonicalUrl(p.slug),
           })),
         }
       : undefined,
@@ -553,18 +553,8 @@ function renderPage({ title, description, url, h1, paragraphs, products, listing
 <html lang="fr-CA">
 <head>
 ${renderMeta({ title, description, url, image, imageAlt: h1, jsonLd })}
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/tailwind.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: { brand: { blue: '#025091', orange: '#F26522', dark: '#1F2937', light: '#F3F7FA' } }
-        }
-      }
-    };
-  </script>
   <style>
     body {
       background:
@@ -638,18 +628,8 @@ ${renderMeta({
     description,
   }),
 })}
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/tailwind.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: { brand: { blue: '#025091', orange: '#F26522', dark: '#1F2937', light: '#F3F7FA' } }
-        }
-      }
-    };
-  </script>
 </head>
 <body class="flex min-h-screen flex-col bg-brand-light font-sans text-slate-800">
   ${headerHtml(url)}
@@ -669,7 +649,18 @@ ${renderMeta({
 function writeRobots() {
   writeFileSync(
     resolve(ROOT, 'robots.txt'),
-    `User-agent: *\nAllow: /\n\nSitemap: ${SITE_BASE}/sitemap.xml\n`,
+    `User-agent: *
+Allow: /
+
+# Shells and duplicates. The canonical forfait pages stay crawlable.
+Disallow: /imports/
+Disallow: /email-remerciement-infolettre.html
+Disallow: /index-Jean-pc.html
+Disallow: /product-Jean-pc.html
+Disallow: /room-registration-Jean-pc.html
+
+Sitemap: ${SITE_BASE}/sitemap.xml
+`,
     'utf8'
   );
 }
@@ -681,8 +672,8 @@ function writeSitemap({ products, staff, extraUrls }) {
     { loc: `${SITE_BASE}/destinations/`, priority: '0.9' },
     ...extraUrls.map((loc) => ({ loc, priority: '0.8' })),
     ...products
-      .filter((p) => p.slug)
-      .map((p) => ({ loc: `${SITE_BASE}/product.html?slug=${encodeURIComponent(p.slug)}`, priority: '0.7' })),
+      .filter((p) => isVisiblePackage(p) && /^[a-z0-9-]+$/i.test(String(p.slug || '')))
+      .map((p) => ({ loc: packageCanonicalUrl(p.slug), priority: '0.7' })),
     ...((staff || [])
       .map((a) => String(a.slug || '').trim())
       .filter(Boolean)
@@ -729,7 +720,7 @@ export function writeSeoPages({ products = [], staff = [] } = {}) {
       h1: page.h1,
       paragraphs: page.paragraphs,
       products: matched,
-      listingHref: `/index.html?destination=${encodeURIComponent(page.listingParam)}`,
+      listingHref: `/?destination=${encodeURIComponent(page.listingParam)}`,
       image: pickImage(matched[0] || {}),
     });
     writeFileSync(resolve(DEST_DIR, `${page.slug}.html`), html, 'utf8');
@@ -760,6 +751,7 @@ export function writeSeoPages({ products = [], staff = [] } = {}) {
     extraUrls.push(page.url);
   }
 
+  writePackagePages(products);
   writeRobots();
   writeSitemap({ products, staff, extraUrls });
   console.log(`Wrote ${extraUrls.length} SEO URL(s), robots.txt and sitemap.xml`);

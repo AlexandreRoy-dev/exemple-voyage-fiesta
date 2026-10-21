@@ -1,23 +1,28 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr-CA">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intégration iframe — Aubaines Voyage Fiesta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Intégration iframe : Aubaines Voyage Fiesta</title>
+    <meta name="description" content="Code pour intégrer la boutique Aubaines Express de Voyage Fiesta dans une page.">
+    <meta name="robots" content="noindex, follow">
+    <link rel="canonical" href="https://aubaineexpress.voyagefiesta.ca/integration-iframe.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Voyage Fiesta">
+    <meta property="og:locale" content="fr_CA">
+    <meta property="og:title" content="Intégration iframe : Aubaines Voyage Fiesta">
+    <meta property="og:description" content="Code pour intégrer la boutique Aubaines Express de Voyage Fiesta dans une page.">
+    <meta property="og:url" content="https://aubaineexpress.voyagefiesta.ca/integration-iframe.html">
+    <meta property="og:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+    <meta property="og:image:secure_url" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+    <meta property="og:image:alt" content="Vue aérienne d'une plage de sable blanc et d'une mer turquoise">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Intégration iframe : Aubaines Voyage Fiesta">
+    <meta name="twitter:description" content="Code pour intégrer la boutique Aubaines Express de Voyage Fiesta dans une page.">
+    <meta name="twitter:image" content="https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg">
+    <meta name="twitter:image:alt" content="Vue aérienne d'une plage de sable blanc et d'une mer turquoise">
+    <link rel="stylesheet" href="/assets/tailwind.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: {
-                        brand: { blue: '#025091', orange: '#F26522', light: '#F3F7FA' }
-                    }
-                }
-            }
-        };
-    </script>
     <style>
         pre { white-space: pre-wrap; word-break: break-word; }
         .demo-frame { border: 2px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; }
@@ -90,7 +95,7 @@
     <script>
         (function () {
             var base = window.BOUTIQUE_BASE_URL || (location.origin + location.pathname.replace(/[^/]+$/, '').replace(/\/$/, ''));
-            var embedUrl = window.BOUTIQUE_EMBED_URL || (base + '/index.html?embed=1');
+            var embedUrl = window.BOUTIQUE_EMBED_URL || (base + '/?embed=1');
 
             var recommended = [
                 '<!-- Aubaines Voyage Fiesta -->',
@@ -140,8 +145,8 @@
             document.getElementById('snippet-simple').textContent = simple;
 
             var direct = document.getElementById('direct-link');
-            direct.href = base + '/index.html';
-            direct.textContent = base + '/index.html';
+            direct.href = base + '/';
+            direct.textContent = base + '/';
 
             document.getElementById('demo-iframe').src = embedUrl;
 

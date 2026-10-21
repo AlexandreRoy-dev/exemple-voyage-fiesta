@@ -1,7 +1,11 @@
 (function () {
     try {
     const FETCH_TIMEOUT_MS = 15000;
-    const JSON_URL = (window.PRODUCTS_JSON_URL || 'products.json').replace(/^\//, '');
+    const JSON_URL = (function () {
+        const configured = String(window.PRODUCTS_JSON_URL || 'products.json').trim();
+        if (/^https?:\/\//i.test(configured)) return configured;
+        return '/' + configured.replace(/^(\.\/|\/)+/, '');
+    })();
 
     function isActifPackage(p) {
         return p && normalizeState(p.state, p.active) === 'actif';
@@ -2501,7 +2505,7 @@
         return `<p class="embed-financing-note ${sizeClass} text-gray-600 leading-snug m-0">${icon}<span>${escapeHtml(label)} - <a href="${escapeShareAttr(url)}" class="text-brand-blue font-semibold hover:underline"${target}>${escapeHtml(linkText)}</a></span></p>`;
     }
 
-    function renderEmbedRootLinkHtml(href = 'index.html') {
+    function renderEmbedRootLinkHtml(href = '/') {
         return `<a href="${escapeShareAttr(href)}" class="embed-breadcrumb-back text-brand-blue hover:underline shrink-0 inline-flex items-center gap-2 font-semibold">
             <i class="fa-solid fa-arrow-left" aria-hidden="true"></i><span>Retour aux promotions</span>
         </a>`;
@@ -2517,9 +2521,9 @@
                 return `${sep}<span class="text-brand-blue font-semibold truncate">${escapeHtml(item.label)}</span>`;
             }
             if (item.back) {
-                return `${sep}${renderEmbedRootLinkHtml(item.href || 'index.html')}`;
+                return `${sep}${renderEmbedRootLinkHtml(item.href || '/')}`;
             }
-            const href = item.href || 'index.html';
+            const href = item.href || '/';
             return `${sep}<a href="${escapeShareAttr(href)}" class="text-brand-blue hover:underline shrink-0">${escapeHtml(item.label)}</a>`;
         }).join('');
     }
@@ -2532,10 +2536,66 @@
         return window.SITE_DEFAULT_SHARE_IMAGE || resolveAbsoluteUrl(PLACEHOLDER_IMG);
     }
 
-    function getProductPageUrl(p) {
+    function getProductCanonicalUrl(p) {
         const slug = String(p?.slug || '').trim();
         if (!slug) return getSiteBaseUrl();
-        return `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`;
+        return `${getSiteBaseUrl().replace(/\/$/, '')}/forfaits/${encodeURIComponent(slug)}.html`;
+    }
+
+    function getProductPageUrl(p) {
+        return getProductCanonicalUrl(p);
+    }
+
+    function foldSeoText(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/\p{M}/gu, '')
+            .toLowerCase();
+    }
+
+    /** Keep in sync with packageSeoTitle in scripts/package-pages.mjs. */
+    function buildProductSeoTitle(p) {
+        const name = String(p?.name || '').trim() || 'Forfait tout inclus';
+        return `${name} | Forfait tout inclus | Voyage Fiesta`;
+    }
+
+    /** Keep in sync with packageSeoDescription in scripts/package-pages.mjs. No price. */
+    function buildProductSeoDescription(p) {
+        const parts = [];
+        const destination = String(p?.destination || p?.subDest || p?.destination1 || '').trim();
+        const country = String(p?.country || '').trim();
+        if (destination && country && foldSeoText(country) !== foldSeoText(destination)) {
+            parts.push(`${destination}, ${country}`);
+        } else if (destination) {
+            parts.push(destination);
+        } else if (country) {
+            parts.push(country);
+        }
+        const nights = Number(p?.durationNights);
+        if (Number.isFinite(nights) && nights > 0) parts.push(`${nights} nuit${nights > 1 ? 's' : ''}`);
+        const when = formatDepartureDate(p?.departureDate);
+        const airport = String(p?.departureAirport || '').trim();
+        if (when && airport) parts.push(`départ le ${when} de ${airport}`);
+        else if (when) parts.push(`départ le ${when}`);
+        else if (airport) parts.push(`départ de ${airport}`);
+        let text = 'Forfait tout inclus Voyage Fiesta';
+        if (parts.length) text += ` : ${parts.join(', ')}`;
+        text += '.';
+        return text;
+    }
+
+    function buildProductSeoPayload(p) {
+        const title = buildProductSeoTitle(p);
+        const url = getProductCanonicalUrl(p);
+        return {
+            url,
+            canonical: url,
+            title,
+            description: buildProductSeoDescription(p),
+            image: getProductShareImage(p),
+            imageAlt: p?.name || window.SITE_NAME || 'Voyage Fiesta',
+            robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+        };
     }
 
     /** Static share page - crawlers (Facebook) read OG tags here, not product.html JS. */
@@ -2574,13 +2634,9 @@
 
     function buildProductSharePayload(p) {
         const title = buildProductShareTitle(p);
-        const slug = String(p?.slug || '').trim();
-        const productUrl = slug
-            ? `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`
-            : getSiteBaseUrl();
         return {
             url: getProductShareUrl(p),
-            canonical: productUrl,
+            canonical: getProductCanonicalUrl(p),
             title,
             description: buildProductShareDescription(p),
             image: getProductShareImage(p),
@@ -2595,7 +2651,7 @@
             title: `Aubaines Express — voyages tout inclus au départ du Québec | ${window.SITE_NAME || 'Voyage Fiesta'}`,
             description: window.SITE_DEFAULT_DESCRIPTION || '',
             image: window.SITE_DEFAULT_SHARE_IMAGE || '',
-            imageAlt: window.SITE_NAME || 'Voyage Fiesta'
+            imageAlt: 'Vue aérienne d\'une plage de sable blanc et d\'une mer turquoise'
         };
     }
 
@@ -2614,7 +2670,7 @@
         if (!payload || typeof document === 'undefined') return;
         const siteName = window.SITE_NAME || 'Voyage Fiesta';
         if (payload.title) document.title = payload.title;
-        setDocumentMeta('name', 'robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+        setDocumentMeta('name', 'robots', payload.robots || 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
         setDocumentMeta('name', 'author', siteName);
         setDocumentMeta('name', 'theme-color', '#025091');
         setDocumentMeta('property', 'og:type', 'website');
@@ -2893,6 +2949,10 @@
         getProductShareImage,
         getProductShareUrl,
         buildProductShareTitle,
+        buildProductSeoTitle,
+        buildProductSeoDescription,
+        buildProductSeoPayload,
+        getProductCanonicalUrl,
         buildProductSharePayload,
         buildListingSharePayload,
         applySocialMetaTags,
@@ -2920,7 +2980,8 @@
         if (!window.VoyageFiestaAPI || typeof window.VoyageFiestaAPI.fetchProducts !== 'function') {
             window.VoyageFiestaAPI = {
                 fetchProducts: async function () {
-                    const url = (window.PRODUCTS_JSON_URL || 'products.json').replace(/^\//, '') + '?t=' + Date.now();
+                    const configured = String(window.PRODUCTS_JSON_URL || 'products.json').trim();
+                    const url = (/^https?:\/\//i.test(configured) ? configured : '/' + configured.replace(/^(\.\/|\/)+/, '')) + '?t=' + Date.now();
                     const res = await fetch(url, { cache: 'no-store' });
                     const data = await res.json();
                     return Array.isArray(data && data.products) ? data.products : [];

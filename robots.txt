@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
 
+# Shells and duplicates. The canonical forfait pages stay crawlable.
+Disallow: /imports/
+Disallow: /email-remerciement-infolettre.html
+Disallow: /index-Jean-pc.html
+Disallow: /product-Jean-pc.html
+Disallow: /room-registration-Jean-pc.html
+
 Sitemap: https://aubaineexpress.voyagefiesta.ca/sitemap.xml

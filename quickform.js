@@ -100,13 +100,13 @@
             </header>
             <main class="max-w-xl mx-auto px-4 py-10">
                 <p class="text-gray-700">Ce lien conseiller n’est pas valide. Demandez le bon URL à votre conseiller Voyage Fiesta.</p>
-                <p class="mt-4"><a class="text-brand-blue font-semibold underline" href="${escapeHtml(assetPrefix())}index.html">Retour à la boutique</a></p>
+                <p class="mt-4"><a class="text-brand-blue font-semibold underline" href="/">Retour à la boutique</a></p>
             </main>`;
     }
 
     function renderForm(root, agent, options) {
         const boutiqueUrl = options.boutiqueUrl
-            || `${assetPrefix()}index.html?agent=${encodeURIComponent(agent.slug)}`;
+            || `/?agent=${encodeURIComponent(agent.slug)}`;
         const name = agent.name || 'votre conseiller';
 
         root.innerHTML = `

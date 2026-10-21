@@ -359,7 +359,7 @@
     window.SITE_DEFAULT_DESCRIPTION = window.SITE_DEFAULT_DESCRIPTION
         || 'Forfaits tout inclus au départ de Montréal ou Québec : Cancún, Punta Cana, Riviera Maya et plus. Prix d’occupation publiés par Voyage Fiesta.';
     window.SITE_DEFAULT_SHARE_IMAGE = window.SITE_DEFAULT_SHARE_IMAGE
-        || 'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1200&fit=crop';
+        || 'https://aubaineexpress.voyagefiesta.ca/assets/hero-plage.jpg';
 
     /** Libellés affichés - taxes + frais aériens (GHL : taxes_amount) */
     window.TAXES_AIR_FEES_LABEL = 'Taxes et frais aériens';
@@ -378,7 +378,7 @@
     window.BOUTIQUE_BASE_URL = 'https://aubaineexpress.voyagefiesta.ca';
 
     /** Chemin liste avec mode intégration (sans bannière hero) */
-    window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/index.html?embed=1';
+    window.BOUTIQUE_EMBED_URL = window.BOUTIQUE_BASE_URL + '/?embed=1';
 
     /**
      * Financement iFinance - lien actif sur la boutique.
@@ -539,7 +539,7 @@
      *   https://aubaineexpress.voyagefiesta.ca/thank-you.html?forfait_slug={{forfait_slug}}
      * (le champ caché forfait_slug doit correspondre)
      */
-    window.GHL_FORM_THANKYOU_PATH = 'thank-you.html';
+    window.GHL_FORM_THANKYOU_PATH = '/thank-you.html';
 
     window.buildGhlThankYouUrl = function (forfaitSlug, extraParams) {
         const url = new URL(window.GHL_FORM_THANKYOU_PATH, window.location.href);

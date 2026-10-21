@@ -799,7 +799,7 @@
 
             const thankYou = typeof global.buildGhlThankYouUrl === 'function'
                 ? global.buildGhlThankYouUrl('')
-                : 'thank-you.html';
+                : '/thank-you.html';
             submitGhlRoomForm({ payload, redirectUrl: thankYou }).catch((err) => {
                 showError(reservationFetchError(err));
             });
