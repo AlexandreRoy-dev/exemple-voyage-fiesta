@@ -21,6 +21,17 @@ Le script charge, sans écraser l'environnement déjà défini: `atrium-sync/.en
 
 Le JSON est servi par reservation-api: `GET /groupes.json` (`Cache-Control: public, max-age=300`). Chemin lu: `GROUPES_JSON_PATH`, sinon `groupes.json` à côté de `server.mjs`.
 
+Les photos sont des URL publiques du CDN Vasco, hotlink direct, sans proxy:
+
+| Dossier | Exemple | Origine dans l'API |
+|---------|---------|--------------------|
+| `https://vascoinc.com/upimg/hotel/` | `hotel_00000287_00002560.jpg` | `id_hotel` + `id_photo` (ou nom de fichier) sur l'hôtel: `list_photo`, `url_img` |
+| `https://vascoinc.com/upimg/bateau/` | `5914_Bateau.jpg` | `GET /cruise/photo`, champ `image`, relié au groupe par `id_navire` ou par le nom du navire |
+| `https://vascoinc.com/upimg/cabine/` et `/pont/` | `7448_IB.jpg` | `GET /cruise/cabine` et `GET /cruise/pont` |
+| `https://vascoinc.com/upimg/groupenew/` | `00000723_3411_Qnf8ejco.jpeg` | `list_image` du groupe (`fichier` ou URL) |
+
+Le sync lit aussi `/cruise/photo`, `/cruise/cabine` et `/cruise/pont`. Si une de ces trois routes manque, le catalogue est quand même écrit. Une fiche sans aucune photo reste sans image: la page montre un bloc neutre, pas une photo de stock.
+
 Fixture de développement:
 
 ```bash

@@ -22,8 +22,12 @@ const ENDPOINTS = [
   ['groupes', '/groupes/list'],
   ['hotels', '/hotel/list'],
   ['navires', '/cruise/navire'],
-  ['compagnies', '/cruise/compagnie']
+  ['compagnies', '/cruise/compagnie'],
+  ['photos', '/cruise/photo'],
+  ['cabines', '/cruise/cabine'],
+  ['ponts', '/cruise/pont']
 ];
+const OPTIONAL_ENDPOINTS = new Set(['photos', 'cabines', 'ponts']);
 
 function loadEnvFile() {
   const candidates = [
@@ -97,13 +101,22 @@ export async function syncAtrium({
       groupes: unwrap(raw.groupes ?? raw, 'groupes'),
       hotels: unwrap(raw.hotels ?? { status: 'success', data: [] }, 'hotels'),
       navires: unwrap(raw.navires ?? { status: 'success', data: [] }, 'navires'),
-      compagnies: unwrap(raw.compagnies ?? { status: 'success', data: [] }, 'compagnies')
+      compagnies: unwrap(raw.compagnies ?? { status: 'success', data: [] }, 'compagnies'),
+      photos: unwrap(raw.photos ?? { status: 'success', data: [] }, 'photos'),
+      cabines: unwrap(raw.cabines ?? { status: 'success', data: [] }, 'cabines'),
+      ponts: unwrap(raw.ponts ?? { status: 'success', data: [] }, 'ponts')
     };
   } else {
     if (!apiKey) throw new Error('ATRIUM_API_KEY manquant');
     raw = {};
     for (const [key, path] of ENDPOINTS) {
-      raw[key] = await fetchList(apiBase, apiKey, path, fetchImpl);
+      try {
+        raw[key] = await fetchList(apiBase, apiKey, path, fetchImpl);
+      } catch (error) {
+        if (!OPTIONAL_ENDPOINTS.has(key)) throw error;
+        console.error(`[atrium-sync] ${path}: ${error.message}`);
+        raw[key] = [];
+      }
     }
   }
   const catalog = assertPublicCatalog(mapCatalog(raw, { generatedAt }), [apiKey].filter(Boolean));

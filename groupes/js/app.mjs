@@ -121,10 +121,14 @@ function priceLine(group) {
 }
 
 function card(group) {
-  const img = group.image || 'https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=800';
+  const img = group.image || '';
   const where = [group.country, group.destination].filter(Boolean).join(' · ');
+  const media = img
+    ? `<img src="${esc(img)}" alt="${esc(group.title)}" loading="lazy" decoding="async">`
+    : `<span class="card-fallback" aria-hidden="true"></span>`;
+  const mediaLabel = img ? '' : ` aria-label="${esc(group.title)}"`;
   return `<article class="card">
-    <a href="${esc(groupHref(group))}"><img src="${esc(img)}" alt="${esc(group.title)}"></a>
+    <a class="card-media" href="${esc(groupHref(group))}"${mediaLabel}>${media}</a>
     <div class="card-body">
       <p class="eyebrow">${esc(where || categoryLabel(group.type))}</p>
       <h3><a href="${esc(groupHref(group))}">${esc(group.title)}</a></h3>
@@ -671,6 +675,7 @@ function renderDetail(groups) {
   const back = categoryPath(group.type);
   const images = group.images?.length ? group.images : (group.image ? [{ url: group.image, alt: group.title }] : []);
   const hero = images[0]?.url || '';
+  const heroStyle = hero ? ` style="--hero:url('${esc(hero)}')"` : '';
   const duration = [group.dureeJours ? `${group.dureeJours} jours` : '', group.dureeNuits ? `${group.dureeNuits} nuits` : ''].filter(Boolean).join(', ');
   const hotel = group.hotelDetail;
   const ship = group.navireDetail;
@@ -702,7 +707,7 @@ function renderDetail(groups) {
   const flights = group.vols?.length ? `<section class="panel"><h2>Vols</h2><ul>${group.vols.map((vol) => `<li>${esc([vol.sens, vol.compagnie, vol.numero, vol.depart && vol.arrivee ? `${vol.depart} vers ${vol.arrivee}` : '', formatDate(vol.dateDepart)].filter(Boolean).join(', '))}</li>`).join('')}</ul></section>` : '';
   const steps = group.itineraire?.length ? `<section class="panel"><h2>Itinéraire</h2><ol>${group.itineraire.map((step) => `<li><strong>${esc(step.titre)}</strong> ${esc(step.description || '')}</li>`).join('')}</ol></section>` : '';
   main.innerHTML = `
-    <section class="detail-hero" style="--hero:url('${esc(hero)}')"><div class="wrap">
+    <section class="detail-hero"${heroStyle}><div class="wrap">
       <p class="eyebrow">${esc(categoryLabel(group.type))}</p>
       <h1>${esc(group.title)}</h1>
       <div class="meta"><span>Départ le ${esc(formatDate(group.dateDepart) || 'date à confirmer')}</span>${duration ? `<span>${esc(duration)}</span>` : ''}<strong>${priceLine(group)}</strong></div>
@@ -710,7 +715,7 @@ function renderDetail(groups) {
     <div class="wrap layout">
       <div>
         <p><a href="${esc(href(back))}">Retour à la liste</a></p>
-        ${images.length ? `<section class="panel"><h2>Galerie photos</h2><div class="gallery">${images.map((image, index) => `<button type="button" data-photo="${esc(image.url)}" aria-label="Agrandir la photo ${index + 1}"><img src="${esc(image.url)}" alt="${esc(image.alt || `${group.title}, photo ${index + 1}`)}"></button>`).join('')}</div></section>` : ''}
+        ${images.length ? `<section class="panel"><h2>Galerie photos</h2><div class="gallery">${images.map((image, index) => `<button type="button" data-photo="${esc(image.url)}" aria-label="Agrandir la photo ${index + 1}"><img src="${esc(image.url)}" alt="${esc(image.alt || `${group.title}, photo ${index + 1}`)}" loading="lazy" decoding="async"></button>`).join('')}</div></section>` : ''}
         ${group.description ? `<section class="panel"><h2>Description</h2><p>${esc(group.description)}</p></section>` : ''}
         ${listBlock('Points forts', group.pointsForts)}
         ${listBlock('Inclusions', group.inclusions)}

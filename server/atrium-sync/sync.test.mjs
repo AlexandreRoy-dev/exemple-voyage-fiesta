@@ -40,7 +40,10 @@ test('sync calls Atrium with the Api-Key header and never writes it', async () =
       '/groupes/list': fixture.groupes,
       '/hotel/list': fixture.hotels,
       '/cruise/navire': fixture.navires,
-      '/cruise/compagnie': fixture.compagnies
+      '/cruise/compagnie': fixture.compagnies,
+      '/cruise/photo': { status: 'success', data: [] },
+      '/cruise/cabine': { status: 'success', data: [] },
+      '/cruise/pont': { status: 'success', data: [] }
     }[req.url];
     if (!route) {
       res.writeHead(404);
@@ -61,8 +64,11 @@ test('sync calls Atrium with the Api-Key header and never writes it', async () =
       generatedAt: '2026-10-21T12:00:00.000Z'
     });
     assert.deepEqual(seen.map((call) => call.path).sort(), [
+      '/cruise/cabine',
       '/cruise/compagnie',
       '/cruise/navire',
+      '/cruise/photo',
+      '/cruise/pont',
       '/groupes/list',
       '/hotel/list'
     ]);

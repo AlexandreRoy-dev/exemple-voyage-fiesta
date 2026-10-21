@@ -52,3 +52,63 @@ test('maps the openapi fixture into a public catalog', () => {
   assert.equal(dumped.includes('ATRIUM'), false);
   assert.equal(dumped.includes('Api-Key'), false);
 });
+
+test('builds public vascoinc URLs from hotel photo ids and cruise filenames', () => {
+  const catalog = mapCatalog({
+    groupes: [
+      {
+        id_groupe: 6,
+        type: 'sud',
+        status: 'actif',
+        titre: 'Samana, Bahia Principe',
+        id_hotel: 287,
+        date_depart: '2026-10-26',
+        prix_appel: 2569
+      },
+      {
+        id_groupe: 584,
+        type: 'cruise',
+        status: 'actif',
+        titre: 'Croisière en Europe',
+        navire_nom: 'Norwegian Viva',
+        compagnie_cruise: 'Norwegian Cruise Line',
+        date_depart: '2027-08-15'
+      },
+      {
+        id_groupe: 723,
+        type: 'voyage',
+        status: 'actif',
+        titre: 'Yoga au Nicaragua',
+        date_depart: '2027-01-10',
+        list_image: [{ fichier: '00000723_3411_Qnf8ejco.jpeg', titre_fr: 'Groupe au départ' }]
+      }
+    ],
+    hotels: [{
+      id_hotel: 287,
+      nom: 'Bahia Principe Grand El Portillo',
+      list_photo: [
+        { id_photo: 2546, titre_fr: 'Plage' },
+        { id_photo: 2560, principale: 1, titre_fr: 'Piscine' }
+      ]
+    }],
+    navires: [{ id_navire: 55, nom: 'Norwegian Viva', id_compagnie: 9 }],
+    compagnies: [{ id_compagnie: 9, nom_fr: 'Norwegian Cruise Line' }],
+    photos: [{ id_navire: 55, id_photo: 5914, principale: true, image: '5914_Bateau.jpg', titre_fr: 'Le navire' }],
+    cabines: [{ id_navire: 55, image: '7448_IB.jpg', titre_fr: 'Cabine intérieure' }],
+    ponts: [{ id_navire: 55, image: '4722_Deck5.jpg' }]
+  }, { generatedAt: '2026-10-21T12:00:00.000Z' });
+
+  const hotel = catalog.groups.find((group) => group.id === 6);
+  assert.equal(hotel.image, 'https://vascoinc.com/upimg/hotel/hotel_00000287_00002560.jpg');
+  assert.equal(hotel.images[1].url, 'https://vascoinc.com/upimg/hotel/hotel_00000287_00002546.jpg');
+  assert.equal(hotel.images[0].alt, 'Piscine');
+
+  const cruise = catalog.groups.find((group) => group.id === 584);
+  assert.equal(cruise.navireId, 55);
+  assert.equal(cruise.image, 'https://vascoinc.com/upimg/bateau/5914_Bateau.jpg');
+  assert.ok(cruise.images.some((image) => image.url === 'https://vascoinc.com/upimg/cabine/7448_IB.jpg'));
+  assert.ok(cruise.images.some((image) => image.url === 'https://vascoinc.com/upimg/pont/4722_Deck5.jpg'));
+
+  const voyage = catalog.groups.find((group) => group.id === 723);
+  assert.equal(voyage.image, 'https://vascoinc.com/upimg/groupenew/00000723_3411_Qnf8ejco.jpeg');
+});
