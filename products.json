@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-22T00:30:04.305Z",
+  "updatedAt": "2026-10-22T01:00:03.285Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -743,7 +743,7 @@
         "tout_inclus",
         "sur_la_plage"
       ],
-      "inventory": 25,
+      "inventory": 12,
       "price": 1255,
       "priceOccSimple": 1625,
       "priceOccTriple": 1155,
