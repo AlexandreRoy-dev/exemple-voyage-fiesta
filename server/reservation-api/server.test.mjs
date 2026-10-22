@@ -16,7 +16,7 @@ function close(server) {
   return new Promise((resolve) => server.close(() => resolve()));
 }
 
-async function startFakeGhl() {
+async function startFakeGhl({ usersStatus = 200 } = {}) {
   const calls = [];
   const server = createHttp((req, res) => {
     const chunks = [];
@@ -35,8 +35,21 @@ async function startFakeGhl() {
       if (url.pathname === '/staff.json') {
         return send(200, { agents: [{ slug: 'eric-lacasse', id: 'user-eric' }] });
       }
+      if (req.method === 'GET' && url.pathname === '/users/') {
+        if (usersStatus !== 200) return send(usersStatus, { message: 'nope' });
+        return send(200, {
+          users: [
+            { id: 'userKevin123', name: 'Kevin Watier' },
+            { id: 'owner-keep', name: 'Owner' },
+            { id: 'userGone1234', name: 'Parti', deleted: true }
+          ]
+        });
+      }
       if (url.pathname === '/contacts/search/duplicate') {
         const email = url.searchParams.get('email') || '';
+        if (email.includes('unowned@')) {
+          return send(200, { contact: { id: 'c-unowned', email } });
+        }
         if (email.includes('owned@')) {
           return send(200, { contact: { id: 'c-owned', assignedTo: 'owner-keep', email } });
         }
@@ -269,6 +282,116 @@ test('default origins allow the Fiesta sites and serve groupes.json', async () =
     assert.equal(ready.status, 200);
     const body = await ready.json();
     assert.equal(body.groups[0].id, 661);
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+});
+
+const fbLead = {
+  lead_ref: 'kevin-watier',
+  lead_ghl_user: 'userKevin123',
+  lead_utm_source: 'facebook',
+  lead_utm_medium: 'page',
+  lead_utm_campaign: 'fb-2026-10-22'
+};
+
+const reservationPayload = {
+  request_type: 'demande_prix',
+  p1_prenom: 'Julie',
+  p1_nom: 'Gagnon',
+  forfait_slug: 'forfait-x',
+  forfait_name: 'Forfait X',
+  agent_slug: 'eric-lacasse'
+};
+
+async function runSubmit(payload, fakeOpts) {
+  const fake = await startFakeGhl(fakeOpts);
+  const api = createServer(apiEnv(fake));
+  const port = await listen(api);
+  try {
+    const result = await post(port, { payload });
+    return { ...result, calls: fake.calls };
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+}
+
+test('fb link: new contact is assigned to the validated ghl_user, tagged and noted', async () => {
+  const { status, json, calls } = await runSubmit({ ...reservationPayload, ...fbLead, email: 'new@example.com' });
+  assert.equal(status, 200);
+  assert.equal(json.assignedTo, 'userKevin123');
+  assert.ok(json.tags.includes('fb-kevin-watier'));
+  assert.ok(json.tags.includes('demande-prix'));
+  const upsert = calls.find((c) => c.path === '/contacts/upsert');
+  assert.equal(upsert.body.assignedTo, 'userKevin123');
+  const note = calls.find((c) => c.path.endsWith('/notes'));
+  assert.match(note.body.body, /Page Facebook \(ref\): kevin-watier/);
+  assert.match(note.body.body, /UTM: facebook \/ page \/ fb-2026-10-22/);
+  assert.ok(calls.some((c) => c.path === '/users/' && c.search.includes('locationId=loc-test')));
+});
+
+test('fb link: an existing owner is never reassigned', async () => {
+  const { json, calls } = await runSubmit({ ...reservationPayload, ...fbLead, email: 'owned@example.com' });
+  assert.equal(json.assignedTo, 'owner-keep');
+  const upsert = calls.find((c) => c.path === '/contacts/upsert');
+  assert.equal(upsert.body.assignedTo, undefined);
+  assert.ok(!calls.some((c) => c.method === 'PUT'));
+  assert.ok(json.tags.includes('fb-kevin-watier'));
+});
+
+test('fb link: existing contact without owner gets the ghl_user', async () => {
+  const { json, calls } = await runSubmit({ ...reservationPayload, ...fbLead, email: 'unowned@example.com' });
+  assert.equal(json.assignedTo, 'userKevin123');
+  const upsert = calls.find((c) => c.path === '/contacts/upsert');
+  assert.equal(upsert.body.assignedTo, 'userKevin123');
+});
+
+test('fb link: unknown, deleted or malformed ghl_user falls back to the usual owner', async () => {
+  for (const ghlUser of ['userNotHere1', 'userGone1234', 'bad id!']) {
+    const { json, calls } = await runSubmit({ ...reservationPayload, ...fbLead, lead_ghl_user: ghlUser, email: 'new@example.com' });
+    // staff.json maps eric-lacasse to user-eric (the behaviour before this change).
+    assert.equal(json.assignedTo, 'user-eric', ghlUser);
+    assert.equal(calls.find((c) => c.path === '/contacts/upsert').body.assignedTo, 'user-eric');
+  }
+});
+
+test('fb link: users lookup failure is ignored, lead still created', async () => {
+  const { status, json } = await runSubmit({ ...reservationPayload, ...fbLead, email: 'new@example.com' }, { usersStatus: 401 });
+  assert.equal(status, 200);
+  assert.equal(json.assignedTo, 'user-eric');
+  assert.ok(json.tags.includes('fb-kevin-watier'));
+});
+
+test('no fb link: same tags, owner and note as before, and no users lookup', async () => {
+  const { json, calls } = await runSubmit({ ...reservationPayload, email: 'new@example.com' });
+  assert.deepEqual(json.tags, ['demande-prix']);
+  assert.equal(json.assignedTo, 'user-eric');
+  assert.ok(!calls.some((c) => c.path === '/users/'));
+  const note = calls.find((c) => c.path.endsWith('/notes'));
+  assert.doesNotMatch(note.body.body, /Provenance/);
+});
+
+test('fb link on demande_groupe assigns the agent and adds the fb tag', async () => {
+  const { json } = await runSubmit({ ...groupePayload, ...fbLead, email: 'new@example.com' });
+  assert.equal(json.assignedTo, 'userKevin123');
+  assert.ok(json.tags.includes('demande-groupe'));
+  assert.ok(json.tags.includes('fb-kevin-watier'));
+  assert.ok(!json.tags.includes('demande-prix'));
+});
+
+test('dry_run shows the fb link values without calling GHL', async () => {
+  const fake = await startFakeGhl();
+  const api = createServer(apiEnv(fake, { DRY_RUN: '1' }));
+  const port = await listen(api);
+  try {
+    const { json } = await post(port, { payload: { ...reservationPayload, ...fbLead, email: 'new@example.com' } });
+    assert.equal(json.dryRun, true);
+    assert.equal(json.assignedTo, 'userKevin123');
+    assert.deepEqual(json.leadRef, { ref: 'kevin-watier', ghlUser: 'userKevin123', validated: false });
+    assert.ok(json.tags.includes('fb-kevin-watier'));
+    assert.equal(fake.calls.length, 0);
   } finally {
     await close(api);
     await close(fake.server);

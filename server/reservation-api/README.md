@@ -29,6 +29,18 @@ Automate on that tag in GHL.
 
 `quickform` and `agent_slug` keep their current tags, source and owner lookup. `demande_prix` still uses `demande-prix` (that tag starts a client workflow; do not reuse it for groups).
 
+## Facebook multipartage links
+
+The multipartage app adds `?ref=<agent-slug>&ghl_user=<GHL user id>` to the link of each Facebook Page. `lead-ref.js` (loaded on every page with a form) keeps those values, plus `utm_*`, in `localStorage` for 30 days. Each form then sends them as `lead_ref`, `lead_ghl_user` and `lead_utm_*`. A newer link replaces the older one.
+
+On submit:
+
+- `lead_ghl_user` must be a user of the location (`GET /users/?locationId=`, cached 10 minutes). An unknown id, a deleted user or a failed lookup is ignored, and the usual owner rules apply.
+- A valid `lead_ghl_user` comes before the forfait owner and `agent_slug`, for every request type, including `demande_groupe`.
+- It is applied only when the contact is new or has no owner. An owned contact is never reassigned.
+- `lead_ref` adds the tag `fb-<ref>` and a `Provenance` block (ref, GHL id, UTM) to the note.
+- A lead without these fields behaves as before.
+
 ## Groupes Atrium
 
 `GET /groupes.json` serves the file at `GROUPES_JSON_PATH` (default: `groupes.json` next to `server.mjs`). The sync that writes it is [`../atrium-sync/README.md`](../atrium-sync/README.md).

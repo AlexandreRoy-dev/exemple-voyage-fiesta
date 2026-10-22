@@ -333,7 +333,9 @@
                 const res = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                    body: JSON.stringify({ payload })
+                    body: JSON.stringify({
+                        payload: global.VFLeadRef?.attach ? global.VFLeadRef.attach(payload) : payload
+                    })
                 });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok || !data.ok) {
