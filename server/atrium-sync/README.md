@@ -41,6 +41,18 @@ ATRIUM_FIXTURE=fixtures/atrium-api.json ATRIUM_OUTPUT=../../groupes/data/groupes
 
 `groupes/data/groupes.json` est un catalogue d'exemple pour l'affichage local (`localhost` ou `?fixture=1`). Le site public lit l'URL de l'API, pas ce fichier.
 
+Pousser le catalogue vers l'objet GHL **déjà créé** `custom_objects.groupes`. Le script ne crée pas l'objet et ne supprime pas de fiches. Une fiche déjà présente pour le même `atrium_id` est mise à jour. Une fiche absente du catalogue passe à `archivé`.
+
+Le mode sec est le défaut. `DRY_RUN=0` dans le `.env` de l'API ne lance pas l'écriture. L'écriture réelle demande `GHL_GROUPE_DRY_RUN=0`. `DRY_RUN=1` force le mode sec.
+
+```bash
+ATRIUM_CATALOG=/opt/voyage-fiesta-reservation/groupes.json \
+GHL_GROUPE_DRY_RUN=1 \
+node push-ghl.mjs
+```
+
+Le schéma est lu à l'exécution (`GET /objects/custom_objects.groupes`). Les champs sont reliés par leur étiquette. `description_groupe` reçoit le texte. La clé réservée `description` n'est pas utilisée. La photo principale est envoyée au téléversement de fichier quand le champ est un fichier, sinon seule l'URL est écrite.
+
 Cron VPS (toutes les 2 heures, à la minute 17):
 
 ```cron
