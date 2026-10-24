@@ -7,6 +7,7 @@ import {
   filterGroups,
   sortGroups,
   paginate,
+  categoryPath,
   buildSudSearchUrl,
   buildFlightSearchUrl,
   buildCruiseSearchUrl,
@@ -87,4 +88,12 @@ test('search links use the Fiesta supplier codes', () => {
   }));
   assert.equal(car.searchParams.get('plCode'), 'VAS605');
   assert.equal(car.searchParams.get('pickupDate'), '12/21/2026');
+});
+
+test('mariage keeps its category path and the group detail URL shape stays id plus slug', () => {
+  assert.equal(categoryPath('mariage'), 'mariages/');
+  assert.equal(categoryPath('sud'), 'forfaits-sud/');
+  const sample = catalog.groups[0];
+  const href = `/groupes/groupe/?id=${sample.id}&slug=${encodeURIComponent(sample.slug)}`;
+  assert.match(href, /\/groupes\/groupe\/\?id=\d+&slug=/);
 });
