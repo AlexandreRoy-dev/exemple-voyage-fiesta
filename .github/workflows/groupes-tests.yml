@@ -19,6 +19,12 @@ on:
       - 'scripts/agent-pages.test.mjs'
       - 'scripts/quickform-pages.mjs'
       - 'agent-form.js'
+      - 'embed.js'
+      - 'embed/**'
+      - 'docs/iframes.md'
+      - 'tests/embed-pages.test.mjs'
+      - 'site-chrome.js'
+      - 'site-chrome.css'
   pull_request:
     paths:
       - 'groupes/**'
@@ -37,6 +43,12 @@ on:
       - 'scripts/agent-pages.test.mjs'
       - 'scripts/quickform-pages.mjs'
       - 'agent-form.js'
+      - 'embed.js'
+      - 'embed/**'
+      - 'docs/iframes.md'
+      - 'tests/embed-pages.test.mjs'
+      - 'site-chrome.js'
+      - 'site-chrome.css'
 
 jobs:
   test:
@@ -58,3 +70,4 @@ jobs:
           tests/agent-resolve.test.mjs
           scripts/ghl-voyages-fields.test.mjs
           scripts/agent-pages.test.mjs
+          tests/embed-pages.test.mjs

@@ -1,6 +1,5 @@
 (function () {
     const params = new URLSearchParams(window.location.search);
-    const forcedEmbed = params.get('embed') === '1';
 
     function inIframe() {
         try {
@@ -10,18 +9,29 @@
         }
     }
 
-    function isEmbedMode() {
-        return forcedEmbed || inIframe();
+    function embedToken() {
+        const value = params.get('embed');
+        if (value === 'sections') return 'sections';
+        if (value === '1' || inIframe()) return '1';
+        return '';
     }
 
-    /** Preserve ?embed=1 and ?agent= on internal boutique links. */
+    function isEmbedMode() {
+        return Boolean(embedToken());
+    }
+
+    /** Preserve embed mode and ?agent= on internal boutique links. */
     function boutiqueUrl(href) {
         if (!href) return href;
         try {
             const u = new URL(href, window.location.href);
             if (u.origin !== window.location.origin) return href;
             const current = new URLSearchParams(window.location.search);
-            if (isEmbedMode()) u.searchParams.set('embed', '1');
+            const token = embedToken();
+            if (token) {
+                const keepSections = token === 'sections' && (u.pathname === '/' || u.pathname === '/index.html');
+                u.searchParams.set('embed', keepSections ? 'sections' : '1');
+            }
             const agent = current.get('agent');
             if (agent && !u.searchParams.has('agent')) {
                 u.searchParams.set('agent', agent);
@@ -36,6 +46,7 @@
     function applyEmbedMode() {
         if (!isEmbedMode()) return;
         document.documentElement.classList.add('embed-mode');
+        if (embedToken() === 'sections') document.documentElement.classList.add('embed-sections');
     }
 
     /** Prevent sideways page scroll on mobile / in iframe embed. */
@@ -180,6 +191,7 @@
 
     window.VoyageFiestaEmbed = {
         isEmbedMode: isEmbedMode,
+        embedToken: embedToken,
         boutiqueUrl: boutiqueUrl,
         patchLinks: patchLinks,
         notifyParentHeight: notifyParentHeight,
