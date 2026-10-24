@@ -9,7 +9,9 @@ on:
       - 'scripts/deploy-reservation-api-vps.py'
       - '.github/workflows/groupes-tests.yml'
       - 'lead-ref.js'
+      - 'agent-resolve.js'
       - 'tests/lead-ref.test.mjs'
+      - 'tests/agent-resolve.test.mjs'
   pull_request:
     paths:
       - 'groupes/**'
@@ -18,7 +20,9 @@ on:
       - 'scripts/deploy-reservation-api-vps.py'
       - '.github/workflows/groupes-tests.yml'
       - 'lead-ref.js'
+      - 'agent-resolve.js'
       - 'tests/lead-ref.test.mjs'
+      - 'tests/agent-resolve.test.mjs'
 
 jobs:
   test:
@@ -37,3 +41,4 @@ jobs:
           server/atrium-sync/sync.test.mjs
           groupes/js/catalog.test.mjs
           tests/lead-ref.test.mjs
+          tests/agent-resolve.test.mjs

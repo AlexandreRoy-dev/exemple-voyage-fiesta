@@ -35,8 +35,9 @@ The multipartage app adds `?ref=<agent-slug>&ghl_user=<GHL user id>` to the link
 
 On submit:
 
-- `lead_ghl_user` must be a user of the location (`GET /users/?locationId=`, cached 10 minutes). An unknown id, a deleted user or a failed lookup is ignored, and the usual owner rules apply.
-- A valid `lead_ghl_user` comes before the forfait owner and `agent_slug`, for every request type, including `demande_groupe`.
+- `lead_ghl_user` must be a user of the location (`GET /users/?locationId=`, cached 10 minutes). An unknown id, a deleted user or a failed lookup is ignored.
+- If that id is ignored, `lead_ref` is looked up in `staff.json`. A known slug is the shared-link advisor.
+- The shared-link advisor comes before the forfait owner and before `agent_slug`, for every request type, including `demande_groupe`.
 - It is applied only when the contact is new or has no owner. An owned contact is never reassigned.
 - `lead_ref` adds the tag `fb-<ref>` and a `Provenance` block (ref, GHL id, UTM) to the note.
 - A lead without these fields behaves as before.
@@ -45,7 +46,7 @@ On submit:
 
 `GET /groupes.json` serves the file at `GROUPES_JSON_PATH` (default: `groupes.json` next to `server.mjs`). The sync that writes it is [`../atrium-sync/README.md`](../atrium-sync/README.md).
 
-`POST /` with `request_type: demande_groupe` creates or updates the contact, adds tags `demande-groupe` and `groupe-<id>`, and writes a note whose source is `Site groupes Atrium`. A contact that already has an owner is not reassigned. `GHL_GROUPE_DEFAULT_OWNER` applies only when the owner is empty. The tag `demande-prix` is never sent for this type, even if the client includes it.
+`POST /` with `request_type: demande_groupe` creates or updates the contact, adds tags `demande-groupe` and `groupe-<id>`, and writes a note whose source is `Site groupes Atrium`. A contact that already has an owner is not reassigned. `agent_slug` is resolved in `staff.json` when the shared link did not name an advisor. `GHL_GROUPE_DEFAULT_OWNER` applies only when the owner is still empty. The tag `demande-prix` is never sent for this type, even if the client includes it.
 
 `GHL_GROUPE_NOTIFY` defaults to off. Set `GHL_GROUPE_NOTIFY=1` to send the internal email to `INTERNAL_NOTIFY_EMAILS`. Other request types are unchanged.
 

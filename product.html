@@ -26,6 +26,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="agent-card.css?v=1">
     <script>
         tailwind.config = {
             theme: {
@@ -239,9 +240,10 @@
     </footer>
 
     <script src="/lead-ref.js?v=1"></script>
+    <script src="/agent-resolve.js?v=1"></script>
     <script src="config.js?v=57"></script>
     <script src="room-registration.js?v=26"></script>
-    <script src="api.js?v=108"></script>
+    <script src="api.js?v=109"></script>
     <script>
         const TAX_LABEL = () => VoyageFiestaAPI.getTaxesAirFeesLabel();
         const TAX_LABEL_PP = () => VoyageFiestaAPI.getTaxesAirFeesLabel({ perPerson: true });
@@ -1286,7 +1288,9 @@
                         </div>
 
                         <div class="lg:col-span-1 order-2 lg:order-none lg:row-span-2">
-                            <div class="bg-white rounded-2xl shadow-xl border-2 ${isUnavailable ? 'border-gray-300 opacity-90' : 'border-brand-blue'} p-4 sm:p-6 sticky-booking" id="booking-panel">
+                            <div class="sticky-booking">
+                            ${window.VFAgent ? window.VFAgent.cardHtml(window.VFAgent.current(), { voyage: p.name }) : ''}
+                            <div class="bg-white rounded-2xl shadow-xl border-2 ${isUnavailable ? 'border-gray-300 opacity-90' : 'border-brand-blue'} p-4 sm:p-6" id="booking-panel">
                                 ${inventoryHtml}
 
                                 <div class="space-y-4 mb-6 border-b pb-6">
@@ -1335,6 +1339,7 @@
                                         <div id="booking-cta-price-request" class="hidden"></div>
                                        </div>`}
                             </div>
+                            </div>
                         </div>
 
                         <div class="lg:col-span-2 order-3 lg:order-none space-y-6 min-w-0">
@@ -1381,6 +1386,7 @@
                 ${seoSectionHtml}`;
 
             startCountdown(new Date(p.endDate));
+            bindAgentContact();
             bindProductTabs();
             bindGalleryViewer(gallery, p.name);
             bindPassengerSelection(p);
@@ -1431,6 +1437,7 @@
                 <form id="price-request-form" class="space-y-3 rounded-xl border border-blue-100 bg-brand-light/40 p-4" data-request-mode="${isPreSale ? 'prevente' : 'prix'}" novalidate>
                     <p class="text-sm font-semibold text-brand-blue">${escapeHtml(title)}</p>
                     <p class="text-xs text-gray-600 leading-relaxed -mt-1">${escapeHtml(intro)}</p>
+                    ${window.VFAgent?.current?.() ? `<p class="text-xs text-gray-700">Cette demande concerne ${escapeHtml(p.name)} et sera envoyée à ${escapeHtml(window.VFAgent.current().name)}.</p>` : ''}
                     <p class="text-xs text-gray-600">Nom, courriel, téléphone et date de naissance sont requis.</p>
                     <div>
                         <label for="pr-name" class="text-xs font-bold text-gray-600 uppercase tracking-tighter block mb-1">Nom complet</label>
@@ -1881,6 +1888,23 @@
             updateSelection();
         }
 
+        function bindAgentContact() {
+            const button = document.querySelector('[data-agent-contact]');
+            if (!button || button.dataset.bound === '1') return;
+            button.dataset.bound = '1';
+            button.addEventListener('click', () => {
+                document.getElementById('booking-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const price = document.getElementById('price-request-form');
+                const priceHidden = price?.closest('.hidden');
+                if (price && !priceHidden) {
+                    price.querySelector('input, select, textarea')?.focus();
+                    return;
+                }
+                const openBtn = document.getElementById('open-reservation');
+                if (openBtn && !openBtn.disabled) openBtn.click();
+            });
+        }
+
         function bindReservationWindow(p) {
             const openBtn = document.getElementById('open-reservation');
             if (!openBtn) return;
@@ -2023,7 +2047,10 @@
                 return;
             }
 
-            const product = await VoyageFiestaAPI.fetchProductBySlug(slug);
+            const [product] = await Promise.all([
+                VoyageFiestaAPI.fetchProductBySlug(slug),
+                window.VFAgent?.prepare ? VFAgent.prepare('staff.json') : null
+            ]);
 
             if (product) {
                 document.getElementById('not-found').classList.add('hidden');

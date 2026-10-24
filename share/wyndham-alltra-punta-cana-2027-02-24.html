@@ -26,7 +26,10 @@
     (function () {
       var ua = navigator.userAgent || '';
       var isCrawler = /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Pinterest|Slackbot|WhatsApp|Discordbot/i.test(ua);
-      if (!isCrawler) location.replace("https://aubaineexpress.voyagefiesta.ca/product.html?slug=wyndham-alltra-punta-cana-2027-02-24");
+      if (isCrawler) return;
+      var target = "https://aubaineexpress.voyagefiesta.ca/product.html?slug=wyndham-alltra-punta-cana-2027-02-24";
+      if (location.search) target += (target.indexOf('?') === -1 ? '?' : '&') + location.search.slice(1);
+      location.replace(target);
     })();
   </script>
 </head>

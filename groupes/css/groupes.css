@@ -277,6 +277,8 @@ h1 { font-size: clamp(2rem, 4vw, 3.2rem); margin: 0 0 0.8rem; }
 .meta { display: flex; flex-wrap: wrap; gap: 0.8rem 1.2rem; align-items: baseline; }
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.25rem; padding: 1.5rem 0 2.5rem; }
 .panel { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 1rem 1.1rem 1.2rem; margin-bottom: 1rem; }
+.share-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+.share-row .btn-secondary, .share-row a.btn-secondary { text-decoration: none; text-align: center; }
 .panel h2 { margin: 0 0 0.7rem; font-size: 1.25rem; color: var(--blue-dark); }
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
 .gallery button { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 8px; overflow: hidden; }
