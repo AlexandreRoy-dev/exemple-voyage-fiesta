@@ -90,15 +90,18 @@ function phone() {
 
 function nav(current) {
   const items = [
-    ['index.html', 'Accueil', 'home'],
-    ['forfaits-sud/', 'Forfaits SUD', 'sud'],
-    ['croisieres/', 'Croisières', 'cruise'],
-    ['voyages/', 'Voyages', 'voyage'],
-    ['index.html#contact', 'Nous contacter', 'contact']
+    ['/', 'Aubaines Express', 'aubaines'],
+    ['/groupes/forfaits-sud/', 'Forfaits SUD', 'sud'],
+    ['/groupes/croisieres/', 'Croisières', 'cruise'],
+    ['/groupes/voyages/', 'Voyages', 'voyage'],
+    ['/groupes/mariages/', 'Mariage', 'mariage'],
+    ['/agents/', 'Notre équipe', 'equipe'],
+    ['/#contact', 'Contact', 'contact']
   ];
   return items.map(([path, label, key]) => {
     const currentAttr = key === current ? ' aria-current="page"' : '';
-    return `<a href="${esc(href(path))}"${currentAttr}>${esc(label)}</a>`;
+    const url = withFlags(new URL(path, location.origin));
+    return `<a href="${esc(url.pathname + url.search + url.hash)}"${currentAttr}>${esc(label)}</a>`;
   }).join('');
 }
 
@@ -109,7 +112,7 @@ function shell(current) {
     <div class="orb orb-b" aria-hidden="true"></div>
     <header class="site-header">
       <div class="header-inner">
-        <a class="logo" href="${esc(href('index.html'))}">Voyage Fiesta <span>Groupes</span></a>
+        <a class="logo" href="${esc((() => { const url = withFlags(new URL('/', location.origin)); return url.pathname + url.search; })())}">Voyage Fiesta <span>Aubaines Express</span></a>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-principale">Menu</button>
         <nav id="nav-principale" class="nav" aria-label="Principale">${nav(current)}</nav>
       </div>
@@ -120,7 +123,8 @@ function shell(current) {
         <p><strong>Voyage Fiesta</strong></p>
         <p>${esc(cfg.address || '')}</p>
         <p><a href="${esc(cfg.phoneHref || 'tel:+15148566614')}">${esc(phone())}</a> · <a href="mailto:${esc(cfg.email || 'info@voyagesfiesta.com')}">${esc(cfg.email || 'info@voyagesfiesta.com')}</a></p>
-        <p><a href="${esc(href('../index.html'))}">Aubaines Express</a></p>
+        <p>Permis d'agence de voyages du Québec : 703631. Contribution au Fonds FICAV.</p>
+        <p><a href="${esc((() => { const url = withFlags(new URL('/', location.origin)); url.hash = 'contact'; return url.pathname + url.search + url.hash; })())}">Nous joindre</a></p>
       </div>
     </footer>
     <dialog id="demande-dialog"><div class="dialog-body" id="demande-dialog-body"></div></dialog>
@@ -515,6 +519,7 @@ function renderHome(groups, search, failed) {
   const main = document.getElementById('contenu');
   const block = (type, title, path) => {
     const items = sortGroups((groups || []).filter((group) => group.type === type), 'agence').slice(0, 4);
+    if (type === 'mariage' && !items.length) return '';
     return `<section class="section" data-animate><div class="wrap">
       <div class="section-head"><div><p class="eyebrow">${esc(title)}</p><h2>${esc(title)}</h2></div><a href="${esc(href(path))}">Voir la liste</a></div>
       ${failed ? '' : `<div class="cards">${items.map(card).join('') || '<p>Aucun groupe dans cette catégorie.</p>'}</div>`}
@@ -537,9 +542,10 @@ function renderHome(groups, search, failed) {
       <article><h2>Demande</h2><p>Le formulaire envoie la demande au dossier, avec le voyage choisi.</p></article>
     </section>
     ${failed ? `<section class="section"><div class="wrap">${unavailable()}</div></section>` : ''}
-    ${block('sud', 'Forfaits sud', 'forfaits-sud/')}
+    ${block('sud', 'Forfaits SUD', 'forfaits-sud/')}
     ${block('cruise', 'Croisières', 'croisieres/')}
     ${block('voyage', 'Voyages', 'voyages/')}
+    ${block('mariage', 'Mariages', 'mariages/')}
     <section class="section" id="contact"><div class="wrap panel">
       <p class="eyebrow">Nous joindre</p>
       <h2>Nous contacter</h2>
@@ -568,11 +574,12 @@ function readFilters() {
 }
 
 function renderListing(groups, type) {
-  const titles = { sud: 'Forfaits sud', cruise: 'Croisières', voyage: 'Voyages' };
+  const titles = { sud: 'Forfaits sud', cruise: 'Croisières', voyage: 'Voyages', mariage: 'Mariages' };
   const headings = {
-    sud: 'Tous nos forfaits sud',
-    cruise: 'Toutes nos croisières',
-    voyage: 'Tous nos voyages'
+    sud: 'Forfaits SUD',
+    cruise: 'Croisières',
+    voyage: 'Voyages',
+    mariage: 'Mariages'
   };
   const main = document.getElementById('contenu');
   if (!groups) {
