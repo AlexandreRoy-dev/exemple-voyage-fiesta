@@ -8,6 +8,8 @@ on:
       - 'server/reservation-api/**'
       - 'scripts/deploy-reservation-api-vps.py'
       - '.github/workflows/groupes-tests.yml'
+      - 'lead-ref.js'
+      - 'tests/lead-ref.test.mjs'
   pull_request:
     paths:
       - 'groupes/**'
@@ -15,6 +17,8 @@ on:
       - 'server/reservation-api/**'
       - 'scripts/deploy-reservation-api-vps.py'
       - '.github/workflows/groupes-tests.yml'
+      - 'lead-ref.js'
+      - 'tests/lead-ref.test.mjs'
 
 jobs:
   test:
@@ -32,3 +36,4 @@ jobs:
           server/atrium-sync/map.test.mjs
           server/atrium-sync/sync.test.mjs
           groupes/js/catalog.test.mjs
+          tests/lead-ref.test.mjs

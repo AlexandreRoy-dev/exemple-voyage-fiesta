@@ -42,7 +42,9 @@
     }
 
     async function postReservation(apiUrl, payload) {
-        const body = JSON.stringify({ payload });
+        // Facebook multipartage link (ref, ghl_user, utm) kept by lead-ref.js.
+        const withRef = global.VFLeadRef?.attach ? global.VFLeadRef.attach(payload) : payload;
+        const body = JSON.stringify({ payload: withRef });
         const opts = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

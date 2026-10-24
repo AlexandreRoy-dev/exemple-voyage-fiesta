@@ -244,7 +244,7 @@ function bindForm(form, group) {
       const response = await fetch(apiUrl(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payload })
+        body: JSON.stringify({ payload: window.VFLeadRef?.attach ? window.VFLeadRef.attach(payload) : payload })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) throw new Error(data.error || 'Envoi impossible.');

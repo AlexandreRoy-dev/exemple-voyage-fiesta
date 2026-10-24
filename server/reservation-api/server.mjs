@@ -271,6 +271,8 @@ function resolveContactTags(payload) {
     if (id) add(`groupe-${id}`);
     collectExtraTags(payload).forEach(add);
     add(pick(payload, 'contact_tag'));
+    const fbRef = readLeadRef(payload).ref;
+    if (fbRef) add(`fb-${fbRef}`);
     return tags;
   }
   const primary = resolveContactTag(payload);
@@ -278,7 +280,80 @@ function resolveContactTags(payload) {
   for (const tag of collectExtraTags(payload)) {
     if (!tags.includes(tag)) tags.push(tag);
   }
+  const fbRef = readLeadRef(payload).ref;
+  if (fbRef && !tags.includes(`fb-${fbRef}`)) tags.push(`fb-${fbRef}`);
   return tags;
+}
+
+const LEAD_REF_RE = /^[a-z0-9][a-z0-9-]{0,59}$/;
+const GHL_USER_RE = /^[A-Za-z0-9]{8,40}$/;
+const UTM_RE = /^[A-Za-z0-9._-]{1,60}$/;
+const LOCATION_USERS_TTL_MS = 10 * 60 * 1000;
+
+/**
+ * Facebook multipartage link values, sent by lead-ref.js on the site
+ * (lead_ref = agent slug of the Page, lead_ghl_user = GHL user id).
+ * Invalid values are dropped, so the lead behaves as if they were absent.
+ */
+export function readLeadRef(payload) {
+  const ref = pick(payload, 'lead_ref').toLowerCase();
+  const ghlUser = pick(payload, 'lead_ghl_user');
+  const utm = (key) => {
+    const v = pick(payload, key);
+    return UTM_RE.test(v) ? v : '';
+  };
+  return {
+    ref: LEAD_REF_RE.test(ref) ? ref : '',
+    ghlUser: GHL_USER_RE.test(ghlUser) ? ghlUser : '',
+    utmSource: utm('lead_utm_source'),
+    utmMedium: utm('lead_utm_medium'),
+    utmCampaign: utm('lead_utm_campaign')
+  };
+}
+
+function hasLeadRef(lead) {
+  return Boolean(lead.ref || lead.ghlUser);
+}
+
+let locationUsersCache = { at: 0, key: '', ids: null };
+
+/** Set of user ids of the location, or null when GHL cannot be read. */
+async function loadLocationUserIds() {
+  const key = `${cfg().ghlApi}|${cfg().locationId}`;
+  const now = Date.now();
+  if (locationUsersCache.ids && locationUsersCache.key === key && now - locationUsersCache.at < LOCATION_USERS_TTL_MS) {
+    return locationUsersCache.ids;
+  }
+  const res = await ghlFetch(`${ghlUrl('')}/users/?locationId=${encodeURIComponent(cfg().locationId)}`, {
+    headers: ghlHeaders()
+  });
+  if (!res.ok) throw new Error(`users HTTP ${res.status}`);
+  const data = await res.json().catch(() => null);
+  const users = Array.isArray(data?.users) ? data.users : [];
+  const ids = new Set(users.filter((u) => !u?.deleted).map((u) => String(u?.id || '').trim()).filter(Boolean));
+  locationUsersCache = { at: now, key, ids };
+  return ids;
+}
+
+/** True only when the id is a user of the location. Any error = false. */
+async function isLocationUser(userId) {
+  if (!userId) return false;
+  try {
+    return (await loadLocationUserIds()).has(userId);
+  } catch (err) {
+    console.warn('[reservation] location users lookup failed', err.message);
+    return false;
+  }
+}
+
+function leadRefRows(lead) {
+  if (!hasLeadRef(lead)) return [];
+  const rows = [];
+  if (lead.ref) rows.push(`Page Facebook (ref): ${lead.ref}`);
+  if (lead.ghlUser) rows.push(`Conseiller du lien (ID GHL): ${lead.ghlUser}`);
+  const utm = [lead.utmSource, lead.utmMedium, lead.utmCampaign].filter(Boolean).join(' / ');
+  if (utm) rows.push(`UTM: ${utm}`);
+  return rows;
 }
 
 let productsCache = { at: 0, products: [] };
@@ -321,6 +396,12 @@ async function lookupStaffIdBySlug(slug) {
 }
 
 async function resolveAssignedUserId(payload) {
+  // Facebook multipartage link: the agent of the Page wins, once validated.
+  const lead = readLeadRef(payload);
+  if (lead.ghlUser) {
+    if (await isLocationUser(lead.ghlUser)) return lead.ghlUser;
+    console.warn('[reservation] lead_ghl_user ignored (not a user of the location)', lead.ghlUser);
+  }
   if (isGroupeRequest(payload)) {
     return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to') || cfg().groupeDefaultOwner || '';
   }
@@ -605,6 +686,8 @@ function buildGroupeNotes(payload) {
   add('Hôtel ou navire', payload.hotel, payload.navire, payload.provider);
   add('Compagnie', payload.compagnie);
   add('Lien', payload.groupe_url, payload.forfait_link);
+  const fbRows = leadRefRows(readLeadRef(payload));
+  if (fbRows.length) rows.push('', 'Provenance', ...fbRows);
   rows.push('', 'Coordonnées');
   add('Nom', payload.full_name, [payload.p1_prenom, payload.p1_nom].filter(Boolean).join(' '));
   add('Courriel', payload.email, payload.p1_email);
@@ -762,6 +845,8 @@ function buildNotes(payload) {
     qa('Courriel conseiller', payload.conseiller_email),
     qa('Téléphone conseiller', payload.conseiller_phone)
   ].filter((row) => row && !row.endsWith('\n→ —')));
+
+  addSection('Provenance', leadRefRows(readLeadRef(payload)));
 
   if (payload.sommaire) {
     addSection('Sommaire', String(payload.sommaire).trim().split(/\r?\n/));
@@ -1137,9 +1222,10 @@ async function handleRequest(req, res) {
     if (requestDryRun(payload, input)) {
       const tags = resolveContactTags(payload);
       const note = buildNotes(payload);
-      const assignedPreview = isGroupeRequest(payload)
+      const lead = readLeadRef(payload);
+      const assignedPreview = lead.ghlUser || (isGroupeRequest(payload)
         ? (pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to') || cfg().groupeDefaultOwner || '')
-        : '';
+        : '');
       const contact = buildContactBody(payload, assignedPreview);
       return sendJson(res, 200, {
         ok: true,
@@ -1151,6 +1237,7 @@ async function handleRequest(req, res) {
         note,
         assignedTo: assignedPreview || null,
         notify: shouldNotify(payload),
+        leadRef: hasLeadRef(lead) ? { ref: lead.ref || null, ghlUser: lead.ghlUser || null, validated: false } : null,
         ownerPolicy: "Un contact qui a déjà un propriétaire n'est pas réassigné. Cet essai ne consulte pas GHL."
       });
     }
