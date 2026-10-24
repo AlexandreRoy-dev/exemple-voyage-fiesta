@@ -395,16 +395,42 @@ async function lookupStaffIdBySlug(slug) {
   return String(agent?.id || '').trim();
 }
 
-async function resolveAssignedUserId(payload) {
-  // Facebook multipartage link: the agent of the Page wins, once validated.
-  const lead = readLeadRef(payload);
+async function lookupStaffIdSafe(slug) {
+  try {
+    return await lookupStaffIdBySlug(slug);
+  } catch (err) {
+    console.warn('[reservation] staff lookup failed', err.message);
+    return '';
+  }
+}
+
+/**
+ * Shared-link advisor (validated ghl_user, else ref slug in staff.json).
+ * Wins over the voyage owner and over agent_slug for a contact that has no owner.
+ */
+async function resolveSharedLinkUserId(lead) {
   if (lead.ghlUser) {
     if (await isLocationUser(lead.ghlUser)) return lead.ghlUser;
     console.warn('[reservation] lead_ghl_user ignored (not a user of the location)', lead.ghlUser);
   }
-  if (isGroupeRequest(payload)) {
-    return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to') || cfg().groupeDefaultOwner || '';
+  if (lead.ref) {
+    const fromRef = await lookupStaffIdSafe(lead.ref);
+    if (fromRef) return fromRef;
   }
+  return '';
+}
+
+async function resolveGroupeAgentId(payload) {
+  const fromSlug = await lookupStaffIdSafe(pick(payload, 'agent_slug'));
+  if (fromSlug) return fromSlug;
+  return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to') || cfg().groupeDefaultOwner || '';
+}
+
+async function resolveAssignedUserId(payload) {
+  const lead = readLeadRef(payload);
+  const shared = await resolveSharedLinkUserId(lead);
+  if (shared) return shared;
+  if (isGroupeRequest(payload)) return resolveGroupeAgentId(payload);
   try {
     const fromVoyage = await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
     if (fromVoyage) return fromVoyage;
@@ -414,6 +440,18 @@ async function resolveAssignedUserId(payload) {
     console.warn('[reservation] owner lookup failed', err.message);
   }
   return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
+}
+
+/** Dry-run preview. Does not call GoHighLevel. Staff is read only when a slug is present. */
+async function previewAssignedUserId(payload) {
+  const lead = readLeadRef(payload);
+  if (lead.ghlUser) return lead.ghlUser;
+  if (lead.ref) {
+    const fromRef = await lookupStaffIdSafe(lead.ref);
+    if (fromRef) return fromRef;
+  }
+  if (isGroupeRequest(payload)) return resolveGroupeAgentId(payload);
+  return '';
 }
 
 function extractAssignedUserId(contact) {
@@ -1223,9 +1261,7 @@ async function handleRequest(req, res) {
       const tags = resolveContactTags(payload);
       const note = buildNotes(payload);
       const lead = readLeadRef(payload);
-      const assignedPreview = lead.ghlUser || (isGroupeRequest(payload)
-        ? (pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to') || cfg().groupeDefaultOwner || '')
-        : '');
+      const assignedPreview = await previewAssignedUserId(payload);
       const contact = buildContactBody(payload, assignedPreview);
       return sendJson(res, 200, {
         ok: true,

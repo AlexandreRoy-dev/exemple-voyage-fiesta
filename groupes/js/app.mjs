@@ -57,7 +57,21 @@ function withFlags(url) {
   if (dryRun()) url.searchParams.set('dry_run', '1');
   if (params.get('api')) url.searchParams.set('api', params.get('api'));
   if (params.get('data')) url.searchParams.set('data', params.get('data'));
+  const agent = window.VFAgent?.current?.();
+  if (agent?.slug) url.searchParams.set('ref', agent.slug);
+  if (agent?.id) url.searchParams.set('ghl_user', agent.id);
   return url;
+}
+
+function sharedAgent() {
+  return window.VFAgent?.current?.() || null;
+}
+
+function voyageShareUrl(group) {
+  const url = new URL(groupHref(group), location.origin).href;
+  const agent = sharedAgent();
+  if (!agent || !window.VFAgent?.shareUrl) return url;
+  return window.VFAgent.shareUrl(url, agent, window.VFLeadRef?.get?.() || {});
 }
 
 function href(path) {
@@ -148,9 +162,11 @@ function formFields(group, prefix) {
     formatDate(group.dateDepart) ? `départ le ${formatDate(group.dateDepart)}` : '',
     formatPrice(group.prixAppel) ? `à partir de ${formatPrice(group.prixAppel)}` : 'prix sur demande'
   ].filter(Boolean).join(', ');
+  const agent = sharedAgent();
   return `
     ${dryRun() ? '<p class="banner">Mode essai: la demande est préparée, aucun contact n\'est créé.</p>' : ''}
     <p id="${prefix}-summary">Voyage sélectionné: ${esc(summary)}.</p>
+    ${agent ? `<p>Cette demande sera envoyée à ${esc(agent.name)}.</p>` : ''}
     <div class="field"><label for="${prefix}-name">Nom complet</label><input id="${prefix}-name" name="full_name" autocomplete="name" required></div>
     <div class="field"><label for="${prefix}-email">Courriel</label><input id="${prefix}-email" name="email" type="email" autocomplete="email" required></div>
     <div class="field"><label for="${prefix}-phone">Téléphone</label><input id="${prefix}-phone" name="phone" type="tel" autocomplete="tel" required></div>
@@ -235,6 +251,14 @@ function bindForm(form, group) {
       message: form.querySelector('[name="message"]').value.trim(),
       terms_and_conditions: 'true'
     };
+    const agent = sharedAgent();
+    if (agent) {
+      payload.agent_slug = agent.slug;
+      payload.agent_id = agent.id;
+      payload.conseiller_name = agent.name;
+      payload.conseiller_email = agent.email || '';
+      payload.conseiller_phone = agent.phone || '';
+    }
     Object.keys(payload).forEach((key) => { if (payload[key] === undefined) delete payload[key]; });
     const button = form.querySelector('[type="submit"]');
     button.disabled = true;
@@ -728,6 +752,7 @@ function renderDetail(groups) {
         ${shipBlock}
       </div>
       <aside class="side">
+        ${window.VFAgent ? window.VFAgent.cardHtml(sharedAgent(), { voyage: group.title }) : ''}
         <section class="panel">
           <p class="eyebrow">Votre prochain départ</p>
           <h2>${esc(group.title)}</h2>
@@ -736,15 +761,31 @@ function renderDetail(groups) {
           <p class="fine">Prix d'appel publié pour ce groupe, par personne, selon la catégorie indiquée.</p>
           <form id="form-fiche" data-group="${esc(group.id)}">${formFields(group, 'fiche')}</form>
           <p><a href="${esc(cfg.phoneHref || 'tel:+15148566614')}">Appeler au ${esc(phone())}</a></p>
-          <button class="btn-secondary" type="button" id="copy-link">Copier le lien du voyage</button>
+          <div class="share-row">
+            <button class="btn-secondary" type="button" id="copy-link">Copier le lien</button>
+            <a class="btn-secondary" id="share-facebook" target="_blank" rel="noopener noreferrer">Facebook</a>
+            <a class="btn-secondary" id="share-whatsapp" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+            <a class="btn-secondary" id="share-email">Courriel</a>
+          </div>
         </section>
       </aside>
     </div>`;
   bindForm(document.getElementById('form-fiche'), group);
+  const shareTarget = voyageShareUrl(group);
+  const facebook = document.getElementById('share-facebook');
+  const whatsapp = document.getElementById('share-whatsapp');
+  const mail = document.getElementById('share-email');
+  if (facebook) facebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareTarget)}`;
+  if (whatsapp) whatsapp.href = `https://wa.me/?text=${encodeURIComponent(`${group.title} ${shareTarget}`)}`;
+  if (mail) mail.href = `mailto:?subject=${encodeURIComponent(group.title)}&body=${encodeURIComponent(shareTarget)}`;
+  document.querySelector('[data-agent-contact]')?.addEventListener('click', () => {
+    document.getElementById('form-fiche')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('fiche-name')?.focus();
+  });
   document.getElementById('copy-link')?.addEventListener('click', async (event) => {
     const button = event.currentTarget;
     try {
-      await navigator.clipboard.writeText(location.href);
+      await navigator.clipboard.writeText(shareTarget);
       button.textContent = 'Lien copié';
     } catch (_) {
       button.textContent = 'Copie impossible';
@@ -812,6 +853,7 @@ function setCanonical() {
 
 async function main() {
   document.documentElement.classList.remove('no-js');
+  if (window.VFAgent?.prepare) await VFAgent.prepare('/staff.json');
   setCanonical();
   if (inIframe() || params.get('embed') === '1') document.documentElement.classList.add('embed');
   const page = document.body.dataset.page || 'home';

@@ -1814,6 +1814,18 @@
      * Routing = assignedTo only. No per-agent tags.
      */
     function resolveBookingAgentContext(product) {
+        const shared = typeof window !== 'undefined' && window.VFAgent?.current?.();
+        if (shared?.slug) {
+            return {
+                agent_slug: shared.slug,
+                agent_id: String(shared.id || '').trim(),
+                conseiller_name: String(shared.name || '').trim(),
+                conseiller_email: String(shared.email || '').trim(),
+                conseiller_phone: String(shared.phone || '').trim(),
+                conseiller_tag: '',
+                contact_tags: []
+            };
+        }
         const fromUrl = getAgentQueryParam();
         const owner = product && typeof product.owner === 'object' ? product.owner : null;
         const agentKey = fromUrl
@@ -2538,11 +2550,19 @@
         return `${getSiteBaseUrl().replace(/\/$/, '')}/product.html?slug=${encodeURIComponent(slug)}`;
     }
 
+    function appendSharedAgent(url) {
+        if (typeof window === 'undefined' || !window.VFAgent?.shareUrl || !window.VFAgent.current) return url;
+        const agent = window.VFAgent.current();
+        if (!agent) return url;
+        const lead = window.VFLeadRef?.get?.() || {};
+        return window.VFAgent.shareUrl(url, agent, lead);
+    }
+
     /** Static share page - crawlers (Facebook) read OG tags here, not product.html JS. */
     function getProductShareUrl(p) {
         const slug = String(p?.slug || '').trim();
-        if (!slug) return getSiteBaseUrl();
-        return `${getSiteBaseUrl().replace(/\/$/, '')}/share/${encodeURIComponent(slug)}.html`;
+        if (!slug) return appendSharedAgent(getSiteBaseUrl());
+        return appendSharedAgent(`${getSiteBaseUrl().replace(/\/$/, '')}/share/${encodeURIComponent(slug)}.html`);
     }
 
     function buildProductShareTitle(p) {

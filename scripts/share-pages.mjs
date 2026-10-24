@@ -149,7 +149,10 @@ export function buildSharePageHtml(product) {
     (function () {
       var ua = navigator.userAgent || '';
       var isCrawler = /facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Pinterest|Slackbot|WhatsApp|Discordbot/i.test(ua);
-      if (!isCrawler) location.replace(${JSON.stringify(productUrl)});
+      if (isCrawler) return;
+      var target = ${JSON.stringify(productUrl)};
+      if (location.search) target += (target.indexOf('?') === -1 ? '?' : '&') + location.search.slice(1);
+      location.replace(target);
     })();
   </script>
 </head>

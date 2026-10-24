@@ -357,8 +357,9 @@
     </footer>
 
     <script src="/lead-ref.js?v=1"></script>
+    <script src="/agent-resolve.js?v=1"></script>
     <script src="config.js?v=57"></script>
-    <script src="api.js?v=108"></script>
+    <script src="api.js?v=109"></script>
     <script>
         let products = [];
         let activeStars = [];
@@ -864,7 +865,11 @@
             document.getElementById('error-state').classList.add('hidden');
             try {
                 const agentKey = VoyageFiestaAPI.getAgentQueryParam();
-                products = await VoyageFiestaAPI.fetchProducts({ agent: agentKey });
+                const loaded = await Promise.all([
+                    VoyageFiestaAPI.fetchProducts({ agent: agentKey }),
+                    window.VFAgent?.prepare ? VFAgent.prepare('staff.json') : null
+                ]);
+                products = loaded[0];
                 await renderAgentBoutiqueHeader(agentKey, products);
                 buildDestinationFilter(products);
                 buildSupplierFilter(products);

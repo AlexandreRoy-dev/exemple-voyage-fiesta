@@ -16,7 +16,7 @@ function close(server) {
   return new Promise((resolve) => server.close(() => resolve()));
 }
 
-async function startFakeGhl({ usersStatus = 200 } = {}) {
+async function startFakeGhl({ usersStatus = 200, products = [], staff = null } = {}) {
   const calls = [];
   const server = createHttp((req, res) => {
     const chunks = [];
@@ -31,9 +31,9 @@ async function startFakeGhl({ usersStatus = 200 } = {}) {
         res.writeHead(status, { 'Content-Type': 'application/json' });
         res.end(data);
       };
-      if (url.pathname === '/products.json') return send(200, { products: [] });
+      if (url.pathname === '/products.json') return send(200, { products });
       if (url.pathname === '/staff.json') {
-        return send(200, { agents: [{ slug: 'eric-lacasse', id: 'user-eric' }] });
+        return send(200, { agents: staff || [{ slug: 'eric-lacasse', id: 'user-eric' }] });
       }
       if (req.method === 'GET' && url.pathname === '/users/') {
         if (usersStatus !== 200) return send(usersStatus, { message: 'nope' });
@@ -305,9 +305,10 @@ const reservationPayload = {
   agent_slug: 'eric-lacasse'
 };
 
-async function runSubmit(payload, fakeOpts) {
-  const fake = await startFakeGhl(fakeOpts);
-  const api = createServer(apiEnv(fake));
+async function runSubmit(payload, fakeOpts = {}) {
+  const { defaultOwner, ...ghlOpts } = fakeOpts;
+  const fake = await startFakeGhl(ghlOpts);
+  const api = createServer(apiEnv(fake, defaultOwner ? { GHL_GROUPE_DEFAULT_OWNER: 'user-default' } : {}));
   const port = await listen(api);
   try {
     const result = await post(port, { payload });
@@ -379,6 +380,73 @@ test('fb link on demande_groupe assigns the agent and adds the fb tag', async ()
   assert.ok(json.tags.includes('demande-groupe'));
   assert.ok(json.tags.includes('fb-kevin-watier'));
   assert.ok(!json.tags.includes('demande-prix'));
+});
+
+test('demande_groupe honors agent_slug and keeps an existing owner', async () => {
+  const assigned = await runSubmit({
+    ...groupePayload,
+    email: 'fresh@example.com',
+    agent_slug: 'eric-lacasse'
+  }, { defaultOwner: true });
+  assert.equal(assigned.json.assignedTo, 'user-eric');
+
+  const kept = await runSubmit({
+    ...groupePayload,
+    email: 'owned@example.com',
+    agent_slug: 'eric-lacasse',
+    lead_ghl_user: 'userKevin123',
+    lead_ref: 'kevin-watier'
+  });
+  assert.equal(kept.json.assignedTo, 'owner-keep');
+  assert.equal(kept.calls.find((call) => call.path === '/contacts/upsert').body.assignedTo, undefined);
+});
+
+test('shared-link ref slug wins over the voyage owner and over agent_slug', async () => {
+  const { json } = await runSubmit({
+    ...reservationPayload,
+    email: 'new@example.com',
+    lead_ref: 'eric-lacasse',
+    lead_ghl_user: '',
+    agent_slug: 'other-agent',
+    forfait_slug: 'forfait-x'
+  }, {
+    products: [{ slug: 'forfait-x', ownerId: 'user-voyage' }]
+  });
+  assert.equal(json.assignedTo, 'user-eric');
+});
+
+test('demande_groupe: shared-link agent wins over agent_slug, unknown slug uses the default', async () => {
+  const shared = await runSubmit({
+    ...groupePayload,
+    email: 'fresh@example.com',
+    lead_ref: 'eric-lacasse',
+    agent_slug: 'other-agent'
+  }, { defaultOwner: true });
+  assert.equal(shared.json.assignedTo, 'user-eric');
+
+  const fallback = await runSubmit({
+    ...groupePayload,
+    email: 'fresh2@example.com',
+    agent_slug: 'personne-inconnue'
+  }, { defaultOwner: true });
+  assert.equal(fallback.json.assignedTo, 'user-default');
+});
+
+test('dry_run groupe with agent_slug resolves staff and does not call GHL contacts', async () => {
+  const fake = await startFakeGhl();
+  const api = createServer(apiEnv(fake, { DRY_RUN: '1', GHL_GROUPE_DEFAULT_OWNER: 'user-default' }));
+  const port = await listen(api);
+  try {
+    const { json } = await post(port, {
+      payload: { ...groupePayload, agent_slug: 'eric-lacasse' }
+    });
+    assert.equal(json.dryRun, true);
+    assert.equal(json.assignedTo, 'user-eric');
+    assert.equal(fake.calls.some((call) => call.path.startsWith('/contacts')), false);
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
 });
 
 test('dry_run shows the fb link values without calling GHL', async () => {

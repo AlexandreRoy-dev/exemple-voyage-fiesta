@@ -1,0 +1,53 @@
+.vf-agent {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-top: 3px solid #f26522;
+  border-radius: 14px;
+  padding: 0.9rem 1rem 1rem;
+  margin-bottom: 0.9rem;
+  color: #1f2937;
+  font-family: Poppins, "Segoe UI", sans-serif;
+}
+.vf-agent__title {
+  margin: 0 0 0.7rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #025091;
+}
+.vf-agent__row { display: flex; gap: 0.75rem; align-items: center; }
+.vf-agent__photo,
+.vf-agent__initial {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+.vf-agent__photo { object-fit: cover; }
+.vf-agent__initial {
+  display: grid;
+  place-items: center;
+  background: #025091;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+.vf-agent__name { margin: 0; font-weight: 700; color: #025091; }
+.vf-agent__links { margin: 0.2rem 0 0; display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.88rem; }
+.vf-agent__links a { color: #025091; }
+.vf-agent__voyage { margin: 0.7rem 0 0; font-size: 0.86rem; color: #4b5563; }
+.vf-agent__btn {
+  display: block;
+  width: 100%;
+  margin-top: 0.8rem;
+  border: 0;
+  border-radius: 10px;
+  background: #f26522;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  min-height: 2.75rem;
+  cursor: pointer;
+}
+.vf-agent__btn:hover { background: #025091; }
+.vf-agent__btn:focus-visible { outline: 2px solid #025091; outline-offset: 2px; }
