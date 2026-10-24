@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-12T14:02:12.568Z",
+  "updatedAt": "2026-10-24T22:59:32.241Z",
   "source": "ghl",
   "locationId": "V90iyFBbBrCg3tpctRjc",
   "agents": [
@@ -39,6 +39,20 @@
       "slug": "carolann-fontaine"
     },
     {
+      "id": "Z6Uqq43BScucw0iuF74k",
+      "name": "Catherine Drolet",
+      "email": "catherine@voyagefiesta.com",
+      "phone": "+15819847416",
+      "slug": "catherine-drolet"
+    },
+    {
+      "id": "ooW4tQWYA49LMKYpB2Op",
+      "name": "CHANTAL SÉGUIN",
+      "email": "chantal@voyagefiesta.com",
+      "phone": "+18194467303",
+      "slug": "chantal-seguin"
+    },
+    {
       "id": "XA2w8czrDgWdwZuU7zCo",
       "name": "Cindy Goulet",
       "email": "cindy.goulet@voyagefiesta.com",
@@ -46,11 +60,25 @@
       "slug": "cindy-goulet"
     },
     {
+      "id": "1pqmx7y6AnNX7i9zUAMR",
+      "name": "CRISTIAN RADU BUCSA",
+      "email": "christian.radu@voyagefiesta.com",
+      "phone": "",
+      "slug": "cristian-radu-bucsa"
+    },
+    {
       "id": "EnLSOcXL8ITFdm0l24za",
       "name": "Danie Cantin",
       "email": "danie@groupereseauvoyages.ca",
       "phone": "",
       "slug": "danie-cantin"
+    },
+    {
+      "id": "hNWVATBBF4KCCm12vsv9",
+      "name": "DANY AUCLAIR",
+      "email": "dany@voyagefiesta.com",
+      "phone": "",
+      "slug": "dany-auclair"
     },
     {
       "id": "VtiD6mbBQU9uI8atIPIy",
@@ -95,6 +123,13 @@
       "slug": "eric-lacasse"
     },
     {
+      "id": "fModwNjVoQORxFcLTbmr",
+      "name": "Evan DUCHESNE",
+      "email": "evan@voyagefiesta.com",
+      "phone": "",
+      "slug": "evan-duchesne"
+    },
+    {
       "id": "trCmmZLbQHSYDocrXFey",
       "name": "Fannie Hovington",
       "email": "fannie@voyagefiesta.com",
@@ -112,8 +147,15 @@
       "id": "hANf2DOOTmZKhlG8PZrL",
       "name": "Geneviève Gendron",
       "email": "genevieve.voyagefiesta@gmail.com",
-      "phone": "",
+      "phone": "+15149691555",
       "slug": "genevieve-gendron"
+    },
+    {
+      "id": "q8i8QAQ1JcBFvhWX3eHG",
+      "name": "IDRISS SERGIO TALOM",
+      "email": "idriss@voyagefiesta.com",
+      "phone": "",
+      "slug": "idriss-sergio-talom"
     },
     {
       "id": "5rV1JocIfBZR7SZfYjQy",
@@ -130,6 +172,13 @@
       "slug": "isabelle-couture"
     },
     {
+      "id": "AqNHRuqU1LbcMblXU2P5",
+      "name": "Janick Desjardins",
+      "email": "jan@voyagefiesta.com",
+      "phone": "",
+      "slug": "janick-desjardins"
+    },
+    {
       "id": "BhhvFMtF0UsXpdnQnxzJ",
       "name": "Jasmine Stan",
       "email": "jasmine@mariagesud.com",
@@ -137,11 +186,32 @@
       "slug": "jasmine-stan"
     },
     {
+      "id": "8S3hGqmRG8QF3U8vcvke",
+      "name": "JENNY MARTEL",
+      "email": "jenny.voyagefiesta@gmail.com",
+      "phone": "",
+      "slug": "jenny-martel"
+    },
+    {
+      "id": "yUCuyEISwYh4fonHYvAh",
+      "name": "Jérémie Lavoie",
+      "email": "jeremielavoie@voyagefiesta.com",
+      "phone": "",
+      "slug": "jeremie-lavoie"
+    },
+    {
       "id": "oDRDqssqUeSBcHjxLTGy",
       "name": "Jody Foisy",
       "email": "jody.f@voyagefiesta.com",
       "phone": "",
       "slug": "jody-foisy"
+    },
+    {
+      "id": "JAzHm4pNNYLbwdFTBJsg",
+      "name": "JOHANIE MARCEAU",
+      "email": "JOANNIE@VOYAGEFIESTA.COM",
+      "phone": "",
+      "slug": "johanie-marceau"
     },
     {
       "id": "Tcngo2ZPosKlHkVe7f4y",
@@ -153,9 +223,16 @@
     {
       "id": "CMV5ZlTlfOJI5lzM1Rw5",
       "name": "Kevin Watier",
-      "email": "kevin@voyagefiesta.com",
+      "email": "kevin@voyagefiesta.ca",
       "phone": "",
       "slug": "kevin-watier"
+    },
+    {
+      "id": "9trBnhaYfJ4GnTFfKsPu",
+      "name": "Leslie Magnan",
+      "email": "leslie@voyagefiesta.com",
+      "phone": "",
+      "slug": "leslie-magnan"
     },
     {
       "id": "0MSTaFG9oYol83wA1D1H",
@@ -172,11 +249,32 @@
       "slug": "lisanne-turcotte"
     },
     {
+      "id": "OztIAPdcaFgjd1h9nO40",
+      "name": "Manon Rail",
+      "email": "manon.rail@voyagefiesta.com",
+      "phone": "",
+      "slug": "manon-rail"
+    },
+    {
+      "id": "vuPmPB4xAws7MjiYVKnI",
+      "name": "Marie Caroline Talbot Boufenzi",
+      "email": "caroline-talbot@experiencesvip.ca",
+      "phone": "",
+      "slug": "marie-caroline-talbot-boufenzi"
+    },
+    {
       "id": "NtQOb09OmVxZ60OYEp3A",
       "name": "Marie-Ève Dubois",
       "email": "marie-eved@voyagefiesta.com",
       "phone": "",
       "slug": "marie-eve-dubois"
+    },
+    {
+      "id": "VbpQfpXtHgJ1Fab5PZPN",
+      "name": "Martine Bertrand",
+      "email": "martine@voyagefiesta.ca",
+      "phone": "",
+      "slug": "martine-bertrand"
     },
     {
       "id": "cleXzbyqdpIQ1l1Kceq9",
@@ -186,6 +284,13 @@
       "slug": "mathieu-ducharme"
     },
     {
+      "id": "ghvpmwoFRYkKnFAOU0nY",
+      "name": "Mélissa Trottier",
+      "email": "melissa@experiencesvip.ca",
+      "phone": "",
+      "slug": "melissa-trottier"
+    },
+    {
       "id": "8ClU0tz3EZqL1rbsBhSc",
       "name": "Melory Girouard",
       "email": "melory@voyagefiesta.com",
@@ -193,11 +298,32 @@
       "slug": "melory-girouard"
     },
     {
+      "id": "RSd6iDIjURACvyizOahA",
+      "name": "Mirlene Seide",
+      "email": "mirlene@voyagefiesta.com",
+      "phone": "",
+      "slug": "mirlene-seide"
+    },
+    {
       "id": "7vEwomDJGUwfk2f6idzH",
       "name": "Monika Fortin",
       "email": "monika@voyagefiesta.com",
       "phone": "",
       "slug": "monika-fortin"
+    },
+    {
+      "id": "Kmy5V6XvxlkarG9gmTkD",
+      "name": "Natacha Bouffard",
+      "email": "natacha@voyagefiesta.ca",
+      "phone": "",
+      "slug": "natacha-bouffard"
+    },
+    {
+      "id": "Ng5wT2SSfcvtFhlr20w2",
+      "name": "Nathalie Bousquet",
+      "email": "nathalieb@voyagefiesta.com",
+      "phone": "",
+      "slug": "nathalie-bousquet"
     },
     {
       "id": "tTPSaMOpbjkzAZv5bUt3",
@@ -242,11 +368,39 @@
       "slug": "pascale-el-chemali"
     },
     {
+      "id": "hZSHDyn0UVT3RgPyw10B",
+      "name": "Patrick Girard",
+      "email": "p.girard@voyagefiesta.com",
+      "phone": "",
+      "slug": "patrick-girard"
+    },
+    {
+      "id": "cztKcpd1bspVuDl3lbhU",
+      "name": "PATRICK GIRARD",
+      "email": "patrick@croisieresluxe.ca",
+      "phone": "",
+      "slug": "patrick-girard-lbhu"
+    },
+    {
       "id": "zzYbYuSD9yofnMm70V9p",
       "name": "Patrick O'Farrell",
       "email": "patrick@voyagefiesta.ca",
       "phone": "",
       "slug": "patrick-o-farrell"
+    },
+    {
+      "id": "cQc9zS4fUN78tqZUCtIx",
+      "name": "PAUL GADOURY",
+      "email": "paul@voyagefiesta.com",
+      "phone": "",
+      "slug": "paul-gadoury"
+    },
+    {
+      "id": "zAcQGldoLOQfLblowDmI",
+      "name": "Ronald Thériault",
+      "email": "ronald@voyagefiesta.com",
+      "phone": "",
+      "slug": "ronald-theriault"
     },
     {
       "id": "Xdip2xRxyWi1n3KJaMjI",
@@ -256,11 +410,32 @@
       "slug": "sabrina-tremblay"
     },
     {
+      "id": "0RctKwLd7I2nk8zkJcIg",
+      "name": "Sarah Jean Philippe",
+      "email": "sarah.jp@voyagefiesta.com",
+      "phone": "",
+      "slug": "sarah-jean-philippe"
+    },
+    {
+      "id": "ybUOweEBzd60jg2jMQUT",
+      "name": "SHIBA ANDRÉ",
+      "email": "shibanda@gmail.com",
+      "phone": "",
+      "slug": "shiba-andre"
+    },
+    {
       "id": "P9cpIKu8jrQu8l8WRqCK",
       "name": "Sophie Denoncourt",
       "email": "sophie.voyagefiesta@gmail.com",
       "phone": "",
       "slug": "sophie-denoncourt"
+    },
+    {
+      "id": "TzVTLEnsnqKC8pJpPf7B",
+      "name": "STÉPHANIE CÔTÉ",
+      "email": "stephanie@voyagefiesta.com",
+      "phone": "",
+      "slug": "stephanie-cote"
     },
     {
       "id": "W4Y7L2Uoszcnh87CeSHI",
@@ -277,11 +452,25 @@
       "slug": "vanessa-vecchio"
     },
     {
+      "id": "ERBGEKTPqnCL1ola5XsU",
+      "name": "vincent Pomerleau",
+      "email": "vincent.p@voyagefiesta.com",
+      "phone": "",
+      "slug": "vincent-pomerleau"
+    },
+    {
       "id": "2k9aRsh2OkTdG7TnIiGo",
       "name": "Yancie Auclair",
       "email": "yancie@voyagefiesta.com",
       "phone": "+14505012547",
       "slug": "yancie-auclair"
+    },
+    {
+      "id": "7iPpg5OtE1AJMYiL8SQK",
+      "name": "YVAN LAPORTE",
+      "email": "yvan@voyagefiesta.com",
+      "phone": "",
+      "slug": "yvan-laporte"
     }
   ]
 }
