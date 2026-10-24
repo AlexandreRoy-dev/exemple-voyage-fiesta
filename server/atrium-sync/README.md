@@ -52,6 +52,18 @@ node mirror-images.mjs
 
 Le journal affiche le nombre d'URL, les fichiers copiés, les fichiers inchangés, les échecs, les octets écrits et la taille totale. Une image qui échoue garde son URL distante. Pour publier les copies, servir `media/` et définir `ATRIUM_MEDIA_PUBLIC_BASE`, puis écrire le catalogue avec `ATRIUM_CATALOG_OUTPUT`.
 
+Pousser le catalogue vers l'objet GHL **déjà créé** `custom_objects.groupes`. Le script ne crée pas l'objet et ne supprime pas de fiches. Une fiche déjà présente pour le même `atrium_id` est mise à jour. Une fiche absente du catalogue passe à `archivé`.
+
+Le mode sec est le défaut. `DRY_RUN=0` dans le `.env` de l'API ne lance pas l'écriture. L'écriture réelle demande `GHL_GROUPE_DRY_RUN=0`. `DRY_RUN=1` force le mode sec.
+
+```bash
+ATRIUM_CATALOG=/opt/voyage-fiesta-reservation/groupes.json \
+GHL_GROUPE_DRY_RUN=1 \
+node push-ghl.mjs
+```
+
+Le schéma est lu à l'exécution (`GET /objects/custom_objects.groupes`). Les champs sont reliés par leur étiquette. `description_groupe` reçoit le texte. La clé réservée `description` n'est pas utilisée. La photo principale est envoyée au téléversement de fichier quand le champ est un fichier, sinon seule l'URL est écrite.
+
 Cron VPS (toutes les 2 heures, à la minute 17):
 
 ```cron
