@@ -36,8 +36,10 @@
       ['ref', 'ghl_user', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (key) {
         if (current.get(key) && !url.searchParams.get(key)) url.searchParams.set(key, current.get(key));
       });
-      if (global.VoyageFiestaEmbed && global.VoyageFiestaEmbed.isEmbedMode && global.VoyageFiestaEmbed.isEmbedMode()) {
-        url.searchParams.set('embed', '1');
+      var token = global.VoyageFiestaEmbed && global.VoyageFiestaEmbed.embedToken && global.VoyageFiestaEmbed.embedToken();
+      if (token) {
+        var keepSections = token === 'sections' && (url.pathname === '/' || url.pathname === '/index.html');
+        url.searchParams.set('embed', keepSections ? 'sections' : '1');
       }
       return url.pathname + url.search + url.hash;
     } catch (_) {

@@ -31,6 +31,11 @@ function inIframe() {
   try { return window.self !== window.top; } catch (_) { return true; }
 }
 
+function embedOn() {
+  const value = params.get('embed');
+  return value === '1' || value === 'sections' || inIframe();
+}
+
 function useFixture() {
   const host = location.hostname;
   return params.get('fixture') === '1' || host === 'localhost' || host === '127.0.0.1' || location.protocol === 'file:';
@@ -52,7 +57,7 @@ function dryRun() {
 }
 
 function withFlags(url) {
-  if (params.get('embed') === '1' || inIframe()) url.searchParams.set('embed', '1');
+  if (embedOn()) url.searchParams.set('embed', '1');
   if (params.get('fixture') === '1') url.searchParams.set('fixture', '1');
   if (dryRun()) url.searchParams.set('dry_run', '1');
   if (params.get('api')) url.searchParams.set('api', params.get('api'));
@@ -840,7 +845,7 @@ function observe() {
 }
 
 function notifyHeight() {
-  if (!inIframe() && params.get('embed') !== '1') return;
+  if (!embedOn()) return;
   const height = Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
   window.parent.postMessage({ type: 'voyage-fiesta-resize', height, path: location.pathname + location.search }, '*');
 }
@@ -862,7 +867,7 @@ async function main() {
   document.documentElement.classList.remove('no-js');
   if (window.VFAgent?.prepare) await VFAgent.prepare('/staff.json');
   setCanonical();
-  if (inIframe() || params.get('embed') === '1') document.documentElement.classList.add('embed');
+  if (embedOn()) document.documentElement.classList.add('embed');
   const page = document.body.dataset.page || 'home';
   const type = document.body.dataset.type || '';
   const current = page === 'listing' ? type : page === 'home' ? 'home' : '';
@@ -892,7 +897,7 @@ async function main() {
   else renderHome(groups, search, failed);
   observe();
   notifyHeight();
-  if (inIframe() || params.get('embed') === '1') {
+  if (embedOn()) {
     window.addEventListener('resize', notifyHeight);
     if ('ResizeObserver' in window) new ResizeObserver(notifyHeight).observe(document.documentElement);
   }
