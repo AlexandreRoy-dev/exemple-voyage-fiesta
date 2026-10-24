@@ -40,8 +40,44 @@ export GIT_SSH_COMMAND="ssh -i $SSH_KEY -o IdentitiesOnly=yes -o StrictHostKeyCh
 cd "$REPO_DIR"
 
 git fetch origin main
+
+# Generated files are rewritten every run. Back them up, then put the
+# worktree back on origin/main so checkout is not blocked by that rewrite.
+# Backup suffix matches the VPS patch (.bak-YYYYMMDD-HHMM).
+stamp="$(date +%Y%m%d-%H%M)"
+regen_paths=(
+  products.json
+  agents.json
+  staff.json
+  assets/forfaits
+  share
+  quickform
+  agents
+  destinations
+  sitemap.xml
+  robots.txt
+  voyages-tout-inclus.html
+  prevente.html
+  departs-montreal.html
+  departs-quebec.html
+  comment-reserver.html
+  a-propos.html
+  contact.html
+)
+for rel in "${regen_paths[@]}"; do
+  if [[ -e "$rel" ]] && ! git diff --quiet -- "$rel" 2>/dev/null; then
+    cp -a "$rel" "${rel}.bak-${stamp}"
+    echo "$LOG_PREFIX backup ${rel}.bak-${stamp}"
+  fi
+done
 git checkout -B main origin/main
 git reset --hard origin/main
+git clean -fd -- \
+  products.json agents.json staff.json assets/forfaits share quickform agents \
+  destinations sitemap.xml robots.txt \
+  voyages-tout-inclus.html prevente.html departs-montreal.html departs-quebec.html \
+  comment-reserver.html a-propos.html contact.html \
+  >/dev/null 2>&1 || true
 
 echo "$LOG_PREFIX syncing from GHL ($GHL_OBJECT_SCHEMA_KEY)..."
 node scripts/sync-ghl-products.mjs
@@ -62,7 +98,7 @@ node -e '
 '
 
 paths=()
-for p in products.json agents.json staff.json assets/forfaits share quickform destinations sitemap.xml robots.txt voyages-tout-inclus.html prevente.html departs-montreal.html departs-quebec.html comment-reserver.html a-propos.html contact.html; do
+for p in products.json agents.json staff.json assets/forfaits share quickform agents destinations sitemap.xml robots.txt voyages-tout-inclus.html prevente.html departs-montreal.html departs-quebec.html comment-reserver.html a-propos.html contact.html; do
   if [[ -e "$p" ]]; then
     paths+=("$p")
   fi

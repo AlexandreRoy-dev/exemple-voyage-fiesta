@@ -12,6 +12,9 @@ on:
       - 'agent-resolve.js'
       - 'tests/lead-ref.test.mjs'
       - 'tests/agent-resolve.test.mjs'
+      - 'scripts/ghl-voyages-fields.mjs'
+      - 'scripts/ghl-voyages-fields.test.mjs'
+      - 'scripts/sync-ghl-products.mjs'
   pull_request:
     paths:
       - 'groupes/**'
@@ -23,6 +26,9 @@ on:
       - 'agent-resolve.js'
       - 'tests/lead-ref.test.mjs'
       - 'tests/agent-resolve.test.mjs'
+      - 'scripts/ghl-voyages-fields.mjs'
+      - 'scripts/ghl-voyages-fields.test.mjs'
+      - 'scripts/sync-ghl-products.mjs'
 
 jobs:
   test:
@@ -42,3 +48,4 @@ jobs:
           groupes/js/catalog.test.mjs
           tests/lead-ref.test.mjs
           tests/agent-resolve.test.mjs
+          scripts/ghl-voyages-fields.test.mjs
