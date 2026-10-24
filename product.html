@@ -1258,6 +1258,7 @@
                                         ${isSoldOut && !isVendu ? '<div class="inline-block bg-red-600 text-white font-bold px-3 py-1 rounded text-sm mb-3">COMPLET</div>' : ''}
                                         ${!isUnavailable && isPreSale ? '<div class="inline-block bg-brand-blue text-white font-bold px-3 py-1 rounded text-sm mb-3 uppercase tracking-wide"><i class="fa-solid fa-clock mr-1.5"></i> Pré-vente</div>' : ''}
                                         <h1 class="text-2xl sm:text-3xl font-bold text-brand-blue">${p.name}</h1>
+                                        ${p.voyageCategoryLabel ? `<p class="mt-2 text-sm font-semibold text-brand-orange">${escapeHtml(p.voyageCategoryLabel)}</p>` : ''}
                                         <div class="flex items-center gap-2 mt-2">
                                             <div class="flex text-yellow-400 text-sm">${renderStars(p.stars)}</div>
                                             <span class="text-gray-500 text-sm">(${formatStarsText(p.stars)})</span>
@@ -1343,6 +1344,7 @@
                         </div>
 
                         <div class="lg:col-span-2 order-3 lg:order-none space-y-6 min-w-0">
+                            ${buildCategorySectionsHtml(p)}
                             ${flightsHtml}
 
                             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="product-tabs">
@@ -1392,6 +1394,49 @@
             bindPassengerSelection(p);
             bindReservationWindow(p);
             VoyageFiestaAPI.bindSocialShare(document.getElementById('product-content'), () => p);
+        }
+
+        function buildCategorySectionsHtml(p) {
+            const rows = [];
+            const add = (label, value) => {
+                const text = String(value || '').trim();
+                if (text) rows.push({ label, text });
+            };
+            let title = '';
+            if (p.voyageCategory === 'croisiere' && p.cruise) {
+                title = 'Croisière';
+                add('Compagnie', p.cruise.company);
+                add('Navire', p.cruise.ship);
+                add("Port d'embarquement", p.cruise.embarkation);
+                add('Port de débarquement', p.cruise.disembarkation);
+                add('Itinéraire', p.cruise.itinerary);
+            } else if (p.voyageCategory === 'voyage' && p.circuit) {
+                title = 'Voyage';
+                add('Programme jour par jour', p.circuit.program);
+                add('Durée (jours)', p.circuit.days);
+                add('Accompagnateur', p.circuit.host);
+                add('Minimum de participants', p.circuit.minParticipants);
+            } else if (p.voyageCategory === 'mariage' && p.wedding) {
+                title = 'Mariage';
+                add('Noms des mariés', p.wedding.names);
+                add('Date du mariage', p.wedding.date);
+                add('Lieu de la cérémonie', p.wedding.venue);
+                add('Code de groupe', p.wedding.groupCode);
+                add("Date limite d'inscription", p.wedding.registrationDeadline);
+                if (/^https?:\/\//i.test(String(p.wedding.website || ''))) {
+                    rows.push({ label: 'Site des mariés', text: p.wedding.website, href: p.wedding.website });
+                } else {
+                    add('Site des mariés', p.wedding.website);
+                }
+            }
+            if (!title || !rows.length) return '';
+            const body = rows.map((row) => {
+                const value = row.href
+                    ? `<a class="text-brand-blue hover:underline" href="${escapeHtml(row.href)}">${escapeHtml(row.text)}</a>`
+                    : `<span class="whitespace-pre-line">${escapeHtml(row.text)}</span>`;
+                return `<div class="grid gap-1 sm:grid-cols-[12rem_1fr] sm:gap-3 py-2 border-b border-gray-100 last:border-0"><dt class="text-sm text-gray-500">${escapeHtml(row.label)}</dt><dd class="text-sm font-medium text-brand-blue">${value}</dd></div>`;
+            }).join('');
+            return `<section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6" aria-labelledby="category-section-title"><h2 id="category-section-title" class="font-bold text-brand-blue mb-3">${escapeHtml(title)}</h2><dl>${body}</dl></section>`;
         }
 
         function buildPriceRequestFormHtml(p, adults, kids, options = {}) {

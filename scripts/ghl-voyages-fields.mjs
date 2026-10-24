@@ -48,8 +48,154 @@ export const VOYAGES_FIELDS = {
   vol_retour_heure_depart: 'vol_retour_heure_dpart',
   vol_retour_heure_arrivee: 'vol_retour__heure_darrive',
   photo_principale: 'photo_principale',
-  photo_extra: 'photos_extra'
+  photo_extra: 'photos_extra',
+  /** Nouveaux champs (clés réelles confirmées par le schéma au moment du sync). */
+  categorie: 'categorie_du_voyage',
+  compagnie_croisiere: 'compagnie',
+  navire: 'navire',
+  port_embarquement: 'port_dembarquement',
+  port_debarquement: 'port_de_dbarquement',
+  itineraire: 'itinraire',
+  programme: 'programme_jour_par_jour',
+  duree_jours: 'dure_jours',
+  accompagnateur: 'accompagnateur',
+  minimum_participants: 'minimum_participants',
+  maries: 'noms_des_maris',
+  date_mariage: 'date_mariage',
+  lieu_ceremonie: 'lieu_crmonie',
+  code_groupe: 'code_de_groupe',
+  date_limite_inscription: 'date_limite_inscription',
+  lien_maries: 'lien_site_des_maris'
 };
+
+/** Libellés GHL utilisés pour retrouver la clé réelle dans le schéma. */
+export const VOYAGE_FIELD_LABELS = {
+  categorie: ['Catégorie du voyage'],
+  compagnie_croisiere: ['Compagnie', 'Compagnie de croisière'],
+  navire: ['Navire'],
+  port_embarquement: ["Port d'embarquement", 'Ports embarquement', "Ports d'embarquement"],
+  port_debarquement: ['Port de débarquement', 'Ports débarquement', 'Ports de débarquement'],
+  itineraire: ['Itinéraire'],
+  programme: ['Programme jour par jour', 'Programme'],
+  duree_jours: ['Durée jours', 'Durée (jours)'],
+  accompagnateur: ['Accompagnateur'],
+  minimum_participants: ['Minimum participants', 'Minimum de participants'],
+  maries: ['Noms des mariés'],
+  date_mariage: ['Date mariage', 'Date du mariage'],
+  lieu_ceremonie: ['Lieu cérémonie', 'Lieu de la cérémonie'],
+  code_groupe: ['Code de groupe'],
+  date_limite_inscription: ["Date limite d'inscription", 'Date limite inscription'],
+  lien_maries: ['Lien site des mariés', 'Lien du site des mariés']
+};
+
+export const VOYAGE_CATEGORY_LABELS = {
+  sud: 'Forfait Sud',
+  croisiere: 'Croisière',
+  voyage: 'Voyage / circuit',
+  mariage: 'Mariage',
+  groupe: 'Groupe'
+};
+
+function foldLabel(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function schemaFieldList(schemaJson) {
+  if (!schemaJson) return [];
+  const object = schemaJson.object || schemaJson;
+  return object.fields || schemaJson.fields || [];
+}
+
+/**
+ * Replace fallback keys with the keys from the live schema, matched by label.
+ * Returns how many logical fields were bound.
+ */
+export function applySchemaBindings(schemaJson) {
+  const fields = schemaFieldList(schemaJson);
+  let bound = 0;
+  for (const [logical, labels] of Object.entries(VOYAGE_FIELD_LABELS)) {
+    const wanted = new Set(labels.map(foldLabel));
+    const hit = fields.find((field) => {
+      const label = foldLabel(field.label || field.name || '');
+      return label && wanted.has(label);
+    });
+    const rawKey = hit && (hit.fieldKey || hit.key);
+    const suffix = fieldSuffix(rawKey);
+    if (!suffix) continue;
+    VOYAGES_FIELDS[logical] = suffix;
+    bound += 1;
+  }
+  return bound;
+}
+
+export function normalizeVoyageCategory(value) {
+  const raw = unwrapGhlFieldValue(value);
+  const s = foldLabel(raw);
+  if (!s) return '';
+  if (s.includes('mariage')) return 'mariage';
+  if (s.includes('croisi')) return 'croisiere';
+  if (s.includes('circuit') || s === 'voyage' || s.startsWith('voyage')) return 'voyage';
+  if (s.includes('sud') || s.includes('forfait')) return 'sud';
+  if (s.includes('groupe')) return 'groupe';
+  return '';
+}
+
+function compactTextFields(entries) {
+  const out = {};
+  for (const [key, value] of Object.entries(entries)) {
+    const text = value == null ? '' : String(value).trim();
+    if (text) out[key] = text;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/** Champs de catégorie pour products.json. Les champs vides sont absents. */
+export function readVoyageExtras(props) {
+  const text = (logical) => {
+    const value = pickVoyagesUnwrapped(props, logical);
+    return value == null ? '' : String(value).trim();
+  };
+  const voyageCategory = normalizeVoyageCategory(pickVoyagesUnwrapped(props, 'categorie'));
+  const cruise = voyageCategory === 'croisiere'
+    ? compactTextFields({
+      company: text('compagnie_croisiere'),
+      ship: text('navire'),
+      embarkation: text('port_embarquement'),
+      disembarkation: text('port_debarquement'),
+      itinerary: text('itineraire')
+    })
+    : null;
+  const circuit = voyageCategory === 'voyage'
+    ? compactTextFields({
+      program: text('programme'),
+      days: text('duree_jours'),
+      host: text('accompagnateur'),
+      minParticipants: text('minimum_participants')
+    })
+    : null;
+  const wedding = voyageCategory === 'mariage'
+    ? compactTextFields({
+      names: text('maries'),
+      date: text('date_mariage'),
+      venue: text('lieu_ceremonie'),
+      groupCode: text('code_groupe'),
+      registrationDeadline: text('date_limite_inscription'),
+      website: text('lien_maries')
+    })
+    : null;
+  return {
+    voyageCategory,
+    voyageCategoryLabel: VOYAGE_CATEGORY_LABELS[voyageCategory] || '',
+    cruise,
+    circuit,
+    wedding
+  };
+}
 
 /** Nom affiché du voyage — objet Voyages utilise le champ `forfaits`, pas `name`. */
 export function pickRecordName(record, props) {
@@ -107,7 +253,10 @@ export function normalizeAeroportOption(value) {
   const s = String(value || '').trim().toLowerCase();
   if (!s) return null;
   if (s.includes('montr') || s.includes('yul')) return 'montral_yul';
-  if (s.includes('qu') && s.includes('yqb')) return 'qubec_yqb';
+  // GHL option key is quebec_yqb. qubec_yqb remains accepted on read.
+  if (s === 'qubec_yqb' || s === 'quebec_yqb' || (s.includes('qu') && s.includes('yqb'))) {
+    return 'quebec_yqb';
+  }
   return null;
 }
 

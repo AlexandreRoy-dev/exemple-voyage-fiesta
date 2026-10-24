@@ -13,7 +13,14 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { pickVoyagesUnwrapped, pickRecordName, formatAeroportLabel, formatDestinationAirportLabel } from './ghl-voyages-fields.mjs';
+import {
+ pickVoyagesUnwrapped,
+ pickRecordName,
+ formatAeroportLabel,
+ formatDestinationAirportLabel,
+ applySchemaBindings,
+ readVoyageExtras
+} from './ghl-voyages-fields.mjs';
 import { writeSharePages } from './share-pages.mjs';
 import { writeQuickformPages } from './quickform-pages.mjs';
 import { writeSeoPages } from './seo-pages.mjs';
@@ -497,23 +504,68 @@ function extractOwnerId(record, props = {}) {
 }
 
 async function fetchGhlLocationUsers(apiKey, locationId) {
- const url = new URL(`${API_BASE}/users/`);
- url.searchParams.set('locationId', locationId);
+ const headers = {
+  Authorization: `Bearer ${apiKey}`,
+  Accept: 'application/json',
+  Version: '2021-07-28',
+  'User-Agent': 'VoyageFiestaSync/1.0'
+ };
+ const seen = new Set();
+ const all = [];
+ const limit = 100;
+ let skip = 0;
+ let usePaging = true;
+ for (let page = 0; page < 20; page += 1) {
+  const url = new URL(`${API_BASE}/users/`);
+  url.searchParams.set('locationId', locationId);
+  if (usePaging) {
+   url.searchParams.set('limit', String(limit));
+   url.searchParams.set('skip', String(skip));
+  }
+  const res = await fetch(url, { method: 'GET', headers });
+  if (!res.ok) {
+   const text = await res.text();
+   if (usePaging && page === 0 && (res.status === 400 || res.status === 422)) {
+    usePaging = false;
+    continue;
+   }
+   console.warn(` users/?locationId: HTTP ${res.status} — ${text.slice(0, 180)}`);
+   break;
+  }
+  const data = await res.json();
+  const batch = data.users || data.data || [];
+  let added = 0;
+  for (const user of batch) {
+   const id = String(user?.id || user?.userId || '').trim();
+   if (!id || seen.has(id)) continue;
+   seen.add(id);
+   all.push(user);
+   added += 1;
+  }
+  if (!added || batch.length < limit) break;
+  skip += batch.length;
+ }
+ console.log(` location users: ${all.length}`);
+ return all;
+}
+
+async function fetchObjectSchema(apiKey, locationId, schemaKey) {
+ const url = `${API_BASE}/objects/${encodeURIComponent(schemaKey)}?locationId=${encodeURIComponent(locationId)}`;
  const res = await fetch(url, {
   method: 'GET',
   headers: {
    Authorization: `Bearer ${apiKey}`,
    Accept: 'application/json',
-   Version: '2021-07-28'
+   Version: '2021-07-28',
+   'User-Agent': 'VoyageFiestaSync/1.0'
   }
  });
  if (!res.ok) {
   const text = await res.text();
-  console.warn(` users/?locationId: HTTP ${res.status} — ${text.slice(0, 180)}`);
-  return [];
+  console.warn(` schema ${schemaKey}: HTTP ${res.status} — ${text.slice(0, 180)}`);
+  return null;
  }
- const data = await res.json();
- return data.users || data.data || [];
+ return res.json();
 }
 
 function loadPreviousStaffById() {
@@ -1289,8 +1341,22 @@ async function mapRecord(record, apiKey, manifest, slug) {
  imgRoom: imgRoom || imgExtra || img,
  imgExtra: imgExtra || img,
  images,
- seoTags
+ seoTags,
+ ...voyageExtrasForJson(readVoyageExtras(props))
  };
+}
+
+function voyageExtrasForJson(extras) {
+ const out = {};
+ if (extras.voyageCategory) {
+  out.voyageCategory = extras.voyageCategory;
+  out.voyageCategoryLabel = extras.voyageCategoryLabel;
+ }
+ if (extras.cruise) out.cruise = extras.cruise;
+ if (extras.circuit) out.circuit = extras.circuit;
+ if (extras.wedding) out.wedding = extras.wedding;
+ if (extras.circuit?.days) out.durationDays = Number(extras.circuit.days) || extras.circuit.days;
+ return out;
 }
 
 async function ghlSearchRecords({ apiKey, locationId, schemaKey, page, searchAfter }) {
@@ -1352,6 +1418,9 @@ async function main() {
  const locationId = requireEnv('GHL_LOCATION_ID');
  const schemaKey = requireEnv('GHL_OBJECT_SCHEMA_KEY');
 
+ const schema = await fetchObjectSchema(apiKey, locationId, schemaKey);
+ const bound = applySchemaBindings(schema);
+ console.log(` schema ${schemaKey}: ${bound} champ(s) de catégorie relié(s)`);
  console.log(`Fetching records from ${schemaKey}...`);
  const records = await fetchAllRecords({ apiKey, locationId, schemaKey });
  console.log(`Fetched ${records.length} raw record(s).`);
