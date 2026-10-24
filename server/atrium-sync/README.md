@@ -41,6 +41,17 @@ ATRIUM_FIXTURE=fixtures/atrium-api.json ATRIUM_OUTPUT=../../groupes/data/groupes
 
 `groupes/data/groupes.json` est un catalogue d'exemple pour l'affichage local (`localhost` ou `?fixture=1`). Le site public lit l'URL de l'API, pas ce fichier.
 
+Miroir des images distantes (groupes et voyages). Ne change pas le cron tant que ce n'est pas voulu. `ATRIUM_MIRROR_DRY_RUN=1` compte les URL sans les télécharger. Sans `ATRIUM_MEDIA_PUBLIC_BASE`, les URL du catalogue restent les URL d'origine.
+
+```bash
+ATRIUM_CATALOG=/opt/voyage-fiesta-reservation/groupes.json \
+ATRIUM_PRODUCTS=/opt/voyage-fiesta-reservation/products.json \
+ATRIUM_MEDIA_DIR=/opt/voyage-fiesta-reservation/media \
+node mirror-images.mjs
+```
+
+Le journal affiche le nombre d'URL, les fichiers copiés, les fichiers inchangés, les échecs, les octets écrits et la taille totale. Une image qui échoue garde son URL distante. Pour publier les copies, servir `media/` et définir `ATRIUM_MEDIA_PUBLIC_BASE`, puis écrire le catalogue avec `ATRIUM_CATALOG_OUTPUT`.
+
 Cron VPS (toutes les 2 heures, à la minute 17):
 
 ```cron
