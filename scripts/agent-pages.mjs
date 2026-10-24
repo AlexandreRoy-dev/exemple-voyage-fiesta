@@ -167,7 +167,9 @@ function shell({ title, description, canonical, body, agentConfig = '', current 
         <a href="/groupes/forfaits-sud/">Forfaits SUD</a>
         <a href="/groupes/croisieres/">Croisières</a>
         <a href="/groupes/voyages/">Voyages</a>
+        <a href="/groupes/mariages/">Mariage</a>
         <a href="/agents/"${current === 'agents' ? ' aria-current="page"' : ''}>Notre équipe</a>
+        <a href="/#contact">Contact</a>
       </nav>
     </div>
   </header>

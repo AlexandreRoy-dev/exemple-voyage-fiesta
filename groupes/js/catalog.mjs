@@ -24,12 +24,14 @@ export function formatDate(iso) {
 export function categoryLabel(type) {
   if (type === 'sud') return 'Forfait sud';
   if (type === 'cruise') return 'Croisière';
+  if (type === 'mariage') return 'Mariage';
   return 'Voyage';
 }
 
 export function categoryPath(type) {
   if (type === 'sud') return 'forfaits-sud/';
   if (type === 'cruise') return 'croisieres/';
+  if (type === 'mariage') return 'mariages/';
   return 'voyages/';
 }
 

@@ -436,8 +436,8 @@ function footerHtml() {
   ];
   return `<footer class="mt-auto border-t border-slate-200 bg-white">
   <div class="mx-auto max-w-6xl px-4 py-10">
-    <p class="text-lg font-semibold text-brand-blue">Voyage Fiesta — Aubaines Express</p>
-    <p class="mt-1 text-sm text-slate-600">Forfaits tout inclus au départ du Québec, aux tarifs d’occupation publiés.</p>
+    <p class="text-lg font-semibold text-brand-blue">Voyage Fiesta, Aubaines Express</p>
+    <p class="mt-1 text-sm text-slate-600">Permis d'agence de voyages du Québec : 703631. Contribution au Fonds FICAV.</p>
     <nav class="mt-6" aria-label="Destinations">
       <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Destinations</p>
       <ul class="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-sm">
@@ -456,11 +456,13 @@ function footerHtml() {
 
 function headerHtml(currentUrl) {
   const links = [
-    ['Promotions', '/'],
-    ['Destinations', '/destinations/'],
-    ['Tout inclus', '/voyages-tout-inclus.html'],
-    ['Comment réserver', '/comment-reserver.html'],
-    ['Contact', '/contact.html'],
+    ['Aubaines Express', '/'],
+    ['Forfaits SUD', '/groupes/forfaits-sud/'],
+    ['Croisières', '/groupes/croisieres/'],
+    ['Voyages', '/groupes/voyages/'],
+    ['Mariage', '/groupes/mariages/'],
+    ['Notre équipe', '/agents/'],
+    ['Contact', '/#contact'],
   ];
   return `<header class="relative z-10 border-b border-slate-200 bg-white/95">
   <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
