@@ -11,6 +11,7 @@
  *   GHL_CONTACT_TAG=reservation-site
  *   GHL_GROUPE_TAG=demande-groupe
  *   GHL_GROUPE_NOTIFY=0
+ *   AGENT_NOTIFY=0
  *   GHL_GROUPE_DEFAULT_OWNER=
  *   DRY_RUN=0
  *   GROUPES_JSON_PATH=/opt/voyage-fiesta-reservation/groupes.json
@@ -53,6 +54,7 @@ export function readConfig(env = process.env) {
     quickformTag: env.GHL_QUICKFORM_TAG || 'quickform',
     groupeTag: env.GHL_GROUPE_TAG || 'demande-groupe',
     groupeNotify: envFlag(env.GHL_GROUPE_NOTIFY),
+    agentNotify: envFlag(env.AGENT_NOTIFY),
     groupeDefaultOwner: String(env.GHL_GROUPE_DEFAULT_OWNER || '').trim(),
     origins: originRaw.split(',').map((item) => item.trim()).filter(Boolean),
     notifyEmails: String(env.INTERNAL_NOTIFY_EMAILS || '')
@@ -374,9 +376,7 @@ async function lookupOwnerIdBySlug(slug) {
   return String(product?.ownerId || product?.owner?.id || '').trim();
 }
 
-async function lookupStaffIdBySlug(slug) {
-  const key = String(slug || '').trim().toLowerCase();
-  if (!key) return '';
+async function loadStaffAgents() {
   const now = Date.now();
   const productsUrl = cfg().productsJsonUrl;
   const url = cfg().staffJsonUrl
@@ -387,11 +387,22 @@ async function lookupStaffIdBySlug(slug) {
     const data = await res.json();
     staffCache = { at: now, url, agents: Array.isArray(data?.agents) ? data.agents : [] };
   }
-  const agent = staffCache.agents.find((a) => {
-    const agentSlug = String(a?.slug || '').trim().toLowerCase();
-    const id = String(a?.id || '').trim().toLowerCase();
+  return staffCache.agents;
+}
+
+async function lookupStaffRecord(idOrSlug) {
+  const key = String(idOrSlug || '').trim().toLowerCase();
+  if (!key) return null;
+  const agents = await loadStaffAgents();
+  return agents.find((agent) => {
+    const agentSlug = String(agent?.slug || '').trim().toLowerCase();
+    const id = String(agent?.id || '').trim().toLowerCase();
     return (agentSlug && agentSlug === key) || (id && id === key);
-  });
+  }) || null;
+}
+
+async function lookupStaffIdBySlug(slug) {
+  const agent = await lookupStaffRecord(slug);
   return String(agent?.id || '').trim();
 }
 
@@ -1043,6 +1054,71 @@ async function ghlEnsureNotifyContact(email) {
   return data?.contact?.id || data?.id || '';
 }
 
+function agentNotifyBody(payload) {
+  const name = [
+    pick(payload, 'p1_prenom', 'contact_prenom', 'full_name'),
+    pick(payload, 'p1_nom', 'contact_nom', 'last_name')
+  ].filter(Boolean).join(' ').trim();
+  return [
+    `Nom: ${name}`,
+    `Courriel: ${pick(payload, 'p1_email', 'email', 'contact_email')}`,
+    `Téléphone: ${pick(payload, 'p1_phone', 'phone', 'contact_phone')}`,
+    `Message: ${pick(payload, 'message', 'notes_message', 'notes')}`,
+    `Voyage: ${pick(payload, 'forfait_name', 'nom_du_forfait', 'groupe_titre', 'forfait_slug')}`
+  ].join('\n');
+}
+
+async function resolveAgentNotify(ownerId) {
+  const cc = cfg().notifyEmails.slice();
+  if (!cfg().agentNotify) return { enabled: false, to: null, cc, sent: [] };
+  let to = '';
+  if (ownerId) {
+    try {
+      const agent = await lookupStaffRecord(ownerId);
+      to = String(agent?.email || '').trim();
+    } catch (err) {
+      console.warn('[reservation] agent email lookup failed', err.message);
+    }
+  }
+  return { enabled: true, to: to || null, cc, sent: [] };
+}
+
+async function ghlSendAgentEmail({ to, cc = [], subject, noteText }) {
+  const address = String(to || '').trim();
+  if (!address || !noteText) return { sent: [] };
+  const copies = cc
+    .map((item) => String(item || '').trim())
+    .filter((item) => item && item.toLowerCase() !== address.toLowerCase());
+  try {
+    const notifyContactId = await ghlEnsureNotifyContact(address);
+    if (!notifyContactId) return { sent: [] };
+    const res = await ghlFetch(`${ghlUrl('')}/conversations/messages`, {
+      method: 'POST',
+      headers: ghlHeaders({ Version: '2021-04-15' }),
+      body: JSON.stringify({
+        type: 'Email',
+        contactId: notifyContactId,
+        emailFrom: cfg().emailFrom,
+        emailTo: address,
+        emailCc: copies,
+        subject,
+        html: noteEmailHtml(noteText),
+        message: noteText
+      })
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      console.warn('[reservation] agent email failed', address, res.status, text.slice(0, 300));
+      return { sent: [] };
+    }
+    console.log('[reservation] agent email sent', address);
+    return { sent: [address] };
+  } catch (err) {
+    console.warn('[reservation] agent email error', address, err.message);
+    return { sent: [] };
+  }
+}
+
 async function ghlSendInternalNoteEmail({ noteText, subject }) {
   if (!noteText || !cfg().notifyEmails.length) return { sent: [] };
   const html = noteEmailHtml(noteText);
@@ -1270,6 +1346,7 @@ async function handleRequest(req, res) {
       const lead = readLeadRef(payload);
       const assignedPreview = await previewAssignedUserId(payload);
       const contact = buildContactBody(payload, assignedPreview);
+      const agentNotify = await resolveAgentNotify(assignedPreview);
       return sendJson(res, 200, {
         ok: true,
         dryRun: true,
@@ -1280,6 +1357,7 @@ async function handleRequest(req, res) {
         note,
         assignedTo: assignedPreview || null,
         notify: shouldNotify(payload),
+        agentNotify,
         leadRef: hasLeadRef(lead) ? { ref: lead.ref || null, ghlUser: lead.ghlUser || null, validated: false } : null,
         ownerPolicy: "Un contact qui a déjà un propriétaire n'est pas réassigné. Cet essai ne consulte pas GHL."
       });
@@ -1339,6 +1417,22 @@ async function handleRequest(req, res) {
         notifyEmails = notify.sent;
       }
 
+      const agentNotify = await resolveAgentNotify(assignedTo);
+      if (agentNotify.enabled && agentNotify.to) {
+        const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')]
+          .filter(Boolean)
+          .join(' ');
+        const voyage = pick(payload, 'forfait_name', 'nom_du_forfait', 'groupe_titre');
+        const subject = ['Nouvelle demande', who, voyage].filter(Boolean).join(' | ');
+        const sent = await ghlSendAgentEmail({
+          to: agentNotify.to,
+          cc: agentNotify.cc,
+          subject,
+          noteText: agentNotifyBody(payload)
+        });
+        agentNotify.sent = sent.sent;
+      }
+
       return sendJson(res, 200, {
         ok: true,
         contactId,
@@ -1348,6 +1442,7 @@ async function handleRequest(req, res) {
         requestType: requestTypeName(payload),
         tagsAdded,
         notifyEmails,
+        agentNotify,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0
       });
     } catch (err) {

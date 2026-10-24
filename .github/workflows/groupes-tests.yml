@@ -53,6 +53,7 @@ jobs:
           server/reservation-api/server.test.mjs
           server/atrium-sync/map.test.mjs
           server/atrium-sync/sync.test.mjs
+          server/atrium-sync/mirror-images.test.mjs
           server/atrium-sync/push-ghl.test.mjs
           groupes/js/catalog.test.mjs
           tests/lead-ref.test.mjs
