@@ -23,6 +23,7 @@ import {
 } from './ghl-voyages-fields.mjs';
 import { writeSharePages } from './share-pages.mjs';
 import { writeQuickformPages } from './quickform-pages.mjs';
+import { publicStaff, writeAgentPages } from './agent-pages.mjs';
 import { writeSeoPages } from './seo-pages.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -1499,7 +1500,9 @@ async function main() {
  if (writeJsonIfChanged(STAFF_OUTPUT, staffPayload)) {
   console.log(`Wrote ${staff.length} staff profile(s) to ${STAFF_OUTPUT}`);
  }
- writeQuickformPages(staff);
+ const visibleStaff = publicStaff(staff);
+ writeAgentPages({ staff: visibleStaff, products });
+ writeQuickformPages(staff, { publicSlugs: new Set(visibleStaff.map((agent) => agent.slug)) });
 
  const payload = {
  updatedAt: new Date().toISOString(),
@@ -1518,7 +1521,7 @@ async function main() {
  console.log(` with owner: ${products.filter(p => p.ownerId).length}`);
 
  writeSharePages(products);
- writeSeoPages({ products, staff });
+ writeSeoPages({ products, staff: visibleStaff });
 }
 
 /** Répare products.json local — slugs nom-date, sans forfait-sans-nom-* */
@@ -1567,7 +1570,9 @@ function repairProductsJsonSlugs() {
  writeFileSync(OUTPUT, JSON.stringify(data, null, 2) + '\n', 'utf8');
  console.log(`Repaired ${changed} slug(s) in ${OUTPUT}`);
  writeSharePages(sorted);
- writeSeoPages({ products: sorted, staff: Object.values(loadPreviousStaffById()) });
+ const repairStaff = publicStaff(Object.values(loadPreviousStaffById()));
+ writeAgentPages({ staff: repairStaff, products: sorted });
+ writeSeoPages({ products: sorted, staff: repairStaff });
 }
 
 if (process.argv.includes('--repair-slugs')) {

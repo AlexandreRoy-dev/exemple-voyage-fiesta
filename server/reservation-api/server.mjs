@@ -672,6 +672,7 @@ function termsCheckboxState(payload) {
 }
 
 function hasRoomFormAnswers(payload) {
+  if (isQuickFormRequest(payload)) return false;
   return (
     Object.prototype.hasOwnProperty.call(payload, 'assurance_medicale')
     || Object.prototype.hasOwnProperty.call(payload, 'terms_and_conditions')
@@ -789,6 +790,12 @@ function buildNotes(payload) {
       : qa('Dépôt', payload.depot, payload.depot_total),
     qa('Date de paiement final', payload.paiement_final, payload.final_payment_date)
   ].filter((row) => row && !row.endsWith('\n→ —')));
+
+  if (isQuickFormRequest(payload)) {
+    addSection('Message', [
+      qa('Message', payload.message, payload.notes_message, payload.notes)
+    ].filter((row) => row && !row.endsWith('\n→ —')));
+  }
 
   const roomForm = hasRoomFormAnswers(payload);
 
