@@ -15,6 +15,10 @@ on:
       - 'scripts/ghl-voyages-fields.mjs'
       - 'scripts/ghl-voyages-fields.test.mjs'
       - 'scripts/sync-ghl-products.mjs'
+      - 'scripts/agent-pages.mjs'
+      - 'scripts/agent-pages.test.mjs'
+      - 'scripts/quickform-pages.mjs'
+      - 'agent-form.js'
   pull_request:
     paths:
       - 'groupes/**'
@@ -29,6 +33,10 @@ on:
       - 'scripts/ghl-voyages-fields.mjs'
       - 'scripts/ghl-voyages-fields.test.mjs'
       - 'scripts/sync-ghl-products.mjs'
+      - 'scripts/agent-pages.mjs'
+      - 'scripts/agent-pages.test.mjs'
+      - 'scripts/quickform-pages.mjs'
+      - 'agent-form.js'
 
 jobs:
   test:
@@ -49,3 +57,4 @@ jobs:
           tests/lead-ref.test.mjs
           tests/agent-resolve.test.mjs
           scripts/ghl-voyages-fields.test.mjs
+          scripts/agent-pages.test.mjs

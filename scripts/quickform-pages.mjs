@@ -21,86 +21,34 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
-function escapeJs(value) {
-  return JSON.stringify(String(value || ''));
-}
-
-function buildQuickformPageHtml(agent) {
-  const name = String(agent.name || '').trim() || 'Voyage Fiesta';
+function buildQuickformPageHtml(agent, options = {}) {
   const slug = String(agent.slug || '').trim();
-  const pageUrl = `${SITE_BASE}/quickform/${encodeURIComponent(slug)}.html`;
-  const boutiqueUrl = `${SITE_BASE}/?agent=${encodeURIComponent(slug)}`;
-  const title = `Formulaire de contact — ${name}`;
-  const description = `Laissez vos coordonnées pour ${name}. Un conseiller Voyage Fiesta vous rappellera.`;
+  const publicSlugs = options.publicSlugs;
+  const visible = !publicSlugs || publicSlugs.has(slug);
+  const targetPath = visible ? `/agents/${encodeURIComponent(slug)}/` : '/agents/';
+  const canonical = `${SITE_BASE}${targetPath}`;
 
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <meta name="author" content="Voyage Fiesta">
-  <meta name="theme-color" content="#025091">
-  <link rel="canonical" href="${escapeHtml(pageUrl)}">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Voyage Fiesta">
-  <meta property="og:locale" content="fr_CA">
-  <meta property="og:title" content="${escapeHtml(title)}">
-  <meta property="og:description" content="${escapeHtml(description)}">
-  <meta property="og:url" content="${escapeHtml(pageUrl)}">
-  <meta property="og:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta property="og:image:secure_url" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta property="og:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${escapeHtml(title)}">
-  <meta name="twitter:description" content="${escapeHtml(description)}">
-  <meta name="twitter:image" content="https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200&amp;fit=crop">
-  <meta name="twitter:image:alt" content="${escapeHtml(name)} — Voyage Fiesta">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Poppins', 'sans-serif'] },
-          colors: {
-            brand: { blue: '#025091', orange: '#F26522', dark: '#1F2937', light: '#F3F7FA' }
-          }
-        }
-      }
-    };
-  </script>
-  <script>
-    window.QUICKFORM_AGENT = {
-      id: ${escapeJs(agent.id)},
-      slug: ${escapeJs(slug)},
-      name: ${escapeJs(name)},
-      email: ${escapeJs(agent.email)},
-      phone: ${escapeJs(agent.phone)}
-    };
-  </script>
+  <title>Page conseiller</title>
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="${escapeHtml(canonical)}">
+  <meta http-equiv="refresh" content="0; url=${escapeHtml(targetPath)}">
+  <script>location.replace(${JSON.stringify(targetPath)} + location.search + location.hash);</script>
 </head>
-<body class="text-gray-800 font-sans min-h-screen">
-  <div id="quickform-root"></div>
-  <script src="/lead-ref.js?v=1"></script>
-  <script src="../config.js?v=50"></script>
-  <script src="../quickform.js?v=2"></script>
-  <script>
-    if (window.VoyageFiestaQuickform) {
-      window.VoyageFiestaQuickform.mount({
-        boutiqueUrl: ${escapeJs(boutiqueUrl)}
-      });
-    }
-  </script>
+<body>
+  <p><a href="${escapeHtml(targetPath)}">Continuer vers la page du conseiller</a></p>
 </body>
 </html>
 `;
 }
 
-export function writeQuickformPages(agents) {
-  mkdirSync(QUICKFORM_DIR, { recursive: true });
+export function writeQuickformPages(agents, options = {}) {
+  const dir = options.dir || QUICKFORM_DIR;
+  mkdirSync(dir, { recursive: true });
   const currentSlugs = new Set();
 
   for (const agent of agents || []) {
@@ -108,17 +56,17 @@ export function writeQuickformPages(agents) {
     const id = String(agent?.id || '').trim();
     if (!slug || !id) continue;
     currentSlugs.add(slug);
-    writeFileSync(resolve(QUICKFORM_DIR, `${slug}.html`), buildQuickformPageHtml(agent), 'utf8');
+    writeFileSync(resolve(dir, `${slug}.html`), buildQuickformPageHtml(agent, options), 'utf8');
   }
 
-  for (const file of readdirSync(QUICKFORM_DIR)) {
+  for (const file of readdirSync(dir)) {
     if (!file.endsWith('.html') || file.includes('Jean-pc')) continue;
     const slug = file.slice(0, -5);
     if (!currentSlugs.has(slug)) {
-      unlinkSync(resolve(QUICKFORM_DIR, file));
+      unlinkSync(resolve(dir, file));
     }
   }
 
-  console.log(`Wrote ${currentSlugs.size} quickform page(s) to ${QUICKFORM_DIR}`);
+  console.log(`Wrote ${currentSlugs.size} quickform page(s) to ${dir}`);
   return currentSlugs.size;
 }

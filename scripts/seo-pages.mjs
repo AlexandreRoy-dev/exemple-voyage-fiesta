@@ -683,10 +683,11 @@ function writeSitemap({ products, staff, extraUrls }) {
     ...products
       .filter((p) => p.slug)
       .map((p) => ({ loc: `${SITE_BASE}/product.html?slug=${encodeURIComponent(p.slug)}`, priority: '0.7' })),
+    { loc: `${SITE_BASE}/agents/`, priority: '0.6' },
     ...((staff || [])
       .map((a) => String(a.slug || '').trim())
       .filter(Boolean)
-      .map((slug) => ({ loc: `${SITE_BASE}/quickform/${encodeURIComponent(slug)}.html`, priority: '0.3' }))),
+      .map((slug) => ({ loc: `${SITE_BASE}/agents/${encodeURIComponent(slug)}/`, priority: '0.5' }))),
     { loc: `${SITE_BASE}/quickform.html`, priority: '0.3' },
   ];
   const seen = new Set();

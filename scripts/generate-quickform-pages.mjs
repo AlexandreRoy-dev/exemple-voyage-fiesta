@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { writeQuickformPages } from './quickform-pages.mjs';
+import { publicStaff, writeAgentPages } from './agent-pages.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -104,5 +105,7 @@ writeFileSync(STAFF_PATH, JSON.stringify({
   locationId: live?.locationId || '',
   agents
 }, null, 2) + '\n', 'utf8');
-writeQuickformPages(agents);
+const visible = publicStaff(agents);
+writeAgentPages({ staff: visible });
+writeQuickformPages(agents, { publicSlugs: new Set(visible.map((agent) => agent.slug)) });
 console.log(`staff.json: ${agents.length} conseiller(s)`);

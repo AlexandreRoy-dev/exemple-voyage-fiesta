@@ -465,3 +465,41 @@ test('dry_run shows the fb link values without calling GHL', async () => {
     await close(fake.server);
   }
 });
+
+test('quickform notes keep the trip request and consent without the room form', async () => {
+  const fake = await startFakeGhl();
+  const api = createServer(apiEnv(fake));
+  const port = await listen(api);
+  try {
+    await post(port, {
+      payload: {
+        request_type: 'quickform',
+        p1_prenom: 'Paul',
+        p1_nom: 'Roy',
+        p1_email: 'paul@example.com',
+        p1_phone: '5145550100',
+        destination: 'Portugal',
+        departure_date: '2027-05-01',
+        return_date: '2027-05-10',
+        nombre_adultes: '2',
+        nombre_enfants: '1',
+        message: 'Une semaine en mai.',
+        terms_and_conditions: 'true',
+        agent_slug: 'eric-lacasse',
+        agent_id: 'user-eric'
+      }
+    });
+    const upsert = fake.calls.find((call) => call.path === '/contacts/upsert');
+    const note = (upsert.body.customFields || []).find((field) => field.key === 'note_reservation_interne');
+    assert.ok(note);
+    assert.match(note.field_value, /Portugal/);
+    assert.match(note.field_value, /2027-05-01/);
+    assert.match(note.field_value, /Une semaine en mai/);
+    assert.match(note.field_value, /case cochée/);
+    assert.equal(note.field_value.includes('Adresse'), false);
+    assert.equal(upsert.body.assignedTo, 'user-eric');
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+});
