@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-23T01:15:04.698Z",
+  "updatedAt": "2026-10-24T17:45:04.366Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -1363,7 +1363,7 @@
         "tout_inclus"
       ],
       "inventory": 8,
-      "price": 1759,
+      "price": 1659,
       "priceOccSimple": null,
       "priceOccTriple": null,
       "priceOccDouble1Child": null,
@@ -1383,7 +1383,7 @@
       "taxesOccTriple": null,
       "taxesOccQuad": null,
       "taxesOccAutres": null,
-      "discountAmount": 800,
+      "discountAmount": 576,
       "financingMonthly": null,
       "depositAmount": 200,
       "finalPaymentDate": "2027-01-11T00:00:00.000Z",
