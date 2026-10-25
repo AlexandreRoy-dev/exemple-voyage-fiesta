@@ -235,6 +235,12 @@ function shouldNotify(payload) {
   return true;
 }
 
+function sendsInternalNotify(payload, agentNotify) {
+  if (agentNotify?.enabled && agentNotify.to) return false;
+  if (agentNotify?.enabled) return cfg().notifyEmails.length > 0;
+  return shouldNotify(payload);
+}
+
 function resolveContactTag(payload) {
   if (isQuickFormRequest(payload)) {
     return cfg().quickformTag;
@@ -1069,8 +1075,7 @@ function agentNotifyBody(payload) {
 }
 
 async function resolveAgentNotify(ownerId) {
-  const cc = cfg().notifyEmails.slice();
-  if (!cfg().agentNotify) return { enabled: false, to: null, cc, sent: [] };
+  if (!cfg().agentNotify) return { enabled: false, to: null, cc: [], sent: [] };
   let to = '';
   if (ownerId) {
     try {
@@ -1080,7 +1085,7 @@ async function resolveAgentNotify(ownerId) {
       console.warn('[reservation] agent email lookup failed', err.message);
     }
   }
-  return { enabled: true, to: to || null, cc, sent: [] };
+  return { enabled: true, to: to || null, cc: [], sent: [] };
 }
 
 async function ghlSendAgentEmail({ to, cc = [], subject, noteText }) {
@@ -1100,7 +1105,7 @@ async function ghlSendAgentEmail({ to, cc = [], subject, noteText }) {
         contactId: notifyContactId,
         emailFrom: cfg().emailFrom,
         emailTo: address,
-        emailCc: copies,
+        ...(copies.length ? { emailCc: copies } : {}),
         subject,
         html: noteEmailHtml(noteText),
         message: noteText
@@ -1356,7 +1361,7 @@ async function handleRequest(req, res) {
         tag: tags[0] || null,
         note,
         assignedTo: assignedPreview || null,
-        notify: shouldNotify(payload),
+        notify: sendsInternalNotify(payload, agentNotify),
         agentNotify,
         leadRef: hasLeadRef(lead) ? { ref: lead.ref || null, ghlUser: lead.ghlUser || null, validated: false } : null,
         ownerPolicy: "Un contact qui a déjà un propriétaire n'est pas réassigné. Cet essai ne consulte pas GHL."
@@ -1404,8 +1409,9 @@ async function handleRequest(req, res) {
         console.warn('[reservation] upsert returned no contact id; tags skipped');
       }
 
+      const agentNotify = await resolveAgentNotify(assignedTo);
       let notifyEmails = [];
-      if (noteText && shouldNotify(payload)) {
+      if (noteText && sendsInternalNotify(payload, agentNotify)) {
         const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')]
           .filter(Boolean)
           .join(' ');
@@ -1417,7 +1423,6 @@ async function handleRequest(req, res) {
         notifyEmails = notify.sent;
       }
 
-      const agentNotify = await resolveAgentNotify(assignedTo);
       if (agentNotify.enabled && agentNotify.to) {
         const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')]
           .filter(Boolean)
@@ -1426,7 +1431,6 @@ async function handleRequest(req, res) {
         const subject = ['Nouvelle demande', who, voyage].filter(Boolean).join(' | ');
         const sent = await ghlSendAgentEmail({
           to: agentNotify.to,
-          cc: agentNotify.cc,
           subject,
           noteText: agentNotifyBody(payload)
         });
