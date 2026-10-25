@@ -15,6 +15,7 @@ import { GROUPES_SCHEMA_KEY, analyzeCatalog, bindGroupeFields, foldLabel } from 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const API_BASE = 'https://services.leadconnectorhq.com';
 const PAGE_LIMIT = 100;
+const TEXT_LIMIT = 11900;
 
 function loadEnvFile() {
   const candidates = [
@@ -103,6 +104,12 @@ function moneyValue(raw) {
 
 function lines(items, render) {
   return (items || []).map(render).filter(Boolean).join('\n');
+}
+
+function capText(value) {
+  const text = String(value);
+  if (text.length <= TEXT_LIMIT) return text;
+  return `${text.slice(0, TEXT_LIMIT)}…`;
 }
 
 function optionValue(field, raw, aliases = []) {
@@ -199,6 +206,7 @@ export function groupProperties(group, binding, { origin, syncedAt, photo } = {}
     if (field.type.includes('OPTION') || field.type.includes('SELECT') || field.type.includes('RADIO')) {
       value = optionValue(field, value);
     }
+    if (typeof value === 'string') value = capText(value);
     properties[field.key] = value;
   }
   for (const key of Object.keys(properties)) {
@@ -277,21 +285,33 @@ async function fetchRecords(fetchImpl, apiKey, locationId) {
   const all = [];
   let page = 1;
   let searchAfter;
-  let total = Infinity;
-  while (all.length < total && page < 50) {
+  let total = null;
+  const seenCursors = new Set();
+  while (page <= 50) {
     const data = await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records/search`, {
       method: 'POST',
-      body: { locationId, page, pageLimit: PAGE_LIMIT, ...(searchAfter ? { searchAfter } : {}) }
+      body: { locationId, page, pageLimit: PAGE_LIMIT, ...(searchAfter != null ? { searchAfter } : {}) }
     });
-    const records = data?.records || data?.data || [];
-    total = data?.total ?? records.length;
+    const records = Array.isArray(data?.records) ? data.records : (Array.isArray(data?.data) ? data.data : []);
+    if (typeof data?.total === 'number') total = data.total;
     all.push(...records);
-    if (records.length < PAGE_LIMIT || all.length >= total) break;
-    searchAfter = data.searchAfter || data.nextSearchAfter;
+    if (records.length < PAGE_LIMIT || (total != null && all.length >= total)) break;
+    const cursor = records.at(-1)?.searchAfter ?? data?.searchAfter ?? data?.nextSearchAfter ?? null;
+    if (cursor != null) {
+      const mark = JSON.stringify(cursor);
+      if (seenCursors.has(mark)) break;
+      seenCursors.add(mark);
+      searchAfter = cursor;
+    }
     page += 1;
-    if (!searchAfter) break;
   }
-  return all;
+  return { records: all, total: total ?? all.length };
+}
+
+function persistState(statePath, state) {
+  if (!statePath) return;
+  mkdirSync(dirname(statePath), { recursive: true });
+  writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
 }
 
 async function uploadMedia({ fetchImpl, apiKey, locationId, imageUrl }) {
@@ -347,7 +367,14 @@ export async function pushGroupes({
   }
   const selectedIds = onlyIdSet(onlyIds);
   const groups = (catalog?.groups || []).filter((group) => !selectedIds || selectedIds.has(String(group.id)));
-  const records = apiKey ? await fetchRecords(fetchImpl, apiKey, locationId) : [];
+  let records = [];
+  if (apiKey) {
+    const loaded = await fetchRecords(fetchImpl, apiKey, locationId);
+    records = loaded.records;
+    if (records.length < loaded.total) {
+      throw new Error(`Lecture GHL incomplète: ${records.length}/${loaded.total} fiches. Aucune création.`);
+    }
+  }
   const byAtrium = new Map();
   for (const record of records) {
     const id = atriumIdOf(record, binding);
@@ -382,91 +409,93 @@ export async function pushGroupes({
   const photoField = binding.bound.photo_principale;
   const photoIsFile = Boolean(uploadPhoto && photoField && /FILE|UPLOAD|IMAGE|ATTACHMENT/.test(photoField.type));
 
-  for (const group of groups) {
-    const atriumId = String(group.id);
-    const existing = byAtrium.get(atriumId) || [];
-    if (existing.length > 1) {
-      summary.duplicates.push({ atriumId, ids: existing.map((record) => record.id).filter(Boolean) });
-    }
-    const properties = groupProperties(group, binding, { origin, syncedAt });
-    const digest = fingerprint(properties);
-    const current = existing[0];
-    const source = String(group.image || '').trim();
-    const urlKey = binding.bound.photo_principale_url?.key || 'photo_principale_url';
-    const recordSource = current ? String(propValue(propsOf(current), urlKey) || '').trim() : '';
-    const storedSource = recordSource || String(state.photos[atriumId] || '').trim();
-    const photoChanged = Boolean(photoIsFile && source && source !== storedSource);
-    const contentChanged = !current || state.hashes[atriumId] !== digest;
-    if (current && !contentChanged && !photoChanged) {
-      summary.unchanged.push(atriumId);
-      summary.photos.push({ atriumId, mode: 'unchanged' });
-      continue;
-    }
-    if (!current) summary.created.push(atriumId);
-    else if (contentChanged) summary.updated.push(atriumId);
-
-    let recordId = current?.id || '';
-    if (!dryRun && (!current || contentChanged)) {
-      await pause();
-      if (!current) {
-        const created = await ghl(fetchImpl, apiKey, recordPath(), {
-          method: 'POST',
-          body: { locationId, properties }
-        });
-        recordId = created?.record?.id || created?.id || '';
-        state.hashes[atriumId] = digest;
-        state.ids = state.ids || {};
-        state.ids[atriumId] = recordId;
-      } else {
-        await putRecord(fetchImpl, apiKey, locationId, current.id, properties);
-        state.hashes[atriumId] = digest;
-        recordId = current.id;
+  try {
+    for (const group of groups) {
+      const atriumId = String(group.id);
+      const existing = byAtrium.get(atriumId) || [];
+      if (existing.length > 1) {
+        summary.duplicates.push({ atriumId, ids: existing.map((record) => record.id).filter(Boolean) });
       }
-    }
+      const properties = groupProperties(group, binding, { origin, syncedAt });
+      const digest = fingerprint(properties);
+      const current = existing[0];
+      const source = String(group.image || '').trim();
+      const urlKey = binding.bound.photo_principale_url?.key || 'photo_principale_url';
+      const recordSource = current ? String(propValue(propsOf(current), urlKey) || '').trim() : '';
+      const storedSource = recordSource || String(state.photos[atriumId] || '').trim();
+      const photoChanged = Boolean(photoIsFile && source && source !== storedSource);
+      const contentChanged = !current || state.hashes[atriumId] !== digest;
+      if (current && !contentChanged && !photoChanged) {
+        summary.unchanged.push(atriumId);
+        summary.photos.push({ atriumId, mode: 'unchanged' });
+        continue;
+      }
+      if (!current) summary.created.push(atriumId);
+      else if (contentChanged) summary.updated.push(atriumId);
 
-    if (photoChanged) {
-      if (dryRun) {
-        summary.photos.push({ atriumId, mode: 'upload-dry' });
-      } else if (!recordId) {
-        summary.photos.push({ atriumId, mode: 'url', error: 'fiche sans id' });
-      } else {
-        try {
-          const uploadedUrl = await uploadMedia({ fetchImpl, apiKey, locationId, imageUrl: source });
-          if (!uploadedUrl) throw new Error('photo sans URL');
-          await pause();
-          await putRecord(fetchImpl, apiKey, locationId, recordId, { [photoField.key]: uploadedUrl });
-          state.photos[atriumId] = source;
-          summary.photos.push({ atriumId, mode: 'upload' });
-        } catch (error) {
-          summary.photos.push({ atriumId, mode: 'url', error: error.message });
+      let recordId = current?.id || '';
+      if (!dryRun && (!current || contentChanged)) {
+        await pause();
+        if (!current) {
+          const created = await ghl(fetchImpl, apiKey, recordPath(), {
+            method: 'POST',
+            body: { locationId, properties }
+          });
+          recordId = created?.record?.id || created?.id || '';
+          state.hashes[atriumId] = digest;
+          state.ids = state.ids || {};
+          state.ids[atriumId] = recordId;
+        } else {
+          await putRecord(fetchImpl, apiKey, locationId, current.id, properties);
+          state.hashes[atriumId] = digest;
+          recordId = current.id;
         }
       }
-    } else if (source) {
-      summary.photos.push({ atriumId, mode: photoIsFile ? 'unchanged' : 'url' });
+
+      if (photoChanged) {
+        if (dryRun) {
+          summary.photos.push({ atriumId, mode: 'upload-dry' });
+        } else if (!recordId) {
+          summary.photos.push({ atriumId, mode: 'url', error: 'fiche sans id' });
+        } else {
+          try {
+            const uploadedUrl = await uploadMedia({ fetchImpl, apiKey, locationId, imageUrl: source });
+            if (!uploadedUrl) throw new Error('photo sans URL');
+            await pause();
+            await putRecord(fetchImpl, apiKey, locationId, recordId, { [photoField.key]: uploadedUrl });
+            state.photos[atriumId] = source;
+            summary.photos.push({ atriumId, mode: 'upload' });
+          } catch (error) {
+            summary.photos.push({ atriumId, mode: 'url', error: error.message });
+          }
+        }
+      } else if (source) {
+        summary.photos.push({ atriumId, mode: photoIsFile ? 'unchanged' : 'url' });
+      }
     }
+
+    const liveIds = new Set(groups.map((group) => String(group.id)));
+    for (const [atriumId, list] of selectedIds ? [] : byAtrium) {
+      if (liveIds.has(atriumId)) continue;
+      const current = list[0];
+      if (foldLabel(statutOf(current, binding)).startsWith('archiv')) {
+        summary.unchanged.push(atriumId);
+        continue;
+      }
+      summary.archived.push(atriumId);
+      if (!dryRun && binding.bound.statut_synchro && current?.id) {
+        const field = binding.bound.statut_synchro;
+        const value = optionValue(field, 'archivé');
+        await pause();
+        await putRecord(fetchImpl, apiKey, locationId, current.id, { [field.key]: value });
+      }
+    }
+  } catch (error) {
+    if (!dryRun) persistState(statePath, state);
+    throw error;
   }
 
-  const liveIds = new Set(groups.map((group) => String(group.id)));
-  for (const [atriumId, list] of selectedIds ? [] : byAtrium) {
-    if (liveIds.has(atriumId)) continue;
-    const current = list[0];
-    if (foldLabel(statutOf(current, binding)).startsWith('archiv')) {
-      summary.unchanged.push(atriumId);
-      continue;
-    }
-    summary.archived.push(atriumId);
-    if (!dryRun && binding.bound.statut_synchro && current?.id) {
-      const field = binding.bound.statut_synchro;
-      const value = optionValue(field, 'archivé');
-      await pause();
-      await putRecord(fetchImpl, apiKey, locationId, current.id, { [field.key]: value });
-    }
-  }
-
-  if (!dryRun && statePath) {
-    mkdirSync(dirname(statePath), { recursive: true });
-    writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
-  }
+  if (!dryRun) persistState(statePath, state);
   return summary;
 }
 
