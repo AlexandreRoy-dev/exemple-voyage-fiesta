@@ -523,14 +523,14 @@ test('AGENT_NOTIFY stays off and does not email the advisor', async () => {
   }
 });
 
-test('AGENT_NOTIFY emails the lead owner and copies Alexandre', async () => {
+test('AGENT_NOTIFY emails only the lead owner and skips the internal list', async () => {
   const fake = await startFakeGhl({
     staff: [{ slug: 'eric-lacasse', id: 'user-eric', email: 'eric@voyagefiesta.com' }]
   });
   const api = createServer(apiEnv(fake, {
     AGENT_NOTIFY: '1',
     INTERNAL_NOTIFY_EMAILS: 'alex@roymarketing.ca',
-    GHL_GROUPE_NOTIFY: '0'
+    GHL_GROUPE_NOTIFY: '1'
   }));
   const port = await listen(api);
   try {
@@ -541,17 +541,48 @@ test('AGENT_NOTIFY emails the lead owner and copies Alexandre', async () => {
     assert.equal(json.assignedTo, 'user-eric');
     assert.equal(json.agentNotify.enabled, true);
     assert.equal(json.agentNotify.to, 'eric@voyagefiesta.com');
+    assert.deepEqual(json.agentNotify.cc, []);
     assert.deepEqual(json.agentNotify.sent, ['eric@voyagefiesta.com']);
+    assert.deepEqual(json.notifyEmails, []);
     const mail = fake.calls.filter((call) => call.path === '/conversations/messages');
     assert.equal(mail.length, 1);
     assert.equal(mail[0].body.emailTo, 'eric@voyagefiesta.com');
-    assert.deepEqual(mail[0].body.emailCc, ['alex@roymarketing.ca']);
+    assert.equal(mail[0].body.emailCc, undefined);
+    assert.equal(JSON.stringify(mail).includes('alex@roymarketing.ca'), false);
     assert.match(mail[0].body.message, /Nom: Marie Tremblay/);
     assert.match(mail[0].body.message, /fresh-agent@example.com/);
     assert.match(mail[0].body.message, /5145550199/);
     assert.match(mail[0].body.message, /Deux adultes, chambre double/);
     assert.match(mail[0].body.message, /Noël au Costa Rica/);
     assert.equal(mail[0].body.message.includes('—'), false);
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+});
+
+test('AGENT_NOTIFY falls back to the internal list when the advisor has no email', async () => {
+  const fake = await startFakeGhl({
+    staff: [{ slug: 'eric-lacasse', id: 'user-eric', email: '' }]
+  });
+  const api = createServer(apiEnv(fake, {
+    AGENT_NOTIFY: '1',
+    INTERNAL_NOTIFY_EMAILS: 'alex@roymarketing.ca',
+    GHL_GROUPE_NOTIFY: '0'
+  }));
+  const port = await listen(api);
+  try {
+    const { json } = await post(port, {
+      payload: { ...groupePayload, email: 'fresh-no-agent-mail@example.com', agent_slug: 'eric-lacasse' }
+    });
+    assert.equal(json.agentNotify.enabled, true);
+    assert.equal(json.agentNotify.to, null);
+    assert.deepEqual(json.agentNotify.sent, []);
+    assert.deepEqual(json.notifyEmails, ['alex@roymarketing.ca']);
+    const mail = fake.calls.filter((call) => call.path === '/conversations/messages');
+    assert.equal(mail.length, 1);
+    assert.equal(mail[0].body.emailTo, 'alex@roymarketing.ca');
+    assert.equal(mail[0].body.emailCc, undefined);
   } finally {
     await close(api);
     await close(fake.server);
@@ -573,7 +604,8 @@ test('AGENT_NOTIFY dry run names the advisor email and does not send it', async 
     });
     assert.equal(json.dryRun, true);
     assert.equal(json.agentNotify.to, 'eric@voyagefiesta.com');
-    assert.deepEqual(json.agentNotify.cc, ['alex@roymarketing.ca']);
+    assert.deepEqual(json.agentNotify.cc, []);
+    assert.equal(json.notify, false);
     assert.equal(fake.calls.some((call) => call.path === '/conversations/messages'), false);
     assert.equal(fake.calls.some((call) => call.path === '/contacts/upsert'), false);
   } finally {

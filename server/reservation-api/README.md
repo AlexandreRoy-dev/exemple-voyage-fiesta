@@ -50,6 +50,8 @@ On submit:
 
 `GHL_GROUPE_NOTIFY` defaults to off. Set `GHL_GROUPE_NOTIFY=1` to send the internal email to `INTERNAL_NOTIFY_EMAILS`. Other request types are unchanged.
 
+`AGENT_NOTIFY=1` sends that lead only to the advisor email in `staff.json`. `INTERNAL_NOTIFY_EMAILS` is not copied. The internal list is used when `AGENT_NOTIFY` is off (including the `GHL_GROUPE_NOTIFY` rule), or when `AGENT_NOTIFY` is on and the advisor has no email.
+
 `DRY_RUN=1`, or `"dry_run": true` on the request, returns `{ ok, dryRun, contact, tags, note, assignedTo, notify }` and does not call GoHighLevel. The API key is not required in that mode.
 
 `BIND_HOST` (or `HOST`) defaults to `127.0.0.1`. Nginx and the Cloudflare tunnel already proxy `127.0.0.1:3847`. A direct call to the public port 3847 from outside the VPS stops working with this default. Set `BIND_HOST=0.0.0.0` only if that raw port is still required.
