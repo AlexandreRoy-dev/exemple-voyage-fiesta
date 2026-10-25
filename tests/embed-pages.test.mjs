@@ -42,6 +42,28 @@ test('the paste guide lists one main embed and one embed per category', () => {
   assert.match(doc, /\/groupes\/groupe\/\?id=<id>&slug=<slug>/);
 });
 
+test('embed mode hides the shared header, nav and footer', () => {
+  const css = read('groupes/css/groupes.css') + read('site-chrome.css') + read('embed.js');
+  for (const selector of ['.vf-site-header', '.vf-site-footer', '.site-header', '.site-footer', '#nav-principale']) {
+    assert.match(css, new RegExp(`html\\.embed(?:-mode)? ${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]{0,180}display: none !important`));
+  }
+  const app = read('groupes/js/app.mjs');
+  assert.match(app, /embedOn\(\) \? '' : `/);
+  assert.match(app, /classList\.add\('embed', 'embed-mode'\)/);
+  for (const path of [
+    'groupes/index.html',
+    'groupes/forfaits-sud/index.html',
+    'groupes/croisieres/index.html',
+    'groupes/voyages/index.html',
+    'groupes/mariages/index.html',
+    'groupes/groupe/index.html'
+  ]) {
+    const html = read(path);
+    assert.match(html, /classList\.add\('embed', 'embed-mode'\)/);
+    assert.match(html, /html\.embed #nav-principale/);
+  }
+});
+
 test('group detail links stay on id and slug', () => {
   const app = read('groupes/js/app.mjs');
   assert.match(app, /groupe\/\?id=\$\{encodeURIComponent\(group\.id\)\}&slug=\$\{encodeURIComponent\(group\.slug \|\| ''\)\}/);
