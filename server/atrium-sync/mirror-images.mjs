@@ -3,7 +3,9 @@
  *
  * Leaves the original URL in place when a download fails. Rewrites a catalog
  * URL to the local public address only when publicBase is set and the file
- * was stored.
+ * was stored. Nested objects are walked, so navireDetail.image and
+ * hotelDetail.image are rewritten too. The remote URL is kept on imageSource
+ * (or source for a url field). ATRIUM_CATALOG_OUTPUT is replaced atomically.
  *
  * Env:
  *   ATRIUM_OUTPUT / ATRIUM_CATALOG   groupes.json to read
