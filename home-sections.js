@@ -33,9 +33,41 @@
     }
   }
 
+  var MIRRORED_MEDIA_BASE = 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/media';
+
+  function acceptImageUrl(url) {
+    var value = String(url || '').trim();
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value) || value.indexOf('//') === 0 || value.charAt(0) === '/') return value;
+    if (/^[a-f0-9]{16,}\.(jpe?g|png|webp|gif|avif)$/i.test(value)) return MIRRORED_MEDIA_BASE + '/' + value;
+    return value;
+  }
+
+  function catalogImage(value, extra) {
+    extra = extra || {};
+    var src = '';
+    var fallback = '';
+    if (value && typeof value === 'object') {
+      src = value.url || value.src || value.image || '';
+      fallback = value.source || value.remote || value.imageSource || '';
+    } else {
+      src = value || '';
+      fallback = extra.imageSource || extra.source || extra.remote || '';
+    }
+    src = acceptImageUrl(src);
+    fallback = acceptImageUrl(fallback);
+    if (src && fallback && src !== fallback) return { src: src, fallback: fallback };
+    if (!src && fallback) return { src: fallback, fallback: '' };
+    return { src: src || '', fallback: '' };
+  }
+
   function card(item) {
     var price = money(item.price);
-    var photo = item.image ? '<img src="' + esc(item.image) + '" alt="">' : '';
+    var photo = '';
+    if (item.image) {
+      var img = catalogImage(item.image, { imageSource: item.imageSource, source: item.source });
+      photo = '<img src="' + esc(img.src) + '"' + (img.fallback ? ' data-fallback="' + esc(img.fallback) + '"' : '') + ' alt="">';
+    }
     return '<a class="vf-offer" href="' + esc(item.href) + '">' + photo + '<div>'
       + (item.badge ? '<span class="vf-offer__badge">' + esc(item.badge) + '</span>' : '')
       + (item.place ? '<p class="vf-offer__place">' + esc(item.place) + '</p>' : '')
@@ -85,6 +117,7 @@
       return card({
         href: '/groupes/groupe/?' + params.toString(),
         image: group.image || '',
+        imageSource: group.imageSource || group.source || '',
         place: group.country || group.destination || '',
         title: group.title || 'Groupe',
         date: dateLabel(group.dateDepart),
@@ -92,6 +125,15 @@
       });
     });
   }
+
+  document.addEventListener('error', function (event) {
+    var img = event.target;
+    if (!img || img.tagName !== 'IMG' || !img.dataset.fallback) return;
+    if (img.getAttribute('src') === img.dataset.fallback) return;
+    var fallback = img.dataset.fallback;
+    img.removeAttribute('data-fallback');
+    img.src = fallback;
+  }, true);
 
   async function render() {
     var host = document.getElementById('vf-home-extra');

@@ -68,6 +68,7 @@ jobs:
           server/atrium-sync/mirror-images.test.mjs
           server/atrium-sync/push-ghl.test.mjs
           groupes/js/catalog.test.mjs
+          groupes/js/images.test.mjs
           tests/lead-ref.test.mjs
           tests/agent-resolve.test.mjs
           scripts/ghl-voyages-fields.test.mjs
