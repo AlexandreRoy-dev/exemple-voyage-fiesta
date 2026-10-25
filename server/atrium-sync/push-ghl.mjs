@@ -124,7 +124,19 @@ export function groupProperties(group, binding, { origin, syncedAt, photo } = {}
     vols: lines(group.vols, (item) => [item.sens, item.numero, item.depart, item.arrivee, item.dateDepart].filter(Boolean).join(' ')),
     photo_principale: photo?.uploadedUrl || '',
     photo_url: group.image || '',
-    photos: lines(group.images, (item) => item.url || item)
+    photos: lines(group.images, (item) => item.url || item),
+    compagnie_aerienne: [...new Set((group.vols || []).map((item) => item.compagnie).filter(Boolean))].join(', '),
+    vols_detail: lines(group.vols, (item) => [item.sens, item.compagnie, item.numero, item.depart, item.arrivee, item.dateDepart, item.heureDepart, item.dateArrivee, item.heureArrivee].filter(Boolean).join(' | ')),
+    tarifs_detail: lines(group.tarifs, (item) => [item.categorie, item.prix, item.prixAncien, item.disponibilite].filter((part) => part != null && part !== '').join(' | ')),
+    galerie_urls: lines(group.images, (item) => item.url || item),
+    photo_principale_url: group.image || '',
+    hotel_chaine: group.hotelDetail?.chaine || '',
+    aeroport_depart: (group.vols || []).map((item) => item.depart).find(Boolean) || '',
+    programme: lines(group.itineraire, (item) => [item.titre, item.description].filter(Boolean).join(': ')),
+    devise: group.devise || '',
+    nombre_photos: Array.isArray(group.images) ? group.images.length : '',
+    navire_annee: group.navireDetail?.annee || '',
+    navire_passagers: group.navireDetail?.passagers ?? ''
   };
   const properties = {};
   for (const [logical, field] of Object.entries(binding.bound)) {
@@ -251,6 +263,12 @@ export async function pushGroupes({
       return null;
     });
   const binding = bindGroupeFields(schema);
+  if (!dryRun) {
+    const missing = ['atrium_id', 'titre'].filter((name) => !binding.bound[name]?.key);
+    if (missing.length) {
+      throw new Error(`Refus d'écrire dans GHL: champ non lié (${missing.join(', ')}).`);
+    }
+  }
   const records = apiKey ? await fetchRecords(fetchImpl, apiKey, locationId) : [];
   const byAtrium = new Map();
   for (const record of records) {

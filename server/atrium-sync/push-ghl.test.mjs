@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { analyzeCatalog, bindGroupeFields } from './ghl-groupes-fields.mjs';
-import { dryRunEnabled, groupPageUrl, pushGroupes } from './push-ghl.mjs';
+import { dryRunEnabled, groupPageUrl, groupProperties, pushGroupes } from './push-ghl.mjs';
 
 const schema = {
   fields: [
@@ -17,7 +17,8 @@ const schema = {
     { key: 'custom_objects.groupes.texte_groupe', label: 'Description du groupe', type: 'LARGE_TEXT' },
     { key: 'custom_objects.groupes.photo_file', label: 'Photo principale', type: 'FILE_UPLOAD' },
     { key: 'custom_objects.groupes.photo_url', label: 'URL photo principale', type: 'TEXT' },
-    { key: 'custom_objects.groupes.destination', label: 'Destination', type: 'TEXT' }
+    { key: 'custom_objects.groupes.destination', label: 'Destination', type: 'TEXT' },
+    { key: 'custom_objects.groupes.titre', label: 'Titre du groupe', type: 'TEXT' }
   ]
 };
 
@@ -87,6 +88,118 @@ test('the group page keeps id and slug', () => {
     groupPageUrl({ id: 661, slug: 'noel-au-costa-rica-tout-inclus' }),
     'https://aubaineexpress.voyagefiesta.ca/groupes/groupe/?id=661&slug=noel-au-costa-rica-tout-inclus'
   );
+});
+
+test('a live schema is matched by field key before the label', () => {
+  const live = {
+    fields: [
+      { fieldKey: 'custom_objects.groupes.notes', label: 'Atrium ID', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.atrium_id', name: 'ID Atrium (ne pas modifier)', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.titre', name: 'Titre du groupe', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.slug', name: 'Identifiant URL', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.lien_page', name: 'Page publique', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.prix_appel', name: 'Prix affiché', dataType: 'NUMERICAL' },
+      { fieldKey: 'custom_objects.groupes.type_groupe', name: 'Catégorie', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.statut_synchro', name: 'État', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.description_groupe', name: 'Texte long', dataType: 'LARGE_TEXT' },
+      { fieldKey: 'custom_objects.groupes.date_expiration', name: 'Expire le', dataType: 'DATE' },
+      { fieldKey: 'custom_objects.groupes.derniere_synchro', name: 'Synchronisé le', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.compagnie_aerienne', name: 'Compagnie aérienne', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.vols_detail', name: 'Vols détaillés', dataType: 'LARGE_TEXT' },
+      { fieldKey: 'custom_objects.groupes.tarifs_detail', name: 'Tarifs détaillés', dataType: 'LARGE_TEXT' },
+      { fieldKey: 'custom_objects.groupes.galerie_urls', name: 'Galerie', dataType: 'LARGE_TEXT' },
+      { fieldKey: 'custom_objects.groupes.photo_principale_url', name: 'Visuel', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.hotel_chaine', name: 'Enseigne', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.aeroport_depart', name: 'Départ vol', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.programme', name: 'Jour par jour', dataType: 'LARGE_TEXT' },
+      { fieldKey: 'custom_objects.groupes.devise', name: 'Monnaie', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.nombre_photos', name: 'Photos (nombre)', dataType: 'NUMERICAL' },
+      { fieldKey: 'custom_objects.groupes.navire_annee', name: 'Année', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.navire_passagers', name: 'Capacité', dataType: 'NUMERICAL' },
+      { fieldKey: 'custom_objects.groupes.description', name: 'Notes internes', dataType: 'TEXT' }
+    ]
+  };
+  const binding = bindGroupeFields(live);
+  for (const name of [
+    'atrium_id', 'titre', 'slug', 'lien_page', 'prix_appel', 'type_groupe', 'statut_synchro',
+    'description_groupe', 'date_expiration', 'derniere_synchro', 'compagnie_aerienne', 'vols_detail',
+    'tarifs_detail', 'galerie_urls', 'photo_principale_url', 'hotel_chaine', 'aeroport_depart',
+    'programme', 'devise', 'nombre_photos', 'navire_annee', 'navire_passagers'
+  ]) {
+    assert.equal(binding.bound[name].key, name, name);
+  }
+  assert.equal(binding.unmapped.some((field) => field.key === 'description'), true);
+  assert.equal(binding.unmapped.some((field) => field.key === 'notes'), true);
+
+  const props = groupProperties({
+    id: 661,
+    type: 'sud',
+    slug: 'noel',
+    title: 'Noël',
+    image: 'https://cdn.example/661.jpg',
+    images: [{ url: 'https://cdn.example/661.jpg' }, { url: 'https://cdn.example/662.jpg' }],
+    prixAppel: 2959,
+    devise: 'CAD',
+    description: 'Semaine',
+    hotelDetail: { chaine: 'RIU' },
+    navireDetail: { annee: '2019', passagers: 6334 },
+    vols: [{ compagnie: 'WestJet', numero: 'WS2700', depart: 'Montréal (YUL)', arrivee: 'Liberia (LIR)', dateDepart: '2026-12-21', heureDepart: '09:10' }],
+    tarifs: [{ categorie: 'Adulte', prix: 2959, prixAncien: 3505, disponibilite: '10 places' }],
+    itineraire: [{ titre: 'Jour 1', description: 'Arrivée' }]
+  }, binding, { syncedAt: '2026-10-24T00:00:00.000Z' });
+  const prefix = 'custom_objects.groupes.';
+  assert.equal(props[`${prefix}atrium_id`], '661');
+  assert.equal(props[`${prefix}titre`], 'Noël');
+  assert.equal(props[`${prefix}compagnie_aerienne`], 'WestJet');
+  assert.match(props[`${prefix}vols_detail`], /WestJet \| WS2700 \| Montréal \(YUL\)/);
+  assert.match(props[`${prefix}tarifs_detail`], /Adulte \| 2959 \| 3505 \| 10 places/);
+  assert.match(props[`${prefix}galerie_urls`], /662\.jpg/);
+  assert.equal(props[`${prefix}photo_principale_url`], 'https://cdn.example/661.jpg');
+  assert.equal(props[`${prefix}hotel_chaine`], 'RIU');
+  assert.equal(props[`${prefix}aeroport_depart`], 'Montréal (YUL)');
+  assert.match(props[`${prefix}programme`], /Jour 1: Arrivée/);
+  assert.equal(props[`${prefix}devise`], 'CAD');
+  assert.equal(props[`${prefix}nombre_photos`], 2);
+  assert.equal(props[`${prefix}navire_annee`], '2019');
+  assert.equal(props[`${prefix}navire_passagers`], 6334);
+  assert.equal(props[`${prefix}description`], undefined);
+  assert.equal(props[`${prefix}notes`], undefined);
+});
+
+test('a live run stops before any write when atrium_id or titre is unbound', async () => {
+  const partial = {
+    fields: [
+      { fieldKey: 'custom_objects.groupes.slug', name: 'Slug public', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.destination', name: 'Destination', dataType: 'TEXT' }
+    ]
+  };
+  const calls = [];
+  const fetchImpl = async (url, options = {}) => {
+    calls.push({ url: String(url), method: options.method || 'GET' });
+    const send = (status, payload) => ({
+      ok: status >= 200 && status < 300,
+      status,
+      text: async () => JSON.stringify(payload),
+      headers: { get: () => '' }
+    });
+    if (String(url).includes('/objects/custom_objects.groupes?')) return send(200, partial);
+    if (String(url).includes('/records/search')) return send(200, { records: [], total: 0 });
+    if ((options.method || 'GET') === 'POST' && String(url).endsWith('/records')) return send(200, { record: { id: 'rec-new' } });
+    if (options.method === 'PUT') return send(200, { record: { id: 'rec-put' } });
+    return send(404, {});
+  };
+  await assert.rejects(
+    () => pushGroupes({
+      catalog: catalog(),
+      apiKey: 'pit-test',
+      locationId: 'loc',
+      dryRun: false,
+      fetchImpl,
+      throttleMs: 0
+    }),
+    /atrium_id, titre/
+  );
+  assert.equal(calls.some((call) => call.method === 'POST' || call.method === 'PUT'), false);
 });
 
 test('schema labels win, including description_groupe, and the reserved description key is not a target', () => {

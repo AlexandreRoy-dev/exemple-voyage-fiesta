@@ -62,7 +62,7 @@ GHL_GROUPE_DRY_RUN=1 \
 node push-ghl.mjs
 ```
 
-Le schéma est lu à l'exécution (`GET /objects/custom_objects.groupes`). Les champs sont reliés par leur étiquette. `description_groupe` reçoit le texte. La clé réservée `description` n'est pas utilisée. La photo principale est envoyée au téléversement de fichier quand le champ est un fichier, sinon seule l'URL est écrite.
+Le schéma est lu à l'exécution (`GET /objects/custom_objects.groupes`). Un champ est relié d'abord par sa clé (`atrium_id`, ou `custom_objects.groupes.atrium_id`). L'étiquette n'est utilisée que si la clé ne correspond pas. `description_groupe` reçoit le texte. La clé réservée `description` n'est pas utilisée. La photo principale est envoyée au téléversement de fichier quand le champ est un fichier, sinon seule l'URL est écrite. Si `atrium_id` ou `titre` reste non lié, l'écriture réelle s'arrête sans créer de fiche.
 
 Cron VPS (toutes les 2 heures, à la minute 17):
 
