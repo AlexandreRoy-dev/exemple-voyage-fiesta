@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { analyzeCatalog, bindGroupeFields } from './ghl-groupes-fields.mjs';
-import { dryRunEnabled, fingerprint, groupPageUrl, groupProperties, pushGroupes } from './push-ghl.mjs';
+import { dryRunEnabled, fingerprint, groupPageUrl, groupProperties, onlyIdSet, photoUploadEnabled, pushGroupes } from './push-ghl.mjs';
 
 const schema = {
   fields: [
@@ -83,6 +83,15 @@ test('dry run is the default and a shared DRY_RUN=0 does not go live', () => {
   assert.equal(dryRunEnabled({ DRY_RUN: '1' }), true);
   assert.equal(dryRunEnabled({ GHL_GROUPE_DRY_RUN: '0' }), false);
   assert.equal(dryRunEnabled({ DRY_RUN: '1', GHL_GROUPE_DRY_RUN: '0' }), true);
+});
+
+test('photo upload and the id subset stay off unless asked', () => {
+  assert.equal(photoUploadEnabled({}), false);
+  assert.equal(photoUploadEnabled({ GHL_GROUPE_UPLOAD_PHOTO: '0' }), false);
+  assert.equal(photoUploadEnabled({ GHL_GROUPE_UPLOAD_PHOTO: '1' }), true);
+  assert.equal(onlyIdSet(null), null);
+  assert.equal(onlyIdSet(''), null);
+  assert.deepEqual([...onlyIdSet('661, 6,')], ['661', '6']);
 });
 
 test('the group page keeps id and slug', () => {
@@ -187,7 +196,7 @@ test('a live schema is matched by field key before the label', () => {
   assert.notEqual(props.derniere_synchro, later.derniere_synchro);
 });
 
-test('monetary prix_appel and prix_ancien are sent as CAD amounts', () => {
+test('monetary prix_appel and prix_ancien use the GHL default currency', () => {
   const binding = bindGroupeFields({
     fields: [
       { fieldKey: 'custom_objects.groupes.prix_appel', name: 'Prix affiché', dataType: 'MONETARY' },
@@ -204,8 +213,8 @@ test('monetary prix_appel and prix_ancien are sent as CAD amounts', () => {
     devise: 'USD',
     images: [{ url: 'https://cdn.example/a.jpg' }, { url: 'https://cdn.example/b.jpg' }]
   }, binding, {});
-  assert.deepEqual(props.prix_appel, { currency: 'CAD', value: 2959.5 });
-  assert.deepEqual(props.prix_ancien, { currency: 'CAD', value: 3505 });
+  assert.deepEqual(props.prix_appel, { currency: 'default', value: 2959.5 });
+  assert.deepEqual(props.prix_ancien, { currency: 'default', value: 3505 });
   assert.equal(props.nombre_photos, 2);
   assert.equal(props.titre, 'Test');
   assert.equal(Object.keys(props).some((key) => key.includes('.')), false);
@@ -304,32 +313,38 @@ test('a live upsert writes the bound description field once and archives without
   assert.deepEqual(first.updated, ['661']);
   assert.deepEqual(first.archived, ['999']);
   const create = calls.find((call) => call.method === 'POST' && String(call.url).endsWith('/records'));
-  const createdProps = JSON.parse(create.body).properties;
+  const createdBody = JSON.parse(create.body);
+  const createdProps = createdBody.properties;
+  assert.equal(createdBody.locationId, 'loc');
+  assert.equal(String(create.url).includes('?'), false);
   assert.equal(createdProps.texte_groupe, undefined);
   assert.equal(createdProps.titre, 'Caraïbes');
   assert.equal(createdProps.grp_atrium, '6');
   assert.equal(createdProps['custom_objects.groupes.titre'], undefined);
   const cruise = catalog().groups[1];
   assert.equal(cruise.description, '');
-  const sudWrites = calls.filter((call) => call.method === 'PUT' && String(call.url).endsWith('/rec-661'));
-  assert.equal(sudWrites.length, 2);
-  const sudProps = JSON.parse(sudWrites[0].body).properties;
+  const sudWrites = calls.filter((call) => call.method === 'PUT' && String(call.url).includes('/rec-661?'));
+  assert.equal(sudWrites.length, 1);
+  assert.match(String(sudWrites[0].url), /\/rec-661\?locationId=loc$/);
+  const sudBody = JSON.parse(sudWrites[0].body);
+  assert.equal(sudBody.locationId, undefined);
+  const sudProps = sudBody.properties;
   assert.equal(sudProps.texte_groupe, 'Semaine au soleil');
   assert.equal(sudProps.description, undefined);
   assert.equal(sudProps.grp_atrium, '661');
   assert.equal(sudProps.titre, 'Noël au Costa Rica');
   assert.equal(sudProps.photo_file, undefined);
+  assert.equal(sudProps.photo_url, 'https://cdn.example/661.jpg');
   assert.equal(sudProps.lien_page, groupPageUrl(catalog().groups[0]));
-  assert.deepEqual(JSON.parse(sudWrites[1].body).properties, { photo_file: 'https://files.example/661.jpg' });
-  const uploadAt = calls.findIndex((call) => String(call.url).includes('/medias/upload-file'));
-  assert.ok(calls.indexOf(sudWrites[0]) < uploadAt);
-  assert.ok(uploadAt < calls.indexOf(sudWrites[1]));
-  const archive = calls.find((call) => call.method === 'PUT' && String(call.url).endsWith('/rec-old'));
-  assert.deepEqual(JSON.parse(archive.body).properties, { statut_synchro: 'archivé' });
+  assert.equal(calls.some((call) => String(call.url).includes('/medias/upload-file')), false);
+  const archive = calls.find((call) => call.method === 'PUT' && String(call.url).includes('/rec-old?'));
+  assert.match(String(archive.url), /\/rec-old\?locationId=loc$/);
+  const archiveBody = JSON.parse(archive.body);
+  assert.equal(archiveBody.locationId, undefined);
+  assert.deepEqual(archiveBody.properties, { statut_synchro: 'archivé' });
   assert.equal(calls.some((call) => call.method === 'DELETE'), false);
   const saved = JSON.parse(readFileSync(statePath, 'utf8'));
   assert.equal(saved.hashes['661'].length, 64);
-  assert.equal(saved.photos['661'], 'https://cdn.example/661.jpg');
 
   calls.length = 0;
   delete saved.photos;
@@ -375,6 +390,7 @@ test('a failed create does not upload a photo', async () => {
       apiKey: 'pit-test',
       locationId: 'loc',
       dryRun: false,
+      uploadPhoto: true,
       fetchImpl,
       throttleMs: 0,
       syncedAt: '2026-10-24T00:00:00.000Z'
@@ -403,6 +419,7 @@ test('the photo is uploaded only after a successful create', async () => {
     apiKey: 'pit-test',
     locationId: 'loc',
     dryRun: false,
+    uploadPhoto: true,
     fetchImpl,
     throttleMs: 0,
     syncedAt: '2026-10-24T00:00:00.000Z'
@@ -416,7 +433,42 @@ test('the photo is uploaded only after a successful create', async () => {
   }).filter(Boolean);
   assert.deepEqual(steps, ['create', 'upload', 'photo']);
   assert.equal(JSON.parse(calls.find((call) => call.method === 'POST' && String(call.url).endsWith('/records')).body).properties.photo_file, undefined);
-  assert.deepEqual(JSON.parse(calls.find((call) => call.method === 'PUT').body).properties, { photo_file: 'https://files.example/661.jpg' });
+  const photoPut = calls.find((call) => call.method === 'PUT');
+  assert.match(String(photoPut.url), /\/rec-new\?locationId=loc$/);
+  const photoBody = JSON.parse(photoPut.body);
+  assert.equal(photoBody.locationId, undefined);
+  assert.deepEqual(photoBody.properties, { photo_file: 'https://files.example/661.jpg' });
+});
+
+test('a subset run leaves records outside the list alone', async () => {
+  const { fetchImpl, calls } = mockFetch({
+    records: [
+      { id: 'rec-661', properties: { 'custom_objects.groupes.grp_atrium': '661' } },
+      { id: 'rec-old', properties: { 'custom_objects.groupes.grp_atrium': '999', 'custom_objects.groupes.statut_synchro': 'actif' } }
+    ]
+  });
+  const summary = await pushGroupes({
+    catalog: catalog(),
+    apiKey: 'pit-test',
+    locationId: 'loc id',
+    dryRun: false,
+    onlyIds: '661, 6',
+    fetchImpl,
+    throttleMs: 0,
+    syncedAt: '2026-10-24T00:00:00.000Z'
+  });
+  assert.deepEqual(summary.onlyIds, ['661', '6']);
+  assert.deepEqual(summary.updated, ['661']);
+  assert.deepEqual(summary.created, ['6']);
+  assert.deepEqual(summary.archived, []);
+  assert.equal(calls.some((call) => String(call.url).includes('rec-old')), false);
+  assert.equal(calls.some((call) => String(call.url).includes('/medias/upload-file')), false);
+  const put = calls.find((call) => call.method === 'PUT');
+  assert.match(String(put.url), /\/rec-661\?locationId=loc%20id$/);
+  assert.equal(JSON.parse(put.body).locationId, undefined);
+  const create = calls.find((call) => call.method === 'POST' && String(call.url).endsWith('/records'));
+  assert.equal(JSON.parse(create.body).locationId, 'loc id');
+  assert.equal(String(create.url).includes('?'), false);
 });
 
 test('the local catalog has sud, cruise and voyage groups and no mariage rows', () => {
