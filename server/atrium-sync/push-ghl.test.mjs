@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { analyzeCatalog, bindGroupeFields } from './ghl-groupes-fields.mjs';
-import { dryRunEnabled, groupPageUrl, groupProperties, pushGroupes } from './push-ghl.mjs';
+import { dryRunEnabled, fingerprint, groupPageUrl, groupProperties, pushGroupes } from './push-ghl.mjs';
 
 const schema = {
   fields: [
@@ -52,7 +52,7 @@ function catalog() {
   };
 }
 
-function mockFetch({ records = [], uploadStatus = 200 } = {}) {
+function mockFetch({ records = [], uploadStatus = 200, createStatus = 200 } = {}) {
   const calls = [];
   const fetchImpl = async (url, options = {}) => {
     const method = options.method || 'GET';
@@ -68,7 +68,9 @@ function mockFetch({ records = [], uploadStatus = 200 } = {}) {
     if (String(url).includes('/records/search')) return send(200, { records, total: records.length });
     if (String(url).includes('/medias/upload-file')) return send(uploadStatus, uploadStatus === 200 ? { url: 'https://files.example/661.jpg' } : { message: 'no upload' });
     if (String(url).startsWith('https://cdn.example/')) return send(200, {});
-    if (method === 'POST' && String(url).endsWith('/records')) return send(200, { record: { id: 'rec-new' } });
+    if (method === 'POST' && String(url).endsWith('/records')) {
+      return send(createStatus, createStatus === 200 ? { record: { id: 'rec-new' } } : { message: 'Missing required properties to create Groupe – titre' });
+    }
     if (method === 'PUT') return send(200, { record: { id: 'rec-put' } });
     return send(404, { message: 'unexpected' });
   };
@@ -147,23 +149,66 @@ test('a live schema is matched by field key before the label', () => {
     tarifs: [{ categorie: 'Adulte', prix: 2959, prixAncien: 3505, disponibilite: '10 places' }],
     itineraire: [{ titre: 'Jour 1', description: 'Arrivée' }]
   }, binding, { syncedAt: '2026-10-24T00:00:00.000Z' });
-  const prefix = 'custom_objects.groupes.';
-  assert.equal(props[`${prefix}atrium_id`], '661');
-  assert.equal(props[`${prefix}titre`], 'Noël');
-  assert.equal(props[`${prefix}compagnie_aerienne`], 'WestJet');
-  assert.match(props[`${prefix}vols_detail`], /WestJet \| WS2700 \| Montréal \(YUL\)/);
-  assert.match(props[`${prefix}tarifs_detail`], /Adulte \| 2959 \| 3505 \| 10 places/);
-  assert.match(props[`${prefix}galerie_urls`], /662\.jpg/);
-  assert.equal(props[`${prefix}photo_principale_url`], 'https://cdn.example/661.jpg');
-  assert.equal(props[`${prefix}hotel_chaine`], 'RIU');
-  assert.equal(props[`${prefix}aeroport_depart`], 'Montréal (YUL)');
-  assert.match(props[`${prefix}programme`], /Jour 1: Arrivée/);
-  assert.equal(props[`${prefix}devise`], 'CAD');
-  assert.equal(props[`${prefix}nombre_photos`], 2);
-  assert.equal(props[`${prefix}navire_annee`], '2019');
-  assert.equal(props[`${prefix}navire_passagers`], 6334);
-  assert.equal(props[`${prefix}description`], undefined);
-  assert.equal(props[`${prefix}notes`], undefined);
+  assert.equal(props.atrium_id, '661');
+  assert.equal(props.titre, 'Noël');
+  assert.equal(props.prix_appel, 2959);
+  assert.equal(props.compagnie_aerienne, 'WestJet');
+  assert.match(props.vols_detail, /WestJet \| WS2700 \| Montréal \(YUL\)/);
+  assert.match(props.tarifs_detail, /Adulte \| 2959 \| 3505 \| 10 places/);
+  assert.match(props.galerie_urls, /662\.jpg/);
+  assert.equal(props.photo_principale_url, 'https://cdn.example/661.jpg');
+  assert.equal(props.hotel_chaine, 'RIU');
+  assert.equal(props.aeroport_depart, 'Montréal (YUL)');
+  assert.match(props.programme, /Jour 1: Arrivée/);
+  assert.equal(props.devise, 'CAD');
+  assert.equal(props.nombre_photos, 2);
+  assert.equal(props.navire_annee, '2019');
+  assert.equal(props.navire_passagers, 6334);
+  assert.equal(props.description, undefined);
+  assert.equal(props.notes, undefined);
+  assert.equal(props['custom_objects.groupes.titre'], undefined);
+  const later = groupProperties({
+    id: 661,
+    type: 'sud',
+    slug: 'noel',
+    title: 'Noël',
+    image: 'https://cdn.example/661.jpg',
+    images: [{ url: 'https://cdn.example/661.jpg' }, { url: 'https://cdn.example/662.jpg' }],
+    prixAppel: 2959,
+    devise: 'CAD',
+    description: 'Semaine',
+    hotelDetail: { chaine: 'RIU' },
+    navireDetail: { annee: '2019', passagers: 6334 },
+    vols: [{ compagnie: 'WestJet', numero: 'WS2700', depart: 'Montréal (YUL)', arrivee: 'Liberia (LIR)', dateDepart: '2026-12-21', heureDepart: '09:10' }],
+    tarifs: [{ categorie: 'Adulte', prix: 2959, prixAncien: 3505, disponibilite: '10 places' }],
+    itineraire: [{ titre: 'Jour 1', description: 'Arrivée' }]
+  }, binding, { syncedAt: '2026-10-25T03:00:00.000Z' });
+  assert.equal(fingerprint(props), fingerprint(later));
+  assert.notEqual(props.derniere_synchro, later.derniere_synchro);
+});
+
+test('monetary prix_appel and prix_ancien are sent as CAD amounts', () => {
+  const binding = bindGroupeFields({
+    fields: [
+      { fieldKey: 'custom_objects.groupes.prix_appel', name: 'Prix affiché', dataType: 'MONETARY' },
+      { fieldKey: 'custom_objects.groupes.prix_ancien', name: 'Ancien prix', dataType: 'MONETORY' },
+      { fieldKey: 'custom_objects.groupes.nombre_photos', name: 'Photos', dataType: 'NUMERICAL' },
+      { fieldKey: 'custom_objects.groupes.titre', name: 'Titre', dataType: 'TEXT' }
+    ]
+  });
+  const props = groupProperties({
+    id: 1,
+    title: 'Test',
+    prixAppel: '2 959,50',
+    prixAncien: 3505,
+    devise: 'USD',
+    images: [{ url: 'https://cdn.example/a.jpg' }, { url: 'https://cdn.example/b.jpg' }]
+  }, binding, {});
+  assert.deepEqual(props.prix_appel, { currency: 'CAD', value: 2959.5 });
+  assert.deepEqual(props.prix_ancien, { currency: 'CAD', value: 3505 });
+  assert.equal(props.nombre_photos, 2);
+  assert.equal(props.titre, 'Test');
+  assert.equal(Object.keys(props).some((key) => key.includes('.')), false);
 });
 
 test('a live run stops before any write when atrium_id or titre is unbound', async () => {
@@ -259,26 +304,40 @@ test('a live upsert writes the bound description field once and archives without
   assert.deepEqual(first.updated, ['661']);
   assert.deepEqual(first.archived, ['999']);
   const create = calls.find((call) => call.method === 'POST' && String(call.url).endsWith('/records'));
-  const createdProps = JSON.parse(create.body);
-  assert.equal(createdProps.properties['custom_objects.groupes.texte_groupe'], undefined);
+  const createdProps = JSON.parse(create.body).properties;
+  assert.equal(createdProps.texte_groupe, undefined);
+  assert.equal(createdProps.titre, 'Caraïbes');
+  assert.equal(createdProps.grp_atrium, '6');
+  assert.equal(createdProps['custom_objects.groupes.titre'], undefined);
   const cruise = catalog().groups[1];
   assert.equal(cruise.description, '');
-  const sudUpdate = calls.find((call) => call.method === 'PUT' && String(call.url).endsWith('/rec-661'));
-  const sudProps = JSON.parse(sudUpdate.body).properties;
-  assert.equal(sudProps['custom_objects.groupes.texte_groupe'], 'Semaine au soleil');
-  assert.equal(sudProps['custom_objects.groupes.description'], undefined);
-  assert.equal(sudProps['custom_objects.groupes.grp_atrium'], '661');
-  assert.equal(sudProps['custom_objects.groupes.photo_file'], 'https://files.example/661.jpg');
-  assert.equal(sudProps['custom_objects.groupes.lien_page'], groupPageUrl(catalog().groups[0]));
+  const sudWrites = calls.filter((call) => call.method === 'PUT' && String(call.url).endsWith('/rec-661'));
+  assert.equal(sudWrites.length, 2);
+  const sudProps = JSON.parse(sudWrites[0].body).properties;
+  assert.equal(sudProps.texte_groupe, 'Semaine au soleil');
+  assert.equal(sudProps.description, undefined);
+  assert.equal(sudProps.grp_atrium, '661');
+  assert.equal(sudProps.titre, 'Noël au Costa Rica');
+  assert.equal(sudProps.photo_file, undefined);
+  assert.equal(sudProps.lien_page, groupPageUrl(catalog().groups[0]));
+  assert.deepEqual(JSON.parse(sudWrites[1].body).properties, { photo_file: 'https://files.example/661.jpg' });
+  const uploadAt = calls.findIndex((call) => String(call.url).includes('/medias/upload-file'));
+  assert.ok(calls.indexOf(sudWrites[0]) < uploadAt);
+  assert.ok(uploadAt < calls.indexOf(sudWrites[1]));
   const archive = calls.find((call) => call.method === 'PUT' && String(call.url).endsWith('/rec-old'));
-  assert.deepEqual(JSON.parse(archive.body).properties, { 'custom_objects.groupes.statut_synchro': 'archivé' });
+  assert.deepEqual(JSON.parse(archive.body).properties, { statut_synchro: 'archivé' });
   assert.equal(calls.some((call) => call.method === 'DELETE'), false);
+  const saved = JSON.parse(readFileSync(statePath, 'utf8'));
+  assert.equal(saved.hashes['661'].length, 64);
+  assert.equal(saved.photos['661'], 'https://cdn.example/661.jpg');
 
   calls.length = 0;
+  delete saved.photos;
+  writeFileSync(statePath, `${JSON.stringify(saved)}\n`);
   seen.records.splice(0, seen.records.length,
-    { id: 'rec-661', properties: { 'custom_objects.groupes.grp_atrium': '661' } },
+    { id: 'rec-661', properties: { grp_atrium: '661', 'custom_objects.groupes.photo_principale_url': 'https://cdn.example/661.jpg' } },
     { id: 'rec-6', properties: { 'custom_objects.groupes.grp_atrium': '6' } },
-    { id: 'rec-old', properties: { 'custom_objects.groupes.grp_atrium': '999', 'custom_objects.groupes.statut_synchro': 'archivé' } }
+    { id: 'rec-old', properties: { statut_synchro: 'archivé', 'custom_objects.groupes.grp_atrium': '999' } }
   );
   const second = await pushGroupes({
     catalog: catalog(),
@@ -288,14 +347,76 @@ test('a live upsert writes the bound description field once and archives without
     fetchImpl,
     statePath,
     throttleMs: 0,
-    syncedAt: '2026-10-24T00:00:00.000Z'
+    syncedAt: '2026-10-25T03:00:00.000Z'
   });
   assert.deepEqual(second.created, []);
   assert.deepEqual(second.updated, []);
+  assert.deepEqual(second.archived, []);
   assert.ok(second.unchanged.includes('661'));
   assert.ok(second.unchanged.includes('6'));
-  assert.equal(calls.some((call) => call.method === 'PUT' || (call.method === 'POST' && !String(call.url).includes('/search'))), false);
-  assert.equal(JSON.parse(readFileSync(statePath, 'utf8')).hashes['661'].length, 64);
+  assert.equal(calls.some((call) => String(call.url).includes('/medias/upload-file')), false);
+  assert.equal(calls.some((call) => call.method === 'PUT' || (call.method === 'POST' && String(call.url).endsWith('/records'))), false);
+});
+
+test('a failed create does not upload a photo', async () => {
+  const { fetchImpl, calls } = mockFetch({ records: [], createStatus: 400 });
+  await assert.rejects(
+    () => pushGroupes({
+      catalog: {
+        groups: [{
+          id: 6,
+          type: 'cruise',
+          slug: 'caraibes',
+          title: 'Caraïbes',
+          image: 'https://cdn.example/6.jpg',
+          description: 'Mer'
+        }]
+      },
+      apiKey: 'pit-test',
+      locationId: 'loc',
+      dryRun: false,
+      fetchImpl,
+      throttleMs: 0,
+      syncedAt: '2026-10-24T00:00:00.000Z'
+    }),
+    /GHL 400/
+  );
+  const create = calls.find((call) => call.method === 'POST' && String(call.url).endsWith('/records'));
+  assert.equal(JSON.parse(create.body).properties.titre, 'Caraïbes');
+  assert.equal(calls.some((call) => String(call.url).includes('/medias/upload-file')), false);
+  assert.equal(calls.some((call) => String(call.url).startsWith('https://cdn.example/')), false);
+});
+
+test('the photo is uploaded only after a successful create', async () => {
+  const { fetchImpl, calls } = mockFetch({ records: [] });
+  const summary = await pushGroupes({
+    catalog: {
+      groups: [{
+        id: 6,
+        type: 'cruise',
+        slug: 'caraibes',
+        title: 'Caraïbes',
+        image: 'https://cdn.example/6.jpg',
+        description: 'Mer'
+      }]
+    },
+    apiKey: 'pit-test',
+    locationId: 'loc',
+    dryRun: false,
+    fetchImpl,
+    throttleMs: 0,
+    syncedAt: '2026-10-24T00:00:00.000Z'
+  });
+  assert.deepEqual(summary.created, ['6']);
+  const steps = calls.map((call) => {
+    if (String(call.url).includes('/medias/upload-file')) return 'upload';
+    if (call.method === 'POST' && String(call.url).endsWith('/records')) return 'create';
+    if (call.method === 'PUT') return 'photo';
+    return '';
+  }).filter(Boolean);
+  assert.deepEqual(steps, ['create', 'upload', 'photo']);
+  assert.equal(JSON.parse(calls.find((call) => call.method === 'POST' && String(call.url).endsWith('/records')).body).properties.photo_file, undefined);
+  assert.deepEqual(JSON.parse(calls.find((call) => call.method === 'PUT').body).properties, { photo_file: 'https://files.example/661.jpg' });
 });
 
 test('the local catalog has sud, cruise and voyage groups and no mariage rows', () => {
