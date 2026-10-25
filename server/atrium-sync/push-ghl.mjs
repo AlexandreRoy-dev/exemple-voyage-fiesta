@@ -54,6 +54,38 @@ function hashPayload(value) {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
+function isSyncStamp(key) {
+  const plain = String(key || '').split('.').pop();
+  if (!plain || plain === 'statut_synchro') return false;
+  if (plain === 'derniere_synchro') return true;
+  if (/timestamp/i.test(plain)) return true;
+  if (/synchro/i.test(plain)) return true;
+  return /^(synced_at|updated_at|created_at)$/i.test(plain);
+}
+
+export function fingerprint(properties) {
+  const stable = {};
+  for (const [key, value] of Object.entries(properties || {})) {
+    const plain = String(key).split('.').pop();
+    if (isSyncStamp(plain)) continue;
+    stable[plain] = value;
+  }
+  return hashPayload(stable);
+}
+
+function isMoneyType(type) {
+  const kind = String(type || '').toUpperCase();
+  return kind.includes('MONET') || kind.includes('CURRENCY');
+}
+
+function moneyValue(raw) {
+  const n = typeof raw === 'number'
+    ? raw
+    : Number(String(raw).replace(/\s/g, '').replace(',', '.'));
+  if (!Number.isFinite(n)) return null;
+  return { currency: 'CAD', value: Math.round(n * 100) / 100 };
+}
+
 function lines(items, render) {
   return (items || []).map(render).filter(Boolean).join('\n');
 }
@@ -142,15 +174,22 @@ export function groupProperties(group, binding, { origin, syncedAt, photo } = {}
   for (const [logical, field] of Object.entries(binding.bound)) {
     let value = values[logical];
     if (value == null || value === '') continue;
-    if (field.type.includes('NUM') && value !== '') value = Number(value);
+    if ((logical === 'prix_appel' || logical === 'prix_ancien') && isMoneyType(field.type)) {
+      value = moneyValue(value);
+      if (!value) continue;
+    } else if (String(field.type).includes('NUM') && value !== '') {
+      value = Number(value);
+      if (Number.isNaN(value)) continue;
+    }
     if (field.type.includes('OPTION') || field.type.includes('SELECT') || field.type.includes('RADIO')) {
       value = optionValue(field, value);
     }
-    if (Number.isNaN(value)) continue;
-    properties[`${GROUPES_SCHEMA_KEY}.${field.key}`] = value;
+    properties[field.key] = value;
   }
-  if (Object.prototype.hasOwnProperty.call(properties, `${GROUPES_SCHEMA_KEY}.description`)) {
-    throw new Error('Le champ réservé description ne doit pas être écrit.');
+  for (const key of Object.keys(properties)) {
+    if (String(key).split('.').pop() === 'description') {
+      throw new Error('Le champ réservé description ne doit pas être écrit.');
+    }
   }
   return properties;
 }
@@ -159,16 +198,23 @@ function propsOf(record) {
   return record?.properties || record?.fields || {};
 }
 
+function propValue(props, key) {
+  if (!props || !key) return '';
+  const direct = props[key];
+  if (direct != null && direct !== '') return direct;
+  const prefixed = props[`${GROUPES_SCHEMA_KEY}.${key}`];
+  if (prefixed != null && prefixed !== '') return prefixed;
+  return '';
+}
+
 function atriumIdOf(record, binding) {
   const key = binding.bound.atrium_id?.key || 'atrium_id';
-  const props = propsOf(record);
-  return String(props[key] ?? props[`${GROUPES_SCHEMA_KEY}.${key}`] ?? '').trim();
+  return String(propValue(propsOf(record), key) || '').trim();
 }
 
 function statutOf(record, binding) {
   const key = binding.bound.statut_synchro?.key || 'statut_synchro';
-  const props = propsOf(record);
-  return String(props[key] ?? props[`${GROUPES_SCHEMA_KEY}.${key}`] ?? '').trim().toLowerCase();
+  return String(propValue(propsOf(record), key) || '').trim().toLowerCase();
 }
 
 async function ghl(fetchImpl, apiKey, path, { method = 'GET', body } = {}) {
@@ -238,9 +284,12 @@ async function uploadPhoto({ fetchImpl, apiKey, locationId, imageUrl }) {
 function readState(path) {
   try {
     const data = JSON.parse(readFileSync(path, 'utf8'));
-    return data?.hashes ? data : { hashes: {} };
+    if (!data || typeof data !== 'object') return { hashes: {}, photos: {} };
+    data.hashes = data.hashes || {};
+    data.photos = data.photos || {};
+    return data;
   } catch {
-    return { hashes: {} };
+    return { hashes: {}, photos: {} };
   }
 }
 
@@ -277,7 +326,8 @@ export async function pushGroupes({
     if (!byAtrium.has(id)) byAtrium.set(id, []);
     byAtrium.get(id).push(record);
   }
-  const state = statePath ? readState(statePath) : { hashes: {} };
+  const state = statePath ? readState(statePath) : { hashes: {}, photos: {} };
+  state.photos = state.photos || {};
   const summary = {
     dryRun,
     schemaCount: binding.schemaCount,
@@ -308,52 +358,67 @@ export async function pushGroupes({
     if (existing.length > 1) {
       summary.duplicates.push({ atriumId, ids: existing.map((record) => record.id).filter(Boolean) });
     }
-    const properties = groupProperties(group, binding, { origin, syncedAt, photo: { uploadedUrl: '' } });
-    const digest = hashPayload(properties);
+    const properties = groupProperties(group, binding, { origin, syncedAt });
+    const digest = fingerprint(properties);
     const current = existing[0];
-    if (current && state.hashes[atriumId] === digest) {
+    const source = String(group.image || '').trim();
+    const urlKey = binding.bound.photo_principale_url?.key || 'photo_principale_url';
+    const recordSource = current ? String(propValue(propsOf(current), urlKey) || '').trim() : '';
+    const storedSource = recordSource || String(state.photos[atriumId] || '').trim();
+    const photoChanged = Boolean(photoIsFile && source && source !== storedSource);
+    const contentChanged = !current || state.hashes[atriumId] !== digest;
+    if (current && !contentChanged && !photoChanged) {
       summary.unchanged.push(atriumId);
       summary.photos.push({ atriumId, mode: 'unchanged' });
       continue;
     }
-    let uploadedUrl = '';
-    if (photoIsFile && group.image && !dryRun) {
-      try {
-        uploadedUrl = await uploadPhoto({ fetchImpl, apiKey, locationId, imageUrl: group.image });
-        summary.photos.push({ atriumId, mode: 'upload' });
-      } catch (error) {
-        summary.photos.push({ atriumId, mode: 'url', error: error.message });
-      }
-    } else if (photoIsFile && group.image) {
-      summary.photos.push({ atriumId, mode: 'upload-dry' });
-    } else if (group.image) {
-      summary.photos.push({ atriumId, mode: 'url' });
-    }
-    if (uploadedUrl && photoField) {
-      properties[`${GROUPES_SCHEMA_KEY}.${photoField.key}`] = uploadedUrl;
-    }
-    if (!current) {
-      summary.created.push(atriumId);
-      if (!dryRun) {
-        await pause();
+    if (!current) summary.created.push(atriumId);
+    else if (contentChanged) summary.updated.push(atriumId);
+
+    let recordId = current?.id || '';
+    if (!dryRun && (!current || contentChanged)) {
+      await pause();
+      if (!current) {
         const created = await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records`, {
           method: 'POST',
           body: { locationId, properties }
         });
+        recordId = created?.record?.id || created?.id || '';
         state.hashes[atriumId] = digest;
         state.ids = state.ids || {};
-        state.ids[atriumId] = created?.record?.id || created?.id || '';
+        state.ids[atriumId] = recordId;
+      } else {
+        await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records/${encodeURIComponent(current.id)}`, {
+          method: 'PUT',
+          body: { locationId, properties }
+        });
+        state.hashes[atriumId] = digest;
+        recordId = current.id;
       }
-      continue;
     }
-    summary.updated.push(atriumId);
-    if (!dryRun) {
-      await pause();
-      await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records/${encodeURIComponent(current.id)}`, {
-        method: 'PUT',
-        body: { locationId, properties }
-      });
-      state.hashes[atriumId] = digest;
+
+    if (photoChanged) {
+      if (dryRun) {
+        summary.photos.push({ atriumId, mode: 'upload-dry' });
+      } else if (!recordId) {
+        summary.photos.push({ atriumId, mode: 'url', error: 'fiche sans id' });
+      } else {
+        try {
+          const uploadedUrl = await uploadPhoto({ fetchImpl, apiKey, locationId, imageUrl: source });
+          if (!uploadedUrl) throw new Error('photo sans URL');
+          await pause();
+          await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records/${encodeURIComponent(recordId)}`, {
+            method: 'PUT',
+            body: { locationId, properties: { [photoField.key]: uploadedUrl } }
+          });
+          state.photos[atriumId] = source;
+          summary.photos.push({ atriumId, mode: 'upload' });
+        } catch (error) {
+          summary.photos.push({ atriumId, mode: 'url', error: error.message });
+        }
+      }
+    } else if (source) {
+      summary.photos.push({ atriumId, mode: photoIsFile ? 'unchanged' : 'url' });
     }
   }
 
@@ -374,7 +439,7 @@ export async function pushGroupes({
         method: 'PUT',
         body: {
           locationId,
-          properties: { [`${GROUPES_SCHEMA_KEY}.${field.key}`]: value }
+          properties: { [field.key]: value }
         }
       });
     }
