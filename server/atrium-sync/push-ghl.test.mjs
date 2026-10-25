@@ -471,6 +471,164 @@ test('a subset run leaves records outside the list alone', async () => {
   assert.equal(String(create.url).includes('?'), false);
 });
 
+test('text longer than 11900 characters is capped before the fingerprint', () => {
+  const binding = bindGroupeFields({
+    fields: [
+      { fieldKey: 'custom_objects.groupes.programme', name: 'Programme', dataType: 'LARGE_TEXT' },
+      { fieldKey: 'custom_objects.groupes.itineraire', name: 'Itinéraire', dataType: 'LARGE_TEXT' },
+      { fieldKey: 'custom_objects.groupes.titre', name: 'Titre', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.derniere_synchro', name: 'Synchronisé le', dataType: 'TEXT' },
+      { fieldKey: 'custom_objects.groupes.nombre_photos', name: 'Nombre de photos', dataType: 'NUMERICAL' },
+      { fieldKey: 'custom_objects.groupes.prix_appel', name: "Prix d'appel", dataType: 'MONETARY' }
+    ]
+  });
+  const day = 'é'.repeat(16688);
+  const group = {
+    id: 271,
+    title: 'Court',
+    prixAppel: 2959,
+    images: [{ url: 'https://cdn.example/a.jpg' }, { url: 'https://cdn.example/b.jpg' }],
+    itineraire: [{ titre: day }]
+  };
+  const props = groupProperties(group, binding, { syncedAt: '2026-10-24T00:00:00.000Z' });
+  assert.equal(props.titre, 'Court');
+  assert.equal(props.programme.length, 11901);
+  assert.equal(props.itineraire.length, 11901);
+  assert.equal(props.programme.endsWith('…'), true);
+  assert.equal(props.programme.slice(0, 11900), 'é'.repeat(11900));
+  assert.equal(props.nombre_photos, 2);
+  assert.deepEqual(props.prix_appel, { currency: 'default', value: 2959 });
+  const later = groupProperties(group, binding, { syncedAt: '2026-10-25T03:00:00.000Z' });
+  assert.equal(fingerprint(props), fingerprint(later));
+  assert.notEqual(fingerprint(props), fingerprint({ programme: day }));
+  const exact = groupProperties({ id: 1, title: 'x'.repeat(11900), itineraire: [] }, binding, {});
+  assert.equal(exact.titre, 'x'.repeat(11900));
+});
+
+function pagedFetch(records, { total = records.length, pageSize = 100, createStatus = 200 } = {}) {
+  const calls = [];
+  const fetchImpl = async (url, options = {}) => {
+    const method = options.method || 'GET';
+    calls.push({ url: String(url), method, body: options.body });
+    const send = (status, payload) => ({
+      ok: status >= 200 && status < 300,
+      status,
+      text: async () => JSON.stringify(payload),
+      headers: { get: () => '' }
+    });
+    if (String(url).includes('/objects/custom_objects.groupes?')) return send(200, schema);
+    if (String(url).includes('/records/search')) {
+      const body = options.body ? JSON.parse(options.body) : {};
+      const start = (Number(body.page || 1) - 1) * pageSize;
+      return send(200, { records: records.slice(start, start + pageSize), total, traceId: 'trace' });
+    }
+    if (method === 'POST' && String(url).endsWith('/records')) {
+      return send(createStatus, createStatus === 200 ? { record: { id: 'rec-new' } } : { message: 'rejected' });
+    }
+    if (method === 'PUT') return send(200, { record: { id: 'rec-put' } });
+    return send(404, {});
+  };
+  return { fetchImpl, calls };
+}
+
+test('search follows the record searchAfter until the reported total', async () => {
+  const records = Array.from({ length: 150 }, (_, index) => ({
+    id: `rec-${index}`,
+    searchAfter: [`sa-${index}`],
+    properties: { 'custom_objects.groupes.grp_atrium': String(index === 120 ? 661 : 5000 + index) }
+  }));
+  const { fetchImpl, calls } = pagedFetch(records);
+  const summary = await pushGroupes({
+    catalog: catalog(),
+    apiKey: 'pit-test',
+    locationId: 'loc',
+    dryRun: false,
+    onlyIds: '661,6',
+    fetchImpl,
+    throttleMs: 0,
+    syncedAt: '2026-10-24T00:00:00.000Z'
+  });
+  const searches = calls.filter((call) => call.url.includes('/records/search'));
+  assert.equal(searches.length, 2);
+  const second = JSON.parse(searches[1].body);
+  assert.equal(second.page, 2);
+  assert.deepEqual(second.searchAfter, ['sa-99']);
+  assert.equal(calls.filter((call) => call.url.includes('/records/search')).length, 2);
+  assert.deepEqual(summary.updated, ['661']);
+  assert.deepEqual(summary.created, ['6']);
+  assert.deepEqual(summary.archived, []);
+});
+
+test('a short record read aborts before any create', async () => {
+  const records = Array.from({ length: 100 }, (_, index) => ({
+    id: `rec-${index}`,
+    properties: { grp_atrium: String(8000 + index) }
+  }));
+  const { fetchImpl, calls } = pagedFetch(records, { total: 150 });
+  await assert.rejects(
+    () => pushGroupes({
+      catalog: catalog(),
+      apiKey: 'pit-test',
+      locationId: 'loc',
+      dryRun: false,
+      fetchImpl,
+      throttleMs: 0
+    }),
+    /100\/150/
+  );
+  assert.equal(calls.some((call) => call.method === 'POST' && call.url.endsWith('/records')), false);
+  assert.equal(calls.some((call) => call.method === 'PUT'), false);
+});
+
+test('a failed create saves the state of records already written', async () => {
+  const stateDir = mkdtempSync(join(tmpdir(), 'ghl-groupes-'));
+  const statePath = join(stateDir, 'state.json');
+  let creates = 0;
+  const createBodies = [];
+  const fetchImpl = async (url, options = {}) => {
+    const method = options.method || 'GET';
+    const send = (status, payload) => ({
+      ok: status >= 200 && status < 300,
+      status,
+      text: async () => JSON.stringify(payload),
+      headers: { get: () => '' }
+    });
+    if (String(url).includes('/objects/custom_objects.groupes?')) return send(200, schema);
+    if (String(url).includes('/records/search')) return send(200, { records: [], total: 0 });
+    if (method === 'POST' && String(url).endsWith('/records')) {
+      creates += 1;
+      createBodies.push(JSON.parse(options.body));
+      if (creates === 1) return send(200, { record: { id: 'rec-1' } });
+      return send(400, { message: 'rejected' });
+    }
+    return send(404, {});
+  };
+  await assert.rejects(
+    () => pushGroupes({
+      catalog: {
+        groups: [
+          { id: 1, type: 'sud', slug: 'un', title: 'Un', description: 'court' },
+          { id: 2, type: 'sud', slug: 'deux', title: 'Deux', description: 'x'.repeat(13000) }
+        ]
+      },
+      apiKey: 'pit-test',
+      locationId: 'loc',
+      dryRun: false,
+      fetchImpl,
+      statePath,
+      throttleMs: 0,
+      syncedAt: '2026-10-24T00:00:00.000Z'
+    }),
+    /GHL 400/
+  );
+  const saved = JSON.parse(readFileSync(statePath, 'utf8'));
+  assert.equal(saved.hashes['1'].length, 64);
+  assert.equal(saved.ids['1'], 'rec-1');
+  assert.equal(saved.hashes['2'], undefined);
+  assert.equal(createBodies[1].properties.texte_groupe.length, 11901);
+  assert.equal(createBodies[1].properties.texte_groupe.endsWith('…'), true);
+});
+
 test('the local catalog has sud, cruise and voyage groups and no mariage rows', () => {
   const groups = JSON.parse(readFileSync(new URL('../../groupes/data/groupes.json', import.meta.url), 'utf8')).groups;
   const analysis = analyzeCatalog(groups);
