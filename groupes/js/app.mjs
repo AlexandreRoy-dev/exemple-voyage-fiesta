@@ -1,3 +1,4 @@
+import { catalogImage } from './images.mjs';
 import {
   PAGE_SIZE,
   formatPrice,
@@ -147,13 +148,19 @@ function priceLine(group) {
   return `<span class="price">À partir de ${esc(price)}</span>${old ? `<span class="was">${esc(old)}</span>` : ''}`;
 }
 
+function imgTag(photo, alt, attrs = '') {
+  if (!photo.src) return '';
+  const fallback = photo.fallback ? ` data-fallback="${esc(photo.fallback)}"` : '';
+  return `<img src="${esc(photo.src)}"${fallback} alt="${esc(alt)}"${attrs}>`;
+}
+
 function card(group) {
-  const img = group.image || '';
+  const photo = catalogImage(group.image, { imageSource: group.imageSource, source: group.source });
   const where = [group.country, group.destination].filter(Boolean).join(' · ');
-  const media = img
-    ? `<img src="${esc(img)}" alt="${esc(group.title)}" loading="lazy" decoding="async">`
+  const media = photo.src
+    ? imgTag(photo, group.title, ' loading="lazy" decoding="async"')
     : `<span class="card-fallback" aria-hidden="true"></span>`;
-  const mediaLabel = img ? '' : ` aria-label="${esc(group.title)}"`;
+  const mediaLabel = photo.src ? '' : ` aria-label="${esc(group.title)}"`;
   return `<article class="card">
     <a class="card-media" href="${esc(groupHref(group))}"${mediaLabel}>${media}</a>
     <div class="card-body">
@@ -713,9 +720,10 @@ function renderDetail(groups) {
   }
   document.title = `${group.title} | Voyage Fiesta`;
   const back = categoryPath(group.type);
-  const images = group.images?.length ? group.images : (group.image ? [{ url: group.image, alt: group.title }] : []);
-  const hero = images[0]?.url || '';
-  const heroStyle = hero ? ` style="--hero:url('${esc(hero)}')"` : '';
+  const images = group.images?.length ? group.images : (group.image ? [{ url: group.image, alt: group.title, source: group.imageSource || group.source || '' }] : []);
+  const heroPhoto = catalogImage(images[0] || '', { imageSource: group.imageSource, source: group.source });
+  const hero = heroPhoto.src;
+  const heroStyle = hero ? ` style="--hero:url('${esc(hero)}')"${heroPhoto.fallback ? ` data-hero-fallback="${esc(heroPhoto.fallback)}"` : ''}` : '';
   const duration = [group.dureeJours ? `${group.dureeJours} jours` : '', group.dureeNuits ? `${group.dureeNuits} nuits` : ''].filter(Boolean).join(', ');
   const hotel = group.hotelDetail;
   const ship = group.navireDetail;
@@ -755,7 +763,11 @@ function renderDetail(groups) {
     <div class="wrap layout">
       <div>
         <p><a href="${esc(href(back))}">Retour à la liste</a></p>
-        ${images.length ? `<section class="panel"><h2>Galerie photos</h2><div class="gallery">${images.map((image, index) => `<button type="button" data-photo="${esc(image.url)}" aria-label="Agrandir la photo ${index + 1}"><img src="${esc(image.url)}" alt="${esc(image.alt || `${group.title}, photo ${index + 1}`)}" loading="lazy" decoding="async"></button>`).join('')}</div></section>` : ''}
+        ${images.length ? `<section class="panel"><h2>Galerie photos</h2><div class="gallery">${images.map((image, index) => {
+          const photo = catalogImage(image, { imageSource: group.imageSource });
+          const alt = image.alt || `${group.title}, photo ${index + 1}`;
+          return `<button type="button" data-photo="${esc(photo.src)}"${photo.fallback ? ` data-fallback="${esc(photo.fallback)}"` : ''} aria-label="Agrandir la photo ${index + 1}">${imgTag(photo, alt, ' loading="lazy" decoding="async"')}</button>`;
+        }).join('')}</div></section>` : ''}
         ${group.description ? `<section class="panel"><h2>Description</h2><p>${esc(group.description)}</p></section>` : ''}
         ${listBlock('Points forts', group.pointsForts)}
         ${listBlock('Inclusions', group.inclusions)}
@@ -786,6 +798,14 @@ function renderDetail(groups) {
         </section>
       </aside>
     </div>`;
+  const heroEl = main.querySelector('.detail-hero');
+  if (hero && heroEl?.dataset.heroFallback) {
+    const probe = new Image();
+    probe.addEventListener('error', () => {
+      heroEl.style.setProperty('--hero', `url("${heroEl.dataset.heroFallback}")`);
+    }, { once: true });
+    probe.src = hero;
+  }
   bindForm(document.getElementById('form-fiche'), group);
   const shareTarget = voyageShareUrl(group);
   const facebook = document.getElementById('share-facebook');
@@ -812,6 +832,8 @@ function renderDetail(groups) {
     button.addEventListener('click', () => {
       const img = document.getElementById('photo-dialog-img');
       img.src = button.dataset.photo;
+      if (button.dataset.fallback) img.dataset.fallback = button.dataset.fallback;
+      else img.removeAttribute('data-fallback');
       img.alt = button.querySelector('img')?.alt || '';
       photoDialog.showModal();
     });
@@ -867,7 +889,17 @@ function setCanonical() {
   link.href = new URL(location.pathname + location.search, cfg.canonicalOrigin).href;
 }
 
+function useRemoteImage(event) {
+  const img = event.target;
+  if (!img || img.tagName !== 'IMG') return;
+  const fallback = img.dataset.fallback;
+  if (!fallback || img.getAttribute('src') === fallback) return;
+  img.removeAttribute('data-fallback');
+  img.src = fallback;
+}
+
 async function main() {
+  document.addEventListener('error', useRemoteImage, true);
   document.documentElement.classList.remove('no-js');
   if (window.VFAgent?.prepare) await VFAgent.prepare('/staff.json');
   setCanonical();
