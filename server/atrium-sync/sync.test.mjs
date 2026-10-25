@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -30,6 +30,24 @@ test('sync reads the local fixture and writes public JSON without the key', asyn
   assert.equal(written.includes(API_KEY), false);
   assert.equal(catalog.counts.total, catalog.groups.length);
   assert.ok(catalog.groups.some((group) => group.id === 661));
+});
+
+test('a deferred publish leaves the public catalog untouched', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atrium-defer-'));
+  const output = join(dir, 'groupes.json');
+  writeFileSync(output, '{"groups":[]}\n');
+  await syncAtrium({
+    apiKey: API_KEY,
+    fixture: fixturePath,
+    output,
+    generatedAt: '2026-10-21T12:00:00.000Z',
+    deferPublish: true
+  });
+  assert.equal(readFileSync(output, 'utf8'), '{"groups":[]}\n');
+  const incoming = JSON.parse(readFileSync(`${output}.incoming`, 'utf8'));
+  assert.ok(incoming.groups.length > 0);
+  assert.equal(existsSync(`${output}.incoming.${process.pid}.tmp`), false);
+  assert.equal(readdirSync(dir).some((name) => name.endsWith('.tmp')), false);
 });
 
 test('sync calls Atrium with the Api-Key header and never writes it', async () => {

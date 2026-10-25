@@ -50,7 +50,25 @@ ATRIUM_MEDIA_DIR=/opt/voyage-fiesta-reservation/media \
 node mirror-images.mjs
 ```
 
-Le journal affiche le nombre d'URL, les fichiers copiés, les fichiers inchangés, les échecs, les octets écrits et la taille totale. Une image qui échoue garde son URL distante. Pour publier les copies, servir `media/` et définir `ATRIUM_MEDIA_PUBLIC_BASE`, puis écrire le catalogue avec `ATRIUM_CATALOG_OUTPUT`.
+Le journal affiche le nombre d'URL, les fichiers copiés, les fichiers inchangés, les échecs, les octets écrits et la taille totale. Une image qui échoue garde son URL distante. Pour publier les copies, servir `media/` et définir `ATRIUM_MEDIA_PUBLIC_BASE`, puis écrire le catalogue avec `ATRIUM_CATALOG_OUTPUT`. Le fichier public est remplacé par un renommage, pas par une écriture au milieu du téléchargement.
+
+Le miroir parcourt les objets imbriqués (`navireDetail`, `hotelDetail`, galerie). Une clé `image` ou `url` est réécrite à n'importe quelle profondeur. L'URL d'origine reste dans `imageSource` (champ `image`) ou `source` (champ `url`), pour que le site reprenne la photo distante si la copie locale ne charge pas.
+
+Pour éviter qu'un `groupes.json` tout neuf expose les URL distantes pendant le téléchargement (environ 15 s), le sync peut n'écrire que le fichier d'attente. Le miroir publie ensuite le JSON final.
+
+```bash
+ATRIUM_DEFER_PUBLISH=1 \
+ATRIUM_OUTPUT=/opt/voyage-fiesta-reservation/groupes.json \
+node atrium-sync/sync.mjs
+
+ATRIUM_CATALOG=/opt/voyage-fiesta-reservation/groupes.json.incoming \
+ATRIUM_CATALOG_OUTPUT=/opt/voyage-fiesta-reservation/groupes.json \
+ATRIUM_MEDIA_DIR=/opt/voyage-fiesta-reservation/media \
+ATRIUM_MEDIA_PUBLIC_BASE=https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/media \
+node atrium-sync/mirror-images.mjs
+```
+
+Sans `ATRIUM_DEFER_PUBLISH`, `sync.mjs` publie `groupes.json` directement, comme avant. Les visiteurs continuent alors de voir les URL distantes jusqu'au passage du miroir.
 
 Pousser le catalogue vers l'objet GHL **déjà créé** `custom_objects.groupes`. Le script ne crée pas l'objet et ne supprime pas de fiches. Une fiche déjà présente pour le même `atrium_id` est mise à jour. Une fiche absente du catalogue passe à `archivé`.
 

@@ -7,6 +7,7 @@
  *   ATRIUM_OUTPUT      file to write (default: reservation-api/groupes.json,
  *                      or ../groupes.json when server.mjs sits next to this folder)
  *   ATRIUM_FIXTURE     local JSON instead of the network (tests)
+ *   ATRIUM_DEFER_PUBLISH  1 = write groupes.json.incoming and leave the public file alone
  *
  * The key is read from the environment, atrium-sync/.env, the parent .env
  * (VPS layout), or ../reservation-api/.env. It is never written to the JSON.
@@ -91,7 +92,8 @@ export async function syncAtrium({
   output,
   fixture = '',
   fetchImpl = globalThis.fetch,
-  generatedAt
+  generatedAt,
+  deferPublish = false
 } = {}) {
   if (!output) throw new Error('ATRIUM_OUTPUT manquant');
   let raw;
@@ -120,10 +122,11 @@ export async function syncAtrium({
     }
   }
   const catalog = assertPublicCatalog(mapCatalog(raw, { generatedAt }), [apiKey].filter(Boolean));
-  mkdirSync(dirname(output), { recursive: true });
-  const tmp = `${output}.tmp`;
+  const dest = deferPublish ? `${output}.incoming` : output;
+  mkdirSync(dirname(dest), { recursive: true });
+  const tmp = `${dest}.${process.pid}.tmp`;
   writeFileSync(tmp, `${JSON.stringify(catalog)}\n`, 'utf8');
-  renameSync(tmp, output);
+  renameSync(tmp, dest);
   return catalog;
 }
 
@@ -140,7 +143,8 @@ async function main() {
     apiKey: process.env.ATRIUM_API_KEY || '',
     apiBase: process.env.ATRIUM_API_BASE || 'https://api.groupeatrium.com/v3',
     output,
-    fixture: process.env.ATRIUM_FIXTURE || ''
+    fixture: process.env.ATRIUM_FIXTURE || '',
+    deferPublish: ['1', 'true', 'yes', 'on'].includes(String(process.env.ATRIUM_DEFER_PUBLISH || '').toLowerCase())
   });
   console.log(`[atrium-sync] ${catalog.counts.total} groupes -> ${output}`);
 }
