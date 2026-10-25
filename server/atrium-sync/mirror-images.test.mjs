@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
-import { mkdtempSync, readFileSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { collectImageUrls, mirrorImages } from './mirror-images.mjs';
+import { applyHostedUrls, collectImageUrls, mirrorImages, publishCatalog } from './mirror-images.mjs';
 
 function listen(server) {
   return new Promise((resolve) => {
@@ -23,7 +23,8 @@ test('remote voyage and group URLs are collected once', () => {
       groups: [{
         image: 'https://cdn.example/a.jpg',
         images: [{ url: 'https://cdn.example/a.jpg' }, { url: 'https://cdn.example/b.jpg' }],
-        hotelDetail: { image: '/assets/local.jpg' }
+        hotelDetail: { image: '/assets/local.jpg' },
+        navireDetail: { image: 'https://cdn.example/ship.jpg', description: 'Pont' }
       }]
     },
     products: [{ img: 'assets/forfaits/x.jpg', imgRoom: 'https://cdn.example/room.png' }]
@@ -31,8 +32,44 @@ test('remote voyage and group URLs are collected once', () => {
   assert.deepEqual(urls.sort(), [
     'https://cdn.example/a.jpg',
     'https://cdn.example/b.jpg',
-    'https://cdn.example/room.png'
+    'https://cdn.example/room.png',
+    'https://cdn.example/ship.jpg'
   ]);
+});
+
+test('an image key nested in navireDetail is rewritten and the remote URL is kept', () => {
+  const remote = 'https://cdn.example/ship.jpg';
+  const hosted = 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/media/ship.jpg';
+  const catalog = applyHostedUrls({
+    groups: [{
+      image: remote,
+      description: remote,
+      navireDetail: { image: remote, description: 'Pont' },
+      hotelDetail: { image: 'https://cdn.example/hotel.jpg' },
+      images: [{ url: remote, alt: 'Navire' }]
+    }]
+  }, new Map([[remote, hosted]]));
+  const group = catalog.groups[0];
+  assert.equal(group.image, hosted);
+  assert.equal(group.imageSource, remote);
+  assert.equal(group.description, remote);
+  assert.equal(group.navireDetail.image, hosted);
+  assert.equal(group.navireDetail.imageSource, remote);
+  assert.equal(group.navireDetail.description, 'Pont');
+  assert.equal(group.hotelDetail.image, 'https://cdn.example/hotel.jpg');
+  assert.equal(group.images[0].url, hosted);
+  assert.equal(group.images[0].source, remote);
+  assert.equal(group.images[0].alt, 'Navire');
+});
+
+test('the public catalog is replaced in one rename', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'vf-publish-'));
+  const output = join(dir, 'groupes.json');
+  publishCatalog(output, { groups: [{ image: 'https://dashboard.example/media/a.jpg', imageSource: 'https://cdn.example/a.jpg' }] });
+  assert.equal(readdirSync(dir).includes('groupes.json'), true);
+  assert.equal(readdirSync(dir).some((name) => name.endsWith('.tmp')), false);
+  const written = JSON.parse(readFileSync(output, 'utf8'));
+  assert.equal(written.groups[0].imageSource, 'https://cdn.example/a.jpg');
 });
 
 test('copies new images, skips unchanged bytes, and keeps the remote URL after a failure', async () => {

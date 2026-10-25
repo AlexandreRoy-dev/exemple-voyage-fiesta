@@ -3,7 +3,9 @@
  *
  * Leaves the original URL in place when a download fails. Rewrites a catalog
  * URL to the local public address only when publicBase is set and the file
- * was stored.
+ * was stored. Nested objects are walked, so navireDetail.image and
+ * hotelDetail.image are rewritten too. The remote URL is kept on imageSource
+ * (or source for a url field). ATRIUM_CATALOG_OUTPUT is replaced atomically.
  *
  * Env:
  *   ATRIUM_OUTPUT / ATRIUM_CATALOG   groupes.json to read
@@ -13,7 +15,7 @@
  *   ATRIUM_MIRROR_DRY_RUN            1 = count URLs, do not download
  */
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -67,8 +69,10 @@ function addUrl(bag, url) {
   if (isRemoteImage(value)) bag.add(value);
 }
 
+const IMAGE_KEY = /image|img|photo|url|fichier/i;
+
 function walkImages(node, bag, depth = 0) {
-  if (!node || depth > 6) return;
+  if (node == null || depth > 8) return;
   if (typeof node === 'string') {
     addUrl(bag, node);
     return;
@@ -79,7 +83,8 @@ function walkImages(node, bag, depth = 0) {
   }
   if (typeof node === 'object') {
     for (const [key, value] of Object.entries(node)) {
-      if (/image|img|photo|url|fichier/i.test(key)) walkImages(value, bag, depth + 1);
+      if (value && typeof value === 'object') walkImages(value, bag, depth + 1);
+      else if (IMAGE_KEY.test(key)) walkImages(value, bag, depth + 1);
     }
   }
 }
@@ -112,17 +117,37 @@ function publicUrl(publicBase, fileName) {
   return `${String(publicBase).replace(/\/$/, '')}/${fileName}`;
 }
 
-function rewriteValue(value, map) {
-  if (typeof value === 'string') return map.get(value) || value;
-  if (Array.isArray(value)) return value.map((item) => rewriteValue(item, map));
-  if (value && typeof value === 'object') {
-    const next = { ...value };
-    for (const key of Object.keys(next)) {
-      if (/image|img|photo|url|fichier/i.test(key)) next[key] = rewriteValue(next[key], map);
-    }
-    return next;
+function rememberSource(target, key, original) {
+  const name = String(key || '').toLowerCase();
+  if (name === 'url') {
+    if (!target.source) target.source = original;
+    return;
   }
-  return value;
+  if (name === 'image' && !target.imageSource) target.imageSource = original;
+}
+
+function rewriteValue(value, map, depth = 0) {
+  if (value == null || depth > 8 || typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map((item) => rewriteValue(item, map, depth + 1));
+  const next = { ...value };
+  for (const [key, child] of Object.entries(value)) {
+    if (child && typeof child === 'object') {
+      next[key] = rewriteValue(child, map, depth + 1);
+      continue;
+    }
+    if (typeof child === 'string' && IMAGE_KEY.test(key) && map.has(child)) {
+      next[key] = map.get(child);
+      rememberSource(next, key, child);
+    }
+  }
+  return next;
+}
+
+export function publishCatalog(path, catalog) {
+  mkdirSync(dirname(path), { recursive: true });
+  const tmp = `${path}.${process.pid}.tmp`;
+  writeFileSync(tmp, `${JSON.stringify(catalog)}\n`);
+  renameSync(tmp, path);
 }
 
 export function applyHostedUrls(catalog, hostedBySource) {
@@ -229,7 +254,7 @@ async function main() {
   const mb = (report.totalBytes / (1024 * 1024)).toFixed(2);
   console.log(`[mirror] ${report.urls} URL, ${report.copied} copiée(s), ${report.unchanged} inchangée(s), ${report.failed} échec, ${report.bytes} octets écrits, ${mb} Mo au total`);
   if (process.env.ATRIUM_MEDIA_PUBLIC_BASE && process.env.ATRIUM_CATALOG_OUTPUT) {
-    writeFileSync(process.env.ATRIUM_CATALOG_OUTPUT, `${JSON.stringify(result.catalog)}\n`);
+    publishCatalog(process.env.ATRIUM_CATALOG_OUTPUT, result.catalog);
   }
 }
 
