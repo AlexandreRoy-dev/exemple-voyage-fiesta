@@ -129,6 +129,8 @@
   }
 
   function mount() {
+    var root = document.documentElement;
+    if (root.classList.contains('embed-mode') || root.classList.contains('embed')) return;
     if (global.VoyageFiestaEmbed && global.VoyageFiestaEmbed.isEmbedMode && global.VoyageFiestaEmbed.isEmbedMode()) return;
     var header = document.getElementById('vf-site-header');
     var footer = document.getElementById('vf-site-footer');

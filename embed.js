@@ -55,6 +55,16 @@
         var style = document.createElement('style');
         style.id = 'vf-overflow-fix';
         style.textContent = [
+            'html.embed-mode .vf-site-header,',
+            'html.embed-mode .vf-site-footer,',
+            'html.embed-mode .site-header,',
+            'html.embed-mode .site-footer,',
+            'html.embed-mode #nav-principale,',
+            'html.embed .vf-site-header,',
+            'html.embed .vf-site-footer,',
+            'html.embed .site-header,',
+            'html.embed .site-footer,',
+            'html.embed #nav-principale { display: none !important; }',
             'html, body { max-width: 100%; overflow-x: clip; }',
             'img, video, iframe, svg { max-width: 100%; }',
             'html.embed-mode body { touch-action: pan-y; overscroll-behavior-x: none; }',

@@ -111,18 +111,16 @@ function nav(current) {
 }
 
 function shell(current) {
-  return `
-    <a class="skip" href="#contenu">Aller au contenu</a>
-    <div class="orb orb-a" aria-hidden="true"></div>
-    <div class="orb orb-b" aria-hidden="true"></div>
+  const home = esc((() => { const url = withFlags(new URL('/', location.origin)); return url.pathname + url.search; })());
+  const header = embedOn() ? '' : `
     <header class="site-header">
       <div class="header-inner">
-        <a class="logo" href="${esc((() => { const url = withFlags(new URL('/', location.origin)); return url.pathname + url.search; })())}">Voyage Fiesta <span>Aubaines Express</span></a>
+        <a class="logo" href="${home}">Voyage Fiesta <span>Aubaines Express</span></a>
         <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-principale">Menu</button>
         <nav id="nav-principale" class="nav" aria-label="Principale">${nav(current)}</nav>
       </div>
-    </header>
-    <main id="contenu"></main>
+    </header>`;
+  const footer = embedOn() ? '' : `
     <footer class="site-footer">
       <div class="wrap">
         <p><strong>Voyage Fiesta</strong></p>
@@ -131,7 +129,13 @@ function shell(current) {
         <p>Permis d'agence de voyages du Québec : 703631. Contribution au Fonds FICAV.</p>
         <p><a href="${esc((() => { const url = withFlags(new URL('/', location.origin)); url.hash = 'contact'; return url.pathname + url.search + url.hash; })())}">Nous joindre</a></p>
       </div>
-    </footer>
+    </footer>`;
+  return `
+    <a class="skip" href="#contenu">Aller au contenu</a>
+    ${embedOn() ? '' : '<div class="orb orb-a" aria-hidden="true"></div><div class="orb orb-b" aria-hidden="true"></div>'}
+    ${header}
+    <main id="contenu"></main>
+    ${footer}
     <dialog id="demande-dialog"><div class="dialog-body" id="demande-dialog-body"></div></dialog>
     <dialog id="photo-dialog"><div class="dialog-body"><img id="photo-dialog-img" alt=""></div></dialog>`;
 }
@@ -867,15 +871,15 @@ async function main() {
   document.documentElement.classList.remove('no-js');
   if (window.VFAgent?.prepare) await VFAgent.prepare('/staff.json');
   setCanonical();
-  if (embedOn()) document.documentElement.classList.add('embed');
+  if (embedOn()) document.documentElement.classList.add('embed', 'embed-mode');
   const page = document.body.dataset.page || 'home';
   const type = document.body.dataset.type || '';
   const current = page === 'listing' ? type : page === 'home' ? 'home' : '';
   document.body.insertAdjacentHTML('afterbegin', shell(current));
-  document.querySelector('.nav-toggle').addEventListener('click', (event) => {
+  document.querySelector('.nav-toggle')?.addEventListener('click', (event) => {
     const open = event.currentTarget.getAttribute('aria-expanded') === 'true';
     event.currentTarget.setAttribute('aria-expanded', String(!open));
-    document.getElementById('nav-principale').classList.toggle('is-open', !open);
+    document.getElementById('nav-principale')?.classList.toggle('is-open', !open);
   });
   let groups = null;
   let failed = false;

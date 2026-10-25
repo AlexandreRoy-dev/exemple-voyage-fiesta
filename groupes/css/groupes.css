@@ -318,8 +318,18 @@ dialog::backdrop { background: rgba(15, 23, 42, 0.45); }
 .chips li { background: #f3f7fa; border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.85rem; }
 html.embed .site-header,
 html.embed .site-footer,
-html.embed .orb { display: none; }
-html.embed { --header: 0px; }
+html.embed #nav-principale,
+html.embed .vf-site-header,
+html.embed .vf-site-footer,
+html.embed .orb,
+html.embed-mode .site-header,
+html.embed-mode .site-footer,
+html.embed-mode #nav-principale,
+html.embed-mode .vf-site-header,
+html.embed-mode .vf-site-footer,
+html.embed-mode .orb { display: none !important; }
+html.embed,
+html.embed-mode { --header: 0px; }
 .site-footer { background: #fff; border-top: 1px solid var(--line); padding: 1.5rem 0 2rem; color: var(--muted); }
 .site-footer strong { color: var(--blue); }
 html.no-js [data-animate] { opacity: 1; transform: none; }

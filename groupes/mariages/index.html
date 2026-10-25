@@ -9,6 +9,32 @@
   <link rel="canonical" href="https://aubaineexpress.voyagefiesta.ca/groupes/mariages/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var embed = false;
+      try {
+        var q = new URLSearchParams(location.search);
+        embed = q.get('embed') === '1' || q.get('embed') === 'sections' || window.self !== window.top;
+      } catch (e) {
+        embed = true;
+      }
+      if (embed) document.documentElement.classList.add('embed', 'embed-mode');
+    })();
+  </script>
+  <style>
+    html.embed .site-header,
+    html.embed .site-footer,
+    html.embed #nav-principale,
+    html.embed .vf-site-header,
+    html.embed .vf-site-footer,
+    html.embed .orb,
+    html.embed-mode .site-header,
+    html.embed-mode .site-footer,
+    html.embed-mode #nav-principale,
+    html.embed-mode .vf-site-header,
+    html.embed-mode .vf-site-footer,
+    html.embed-mode .orb { display: none !important; }
+  </style>
   <link rel="stylesheet" href="../css/groupes.css">
 </head>
 <body data-page="listing" data-type="mariage">
