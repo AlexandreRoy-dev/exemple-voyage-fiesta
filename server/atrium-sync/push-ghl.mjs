@@ -43,11 +43,26 @@ function loadEnvFile() {
   }
 }
 
+function flagOn(value) {
+  return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+}
+
 export function dryRunEnabled(env = process.env) {
-  if (['1', 'true', 'yes', 'on'].includes(String(env.DRY_RUN || '').trim().toLowerCase())) return true;
+  if (flagOn(env.DRY_RUN)) return true;
   const flag = env.GHL_GROUPE_DRY_RUN;
   if (flag == null || String(flag).trim() === '') return true;
   return !['0', 'false', 'no', 'off'].includes(String(flag).trim().toLowerCase());
+}
+
+export function photoUploadEnabled(env = process.env) {
+  return flagOn(env.GHL_GROUPE_UPLOAD_PHOTO);
+}
+
+export function onlyIdSet(value) {
+  if (value == null) return null;
+  const raw = value instanceof Set ? [...value] : Array.isArray(value) ? value : String(value).split(',');
+  const ids = raw.map((item) => String(item).trim()).filter(Boolean);
+  return ids.length ? new Set(ids) : null;
 }
 
 function hashPayload(value) {
@@ -83,7 +98,7 @@ function moneyValue(raw) {
     ? raw
     : Number(String(raw).replace(/\s/g, '').replace(',', '.'));
   if (!Number.isFinite(n)) return null;
-  return { currency: 'CAD', value: Math.round(n * 100) / 100 };
+  return { currency: 'default', value: Math.round(n * 100) / 100 };
 }
 
 function lines(items, render) {
@@ -244,6 +259,16 @@ async function ghl(fetchImpl, apiKey, path, { method = 'GET', body } = {}) {
   return data;
 }
 
+function recordPath(id) {
+  const base = `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records`;
+  return id ? `${base}/${encodeURIComponent(id)}` : base;
+}
+
+function putRecord(fetchImpl, apiKey, locationId, id, properties) {
+  const path = `${recordPath(id)}?locationId=${encodeURIComponent(locationId)}`;
+  return ghl(fetchImpl, apiKey, path, { method: 'PUT', body: { properties } });
+}
+
 async function fetchSchema(fetchImpl, apiKey, locationId) {
   return ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}?locationId=${encodeURIComponent(locationId)}`);
 }
@@ -269,7 +294,7 @@ async function fetchRecords(fetchImpl, apiKey, locationId) {
   return all;
 }
 
-async function uploadPhoto({ fetchImpl, apiKey, locationId, imageUrl }) {
+async function uploadMedia({ fetchImpl, apiKey, locationId, imageUrl }) {
   const image = await fetchImpl(imageUrl);
   if (!image?.ok) throw new Error(`photo HTTP ${image?.status || 0}`);
   const bytes = Buffer.from(await image.arrayBuffer());
@@ -302,7 +327,9 @@ export async function pushGroupes({
   statePath = '',
   fetchImpl = globalThis.fetch,
   throttleMs = 250,
-  syncedAt = new Date().toISOString()
+  syncedAt = new Date().toISOString(),
+  uploadPhoto = false,
+  onlyIds = null
 } = {}) {
   if (!dryRun && (!apiKey || !locationId)) throw new Error('GHL_API_KEY et GHL_LOCATION_ID requis hors DRY_RUN');
   const schema = dryRun && !apiKey
@@ -318,6 +345,8 @@ export async function pushGroupes({
       throw new Error(`Refus d'écrire dans GHL: champ non lié (${missing.join(', ')}).`);
     }
   }
+  const selectedIds = onlyIdSet(onlyIds);
+  const groups = (catalog?.groups || []).filter((group) => !selectedIds || selectedIds.has(String(group.id)));
   const records = apiKey ? await fetchRecords(fetchImpl, apiKey, locationId) : [];
   const byAtrium = new Map();
   for (const record of records) {
@@ -335,6 +364,7 @@ export async function pushGroupes({
     bound: Object.keys(binding.bound),
     unmapped: binding.unmapped,
     analysis: analyzeCatalog(catalog?.groups || []),
+    onlyIds: selectedIds ? [...selectedIds] : null,
     created: [],
     updated: [],
     unchanged: [],
@@ -350,9 +380,9 @@ export async function pushGroupes({
   };
 
   const photoField = binding.bound.photo_principale;
-  const photoIsFile = photoField && /FILE|UPLOAD|IMAGE|ATTACHMENT/.test(photoField.type);
+  const photoIsFile = Boolean(uploadPhoto && photoField && /FILE|UPLOAD|IMAGE|ATTACHMENT/.test(photoField.type));
 
-  for (const group of catalog?.groups || []) {
+  for (const group of groups) {
     const atriumId = String(group.id);
     const existing = byAtrium.get(atriumId) || [];
     if (existing.length > 1) {
@@ -379,7 +409,7 @@ export async function pushGroupes({
     if (!dryRun && (!current || contentChanged)) {
       await pause();
       if (!current) {
-        const created = await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records`, {
+        const created = await ghl(fetchImpl, apiKey, recordPath(), {
           method: 'POST',
           body: { locationId, properties }
         });
@@ -388,10 +418,7 @@ export async function pushGroupes({
         state.ids = state.ids || {};
         state.ids[atriumId] = recordId;
       } else {
-        await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records/${encodeURIComponent(current.id)}`, {
-          method: 'PUT',
-          body: { locationId, properties }
-        });
+        await putRecord(fetchImpl, apiKey, locationId, current.id, properties);
         state.hashes[atriumId] = digest;
         recordId = current.id;
       }
@@ -404,13 +431,10 @@ export async function pushGroupes({
         summary.photos.push({ atriumId, mode: 'url', error: 'fiche sans id' });
       } else {
         try {
-          const uploadedUrl = await uploadPhoto({ fetchImpl, apiKey, locationId, imageUrl: source });
+          const uploadedUrl = await uploadMedia({ fetchImpl, apiKey, locationId, imageUrl: source });
           if (!uploadedUrl) throw new Error('photo sans URL');
           await pause();
-          await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records/${encodeURIComponent(recordId)}`, {
-            method: 'PUT',
-            body: { locationId, properties: { [photoField.key]: uploadedUrl } }
-          });
+          await putRecord(fetchImpl, apiKey, locationId, recordId, { [photoField.key]: uploadedUrl });
           state.photos[atriumId] = source;
           summary.photos.push({ atriumId, mode: 'upload' });
         } catch (error) {
@@ -422,8 +446,8 @@ export async function pushGroupes({
     }
   }
 
-  const liveIds = new Set((catalog?.groups || []).map((group) => String(group.id)));
-  for (const [atriumId, list] of byAtrium) {
+  const liveIds = new Set(groups.map((group) => String(group.id)));
+  for (const [atriumId, list] of selectedIds ? [] : byAtrium) {
     if (liveIds.has(atriumId)) continue;
     const current = list[0];
     if (foldLabel(statutOf(current, binding)).startsWith('archiv')) {
@@ -435,13 +459,7 @@ export async function pushGroupes({
       const field = binding.bound.statut_synchro;
       const value = optionValue(field, 'archivé');
       await pause();
-      await ghl(fetchImpl, apiKey, `/objects/${encodeURIComponent(GROUPES_SCHEMA_KEY)}/records/${encodeURIComponent(current.id)}`, {
-        method: 'PUT',
-        body: {
-          locationId,
-          properties: { [field.key]: value }
-        }
-      });
+      await putRecord(fetchImpl, apiKey, locationId, current.id, { [field.key]: value });
     }
   }
 
@@ -465,9 +483,12 @@ async function main() {
     origin: process.env.GROUPES_PUBLIC_ORIGIN || 'https://aubaineexpress.voyagefiesta.ca',
     dryRun,
     statePath: process.env.GHL_GROUPE_STATE || join(dirname(catalogPath), 'groupes-ghl-state.json'),
-    throttleMs: Number(process.env.GHL_GROUPE_THROTTLE_MS || 250)
+    throttleMs: Number(process.env.GHL_GROUPE_THROTTLE_MS || 250),
+    uploadPhoto: photoUploadEnabled(),
+    onlyIds: process.env.GHL_GROUPE_ONLY_IDS
   });
-  console.log(`[groupes-ghl] dry=${summary.dryRun} schema=${summary.schemaCount} liés=${summary.bound.length} créer=${summary.created.length} maj=${summary.updated.length} inchangés=${summary.unchanged.length} archivés=${summary.archived.length} doublons=${summary.duplicates.length}`);
+  const idLabel = summary.onlyIds ? summary.onlyIds.join(',') : 'tous';
+  console.log(`[groupes-ghl] dry=${summary.dryRun} schema=${summary.schemaCount} liés=${summary.bound.length} ids=${idLabel} créer=${summary.created.length} maj=${summary.updated.length} inchangés=${summary.unchanged.length} archivés=${summary.archived.length} doublons=${summary.duplicates.length}`);
   console.log(`[groupes-ghl] analyse ${JSON.stringify(summary.analysis)}`);
 }
 
