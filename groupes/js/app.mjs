@@ -48,8 +48,23 @@ function jsonUrl() {
   return new URL('data/groupes.json', root).href;
 }
 
+// ?api= only accepts our own hosts, so a shared link cannot send passenger data elsewhere.
+const TRUSTED_API_HOSTS = /(^|\.)(codesurmesure\.ca|roymarketing\.ca|voyagefiesta\.ca)$|^(localhost|127\.0\.0\.1)$/;
+
+export function trustedApiOverride(value) {
+  if (!value) return '';
+  try {
+    const url = new URL(value, root);
+    const local = /^(localhost|127\.0\.0\.1)$/.test(url.hostname);
+    if (url.protocol !== 'https:' && !(local && url.protocol === 'http:')) return '';
+    return TRUSTED_API_HOSTS.test(url.hostname) ? url.href : '';
+  } catch (_) {
+    return '';
+  }
+}
+
 function apiUrl() {
-  const base = params.get('api') || cfg.reservationApiUrl || 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/';
+  const base = trustedApiOverride(params.get('api')) || cfg.reservationApiUrl || 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/';
   return base.endsWith('/') ? base : `${base}/`;
 }
 
@@ -61,7 +76,7 @@ function withFlags(url) {
   if (embedOn()) url.searchParams.set('embed', '1');
   if (params.get('fixture') === '1') url.searchParams.set('fixture', '1');
   if (dryRun()) url.searchParams.set('dry_run', '1');
-  if (params.get('api')) url.searchParams.set('api', params.get('api'));
+  if (trustedApiOverride(params.get('api'))) url.searchParams.set('api', params.get('api'));
   if (params.get('data')) url.searchParams.set('data', params.get('data'));
   const agent = window.VFAgent?.current?.();
   if (agent?.slug) url.searchParams.set('ref', agent.slug);
