@@ -70,6 +70,18 @@ export function isHiddenAgent(agent, extra = {}) {
   return DEFAULT_HIDDEN_SLUGS.includes(String(agent?.slug || '').trim());
 }
 
+/**
+ * Display name fixes from agents-extra.json ("name"), keyed by GHL user id.
+ * GHL users keep their own name; slug, id, email and phone are untouched.
+ */
+export function applyNameOverrides(staff, extraMap = loadAgentsExtra()) {
+  return (staff || []).map((agent) => {
+    const row = extraMap[String(agent?.id || '').trim()] || {};
+    const name = String(row.name || '').trim();
+    return name ? { ...agent, name } : agent;
+  });
+}
+
 export function mergeAgent(agent, extraMap = {}) {
   const id = String(agent?.id || '').trim();
   const extra = extraMap[id] || {};
@@ -77,7 +89,7 @@ export function mergeAgent(agent, extraMap = {}) {
   return {
     id,
     slug: String(agent?.slug || '').trim(),
-    name: String(agent?.name || '').trim(),
+    name: String(extra.name || agent?.name || '').trim(),
     email: String(agent?.email || '').trim(),
     phone: phoneOverride || String(agent?.phone || '').trim(),
     title: String(extra.title || '').trim(),

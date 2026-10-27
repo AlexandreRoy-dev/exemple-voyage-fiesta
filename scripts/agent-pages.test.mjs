@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { writeQuickformPages } from './quickform-pages.mjs';
 import {
+  applyNameOverrides,
   buildAgentPageHtml,
   buildTeamPageHtml,
   isHiddenAgent,
@@ -149,4 +150,37 @@ test('quickform pages redirect to the agent page and keep the query string', () 
   assert.match(redirect, /\/agents\/anny-blondeau\//);
   assert.match(hiddenRedirect, /\/agents\//);
   assert.equal(hiddenRedirect.includes('/agents/divison-rabais-voyage/'), false);
+});
+
+test('agents-extra name fixes the display name only', () => {
+  const people = [
+    { id: 'ooW4tQWYA49LMKYpB2Op', name: 'CHANTAL SÉGUIN', slug: 'chantal-seguin', email: 'chantal@voyagefiesta.com', phone: '+18194467303' },
+    { id: 'W4Y7L2Uoszcnh87CeSHI', name: 'Valerie Castonguay', slug: 'valerie-castonguay', email: 'v@voyagefiesta.com', phone: '' },
+    { id: 'anny1234', name: 'Anny Blondeau', slug: 'anny-blondeau', email: 'anny@voyagefiesta.com', phone: '' }
+  ];
+  const extra = {
+    ooW4tQWYA49LMKYpB2Op: { name: 'Chantal Séguin' },
+    W4Y7L2Uoszcnh87CeSHI: { name: ' Valérie Castonguay ' },
+    anny1234: { name: '' }
+  };
+  const fixed = applyNameOverrides(people, extra);
+  assert.deepEqual(fixed.map((a) => a.name), ['Chantal Séguin', 'Valérie Castonguay', 'Anny Blondeau']);
+  assert.deepEqual(fixed.map((a) => a.slug), people.map((a) => a.slug));
+  assert.deepEqual(fixed.map((a) => a.id), people.map((a) => a.id));
+  assert.equal(fixed[0].email, 'chantal@voyagefiesta.com');
+  assert.equal(people[0].name, 'CHANTAL SÉGUIN');
+  const merged = publicStaff(people, extra);
+  assert.equal(merged.find((a) => a.slug === 'chantal-seguin').name, 'Chantal Séguin');
+  const html = buildAgentPageHtml(merged.find((a) => a.slug === 'valerie-castonguay'), { products: [], groups: [] });
+  assert.match(html, /Valérie Castonguay/);
+  assert.equal(html.includes('Valerie Castonguay'), false);
+});
+
+test('agents-extra.json fixes the 4 advisor names', () => {
+  const extra = JSON.parse(readFileSync(new URL('../agents-extra.json', import.meta.url), 'utf8'));
+  assert.equal(extra.ooW4tQWYA49LMKYpB2Op.name, 'Chantal Séguin');
+  assert.equal(extra.q8i8QAQ1JcBFvhWX3eHG.name, 'Idriss Sergio Talom');
+  assert.equal(extra.TzVTLEnsnqKC8pJpPf7B.name, 'Stéphanie Côté');
+  assert.equal(extra.W4Y7L2Uoszcnh87CeSHI.name, 'Valérie Castonguay');
+  assert.equal(extra.M37kX9dOKDqiT8arwEJs.hidden, true);
 });

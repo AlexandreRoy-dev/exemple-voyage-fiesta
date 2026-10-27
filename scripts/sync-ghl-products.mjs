@@ -23,7 +23,7 @@ import {
 } from './ghl-voyages-fields.mjs';
 import { writeSharePages } from './share-pages.mjs';
 import { writeQuickformPages } from './quickform-pages.mjs';
-import { publicStaff, writeAgentPages } from './agent-pages.mjs';
+import { applyNameOverrides, publicStaff, writeAgentPages } from './agent-pages.mjs';
 import { writeSeoPages } from './seo-pages.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -1490,7 +1490,7 @@ async function main() {
    previousStaff[agent.id] = agent;
   }
  }
- const staff = buildStaffProfiles(locationUsers, previousStaff, agents);
+ const staff = applyNameOverrides(buildStaffProfiles(locationUsers, previousStaff, agents));
  const staffPayload = {
   updatedAt: new Date().toISOString(),
   source: 'ghl',
