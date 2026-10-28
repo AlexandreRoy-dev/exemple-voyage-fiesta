@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-27T20:41:58.033Z",
+  "updatedAt": "2026-10-28T16:30:05.467Z",
   "source": "ghl",
   "locationId": "V90iyFBbBrCg3tpctRjc",
   "agents": [
@@ -86,6 +86,13 @@
       "email": "Rabais@voyagefiesta.com",
       "phone": "",
       "slug": "divison-rabais-voyage"
+    },
+    {
+      "id": "9b9NUzcNVYs8kxqKH6kO",
+      "name": "Elisabeth Fournier Cusson",
+      "email": "elisabeth@voyagefiesta.com",
+      "phone": "+15146237512",
+      "slug": "elisabeth-fournier-cusson"
     },
     {
       "id": "gLnnh4WufrAhe8c5lg8i",
