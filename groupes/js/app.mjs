@@ -866,7 +866,9 @@ function observe() {
   const nodes = [...document.querySelectorAll('[data-animate]')];
   if (!nodes.length) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduced || !('IntersectionObserver' in window)) {
+  let framed = false;
+  try { framed = window.self !== window.top; } catch (_) { framed = true; }
+  if (framed || embedOn() || reduced || !('IntersectionObserver' in window)) {
     nodes.forEach((node) => node.classList.add('is-in'));
     return;
   }
@@ -876,7 +878,7 @@ function observe() {
       entry.target.classList.add('is-in');
       observer.unobserve(entry.target);
     });
-  }, { threshold: 0.5 });
+  }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
   nodes.forEach((node) => {
     const rect = node.getBoundingClientRect();
     if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) node.classList.add('is-in');

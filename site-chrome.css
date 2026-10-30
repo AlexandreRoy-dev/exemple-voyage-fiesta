@@ -184,6 +184,7 @@
 .vf-check input { width: auto; margin-top: 0.25rem; }
 [data-anim] { opacity: 0; transform: translateY(50px); transition: opacity 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 [data-anim].is-in { opacity: 1; transform: none; }
+html.embed-mode [data-anim], html.embed [data-anim] { opacity: 1; transform: none; transition: none; }
 html.embed-mode .vf-site-header,
 html.embed-mode .vf-site-footer,
 html.embed-mode .site-header,

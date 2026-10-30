@@ -198,7 +198,7 @@ function shell({ title, description, canonical, body, agentConfig = '', current 
   </footer>
   <script src="/lead-ref.js?v=1"></script>
   <script src="/config.js?v=50"></script>
-  <script src="/agent-form.js?v=1"></script>
+  <script src="/agent-form.js?v=2"></script>
 </body>
 </html>
 `;

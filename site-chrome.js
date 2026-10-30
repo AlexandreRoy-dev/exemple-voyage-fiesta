@@ -128,10 +128,54 @@
     });
   }
 
-  function mount() {
+  function framed() {
+    try { return global.self !== global.top; } catch (_) { return true; }
+  }
+
+  function isEmbedded() {
     var root = document.documentElement;
-    if (root.classList.contains('embed-mode') || root.classList.contains('embed')) return;
-    if (global.VoyageFiestaEmbed && global.VoyageFiestaEmbed.isEmbedMode && global.VoyageFiestaEmbed.isEmbedMode()) return;
+    if (root.classList.contains('embed-mode') || root.classList.contains('embed')) return true;
+    if (global.VoyageFiestaEmbed && global.VoyageFiestaEmbed.isEmbedMode && global.VoyageFiestaEmbed.isEmbedMode()) return true;
+    return framed();
+  }
+
+  // Les blocs [data-anim] partent a opacity 0. Ils doivent toujours finir visibles :
+  // dans un iframe, avec du contenu injecte apres coup (home-sections.js) ou avec
+  // une section plus haute que l'ecran.
+  function bindMotion() {
+    var instant = isEmbedded() || global.matchMedia('(prefers-reduced-motion: reduce)').matches || typeof IntersectionObserver !== 'function';
+    var observer = instant ? null : new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-in');
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
+    function scan(scope) {
+      var list = [];
+      if (scope.nodeType === 1 && scope.hasAttribute('data-anim')) list.push(scope);
+      if (scope.querySelectorAll) list = list.concat([].slice.call(scope.querySelectorAll('[data-anim]')));
+      list.forEach(function (node) {
+        if (node.classList.contains('is-in') || node.__vfAnim) return;
+        node.__vfAnim = true;
+        var rect = node.getBoundingClientRect();
+        if (instant || (rect.top < global.innerHeight && rect.bottom > 0)) node.classList.add('is-in');
+        else observer.observe(node);
+      });
+    }
+    scan(document);
+    if (typeof MutationObserver === 'function') {
+      new MutationObserver(function (records) {
+        records.forEach(function (record) {
+          [].forEach.call(record.addedNodes, function (node) { if (node.nodeType === 1) scan(node); });
+        });
+      }).observe(document.body || document.documentElement, { childList: true, subtree: true });
+    }
+  }
+
+  function mount() {
+    if (!global.__vfMotionBound) { global.__vfMotionBound = true; bindMotion(); }
+    if (isEmbedded()) return;
     var header = document.getElementById('vf-site-header');
     var footer = document.getElementById('vf-site-footer');
     if (header && !header.childElementCount) header.innerHTML = headerHtml();
@@ -150,17 +194,6 @@
     }
     var form = document.getElementById('vf-contact-form');
     if (form) bindForm(form);
-    if (global.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var nodes = document.querySelectorAll('[data-anim]');
-    if (!nodes.length || typeof IntersectionObserver !== 'function') return;
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-in');
-        observer.unobserve(entry.target);
-      });
-    }, { threshold: 0.5 });
-    nodes.forEach(function (node) { observer.observe(node); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
