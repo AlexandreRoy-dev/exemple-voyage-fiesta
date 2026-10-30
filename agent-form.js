@@ -1,4 +1,9 @@
 (function (global) {
+    /** POST to the reservation API, with the base fallback from config.js (VFApi). */
+    function postApi(url, opts) {
+        return global.VFApi ? global.VFApi.fetch('', opts) : fetch(url, opts);
+    }
+
     function escapeHtml(value) {
         return String(value || '')
             .replace(/&/g, '&amp;')
@@ -178,7 +183,7 @@
             }
 
             try {
-                const res = await fetch(apiUrl, {
+                const res = await postApi(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                     body: JSON.stringify({

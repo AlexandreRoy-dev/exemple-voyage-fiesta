@@ -112,11 +112,14 @@
         terms_and_conditions: 'true'
       };
       status.textContent = 'Envoi de votre message…';
-      fetch(api, {
+      // VFApi (config.js) tries each reservation API base in order.
+      var postInit = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ payload: global.VFLeadRef && global.VFLeadRef.attach ? global.VFLeadRef.attach(payload) : payload })
-      }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok && data.ok, data: data }; }); })
+      };
+      (global.VFApi ? global.VFApi.fetch('', postInit) : fetch(api, postInit))
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok && data.ok, data: data }; }); })
         .then(function (result) {
           if (!result.ok) throw new Error(result.data.error || 'L\'envoi a échoué.');
           form.hidden = true;

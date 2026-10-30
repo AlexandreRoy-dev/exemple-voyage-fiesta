@@ -41,6 +41,11 @@
         return raw || 'Le formulaire est temporairement indisponible. Veuillez réessayer plus tard.';
     }
 
+    /** POST to the reservation API, with the base fallback from config.js (VFApi). */
+    function postApi(url, opts) {
+        return global.VFApi ? global.VFApi.fetch('', opts) : fetch(url, opts);
+    }
+
     async function postReservation(apiUrl, payload) {
         // Facebook multipartage link (ref, ghl_user, utm) kept by lead-ref.js.
         const withRef = global.VFLeadRef?.attach ? global.VFLeadRef.attach(payload) : payload;
@@ -51,11 +56,11 @@
             body
         };
         try {
-            return await fetch(apiUrl, opts);
+            return await postApi(apiUrl, opts);
         } catch (firstErr) {
             await new Promise((resolve) => setTimeout(resolve, 600));
             try {
-                return await fetch(apiUrl, opts);
+                return await postApi(apiUrl, opts);
             } catch (retryErr) {
                 throw new Error(reservationFetchError(retryErr || firstErr));
             }

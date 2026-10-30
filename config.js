@@ -409,10 +409,71 @@
     /** Location ID public (aussi dans products.json) */
     window.GHL_LOCATION_ID = 'V90iyFBbBrCg3tpctRjc';
     /**
-     * API réservation (OVH VPS, HTTPS via dashboard.codesurmesure.ca).
+     * API réservation (OVH VPS). Bases in order: api.voyagefiesta.ca first, then the
+     * current host as a fallback until the api.voyagefiesta.ca DNS record exists.
+     * Remove the second entry after the cutover.
      * Do not point the live form at a trycloudflare URL — browsers treat that as a fetch error.
      */
-    window.GHL_RESERVATION_API_URL = 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/';
+    window.VF_API_BASES = [
+        'https://api.voyagefiesta.ca/voyage-fiesta-reservation/',
+        'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/'
+    ];
+    window.GHL_RESERVATION_API_URL = window.VF_API_BASES[0];
+
+    /**
+     * VFApi.fetch(path, init): tries each base in VF_API_BASES.
+     * GET moves on after a network error, a 6 s timeout or a non ok status.
+     * POST moves on only after a network error or 404/421/502/503 (the app never
+     * saw the request), so a form is never sent twice.
+     */
+    window.VFApi = (function () {
+        var POST_RETRY = { 404: 1, 421: 1, 502: 1, 503: 1 };
+        function bases() {
+            var list = window.VF_API_BASES && window.VF_API_BASES.length
+                ? window.VF_API_BASES
+                : [window.GHL_RESERVATION_API_URL];
+            return list.map(function (b) {
+                b = String(b || '').trim();
+                return b && b.charAt(b.length - 1) !== '/' ? b + '/' : b;
+            }).filter(Boolean);
+        }
+        function urls(path) {
+            var clean = String(path || '').replace(/^\/+/, '');
+            return bases().map(function (b) { return b + clean; });
+        }
+        function once(url, init, ms) {
+            if (!ms || typeof AbortController === 'undefined') return fetch(url, init);
+            var controller = new AbortController();
+            var timer = setTimeout(function () { controller.abort(); }, ms);
+            return fetch(url, Object.assign({}, init, { signal: controller.signal }))
+                .finally(function () { clearTimeout(timer); });
+        }
+        function request(path, init) {
+            init = init || {};
+            var method = String(init.method || 'GET').toUpperCase();
+            var safe = method === 'GET' || method === 'HEAD';
+            var list = urls(path);
+            var lastResponse = null;
+            var lastError = null;
+            function attempt(i) {
+                if (i >= list.length) {
+                    if (lastResponse) return lastResponse;
+                    return Promise.reject(lastError || new Error('fetch'));
+                }
+                var isLast = i === list.length - 1;
+                return once(list[i], init, safe ? 6000 : 0).then(function (res) {
+                    if (isLast || res.ok) return res;
+                    if (safe || POST_RETRY[res.status]) { lastResponse = res; return attempt(i + 1); }
+                    return res;
+                }, function (err) {
+                    lastError = err;
+                    return attempt(i + 1);
+                });
+            }
+            return attempt(0);
+        }
+        return { bases: bases, urls: urls, fetch: request };
+    })();
 
     /** Pipeline « voyage fiesta » - opportunité (si workflow GHL en crée une) */
     window.GHL_PIPELINE_ID = '0epoPtkeq89cfu3KsxDs';

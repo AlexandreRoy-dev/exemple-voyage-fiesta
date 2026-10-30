@@ -17,6 +17,11 @@
         return String(global.GHL_RESERVATION_API_URL || '').trim();
     }
 
+    /** POST to the reservation API, with the base fallback from config.js (VFApi). */
+    function postApi(url, opts) {
+        return global.VFApi ? global.VFApi.fetch('', opts) : fetch(url, opts);
+    }
+
     function getAgentFromWindow() {
         const baked = global.QUICKFORM_AGENT;
         if (baked && typeof baked === 'object' && String(baked.id || '').trim()) {
@@ -330,7 +335,7 @@
             };
 
             try {
-                const res = await fetch(apiUrl, {
+                const res = await postApi(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                     body: JSON.stringify({

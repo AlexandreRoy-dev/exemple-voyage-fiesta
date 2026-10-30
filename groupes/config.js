@@ -3,12 +3,17 @@
  * (and, if the files move to the subdomain root, no path change:
  * links are resolved from this folder).
  *
- * jsonUrl is the live catalog served by reservation-api.
+ * apiBases: reservation-api bases (groupes.json, form). The first one that
+ * answers is used. jsonUrl, if set, is tried before them.
  * On localhost, or with ?fixture=1, the pages use data/groupes.json.
  */
 window.GROUPES_CONFIG = {
-  jsonUrl: 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/groupes.json',
-  reservationApiUrl: 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/',
+  // Reservation API bases, primary first. groupes.json and the form use them.
+  // The second one is a fallback until api.voyagefiesta.ca resolves.
+  apiBases: [
+    'https://api.voyagefiesta.ca/voyage-fiesta-reservation/',
+    'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/'
+  ],
   canonicalOrigin: 'https://aubaineexpress.voyagefiesta.ca',
   pageSize: 12,
   phoneDisplay: '514-856-6614',

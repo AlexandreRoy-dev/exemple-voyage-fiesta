@@ -1,5 +1,6 @@
-import { catalogImage } from './images.mjs';
+import { catalogImage, nextFallback } from './images.mjs';
 import { plainText, richHtml } from './richtext.mjs';
+import { apiUrls, fetchFirst } from './endpoints.mjs';
 import {
   PAGE_SIZE,
   formatPrice,
@@ -45,15 +46,18 @@ function useFixture() {
   return params.get('fixture') === '1' || host === 'localhost' || host === '127.0.0.1' || location.protocol === 'file:';
 }
 
-function jsonUrl() {
-  if (params.get('data')) return params.get('data');
-  if (!useFixture() && cfg.jsonUrl) return cfg.jsonUrl;
-  return new URL('data/groupes.json', root).href;
+/** Catalog URLs, primary first. */
+function jsonUrls() {
+  if (params.get('data')) return [params.get('data')];
+  if (useFixture()) return [new URL('data/groupes.json', root).href];
+  return [...new Set([...(cfg.jsonUrl ? [cfg.jsonUrl] : []), ...apiUrls('groupes.json', cfg)])];
 }
 
-function apiUrl() {
-  const base = params.get('api') || cfg.reservationApiUrl || 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/';
-  return base.endsWith('/') ? base : `${base}/`;
+/** Reservation API URLs, primary first. ?api= forces a single base. */
+function apiUrlList() {
+  const forced = params.get('api');
+  if (forced) return [forced.endsWith('/') ? forced : `${forced}/`];
+  return apiUrls('', cfg);
 }
 
 function dryRun() {
@@ -288,7 +292,7 @@ function bindForm(form, group) {
     status.dataset.kind = '';
     status.textContent = 'Envoi de votre demande…';
     try {
-      const response = await fetch(apiUrl(), {
+      const response = await fetchFirst(apiUrlList(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ payload: window.VFLeadRef?.attach ? window.VFLeadRef.attach(payload) : payload })
@@ -814,11 +818,19 @@ function renderDetail(groups) {
     </div>`;
   const heroEl = main.querySelector('.detail-hero');
   if (hero && heroEl?.dataset.heroFallback) {
-    const probe = new Image();
-    probe.addEventListener('error', () => {
-      heroEl.style.setProperty('--hero', `url("${heroEl.dataset.heroFallback}")`);
-    }, { once: true });
-    probe.src = hero;
+    // Try each fallback in order (other mirror, then the remote photo).
+    const tryHero = (url, rest) => {
+      const probe = new Image();
+      probe.addEventListener('load', () => {
+        if (url !== hero) heroEl.style.setProperty('--hero', `url("${url}")`);
+      }, { once: true });
+      probe.addEventListener('error', () => {
+        const { next, rest: after } = nextFallback(rest, url);
+        if (next) tryHero(next, after);
+      }, { once: true });
+      probe.src = url;
+    };
+    tryHero(hero, heroEl.dataset.heroFallback);
   }
   bindForm(document.getElementById('form-fiche'), group);
   const shareTarget = voyageShareUrl(group);
@@ -891,7 +903,7 @@ function notifyHeight() {
 }
 
 async function loadJson(url) {
-  const response = await fetch(url, { cache: 'no-store' });
+  const response = await fetchFirst(url, { cache: 'no-store' });
   if (!response.ok) throw new Error(String(response.status));
   return response.json();
 }
@@ -906,10 +918,10 @@ function setCanonical() {
 function useRemoteImage(event) {
   const img = event.target;
   if (!img || img.tagName !== 'IMG') return;
-  const fallback = img.dataset.fallback;
-  if (!fallback || img.getAttribute('src') === fallback) return;
-  img.removeAttribute('data-fallback');
-  img.src = fallback;
+  const { next, rest } = nextFallback(img.dataset.fallback, img.getAttribute('src'));
+  if (rest) img.dataset.fallback = rest;
+  else img.removeAttribute('data-fallback');
+  if (next) img.src = next;
 }
 
 async function main() {
@@ -931,7 +943,7 @@ async function main() {
   let failed = false;
   let search = null;
   try {
-    const data = await loadJson(jsonUrl());
+    const data = await loadJson(jsonUrls());
     if (!Array.isArray(data?.groups)) throw new Error('format');
     groups = data.groups;
   } catch (_) {
