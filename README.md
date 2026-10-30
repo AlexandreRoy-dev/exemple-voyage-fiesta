@@ -287,7 +287,7 @@ Pages statiques du catalogue Groupe Atrium, sur le même domaine (aucun DNS nouv
 
 Les liens sont calculés depuis le dossier `groupes/`. Un futur `groupes.voyagefiesta.ca` qui sert ce dossier à la racine ne demande que `canonicalOrigin` dans `groupes/config.js`, plus l'origine dans `ALLOWED_ORIGINS`.
 
-Le catalogue public est `GET https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/groupes.json`, produit sur le VPS par `server/atrium-sync` (cron 1 à 2 h). La clé Atrium ne va ni dans le navigateur ni dans git. En local, ou avec `?fixture=1`, les pages lisent `groupes/data/groupes.json`. Si le JSON manque, un message indique d'appeler le 514-856-6614; les moteurs de recherche restent affichés.
+Le catalogue public est `GET https://api.voyagefiesta.ca/voyage-fiesta-reservation/groupes.json` (repli sur l'ancien hôte tant que le DNS `api` n'existe pas, voir `apiBases` dans `groupes/config.js` et `VF_API_BASES` dans `config.js`), produit sur le VPS par `server/atrium-sync` (cron 1 à 2 h). La clé Atrium ne va ni dans le navigateur ni dans git. En local, ou avec `?fixture=1`, les pages lisent `groupes/data/groupes.json`. Si le JSON manque, un message indique d'appeler le 514-856-6614; les moteurs de recherche restent affichés.
 
 Moteurs (codes Fiesta): forfaits sud Softvoyage `code_ag=VAS`, `alias=BY4`; vols trvlbooking `plCode=VAS605`; croisières cruisepowered `plCode=VAS605`, `cruise_agence=605`; voitures trvlbooking `plCode=VAS605`.
 

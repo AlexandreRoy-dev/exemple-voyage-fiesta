@@ -33,14 +33,35 @@
     }
   }
 
-  var MIRRORED_MEDIA_BASE = 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/media';
+  // Same list as VF_API_BASES in config.js (read at call time, config.js loads later).
+  var DEFAULT_API_BASES = [
+    'https://api.voyagefiesta.ca/voyage-fiesta-reservation/',
+    'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/'
+  ];
+  var HASH_NAME = /^[a-f0-9]{16,}\.(jpe?g|png|webp|gif|avif)$/i;
 
-  function acceptImageUrl(url) {
+  function apiBases() {
+    if (window.VFApi) return window.VFApi.bases();
+    return DEFAULT_API_BASES;
+  }
+
+  function mediaBases() {
+    return apiBases().map(function (base) { return base + 'media'; });
+  }
+
+  /** Every URL for one image: both mirrors when it is a mirrored file, else itself. */
+  function imageCandidates(url) {
     var value = String(url || '').trim();
-    if (!value) return '';
-    if (/^https?:\/\//i.test(value) || value.indexOf('//') === 0 || value.charAt(0) === '/') return value;
-    if (/^[a-f0-9]{16,}\.(jpe?g|png|webp|gif|avif)$/i.test(value)) return MIRRORED_MEDIA_BASE + '/' + value;
-    return value;
+    if (!value) return [];
+    var bases = mediaBases();
+    var name = HASH_NAME.test(value) ? value : '';
+    bases.forEach(function (base) {
+      if (!name && value.indexOf(base + '/') === 0 && HASH_NAME.test(value.slice(base.length + 1))) {
+        name = value.slice(base.length + 1);
+      }
+    });
+    if (name) return bases.map(function (base) { return base + '/' + name; });
+    return [value];
   }
 
   function catalogImage(value, extra) {
@@ -54,11 +75,12 @@
       src = value || '';
       fallback = extra.imageSource || extra.source || extra.remote || '';
     }
-    src = acceptImageUrl(src);
-    fallback = acceptImageUrl(fallback);
-    if (src && fallback && src !== fallback) return { src: src, fallback: fallback };
-    if (!src && fallback) return { src: fallback, fallback: '' };
-    return { src: src || '', fallback: '' };
+    var list = [];
+    imageCandidates(src).concat(imageCandidates(fallback)).forEach(function (item) {
+      if (list.indexOf(item) === -1) list.push(item);
+    });
+    // fallback is a space separated list, tried in order on load error.
+    return { src: list[0] || '', fallback: list.slice(1).join(' ') };
   }
 
   function card(item) {
@@ -95,11 +117,25 @@
     return res.json();
   }
 
+  /** groupes.json from each API base in order (6 s timeout each). */
+  async function loadLiveGroupes() {
+    if (window.VFApi) {
+      var res = await window.VFApi.fetch('groupes.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json();
+    }
+    var bases = apiBases();
+    var lastError = null;
+    for (var i = 0; i < bases.length; i += 1) {
+      try { return await loadJson(bases[i] + 'groupes.json'); } catch (err) { lastError = err; }
+    }
+    throw lastError || new Error('groupes');
+  }
+
   async function groupes() {
     var local = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || new URLSearchParams(location.search).get('fixture') === '1';
-    var url = local ? '/groupes/data/groupes.json' : 'https://dashboard.codesurmesure.ca/voyage-fiesta-reservation/groupes.json';
     try {
-      return (await loadJson(url)).groups || [];
+      return (await (local ? loadJson('/groupes/data/groupes.json') : loadLiveGroupes())).groups || [];
     } catch (_) {
       if (local) return [];
       try { return (await loadJson('/groupes/data/groupes.json')).groups || []; } catch (err) { return []; }
@@ -129,10 +165,12 @@
   document.addEventListener('error', function (event) {
     var img = event.target;
     if (!img || img.tagName !== 'IMG' || !img.dataset.fallback) return;
-    if (img.getAttribute('src') === img.dataset.fallback) return;
-    var fallback = img.dataset.fallback;
-    img.removeAttribute('data-fallback');
-    img.src = fallback;
+    var current = img.getAttribute('src');
+    var list = img.dataset.fallback.split(/\s+/).filter(function (item) { return item && item !== current; });
+    var next = list.shift();
+    if (list.length) img.dataset.fallback = list.join(' ');
+    else img.removeAttribute('data-fallback');
+    if (next) img.src = next;
   }, true);
 
   async function render() {

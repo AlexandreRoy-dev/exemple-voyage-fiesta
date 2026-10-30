@@ -25,6 +25,11 @@ on:
       - 'tests/embed-pages.test.mjs'
       - 'site-chrome.js'
       - 'site-chrome.css'
+      - 'config.js'
+      - 'home-sections.js'
+      - 'quickform.js'
+      - 'room-registration.js'
+      - 'tests/api-bases.test.mjs'
   pull_request:
     paths:
       - 'groupes/**'
@@ -49,6 +54,11 @@ on:
       - 'tests/embed-pages.test.mjs'
       - 'site-chrome.js'
       - 'site-chrome.css'
+      - 'config.js'
+      - 'home-sections.js'
+      - 'quickform.js'
+      - 'room-registration.js'
+      - 'tests/api-bases.test.mjs'
 
 jobs:
   test:
@@ -69,6 +79,8 @@ jobs:
           server/atrium-sync/push-ghl.test.mjs
           groupes/js/catalog.test.mjs
           groupes/js/images.test.mjs
+          groupes/js/endpoints.test.mjs
+          tests/api-bases.test.mjs
           tests/lead-ref.test.mjs
           tests/agent-resolve.test.mjs
           scripts/ghl-voyages-fields.test.mjs
