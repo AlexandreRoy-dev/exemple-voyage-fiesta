@@ -294,17 +294,60 @@ function mapFlights(group) {
     .filter((row) => row.depart || row.arrivee || row.numero);
 }
 
+const ITINERARY_SKIP = new Set([
+  'titre', 'title', 'nom', 'libelle', 'label', 'description', 'texte', 'description_fr',
+  'heure_arrivee', 'heure_depart', 'arrivee', 'depart', 'arrival', 'departure',
+  'jour', 'ordre', 'day', 'id', 'id_groupe_iti', 'id_iti'
+]);
+
+function extraPlace(row) {
+  for (const [key, value] of Object.entries(row)) {
+    if (ITINERARY_SKIP.has(key) || key.startsWith('id')) continue;
+    if (typeof value !== 'string') continue;
+    const text = value.trim();
+    if (text.length < 2 || text.length > 60) continue;
+    if (/[<>]/.test(text)) continue;
+    if (/arriv|d[ée]part|\d{1,2}:\d{2}/i.test(text)) continue;
+    if (!/[A-Za-zÀ-ÿ]{2,}/.test(text)) continue;
+    return text;
+  }
+  return '';
+}
+
 function mapItinerary(group) {
   const rows = Array.isArray(group?.list_iti) ? group.list_iti : [];
   return rows
     .map((row, index) => {
       if (!row || typeof row !== 'object') return null;
-      const titre = String(pick(row, 'titre', 'nom', 'ville', 'jour', 'title') || '').trim();
+      const titre = String(pick(row, 'titre', 'title', 'nom', 'libelle', 'label') || '').trim();
+      const lieu = String(pick(
+        row,
+        'port', 'nom_port', 'port_nom', 'escale', 'nom_escale', 'ville', 'ville_escale',
+        'city', 'destination', 'location', 'lieu', 'nom_ville'
+      ) || '').trim() || extraPlace(row);
       const description = String(pick(row, 'description', 'texte', 'description_fr') || '').trim();
-      if (!titre && !description) return null;
-      return { ordre: index + 1, titre, description };
+      const arrivee = String(pick(row, 'heure_arrivee', 'arrivee', 'arrival') || '').trim();
+      const depart = String(pick(row, 'heure_depart', 'depart', 'departure') || '').trim();
+      const rawOrder = asNumber(pick(row, 'jour', 'ordre', 'day'));
+      const ordre = rawOrder && rawOrder > 0 ? rawOrder : index + 1;
+      if (!titre && !description && !lieu && !arrivee && !depart) return null;
+      return { ordre, titre, lieu, description, arrivee, depart };
     })
     .filter(Boolean);
+}
+
+function isServiceLabel(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (text.length < 2 || text.length > 80) return false;
+  if (/^(null|undefined|n\/a|n\.a\.|na|none|aucun|true|false|oui|non|yes|no|0|1|-|—)$/i.test(text)) return false;
+  if (/^\d{4}-\d{2}-\d{2}\b/.test(text)) return false;
+  if (/^(19|20)\d{2}$/.test(text)) return false;
+  if (/^-?\d+([.,]\d+)?\s*\$?$/.test(text)) return false;
+  if (/^\d{1,2}\s*[:hH]/.test(text)) return false;
+  const letters = text.match(/[A-Za-zÀ-ÿ]/g);
+  if (!letters || letters.length < 3) return false;
+  if (letters.length / text.replace(/\s/g, '').length < 0.45) return false;
+  return true;
 }
 
 function equipmentLabels(record) {
@@ -317,9 +360,9 @@ function equipmentLabels(record) {
   const labels = [];
   for (const [key, value] of Object.entries(record)) {
     if (skip.has(key) || key.endsWith('_en')) continue;
-    if (typeof value === 'string' && value.trim() && value.trim() !== '0') {
+    if (/^(id_|date_|nb_|cote_|prix|url_|annee|langue|pays|voltage|tonnage|chantier|registre)/i.test(key)) continue;
+    if (typeof value === 'string' && isServiceLabel(value)) {
       if (key.startsWith('description') || key.startsWith('cote_') || key === 'nom_compagnie') continue;
-      if (value.length > 80) continue;
       labels.push(value.trim());
     }
   }
@@ -338,7 +381,7 @@ function mapHotel(hotel) {
     destination: String(pick(hotel, 'destination', 'ville', 'city') || '').trim(),
     chaine: String(pick(hotel, 'chaine', 'chaîne', 'chain', 'marque') || '').trim(),
     etoiles: asNumber(pick(hotel, 'etoiles', 'étoiles', 'classification', 'stars')),
-    services: asList(pick(hotel, 'services', 'caracteristiques', 'equipements', 'amenities')),
+    services: asList(pick(hotel, 'services', 'caracteristiques', 'equipements', 'amenities')).filter(isServiceLabel),
     image: resolveImageRef(pick(hotel, 'url_img', 'image', 'photo', 'url_img_main', 'fichier'), 'hotel')
   };
 }
@@ -425,7 +468,7 @@ function mapGroup(group, index, lookups) {
     pointsForts: asList(pick(group, 'points_forts', 'pointsForts', 'texte_points', 'highlights')),
     inclusions: asList(pick(group, 'inclusions', 'texte_inclusions', 'inclus')),
     exclusions: asList(pick(group, 'exclusions', 'texte_exclusions', 'exclus')),
-    services: asList(pick(group, 'services', 'services_compris', 'services_inclus')),
+    services: asList(pick(group, 'services', 'services_compris', 'services_inclus')).filter(isServiceLabel),
     description: String(pick(group, 'description', 'description_fr', 'texte') || '').trim(),
     tarifs: mapRates(group),
     vols: mapFlights(group),

@@ -46,6 +46,7 @@ test('maps the openapi fixture into a public catalog', () => {
   assert.equal(cruise.compagnie, 'MSC Croisières');
   assert.equal(cruise.navireDetail.passagers, 6334);
   assert.ok(cruise.navireDetail.services.includes('Internet'));
+  assert.equal(cruise.navireDetail.services.includes('2021-02-01'), false);
 
   const dumped = JSON.stringify(catalog);
   assert.equal(dumped.includes('do-not-publish'), false);
@@ -111,4 +112,43 @@ test('builds public vascoinc URLs from hotel photo ids and cruise filenames', ()
 
   const voyage = catalog.groups.find((group) => group.id === 723);
   assert.equal(voyage.image, 'https://vascoinc.com/upimg/groupenew/00000723_3411_Qnf8ejco.jpeg');
+});
+
+test('itinerary keeps a port name when the title is empty', () => {
+  const catalog = mapCatalog({
+    groupes: [{
+      id_groupe: 15,
+      type: 'cruise',
+      status: 'actif',
+      titre: 'Grand Caïman et Mexique',
+      date_depart: '2026-11-01',
+      navire_nom: 'Summit',
+      list_iti: [
+        { titre: '', description: '<p>Départ: 17:00</p>', port: 'Miami', jour: 1 },
+        { titre: '', description: '<p>Arrivée: 07:00 / Départ: 18:30</p>', nom_port: 'Nassau', ordre: 2 },
+        { titre: '', description: '<p>Arrivée: 08:00</p>' }
+      ],
+      list_prix: [{ categorie: '', prix: 663 }]
+    }],
+    navires: [{
+      id_navire: 9,
+      nom: 'Summit',
+      date_lancement: '2015-01-01',
+      nb_passager: '294.00',
+      pays: 'Malta',
+      wifi: 'WIFI',
+      spa: 'Salon de beauté',
+      voltage: '110/220 V'
+    }]
+  });
+  const group = catalog.groups[0];
+  assert.equal(group.itineraire[0].lieu, 'Miami');
+  assert.equal(group.itineraire[1].lieu, 'Nassau');
+  assert.equal(group.itineraire[2].lieu, '');
+  assert.equal(group.tarifs[0].categorie, 'Tarif');
+  assert.ok(group.navireDetail.services.includes('Salon de beauté'));
+  assert.ok(group.navireDetail.services.includes('WIFI'));
+  assert.equal(group.navireDetail.services.includes('2015-01-01'), false);
+  assert.equal(group.navireDetail.services.includes('110/220 V'), false);
+  assert.equal(group.navireDetail.services.includes('294.00'), false);
 });
