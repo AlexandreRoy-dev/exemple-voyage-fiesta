@@ -1,4 +1,5 @@
 import { catalogImage } from './images.mjs';
+import { plainText, richHtml } from './richtext.mjs';
 import {
   PAGE_SIZE,
   formatPrice,
@@ -20,8 +21,10 @@ const root = new URL('../', import.meta.url);
 const params = new URLSearchParams(location.search);
 const cfg = window.GROUPES_CONFIG || {};
 
+// Le catalogue contient parfois des entités (&eacute;, &amp;eacute;) et des balises <p>.
+// esc() donne toujours du texte propre (décodé, sans balises) puis l'échappe.
 function esc(value) {
-  return String(value ?? '')
+  return plainText(value)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -701,6 +704,11 @@ function renderListing(groups, type) {
   apply(initial.page);
 }
 
+// Champ long du catalogue: HTML assaini (liste blanche), jamais de balise visible.
+function rich(value) {
+  return `<div class="rich">${richHtml(value)}</div>`;
+}
+
 function listBlock(title, items) {
   if (!items?.length) return '';
   return `<section class="panel"><h2>${esc(title)}</h2><ul>${items.map((item) => `<li>${esc(item)}</li>`).join('')}</ul></section>`;
@@ -729,7 +737,7 @@ function renderDetail(groups) {
   const ship = group.navireDetail;
   const stay = hotel?.nom ? `
     <section class="panel"><h2>${esc(hotel.nom)}</h2>
-      ${hotel.description ? `<p>${esc(hotel.description)}</p>` : ''}
+      ${hotel.description ? rich(hotel.description) : ''}
       <ul>
         ${hotel.destination ? `<li>Destination: ${esc(hotel.destination)}</li>` : ''}
         ${hotel.chaine ? `<li>Chaîne: ${esc(hotel.chaine)}</li>` : ''}
@@ -739,7 +747,7 @@ function renderDetail(groups) {
     </section>` : '';
   const shipBlock = group.type === 'cruise' && (ship?.nom || group.navire) ? `
     <section class="panel"><h2>${esc(ship?.nom || group.navire)}</h2>
-      ${ship?.description ? `<p>${esc(ship.description)}</p>` : ''}
+      ${ship?.description ? rich(ship.description) : ''}
       <ul>
         ${ship?.compagnie || group.compagnie ? `<li>Compagnie: ${esc(ship?.compagnie || group.compagnie)}</li>` : ''}
         ${ship?.passagers ? `<li>Passagers: ${esc(ship.passagers)}</li>` : ''}
@@ -748,12 +756,18 @@ function renderDetail(groups) {
       </ul>
       ${ship?.services?.length ? `<h3>Caractéristiques et services</h3><ul class="chips">${ship.services.map((item) => `<li>${esc(item)}</li>`).join('')}</ul>` : ''}
     </section>` : '';
-  const rates = group.tarifs?.length ? `<section class="panel"><h2>Tarifs disponibles</h2>
-    <table><caption class="sr-only">Tarifs du groupe</caption><thead><tr><th>Catégorie</th><th>Prix</th><th>Prix précédent</th><th>Disponibilité</th></tr></thead>
-    <tbody>${group.tarifs.map((row) => `<tr><td>${esc(row.categorie)}</td><td>${esc(formatPrice(row.prix) || 'Sur demande')}</td><td>${esc(formatPrice(row.prixAncien) || '')}</td><td>${esc(row.disponibilite || '')}</td></tr>`).join('')}</tbody></table>
+  const rateRows = (group.tarifs || []).map((row) => ({ ...row, categorie: plainText(row.categorie), disponibilite: plainText(row.disponibilite) }));
+  // Atrium n'envoie souvent ni catégorie ni disponibilité: on masque les colonnes vides
+  // au lieu d'afficher « Tarif » partout et une colonne blanche.
+  const showCat = rateRows.some((row) => row.categorie && row.categorie !== 'Tarif');
+  const showPrev = rateRows.some((row) => formatPrice(row.prixAncien));
+  const showDispo = rateRows.some((row) => row.disponibilite);
+  const rates = rateRows.length ? `<section class="panel"><h2>Tarifs disponibles</h2>
+    <table><caption class="sr-only">Tarifs du groupe</caption><thead><tr>${showCat ? '<th>Catégorie</th>' : '<th>Option</th>'}<th>Prix</th>${showPrev ? '<th>Prix précédent</th>' : ''}${showDispo ? '<th>Disponibilité</th>' : ''}</tr></thead>
+    <tbody>${rateRows.map((row, index) => `<tr><td>${esc(showCat ? (row.categorie || 'Tarif') : `Option ${index + 1}`)}</td><td>${esc(formatPrice(row.prix) || 'Sur demande')}</td>${showPrev ? `<td>${esc(formatPrice(row.prixAncien) || '')}</td>` : ''}${showDispo ? `<td>${esc(row.disponibilite || '')}</td>` : ''}</tr>`).join('')}</tbody></table>
     <p class="fine">Les tarifs affichés viennent du catalogue du groupe. Les prix et les places peuvent changer. Un conseiller confirme le total.</p></section>` : '';
   const flights = group.vols?.length ? `<section class="panel"><h2>Vols</h2><ul>${group.vols.map((vol) => `<li>${esc([vol.sens, vol.compagnie, vol.numero, vol.depart && vol.arrivee ? `${vol.depart} vers ${vol.arrivee}` : '', formatDate(vol.dateDepart)].filter(Boolean).join(', '))}</li>`).join('')}</ul></section>` : '';
-  const steps = group.itineraire?.length ? `<section class="panel"><h2>Itinéraire</h2><ol>${group.itineraire.map((step) => `<li><strong>${esc(step.titre)}</strong> ${esc(step.description || '')}</li>`).join('')}</ol></section>` : '';
+  const steps = group.itineraire?.length ? `<section class="panel"><h2>Itinéraire</h2><ol>${group.itineraire.map((step) => `<li>${plainText(step.titre) ? `<strong>${esc(step.titre)}</strong>` : ''}${step.description ? rich(step.description) : ''}</li>`).join('')}</ol></section>` : '';
   main.innerHTML = `
     <section class="detail-hero"${heroStyle}><div class="wrap">
       <p class="eyebrow">${esc(categoryLabel(group.type))}</p>
@@ -768,7 +782,7 @@ function renderDetail(groups) {
           const alt = image.alt || `${group.title}, photo ${index + 1}`;
           return `<button type="button" data-photo="${esc(photo.src)}"${photo.fallback ? ` data-fallback="${esc(photo.fallback)}"` : ''} aria-label="Agrandir la photo ${index + 1}">${imgTag(photo, alt, ' loading="lazy" decoding="async"')}</button>`;
         }).join('')}</div></section>` : ''}
-        ${group.description ? `<section class="panel"><h2>Description</h2><p>${esc(group.description)}</p></section>` : ''}
+        ${group.description ? `<section class="panel"><h2>Description</h2>${rich(group.description)}</section>` : ''}
         ${listBlock('Points forts', group.pointsForts)}
         ${listBlock('Inclusions', group.inclusions)}
         ${listBlock('Exclusions', group.exclusions)}
