@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-29T03:00:05.066Z",
+  "updatedAt": "2026-10-30T11:30:04.430Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -402,6 +402,8 @@
         "assets/forfaits/henry-morgan-beach-hotel-roatan-2027-03-15-img.jpg"
       ],
       "seoTags": [],
+      "voyageCategory": "sud",
+      "voyageCategoryLabel": "Forfait Sud",
       "ownerId": "M37kX9dOKDqiT8arwEJs",
       "owner": {
         "id": "M37kX9dOKDqiT8arwEJs",
@@ -1021,8 +1023,8 @@
       "id": "6a3853df000845089f58d058",
       "slug": "sandos-playacar-2026-12-30",
       "name": "Sandos Playacar",
-      "state": "actif",
-      "active": "actif",
+      "state": "vendu",
+      "active": "vendu",
       "destTag": "",
       "subDest": "Playacar",
       "destination1": "Playacar",
@@ -1037,7 +1039,7 @@
       "criteria": [
         "tout_inclus"
       ],
-      "inventory": 1,
+      "inventory": 0,
       "price": 1927,
       "priceOccSimple": null,
       "priceOccTriple": null,
