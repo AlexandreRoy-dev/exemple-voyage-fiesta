@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T11:30:04.430Z",
+  "updatedAt": "2026-10-30T17:00:05.491Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -1700,7 +1700,7 @@
         "sur_la_plage"
       ],
       "inventory": 12,
-      "price": 0,
+      "price": 1325,
       "priceOccSimple": 1695,
       "priceOccTriple": 1155,
       "priceOccDouble1Child": null,
