@@ -199,9 +199,11 @@
     }
 
     function bindMotion() {
-        if (global.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         const nodes = document.querySelectorAll('[data-anim]');
-        if (!nodes.length || typeof IntersectionObserver !== 'function') {
+        let framed = false;
+        try { framed = global.self !== global.top; } catch (_) { framed = true; }
+        // Dans un iframe (Divi) ou sans animation, tout est visible tout de suite.
+        if (framed || global.matchMedia('(prefers-reduced-motion: reduce)').matches || !nodes.length || typeof IntersectionObserver !== 'function') {
             nodes.forEach(function (node) { node.classList.add('is-in'); });
             return;
         }
@@ -213,16 +215,17 @@
         });
         groups.forEach(function (list) {
             list.forEach(function (node, index) {
-                node.style.transitionDelay = (index * 0.3) + 's';
+                node.style.transitionDelay = Math.min(index * 0.3, 0.9) + 's';
             });
         });
+        // threshold 0 : une section plus haute que deux ecrans (mobile) n'atteint jamais 50 %.
         const observer = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
                 entry.target.classList.add('is-in');
                 observer.unobserve(entry.target);
             });
-        }, { threshold: 0.5 });
+        }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });
         nodes.forEach(function (node) { observer.observe(node); });
     }
 
