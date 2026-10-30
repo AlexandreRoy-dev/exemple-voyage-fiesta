@@ -117,5 +117,7 @@ export function richHtml(value) {
   }
   pushText(decoded.slice(last));
   while (stack.length) out.push(`</${stack.pop()}>`);
-  return out.join('').replace(/(<br>\s*){3,}/g, '<br><br>');
+  return out.join('')
+    .replace(/<p>(\s|<br>)*<\/p>/g, '')
+    .replace(/(<br>\s*){3,}/g, '<br><br>');
 }
