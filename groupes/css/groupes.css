@@ -359,3 +359,11 @@ html.no-js [data-animate] { opacity: 1; transform: none; }
   html { scroll-behavior: auto; }
   .orb, [data-animate] { animation: none; opacity: 1; transform: none; }
 }
+
+/* Texte riche du catalogue (HTML assaini) */
+.rich > :first-child { margin-top: 0; }
+.rich > :last-child { margin-bottom: 0; }
+.rich p { margin: 0 0 .6em; }
+.rich ul, .rich ol { margin: .3em 0 .6em 1.2em; padding: 0; }
+.panel ol > li > strong + .rich { margin-top: .15em; }
+.panel ol > li + li { margin-top: .5em; }

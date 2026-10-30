@@ -1,3 +1,4 @@
+import { decodeEntities } from './text.mjs';
 /**
  * Map Groupe Atrium v3 payloads to a public catalog.
  * Only whitelisted fields are copied. Secrets and unknown keys are dropped.
@@ -435,6 +436,18 @@ function mapGroup(group, index, lookups) {
   };
 }
 
+const URL_KEYS = new Set(['url', 'image', 'src', 'fallback', 'logo', 'site_web']);
+
+/** Décode les entités HTML (même doublement encodées) dans toutes les chaînes du groupe. */
+export function decodeDeep(value, key = '') {
+  if (typeof value === 'string') return URL_KEYS.has(key) ? value : decodeEntities(value);
+  if (Array.isArray(value)) return value.map((item) => decodeDeep(item, key));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, decodeDeep(v, k)]));
+  }
+  return value;
+}
+
 export function mapCatalog(input, { generatedAt = new Date().toISOString() } = {}) {
   const groupes = Array.isArray(input?.groupes) ? input.groupes : [];
   const hotels = Array.isArray(input?.hotels) ? input.hotels : [];
@@ -450,7 +463,8 @@ export function mapCatalog(input, { generatedAt = new Date().toISOString() } = {
   };
   const groups = groupes
     .map((group, index) => mapGroup(group, index, lookups))
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((group) => decodeDeep(group));
   const counts = {
     sud: groups.filter((group) => group.type === 'sud').length,
     cruise: groups.filter((group) => group.type === 'cruise').length,
