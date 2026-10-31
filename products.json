@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-31T15:45:06.324Z",
+  "updatedAt": "2026-10-31T16:00:05.670Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -670,11 +670,11 @@
       "destination": "Managua",
       "country": "Nicaragua",
       "location": "Managua, Nicaragua",
-      "stars": 4,
+      "stars": 3.5,
       "supplier": "sunwing",
       "carrier": "westjet",
       "durationNights": 7,
-      "roomCategory": "Bunaglow, Bungalow supérieur et Bungalow face à la mer",
+      "roomCategory": "Bungalow supérieur",
       "criteria": [
         "vol_direct_sans_escale",
         "tout_inclus",
