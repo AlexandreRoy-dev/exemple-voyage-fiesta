@@ -10,6 +10,26 @@
   <meta name="theme-color" content="#025091">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var embed = false;
+      try {
+        var q = new URLSearchParams(location.search);
+        embed = q.get('embed') === '1' || q.get('embed') === 'sections' || window.self !== window.top;
+      } catch (e) {
+        embed = true;
+      }
+      if (embed) document.documentElement.classList.add('embed', 'embed-mode');
+    })();
+  </script>
+  <style>
+    html.embed .vf-header,
+    html.embed .vf-footer,
+    html.embed .vf-atmosphere,
+    html.embed-mode .vf-header,
+    html.embed-mode .vf-footer,
+    html.embed-mode .vf-atmosphere { display: none !important; }
+  </style>
   <link rel="stylesheet" href="/agents/agents.css">
   <script>window.AGENT_PAGE = { id: "o6Mx5Liscw7hC4govkws", slug: "anny-blondeau", name: "Anny Blondeau", email: "anny@voyagefiesta.com", phone: "" };</script>
 </head>
@@ -292,6 +312,7 @@
       <p><a href="/contact.html">Contact</a></p>
     </div>
   </footer>
+  <script src="/agents/embed.js?v=1"></script>
   <script src="/lead-ref.js?v=1"></script>
   <script src="/config.js?v=50"></script>
   <script src="/agent-form.js?v=2"></script>

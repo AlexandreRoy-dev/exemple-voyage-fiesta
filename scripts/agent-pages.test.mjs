@@ -111,6 +111,11 @@ test('phone override, empty biography, and agent links on the cards', () => {
   assert.match(html, /name="destination"/);
   assert.match(html, /name="terms_and_conditions"/);
   assert.match(html, /window\.AGENT_PAGE = \{ id: "anny1234"/);
+  assert.match(html, /<header class="vf-header">/);
+  assert.match(html, /<footer class="vf-footer">/);
+  assert.match(html, /classList\.add\('embed', 'embed-mode'\)/);
+  assert.match(html, /<script src="\/agents\/embed\.js\?v=1"><\/script>/);
+  assert.doesNotMatch(html, /codesurmesure\.ca|agentsexternesfiesta\.ca/);
   assert.match(readFileSync(new URL('../agent-form.js', import.meta.url), 'utf8'), /agent_slug: agent\.slug/);
   assert.equal(html.includes('—'), false);
   assert.equal(html.includes('–'), false);
