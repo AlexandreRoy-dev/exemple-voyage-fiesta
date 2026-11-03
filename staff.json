@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T16:30:05.467Z",
+  "updatedAt": "2026-11-03T15:00:04.960Z",
   "source": "ghl",
   "locationId": "V90iyFBbBrCg3tpctRjc",
   "agents": [
@@ -9,6 +9,13 @@
       "email": "info@promo.voyagefiesta.com",
       "phone": "+15148566614",
       "slug": "agence-voyages-fiesta-et-mariage-sud"
+    },
+    {
+      "id": "Vjyig1Yj1XMglt7KgBrK",
+      "name": "Ann Readman",
+      "email": "ann@voyagefiesta.com",
+      "phone": "",
+      "slug": "ann-readman"
     },
     {
       "id": "o6Mx5Liscw7hC4govkws",
@@ -331,6 +338,13 @@
       "email": "nathalieb@voyagefiesta.com",
       "phone": "",
       "slug": "nathalie-bousquet"
+    },
+    {
+      "id": "PNZOZUVnwjq8Q2x081A7",
+      "name": "Nathaniel Dagenais",
+      "email": "nathaniel@evasionsoleil.com",
+      "phone": "",
+      "slug": "nathaniel-dagenais"
     },
     {
       "id": "tTPSaMOpbjkzAZv5bUt3",
