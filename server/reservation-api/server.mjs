@@ -12,6 +12,8 @@
  *   GHL_GROUPE_TAG=demande-groupe
  *   GHL_GROUPE_NOTIFY=0
  *   AGENT_NOTIFY=0
+ *   AGENT_NOTIFY_REDIRECT_TO=        (test inbox: agent emails go here instead)
+ *   GHL_OPPORTUNITY=0                (0, groupe or all: one opportunity per request)
  *   GHL_GROUPE_DEFAULT_OWNER=
  *   DRY_RUN=0
  *   GROUPES_JSON_PATH=/opt/voyage-fiesta-reservation/groupes.json
@@ -38,6 +40,12 @@ function envFlag(value) {
   return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
 }
 
+function readOpportunityMode(value) {
+  const v = String(value || '').trim().toLowerCase();
+  if (v === 'all' || v === 'groupe') return v;
+  return envFlag(v) ? 'groupe' : 'off';
+}
+
 export function readConfig(env = process.env) {
   const originRaw = env.ALLOWED_ORIGINS == null || String(env.ALLOWED_ORIGINS).trim() === ''
     ? DEFAULT_ORIGINS.join(',')
@@ -55,6 +63,12 @@ export function readConfig(env = process.env) {
     groupeTag: env.GHL_GROUPE_TAG || 'demande-groupe',
     groupeNotify: envFlag(env.GHL_GROUPE_NOTIFY),
     agentNotify: envFlag(env.AGENT_NOTIFY),
+    // Test mode: every agent email goes to this inbox instead of the advisor.
+    agentNotifyRedirect: String(env.AGENT_NOTIFY_REDIRECT_TO || '').trim().toLowerCase(),
+    // Opportunity per request: off, groupe (demande_groupe only) or all.
+    opportunityMode: readOpportunityMode(env.GHL_OPPORTUNITY),
+    opportunityPipelineId: String(env.GHL_OPPORTUNITY_PIPELINE_ID || '0epoPtkeq89cfu3KsxDs').trim(),
+    opportunityStageId: String(env.GHL_OPPORTUNITY_STAGE_ID || '41f6a9bb-52fb-4f82-9ccb-20b717024e71').trim(),
     groupeDefaultOwner: String(env.GHL_GROUPE_DEFAULT_OWNER || '').trim(),
     origins: originRaw.split(',').map((item) => item.trim()).filter(Boolean),
     notifyEmails: String(env.INTERNAL_NOTIFY_EMAILS || '')
@@ -468,7 +482,15 @@ async function previewAssignedUserId(payload) {
     if (fromRef) return fromRef;
   }
   if (isGroupeRequest(payload)) return resolveGroupeAgentId(payload);
-  return '';
+  try {
+    const fromVoyage = await lookupOwnerIdBySlug(pick(payload, 'forfait_slug'));
+    if (fromVoyage) return fromVoyage;
+    const fromStaff = await lookupStaffIdBySlug(pick(payload, 'agent_slug'));
+    if (fromStaff) return fromStaff;
+  } catch (err) {
+    console.warn('[reservation] owner preview failed', err.message);
+  }
+  return pick(payload, 'agent_id', 'owner_id', 'conseiller_id', 'assigned_to');
 }
 
 function extractAssignedUserId(contact) {
@@ -1060,18 +1082,112 @@ async function ghlEnsureNotifyContact(email) {
   return data?.contact?.id || data?.id || '';
 }
 
-function agentNotifyBody(payload) {
+function agentNotifyBody(payload, noteText = '', routing = []) {
   const name = [
     pick(payload, 'p1_prenom', 'contact_prenom', 'full_name'),
     pick(payload, 'p1_nom', 'contact_nom', 'last_name')
   ].filter(Boolean).join(' ').trim();
-  return [
+  const summary = [
     `Nom: ${name}`,
     `Courriel: ${pick(payload, 'p1_email', 'email', 'contact_email')}`,
     `Téléphone: ${pick(payload, 'p1_phone', 'phone', 'contact_phone')}`,
     `Message: ${pick(payload, 'message', 'notes_message', 'notes')}`,
     `Voyage: ${pick(payload, 'forfait_name', 'nom_du_forfait', 'groupe_titre', 'forfait_slug')}`
-  ].join('\n');
+  ];
+  const dates = [pick(payload, 'departure_date', 'date_depart', 'forfait_date_depart'), pick(payload, 'return_date', 'date_retour')]
+    .filter(Boolean).join(' au ');
+  if (dates) summary.push(`Dates: ${dates}`);
+  const price = pick(payload, 'prix_appel', 'forfait_price', 'prix', 'price');
+  if (price) summary.push(`Prix: ${price}`);
+  const link = pick(payload, 'groupe_url', 'forfait_link', 'forfait_url', 'page_url');
+  if (link) summary.push(`Lien: ${link}`);
+  const parts = [summary.join('\n')];
+  if (routing.length) parts.push(routing.join('\n'));
+  if (noteText) parts.push(`Détails complets de la demande\n\n${noteText}`);
+  return withoutDashes(parts.join('\n\n'));
+}
+
+/** Agent emails are client facing: no em or en dashes. */
+function withoutDashes(text) {
+  return String(text || '')
+    .replace(/^[—–]\s*(.*?)\s*[—–]$/gm, '$1')
+    .replace(/\s+[—–]\s+/g, ': ')
+    .replace(/^→ [—–]$/gm, '→ n/d')
+    .replace(/[—–]/g, 'n/d');
+}
+
+async function staffName(userId) {
+  if (!userId) return '';
+  try {
+    const agent = await lookupStaffRecord(userId);
+    return String(agent?.name || '').trim() || userId;
+  } catch (_) {
+    return userId;
+  }
+}
+
+/** Who this request is for, and who already owns the contact. */
+async function routingRows(requestAgentId, existingOwnerId) {
+  const rows = [];
+  if (requestAgentId) rows.push(`Conseiller pour cette demande: ${await staffName(requestAgentId)}`);
+  else rows.push('Conseiller pour cette demande: aucun (pas de lien de conseiller ni de propriétaire de voyage)');
+  if (existingOwnerId && requestAgentId && existingOwnerId !== requestAgentId) {
+    rows.push(`Contact déjà suivi par: ${await staffName(existingOwnerId)} (propriétaire du contact conservé)`);
+  }
+  return rows;
+}
+
+function wantsOpportunity(payload) {
+  const mode = cfg().opportunityMode;
+  if (mode === 'all') return true;
+  if (mode === 'groupe') return isGroupeRequest(payload);
+  return false;
+}
+
+function opportunityName(payload) {
+  const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')].filter(Boolean).join(' ');
+  const voyage = pick(payload, 'forfait_name', 'nom_du_forfait', 'groupe_titre');
+  const kind = isGroupeRequest(payload) ? 'Demande groupe' : 'Demande';
+  return [kind, voyage, who].filter(Boolean).join(' | ').slice(0, 250);
+}
+
+function opportunityBody(payload, contactId, assignedTo) {
+  const price = Number(String(pick(payload, 'prix_appel', 'forfait_price', 'prix') || '').replace(/[^0-9.]/g, ''));
+  return {
+    locationId: cfg().locationId,
+    pipelineId: cfg().opportunityPipelineId,
+    pipelineStageId: cfg().opportunityStageId,
+    name: opportunityName(payload),
+    status: 'open',
+    contactId,
+    ...(assignedTo ? { assignedTo } : {}),
+    ...(Number.isFinite(price) && price > 0 ? { monetaryValue: price } : {}),
+    source: isGroupeRequest(payload) ? 'Site groupes Atrium' : 'Site reservation'
+  };
+}
+
+/** Never throws: a failed opportunity must not lose the lead. */
+async function ghlCreateOpportunity(payload, contactId, assignedTo) {
+  if (!contactId) return { created: false, error: 'no contact' };
+  try {
+    const res = await ghlFetch(`${ghlUrl('')}/opportunities/`, {
+      method: 'POST',
+      headers: ghlHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(opportunityBody(payload, contactId, assignedTo))
+    });
+    const text = await res.text();
+    if (!res.ok) {
+      console.warn('[reservation] opportunity failed', contactId, res.status, text.slice(0, 300));
+      return { created: false, error: `HTTP ${res.status}` };
+    }
+    let id = '';
+    try { id = JSON.parse(text)?.opportunity?.id || ''; } catch (_) { /* keep empty */ }
+    console.log('[reservation] opportunity created', contactId, id, assignedTo || '-');
+    return { created: true, id };
+  } catch (err) {
+    console.warn('[reservation] opportunity error', contactId, err.message);
+    return { created: false, error: err.message };
+  }
 }
 
 async function resolveAgentNotify(ownerId) {
@@ -1085,7 +1201,14 @@ async function resolveAgentNotify(ownerId) {
       console.warn('[reservation] agent email lookup failed', err.message);
     }
   }
-  return { enabled: true, to: to || null, cc: [], sent: [] };
+  const redirect = cfg().agentNotifyRedirect;
+  return {
+    enabled: true,
+    to: to || null,
+    ...(redirect && to ? { redirectedTo: redirect } : {}),
+    cc: [],
+    sent: []
+  };
 }
 
 async function ghlSendAgentEmail({ to, cc = [], subject, noteText }) {
@@ -1352,6 +1475,11 @@ async function handleRequest(req, res) {
       const assignedPreview = await previewAssignedUserId(payload);
       const contact = buildContactBody(payload, assignedPreview);
       const agentNotify = await resolveAgentNotify(assignedPreview);
+      // Name lookup reads staff.json; skip it unless the agent email preview needs it anyway.
+      const routing = agentNotify.enabled
+        ? await routingRows(assignedPreview, '')
+        : [`Conseiller pour cette demande: ${assignedPreview || 'aucun'}`];
+      if (agentNotify.enabled && agentNotify.to) agentNotify.body = agentNotifyBody(payload, note, routing);
       return sendJson(res, 200, {
         ok: true,
         dryRun: true,
@@ -1363,8 +1491,11 @@ async function handleRequest(req, res) {
         assignedTo: assignedPreview || null,
         notify: sendsInternalNotify(payload, agentNotify),
         agentNotify,
+        requestAgent: assignedPreview || null,
+        routing,
+        opportunity: wantsOpportunity(payload) ? opportunityBody(payload, '(contact)', assignedPreview) : null,
         leadRef: hasLeadRef(lead) ? { ref: lead.ref || null, ghlUser: lead.ghlUser || null, validated: false } : null,
-        ownerPolicy: "Un contact qui a déjà un propriétaire n'est pas réassigné. Cet essai ne consulte pas GHL."
+        ownerPolicy: "Un contact qui a déjà un propriétaire n'est pas réassigné, mais la demande (note, courriel, opportunité) va au conseiller de la demande. Cet essai ne consulte pas GHL."
       });
     }
 
@@ -1382,7 +1513,11 @@ async function handleRequest(req, res) {
       // Never steal a contact already owned by another agent.
       const assignOwner = Boolean(voyageOwnerId) && !existingAssignedTo;
       const body = buildContactBody(payload, assignOwner ? voyageOwnerId : '');
-      const noteText = buildNotes(payload);
+      // The agent this request is for: link or voyage owner, else the contact owner.
+      const requestAgentId = voyageOwnerId || existingAssignedTo || '';
+      const routing = await routingRows(requestAgentId, existingAssignedTo);
+      const baseNote = buildNotes(payload);
+      const noteText = baseNote ? [baseNote, `Routage\n${routing.join('\n')}`].join('\n\n') : '';
       const result = await ghlUpsertContact(body);
       const contactId = result?.contact?.id || result?.id || null;
       const tags = resolveContactTags(payload);
@@ -1396,7 +1531,7 @@ async function handleRequest(req, res) {
         assignedTo = voyageOwnerId;
         console.log('[reservation] assigned voyage owner', contactId, voyageOwnerId);
       } else if (contactId && existingAssignedTo && voyageOwnerId && existingAssignedTo !== voyageOwnerId) {
-        console.log('[reservation] kept existing assignee', contactId, existingAssignedTo);
+        console.log('[reservation] kept existing assignee', contactId, existingAssignedTo, 'request agent', voyageOwnerId);
       }
 
       let tagsAdded = [];
@@ -1409,7 +1544,12 @@ async function handleRequest(req, res) {
         console.warn('[reservation] upsert returned no contact id; tags skipped');
       }
 
-      const agentNotify = await resolveAgentNotify(assignedTo);
+      let opportunity = null;
+      if (contactId && wantsOpportunity(payload)) {
+        opportunity = await ghlCreateOpportunity(payload, contactId, requestAgentId || assignedTo);
+      }
+
+      const agentNotify = await resolveAgentNotify(requestAgentId || assignedTo);
       let notifyEmails = [];
       if (noteText && sendsInternalNotify(payload, agentNotify)) {
         const who = [pick(payload, 'p1_prenom', 'full_name'), pick(payload, 'p1_nom', 'last_name')]
@@ -1428,11 +1568,13 @@ async function handleRequest(req, res) {
           .filter(Boolean)
           .join(' ');
         const voyage = pick(payload, 'forfait_name', 'nom_du_forfait', 'groupe_titre');
-        const subject = ['Nouvelle demande', who, voyage].filter(Boolean).join(' | ');
+        const redirect = agentNotify.redirectedTo || '';
+        const subject = [redirect ? `[ESSAI pour ${agentNotify.to}] Nouvelle demande` : 'Nouvelle demande', who, voyage]
+          .filter(Boolean).join(' | ');
         const sent = await ghlSendAgentEmail({
-          to: agentNotify.to,
+          to: redirect || agentNotify.to,
           subject,
-          noteText: agentNotifyBody(payload)
+          noteText: agentNotifyBody(payload, baseNote, routing)
         });
         agentNotify.sent = sent.sent;
       }
@@ -1447,6 +1589,8 @@ async function handleRequest(req, res) {
         tagsAdded,
         notifyEmails,
         agentNotify,
+        requestAgent: requestAgentId || null,
+        opportunity,
         customFieldCount: Array.isArray(body.customFields) ? body.customFields.length : 0
       });
     } catch (err) {

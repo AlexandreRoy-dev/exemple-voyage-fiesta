@@ -65,6 +65,7 @@ async function startFakeGhl({ usersStatus = 200, products = [], staff = null } =
       if (url.pathname.endsWith('/tags')) return send(200, { tagsAdded: body?.tags || [] });
       if (url.pathname.endsWith('/notes')) return send(200, { ok: true });
       if (url.pathname === '/conversations/messages') return send(200, { id: 'msg-1' });
+      if (req.method === 'POST' && url.pathname === '/opportunities/') return send(201, { opportunity: { id: 'opp-1' } });
       if (req.method === 'POST' && url.pathname === '/contacts/') {
         return send(200, { contact: { id: 'c-notify' } });
       }
@@ -608,6 +609,119 @@ test('AGENT_NOTIFY dry run names the advisor email and does not send it', async 
     assert.equal(json.notify, false);
     assert.equal(fake.calls.some((call) => call.path === '/conversations/messages'), false);
     assert.equal(fake.calls.some((call) => call.path === '/contacts/upsert'), false);
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+});
+
+const routingStaff = [
+  { slug: 'barbara-delisle', id: 'user-barbara', name: 'Barbara Delisle', email: 'barbara@voyagefiesta.com' },
+  { slug: 'yancie-auclair', id: 'owner-keep', name: 'Yancie Auclair', email: 'yancie@voyagefiesta.com' }
+];
+const barbaraProduct = [{ slug: 'riu-flamingos-2026-12-20', owner: { id: 'user-barbara' } }];
+const shopPayload = {
+  request_type: 'reservation',
+  forfait_slug: 'riu-flamingos-2026-12-20',
+  forfait_name: 'RIU Flamingos',
+  departure_date: '2026-12-20',
+  return_date: '2026-12-27',
+  forfait_price: '1899',
+  forfait_link: 'https://aubaineexpress.voyagefiesta.ca/product.html?slug=riu-flamingos-2026-12-20',
+  p1_prenom: 'Julie',
+  p1_nom: 'Test',
+  p1_email: 'owned@example.com',
+  p1_phone: '5145550111'
+};
+
+test('owned contact keeps its owner but the request email goes to the voyage agent', async () => {
+  const fake = await startFakeGhl({ staff: routingStaff, products: barbaraProduct });
+  const api = createServer(apiEnv(fake, { AGENT_NOTIFY: '1', INTERNAL_NOTIFY_EMAILS: 'alex@roymarketing.ca' }));
+  const port = await listen(api);
+  try {
+    const { status, json } = await post(port, { payload: shopPayload });
+    assert.equal(status, 200);
+    assert.equal(json.assignedTo, 'owner-keep');
+    assert.equal(json.requestAgent, 'user-barbara');
+    const upsert = fake.calls.find((call) => call.path === '/contacts/upsert');
+    assert.equal(upsert.body.assignedTo, undefined);
+    assert.equal(fake.calls.some((call) => call.method === 'PUT' && call.body?.assignedTo), false);
+    const note = fake.calls.find((call) => call.path.endsWith('/notes'));
+    assert.match(note.body.body, /Conseiller pour cette demande: Barbara Delisle/);
+    assert.match(note.body.body, /Contact déjà suivi par: Yancie Auclair/);
+    const mail = fake.calls.filter((call) => call.path === '/conversations/messages');
+    assert.equal(mail.length, 1);
+    assert.equal(mail[0].body.emailTo, 'barbara@voyagefiesta.com');
+    assert.equal(JSON.stringify(mail).includes('alex@roymarketing.ca'), false);
+    assert.match(mail[0].body.message, /Dates: 2026-12-20 au 2026-12-27/);
+    assert.match(mail[0].body.message, /Prix: 1899/);
+    assert.match(mail[0].body.message, /Lien: https:\/\/aubaineexpress/);
+    assert.match(mail[0].body.message, /Détails complets de la demande/);
+    assert.equal(mail[0].body.message.includes('—'), false);
+    assert.equal(fake.calls.some((call) => call.path === '/opportunities/'), false);
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+});
+
+test('AGENT_NOTIFY_REDIRECT_TO sends the agent email to the test inbox only', async () => {
+  const fake = await startFakeGhl({ staff: routingStaff, products: barbaraProduct });
+  const api = createServer(apiEnv(fake, { AGENT_NOTIFY: '1', AGENT_NOTIFY_REDIRECT_TO: 'test-inbox@example.com' }));
+  const port = await listen(api);
+  try {
+    const { json } = await post(port, { payload: { ...shopPayload, p1_email: 'fresh-redirect@example.com' } });
+    assert.equal(json.agentNotify.to, 'barbara@voyagefiesta.com');
+    assert.equal(json.agentNotify.redirectedTo, 'test-inbox@example.com');
+    assert.deepEqual(json.agentNotify.sent, ['test-inbox@example.com']);
+    const mail = fake.calls.filter((call) => call.path === '/conversations/messages');
+    assert.equal(mail.length, 1);
+    assert.equal(mail[0].body.emailTo, 'test-inbox@example.com');
+    assert.match(mail[0].body.subject, /^\[ESSAI pour barbara@voyagefiesta.com\]/);
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+});
+
+test('GHL_OPPORTUNITY=groupe creates one opportunity for the request agent', async () => {
+  const fake = await startFakeGhl({ staff: routingStaff });
+  const api = createServer(apiEnv(fake, { GHL_OPPORTUNITY: 'groupe' }));
+  const port = await listen(api);
+  try {
+    const { json } = await post(port, { payload: { ...groupePayload, email: 'owned@example.com', agent_slug: 'barbara-delisle' } });
+    assert.equal(json.assignedTo, 'owner-keep');
+    assert.deepEqual(json.opportunity, { created: true, id: 'opp-1' });
+    const opp = fake.calls.filter((call) => call.path === '/opportunities/');
+    assert.equal(opp.length, 1);
+    assert.equal(opp[0].body.assignedTo, 'user-barbara');
+    assert.equal(opp[0].body.pipelineId, '0epoPtkeq89cfu3KsxDs');
+    assert.equal(opp[0].body.contactId, 'c-new');
+    assert.equal(opp[0].body.monetaryValue, 2959);
+    assert.match(opp[0].body.name, /Demande groupe \| Noël au Costa Rica/);
+    const shop = await post(port, { payload: { ...shopPayload, p1_email: 'fresh-shop@example.com' } });
+    assert.equal(shop.json.opportunity, null);
+    assert.equal(fake.calls.filter((call) => call.path === '/opportunities/').length, 1);
+  } finally {
+    await close(api);
+    await close(fake.server);
+  }
+});
+
+test('dry run previews the voyage owner, routing and opportunity without GHL', async () => {
+  const fake = await startFakeGhl({ staff: routingStaff, products: barbaraProduct });
+  const api = createServer(apiEnv(fake, { AGENT_NOTIFY: '1', AGENT_NOTIFY_REDIRECT_TO: 'test-inbox@example.com', GHL_OPPORTUNITY: 'all' }));
+  const port = await listen(api);
+  try {
+    const { json } = await post(port, { payload: { ...shopPayload, dry_run: true } });
+    assert.equal(json.dryRun, true);
+    assert.equal(json.requestAgent, 'user-barbara');
+    assert.equal(json.agentNotify.to, 'barbara@voyagefiesta.com');
+    assert.equal(json.agentNotify.redirectedTo, 'test-inbox@example.com');
+    assert.match(json.agentNotify.body, /Prix: 1899/);
+    assert.equal(json.opportunity.assignedTo, 'user-barbara');
+    const ghlPaths = fake.calls.map((call) => call.path).filter((path) => !/\.json$/.test(path));
+    assert.deepEqual(ghlPaths, []);
   } finally {
     await close(api);
     await close(fake.server);

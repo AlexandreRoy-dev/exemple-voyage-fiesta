@@ -52,7 +52,13 @@ On submit:
 
 `AGENT_NOTIFY=1` sends that lead only to the advisor email in `staff.json`. `INTERNAL_NOTIFY_EMAILS` is not copied. The internal list is used when `AGENT_NOTIFY` is off (including the `GHL_GROUPE_NOTIFY` rule), or when `AGENT_NOTIFY` is on and the advisor has no email.
 
-`DRY_RUN=1`, or `"dry_run": true` on the request, returns `{ ok, dryRun, contact, tags, note, assignedTo, notify }` and does not call GoHighLevel. The API key is not required in that mode.
+The advisor for a request is the shared link agent or the voyage owner (`products.json`), else the contact owner. A contact that already has an owner keeps that owner in GHL, but the note gets a `Routage` section naming both, and the `AGENT_NOTIFY` email goes to the request advisor. The email lists the passenger, dates, price, link and the full request.
+
+`AGENT_NOTIFY_REDIRECT_TO=test@example.com` sends every advisor email to that inbox instead, with the subject prefix `[ESSAI pour <advisor email>]`. Use it for end to end tests.
+
+`GHL_OPPORTUNITY` defaults to off. `groupe` creates one opportunity per `demande_groupe` request (the GHL workflows already cover the other forms), `all` creates one for every request. The opportunity goes in `GHL_OPPORTUNITY_PIPELINE_ID` / `GHL_OPPORTUNITY_STAGE_ID` (defaults: pipeline voyage fiesta, stage FORMULAIRE REMPLI), is assigned to the request advisor and uses `prix_appel` as its value. A failed opportunity is logged and does not block the lead.
+
+`DRY_RUN=1`, or `"dry_run": true` on the request, returns `{ ok, dryRun, contact, tags, note, assignedTo, requestAgent, routing, opportunity, notify, agentNotify }` and does not call GoHighLevel. The API key is not required in that mode.
 
 `BIND_HOST` (or `HOST`) defaults to `127.0.0.1`. Nginx and the Cloudflare tunnel already proxy `127.0.0.1:3847`. A direct call to the public port 3847 from outside the VPS stops working with this default. Set `BIND_HOST=0.0.0.0` only if that raw port is still required.
 
