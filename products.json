@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-02T12:00:05.204Z",
+  "updatedAt": "2026-11-05T23:00:05.111Z",
   "source": "ghl",
   "schemaKey": "custom_objects.voyages",
   "locationId": "V90iyFBbBrCg3tpctRjc",
@@ -492,7 +492,7 @@
       "exclusions": [],
       "franchiseBagage": "",
       "forfaitLink": "https://www.sunwing.ca/fr/hotel/honduras/roatan/henry-morgan-hotel-and-beach-resort",
-      "endDate": "2026-11-06T00:00:00.000Z",
+      "endDate": "2026-11-20T00:00:00.000Z",
       "departureDate": "2027-03-15T00:00:00.000Z",
       "departureAirport": "Québec (YQB)",
       "returnAirport": "ROATAN (RTB)",
