@@ -917,10 +917,23 @@ function observe() {
   });
 }
 
+function contentHeight() {
+  const main = document.querySelector('main');
+  if (!main) return 0;
+  const rect = main.getBoundingClientRect();
+  return Math.ceil(rect.bottom + window.scrollY);
+}
+
+let heightTimer;
 function notifyHeight() {
-  if (!embedOn()) return;
-  const height = Math.ceil(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
-  window.parent.postMessage({ type: 'voyage-fiesta-resize', height, path: location.pathname + location.search }, '*');
+  if (!embedOn() || !window.parent || window.parent === window) return;
+  clearTimeout(heightTimer);
+  heightTimer = setTimeout(() => {
+    const height = contentHeight();
+    if (height > 0) {
+      window.parent.postMessage({ type: 'voyage-fiesta-resize', height, path: location.pathname + location.search }, '*');
+    }
+  }, 80);
 }
 
 async function loadJson(url) {
@@ -1002,7 +1015,10 @@ async function main() {
   notifyHeight();
   if (embedOn()) {
     window.addEventListener('resize', notifyHeight);
-    if ('ResizeObserver' in window) new ResizeObserver(notifyHeight).observe(document.documentElement);
+    if (document.readyState === 'complete') notifyHeight();
+    else window.addEventListener('load', notifyHeight);
+    const main = document.querySelector('main');
+    if ('ResizeObserver' in window && main) new ResizeObserver(notifyHeight).observe(main);
   }
 }
 

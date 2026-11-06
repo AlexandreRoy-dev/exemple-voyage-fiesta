@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
@@ -62,6 +63,57 @@ test('embed mode hides the shared header, nav and footer', () => {
     assert.match(html, /classList\.add\('embed', 'embed-mode'\)/);
     assert.match(html, /html\.embed #nav-principale/);
   }
+});
+
+test('agent pages hide their header and footer only while embedded and post the main height', () => {
+  const css = read('agents/agents.css');
+  for (const selector of ['.vf-header', '.vf-footer', '.vf-atmosphere']) {
+    assert.match(css, new RegExp(`html\\.embed(?:-mode)? ${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]{0,220}display: none !important`));
+  }
+  const embed = read('agents/embed.js');
+  assert.match(embed, /type: 'voyage-fiesta-resize'/);
+  assert.match(embed, /querySelector\('main'\)/);
+  assert.match(embed, /getBoundingClientRect\(\)/);
+  assert.match(embed, /new ResizeObserver\(notifyParentHeight\)\.observe\(main\)/);
+  assert.match(embed, /key === 'ref' \|\| key === 'ghl_user' \|\| key\.indexOf\('utm_'\) === 0/);
+  assert.doesNotMatch(embed, /scrollHeight/);
+  assert.doesNotMatch(embed, /codesurmesure\.ca|agentsexternesfiesta\.ca/);
+
+  const root = new URL('../agents/', import.meta.url);
+  const pages = readdirSync(root).filter((name) => {
+    const full = join(root.pathname, name);
+    if (name === 'index.html') return true;
+    try { return statSync(full).isDirectory(); } catch { return false; }
+  });
+  assert.ok(pages.includes('eric-lacasse'), 'eric-lacasse page is published');
+  for (const name of pages) {
+    const path = name === 'index.html' ? 'agents/index.html' : `agents/${name}/index.html`;
+    const html = read(path);
+    assert.match(html, /<html lang="fr">/);
+    assert.match(html, /<header class="vf-header">/);
+    assert.match(html, /<footer class="vf-footer">/);
+    assert.match(html, /window\.self !== window\.top/);
+    assert.match(html, /classList\.add\('embed', 'embed-mode'\)/);
+    assert.match(html, /html\.embed \.vf-header/);
+    assert.match(html, /html\.embed \.vf-footer/);
+    assert.match(html, /<script src="\/agents\/embed\.js\?v=1"><\/script>/);
+    assert.doesNotMatch(html, /codesurmesure\.ca|agentsexternesfiesta\.ca/);
+  }
+
+  const eric = read('agents/eric-lacasse/index.html');
+  assert.match(eric, /ref=eric-lacasse/);
+  assert.match(eric, /ghl_user=fG599Arfh45eLVOMCMLh/);
+});
+
+test('groupes embed height follows main so a shorter page can shrink the iframe', () => {
+  const app = read('groupes/js/app.mjs');
+  assert.match(app, /function contentHeight\(\)/);
+  assert.match(app, /document\.querySelector\('main'\)/);
+  assert.match(app, /getBoundingClientRect\(\)/);
+  assert.match(app, /new ResizeObserver\(notifyHeight\)\.observe\(main\)/);
+  assert.match(app, /type: 'voyage-fiesta-resize'/);
+  assert.doesNotMatch(app, /scrollHeight/);
+  assert.match(read('groupes/css/groupes.css'), /html\.embed body,\s*html\.embed-mode body\s*\{[^}]*overflow: hidden/);
 });
 
 test('group detail links stay on id and slug', () => {

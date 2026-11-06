@@ -95,6 +95,44 @@ Liste des forfaits seulement.
   loading="lazy"></iframe>
 ```
 
+## Page conseiller
+
+Même collage que les autres blocs : la classe `vf-plein-auto` et le message `voyage-fiesta-resize`. La page conseiller masque son en-tête et son pied seulement dans une iframe, et la hauteur suit le contenu (elle peut aussi diminuer). En visite directe, l'en-tête et le pied restent visibles.
+
+`ref`, `ghl_user` et les paramètres `utm_` ajoutés à l'adresse suivent les liens internes.
+
+```html
+<style>
+.vf-plein{width:100%;max-width:100%;margin:0 auto;}
+.vf-plein iframe{display:block;width:100%;height:1600px;border:0;background:#fff;}
+</style>
+<div class="vf-plein vf-plein-conseiller">
+  <iframe class="vf-plein-auto" src="https://aubaineexpress.voyagefiesta.ca/agents/eric-lacasse/" title="Voyage Fiesta : Ton conseiller Eric Lacasse" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+</div>
+<script>
+(function(){
+  if(window.vfPleinePage)return;window.vfPleinePage=true;
+  window.addEventListener('message',function(e){
+    if(e.origin!=='https://aubaineexpress.voyagefiesta.ca')return;
+    var d=e.data;
+    if(!d||d.type!=='voyage-fiesta-resize'||typeof d.height!=='number'||d.height<200)return;
+    var f=document.querySelectorAll('iframe.vf-plein-auto');
+    for(var i=0;i<f.length;i++){
+      if(f[i].contentWindow!==e.source)continue;
+      f[i].style.height=Math.min(d.height,40000)+'px';
+      if(d.path&&f[i].getAttribute('data-vf-page')&&f[i].getAttribute('data-vf-page')!==d.path){
+        var r=f[i].getBoundingClientRect();
+        if(r.top<0)window.scrollBy(0,r.top-20);
+      }
+      if(d.path)f[i].setAttribute('data-vf-page',d.path);
+    }
+  });
+})();
+</script>
+```
+
+Pour un autre conseiller, remplacez seulement le `src` par `https://aubaineexpress.voyagefiesta.ca/agents/<slug>/`.
+
 ## Conseiller
 
 Ajoutez la query sur le `src`, par exemple :

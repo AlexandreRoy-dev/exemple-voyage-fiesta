@@ -200,8 +200,10 @@
 
     function bindMotion() {
         const nodes = document.querySelectorAll('[data-anim]');
-        let framed = false;
-        try { framed = global.self !== global.top; } catch (_) { framed = true; }
+        let framed = document.documentElement.classList.contains('embed') || document.documentElement.classList.contains('embed-mode');
+        if (!framed) {
+            try { framed = global.self !== global.top; } catch (_) { framed = true; }
+        }
         // Dans un iframe (Divi) ou sans animation, tout est visible tout de suite.
         if (framed || global.matchMedia('(prefers-reduced-motion: reduce)').matches || !nodes.length || typeof IntersectionObserver !== 'function') {
             nodes.forEach(function (node) { node.classList.add('is-in'); });

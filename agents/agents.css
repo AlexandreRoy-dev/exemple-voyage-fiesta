@@ -334,6 +334,29 @@ h1 { margin: 0.2rem 0; font-size: clamp(1.8rem, 3vw, 2.4rem); }
   .vf-header__inner { align-items: flex-start; flex-direction: column; padding: 0.75rem 0; }
 }
 
+html.embed .vf-header,
+html.embed .vf-footer,
+html.embed .vf-atmosphere,
+html.embed-mode .vf-header,
+html.embed-mode .vf-footer,
+html.embed-mode .vf-atmosphere { display: none !important; }
+
+html.embed,
+html.embed-mode,
+html.embed body,
+html.embed-mode body {
+  height: auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+html.embed [data-anim],
+html.embed-mode [data-anim] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .vf-atmosphere { animation: none; }
