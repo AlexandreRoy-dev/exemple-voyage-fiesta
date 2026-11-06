@@ -19,6 +19,37 @@ window.addEventListener('message', function (event) {
 
 `data-vf-path` rappelle la page affichée. Le message met à jour seulement l'iframe qui l'a envoyé, donc plusieurs blocs peuvent cohabiter.
 
+## Accueil
+
+Bandeau de recherche (forfaits sud, vols, croisières, voitures), garanties et aperçu des groupes. Dans l'iframe, seul le contenu s'affiche : l'en-tête et le pied du site restent masqués. La recherche ouvre le moteur dans la fenêtre parente.
+
+```html
+<iframe
+  class="vf-plein-auto"
+  title="Accueil Voyage Fiesta"
+  src="https://aubaineexpress.voyagefiesta.ca/groupes/"
+  style="width:100%;border:0;min-height:960px;display:block"
+  loading="lazy"></iframe>
+<script>
+window.addEventListener('message', function (event) {
+  if (event.origin !== 'https://aubaineexpress.voyagefiesta.ca') return;
+  var data = event.data || {};
+  var frames = document.querySelectorAll('iframe.vf-plein-auto');
+  var frame = null;
+  for (var i = 0; i < frames.length; i++) {
+    if (frames[i].contentWindow === event.source) frame = frames[i];
+  }
+  if (!frame) return;
+  if (data.type === 'voyage-fiesta-resize' && data.height) {
+    frame.style.height = data.height + 'px';
+  }
+  if (data.type === 'voyage-fiesta-navigate' && typeof data.url === 'string' && data.url.indexOf('https://') === 0) {
+    window.location.assign(data.url);
+  }
+});
+</script>
+```
+
 ## Site principal, pour voyagefiesta.com
 
 Montre les bandes (Sud, croisières, voyages, équipe) sans l'en-tête du site Aubaines Express.

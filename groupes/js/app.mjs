@@ -27,6 +27,7 @@ import {
   buildCruiseSearchUrl,
   buildCarSearchUrl
 } from './catalog.mjs';
+import { openSearchResult } from './open-search.mjs';
 
 const root = new URL('../', import.meta.url);
 const params = new URLSearchParams(location.search);
@@ -297,14 +298,33 @@ function bindForm(form, group) {
   });
 }
 
-function options(list, placeholder) {
-  return [`<option value="">${esc(placeholder)}</option>`]
-    .concat((list || []).filter((item) => item.value).map((item) => `<option value="${esc(item.value)}">${esc(item.label)}</option>`))
-    .join('');
+function selectField(id, label, list, placeholder, extra = '') {
+  const named = extra && typeof extra === 'object';
+  const attrs = named ? '' : extra;
+  const selectedLabel = named ? extra.selectedLabel || '' : '';
+  const showPlaceholder = named ? extra.placeholder !== false : true;
+  const opts = (list || []).filter((item) => item.value).map((item) => {
+    const selected = selectedLabel && item.label === selectedLabel ? ' selected' : '';
+    return `<option value="${esc(item.value)}"${selected}>${esc(item.label)}</option>`;
+  }).join('');
+  const empty = showPlaceholder && placeholder ? `<option value="">${esc(placeholder)}</option>` : '';
+  return `<div class="field"><label for="${id}">${esc(label)}</label><select id="${id}" ${attrs}>${empty}${opts}</select></div>`;
 }
 
-function selectField(id, label, list, placeholder, extra = '') {
-  return `<div class="field"><label for="${id}">${esc(label)}</label><select id="${id}" ${extra}>${options(list, placeholder)}</select></div>`;
+function ico(name) {
+  const paths = {
+    sun: '<circle cx="12" cy="12" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 3.2v2.1M12 18.7v2.1M3.2 12h2.1M18.7 12h2.1M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    plane: '<path d="M3.2 12.2l17.2-7.4-4.2 15.2-3.6-4.7-3.2 2.6.6-4.2-6.8-1.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>',
+    ship: '<path d="M4 15.5l1.6 4h12.8L20 15.5M5 15.5L12 6l7 9.5M12 6V3.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>',
+    car: '<path d="M4.5 14.5h15v3.2h-15zM6.2 14.5l1.4-3.8h8.8l1.4 3.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/><circle cx="8" cy="17.7" r="1.1" fill="currentColor"/><circle cx="16" cy="17.7" r="1.1" fill="currentColor"/>',
+    search: '<circle cx="11" cy="11" r="6.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.8 15.8L20.5 20.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+    check: '<path d="M6 12.4l3.3 3.3L18 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'
+  };
+  return `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name] || ''}</svg>`;
+}
+
+function searchButton(label) {
+  return `<button class="btn btn-block" type="submit">${ico('search')}<span>${esc(label)}</span></button>`;
 }
 
 function comboField(id, label, list, placeholder) {
@@ -365,22 +385,22 @@ function searchCard(search) {
   const today = new Date().toISOString().slice(0, 10);
   return `<div class="search-card">
     <div class="tabs" role="tablist" aria-label="Recherche">
-      <button type="button" role="tab" id="tab-sud" aria-controls="panel-sud" aria-selected="true">Forfaits SUD</button>
-      <button type="button" role="tab" id="tab-vols" aria-controls="panel-vols" aria-selected="false">Vols</button>
-      <button type="button" role="tab" id="tab-cruise" aria-controls="panel-cruise" aria-selected="false">Croisières</button>
-      <button type="button" role="tab" id="tab-car" aria-controls="panel-car" aria-selected="false">Voitures</button>
+      <button type="button" role="tab" id="tab-sud" aria-controls="panel-sud" aria-selected="true">${ico('sun')}<span>Forfaits SUD</span></button>
+      <button type="button" role="tab" id="tab-vols" aria-controls="panel-vols" aria-selected="false">${ico('plane')}<span>Vols</span></button>
+      <button type="button" role="tab" id="tab-cruise" aria-controls="panel-cruise" aria-selected="false">${ico('ship')}<span>Croisières</span></button>
+      <button type="button" role="tab" id="tab-car" aria-controls="panel-car" aria-selected="false">${ico('car')}<span>Voitures</span></button>
     </div>
     <form id="panel-sud" data-search="sud" role="tabpanel" aria-labelledby="tab-sud">
       <div class="search-grid">
-        ${selectField('sud-gateway', 'Départ de', search.sud.gateways, 'Choisir')}
-        ${comboField('sud-dest', 'Destination', search.sud.destinations, 'Rechercher une destination')}
+        ${selectField('sud-gateway', 'Départ de', search.sud.gateways, '', { selectedLabel: 'Montréal' })}
+        ${selectField('sud-dest', 'Destination', search.sud.destinations, '', { selectedLabel: 'Tout Sud' })}
         <div class="field"><label for="sud-date">Date de départ</label><input id="sud-date" type="date" min="${today}"></div>
-        ${selectField('sud-duration', 'Durée', search.sud.durations, 'Choisir')}
+        ${selectField('sud-duration', 'Durée', search.sud.durations, '', { selectedLabel: '7 jours' })}
         <div class="field"><label for="sud-adults">Adulte(s)</label><select id="sud-adults">${[1,2,3,4,5,6,7,8].map((n) => `<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div>
         <div class="field"><label for="sud-children">Enfant(s)</label><select id="sud-children">${[0,1,2,3,4,5,6].map((n) => `<option>${n}</option>`).join('')}</select></div>
         <div class="field wide" id="sud-ages-wrap" hidden><label for="sud-ages">Âges des enfants</label><input id="sud-ages" placeholder="Ex. 8, 10"></div>
       </div>
-      <button class="btn btn-block" type="submit">Rechercher un forfait sud</button>
+      ${searchButton('Rechercher un forfait sud')}
     </form>
     <form id="panel-vols" data-search="vols" role="tabpanel" aria-labelledby="tab-vols" hidden>
       <div class="search-grid">
@@ -392,7 +412,7 @@ function searchCard(search) {
         <div class="field"><label for="vol-trip">Type de vol</label><select id="vol-trip"><option value="roundtrip">Aller-retour</option><option value="oneway">Aller simple</option></select></div>
         <div class="field"><label for="vol-adults">Adulte(s)</label><select id="vol-adults">${[1,2,3,4,5,6].map((n) => `<option ${n===2?'selected':''}>${n}</option>`).join('')}</select></div>
       </div>
-      <button class="btn btn-block" type="submit">Rechercher les vols</button>
+      ${searchButton('Rechercher les vols')}
     </form>
     <form id="panel-cruise" data-search="cruise" role="tabpanel" aria-labelledby="tab-cruise" hidden>
       <div class="search-grid">
@@ -402,7 +422,7 @@ function searchCard(search) {
         ${comboField('cruise-vendor', 'Croisiériste', search.croisieres.vendors, 'Tous les croisiéristes')}
         ${selectField('cruise-duration', 'Durée', search.croisieres.durations, 'Toutes les durées')}
       </div>
-      <button class="btn btn-block" type="submit">Rechercher une croisière</button>
+      ${searchButton('Rechercher une croisière')}
     </form>
     <form id="panel-car" data-search="car" role="tabpanel" aria-labelledby="tab-car" hidden>
       <div class="search-grid">
@@ -410,7 +430,7 @@ function searchCard(search) {
         <div class="field"><label for="car-from">Date de prise</label><input id="car-from" type="date" min="${today}" required></div>
         <div class="field"><label for="car-to">Date de retour</label><input id="car-to" type="date" min="${today}" required></div>
       </div>
-      <button class="btn btn-block" type="submit">Rechercher une voiture</button>
+      ${searchButton('Rechercher une voiture')}
     </form>
   </div>`;
 }
@@ -431,9 +451,14 @@ function bindSearch(search) {
     tab.tabIndex = index === 0 ? 0 : -1;
     tab.addEventListener('click', () => selectTab(tab));
     tab.addEventListener('keydown', (event) => {
-      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      const key = event.key;
+      if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') return;
       event.preventDefault();
-      const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+      const next = key === 'Home'
+        ? tabs[0]
+        : key === 'End'
+          ? tabs[tabs.length - 1]
+          : tabs[(index + (key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
       next.focus();
       selectTab(next);
     });
@@ -441,7 +466,12 @@ function bindSearch(search) {
   const gateway = document.getElementById('sud-gateway');
   if (gateway) gateway.value = 'YUL';
   const duration = document.getElementById('sud-duration');
-  if (duration && [...duration.options].some((opt) => opt.value === '7')) duration.value = '7';
+  if (duration && [...duration.options].some((opt) => opt.value === '7DAYS')) duration.value = '7DAYS';
+  const dest = document.getElementById('sud-dest');
+  if (dest) {
+    const tout = [...dest.options].find((opt) => opt.textContent.trim() === 'Tout Sud');
+    if (tout) dest.value = tout.value;
+  }
   const from = document.getElementById('vol-from');
   if (from) from.value = 'YUL';
   document.getElementById('sud-children')?.addEventListener('change', (event) => {
@@ -451,7 +481,6 @@ function bindSearch(search) {
   document.getElementById('vol-trip')?.addEventListener('change', (event) => {
     document.getElementById('vol-return-wrap').hidden = event.target.value === 'oneway';
   });
-  bindCombo('sud-dest', search.sud.destinations);
   bindCombo('vol-to', search.vols.destinations);
   bindCombo('cruise-port', search.croisieres.ports);
   bindCombo('cruise-dest', search.croisieres.destinations);
@@ -461,14 +490,14 @@ function bindSearch(search) {
     event.preventDefault();
     const url = buildSudSearchUrl({
       gateway: document.getElementById('sud-gateway').value,
-      destination: document.getElementById('sud-dest-value').value,
+      destination: document.getElementById('sud-dest').value,
       date: document.getElementById('sud-date').value,
       duration: document.getElementById('sud-duration').value,
       adults: document.getElementById('sud-adults').value,
       children: document.getElementById('sud-children').value,
       childAges: document.getElementById('sud-ages').value
     });
-    window.open(url, '_blank', 'noopener');
+    openSearchResult(url);
   });
   document.getElementById('panel-vols')?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -486,7 +515,7 @@ function bindSearch(search) {
       trip: document.getElementById('vol-trip').value,
       adults: document.getElementById('vol-adults').value
     });
-    window.open(url, '_blank', 'noopener');
+    openSearchResult(url);
   });
   document.getElementById('panel-cruise')?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -498,7 +527,7 @@ function bindSearch(search) {
       duration: document.getElementById('cruise-duration').value || '0',
       adults: '2'
     });
-    window.open(url, '_blank', 'noopener');
+    openSearchResult(url);
   });
   document.getElementById('panel-car')?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -512,7 +541,7 @@ function bindSearch(search) {
       pickup: document.getElementById('car-from').value,
       dropoff: document.getElementById('car-to').value
     });
-    window.open(url, '_blank', 'noopener');
+    openSearchResult(url);
   });
 }
 
@@ -532,19 +561,19 @@ function renderHome(groups, search, failed) {
   };
   main.innerHTML = `
     <section class="hero"><div class="hero-grid">
-      <div>
-        <p class="eyebrow">Forfaits, croisières et voyages</p>
-        <h1>Forfaits sud, vols, croisières et voyages de groupe</h1>
-        <p>Recherchez un départ ou parcourez les groupes publiés par Voyage Fiesta. La demande d'information part avec le voyage déjà indiqué.</p>
-        <a class="btn" href="${esc(href('forfaits-sud/'))}">Voir les forfaits sud</a>
+      <div class="hero-copy">
+        <p class="eyebrow">Votre prochaine évasion commence ici</p>
+        <h1>Voyagez vers<br>l’essentiel</h1>
+        <p>Des expériences uniques, des souvenirs inoubliables.</p>
+        <a class="btn" href="${esc(href('forfaits-sud/'))}">Découvrir nos offres</a>
       </div>
       ${searchCard(search)}
     </div></section>
-    <section class="trust" data-animate>
-      <article><h2>Accompagnement</h2><p>Un conseiller suit le dossier avant le départ, pendant le voyage et au retour.</p></article>
-      <article><h2>Prix du groupe</h2><p>Le prix affiché est le prix d'appel publié pour le groupe. Un conseiller confirme la place.</p></article>
-      <article><h2>Questions</h2><p>L'équipe répond sur les dates, les hôtels, les navires et les cabines.</p></article>
-      <article><h2>Demande</h2><p>Le formulaire envoie la demande au dossier, avec le voyage choisi.</p></article>
+    <section class="trust" aria-label="Engagements" data-animate>
+      <article><span class="check">${ico('check')}</span><h2>Voyage en toute sérénité</h2><p>Un accompagnement avant, pendant et après votre voyage.</p></article>
+      <article><span class="check">${ico('check')}</span><h2>Meilleurs prix garantis</h2><p>Nous vous proposons les meilleures options selon vos besoins.</p></article>
+      <article><span class="check">${ico('check')}</span><h2>Conseillers à votre écoute</h2><p>Une équipe disponible et passionnée pour vous conseiller.</p></article>
+      <article><span class="check">${ico('check')}</span><h2>Des expériences sur mesure</h2><p>Des voyages personnalisés selon vos envies.</p></article>
     </section>
     ${failed ? `<section class="section"><div class="wrap">${unavailable()}</div></section>` : ''}
     ${block('sud', 'Forfaits SUD', 'forfaits-sud/')}
