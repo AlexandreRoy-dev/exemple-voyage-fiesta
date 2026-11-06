@@ -293,16 +293,31 @@ Moteurs (codes Fiesta): forfaits sud Softvoyage `code_ag=VAS`, `alias=BY4`; vols
 
 La demande (`demande_groupe`) part vers reservation-api avec le groupe choisi. Étiquettes: `demande-groupe` et `groupe-<id>`. Jamais `demande-prix`. Détail, variables et commandes VPS: [`server/reservation-api/README.md`](server/reservation-api/README.md) et [`server/atrium-sync/README.md`](server/atrium-sync/README.md).
 
-Iframe depuis voyagefiesta.com (hauteur automatique, même message que la boutique):
+Iframe Accueil depuis voyagefiesta.com (hauteur automatique, origine limitée au site Aubaines Express). Le détail est dans [`docs/iframes.md`](docs/iframes.md).
 
 ```html
-<iframe id="vf-groupes" src="https://aubaineexpress.voyagefiesta.ca/groupes/?embed=1" style="width:100%;border:0" title="Groupes Voyage Fiesta"></iframe>
+<iframe
+  class="vf-plein-auto"
+  title="Accueil Voyage Fiesta"
+  src="https://aubaineexpress.voyagefiesta.ca/groupes/"
+  style="width:100%;border:0;min-height:960px;display:block"
+  loading="lazy"></iframe>
 <script>
-window.addEventListener('message', (event) => {
+window.addEventListener('message', function (event) {
   if (event.origin !== 'https://aubaineexpress.voyagefiesta.ca') return;
-  if (!event.data || event.data.type !== 'voyage-fiesta-resize') return;
-  const frame = document.getElementById('vf-groupes');
-  if (frame) frame.style.height = event.data.height + 'px';
+  var data = event.data || {};
+  var frames = document.querySelectorAll('iframe.vf-plein-auto');
+  var frame = null;
+  for (var i = 0; i < frames.length; i++) {
+    if (frames[i].contentWindow === event.source) frame = frames[i];
+  }
+  if (!frame) return;
+  if (data.type === 'voyage-fiesta-resize' && data.height) {
+    frame.style.height = data.height + 'px';
+  }
+  if (data.type === 'voyage-fiesta-navigate' && typeof data.url === 'string' && data.url.indexOf('https://') === 0) {
+    window.location.assign(data.url);
+  }
 });
 </script>
 ```
@@ -314,7 +329,8 @@ node --test --test-concurrency=1 \
   server/reservation-api/server.test.mjs \
   server/atrium-sync/map.test.mjs \
   server/atrium-sync/sync.test.mjs \
-  groupes/js/catalog.test.mjs
+  groupes/js/catalog.test.mjs \
+  groupes/js/open-search.test.mjs
 ```
 
 ## Checklist de mise en production

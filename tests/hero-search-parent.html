@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Parent Accueil</title>
+</head>
+<body>
+  <iframe id="accueil" class="vf-plein-auto" title="Accueil Voyage Fiesta" style="width:1440px;height:1000px;border:0"></iframe>
+  <script>
+    var child = new URLSearchParams(location.search).get('child');
+    if (child) document.getElementById('accueil').src = child;
+  </script>
+</body>
+</html>

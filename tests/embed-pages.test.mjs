@@ -64,6 +64,27 @@ test('embed mode hides the shared header, nav and footer', () => {
   }
 });
 
+test('the Accueil paste snippet is full width and locked to the Aubaines origin', () => {
+  const doc = read('docs/iframes.md');
+  assert.match(doc, /class="vf-plein-auto"/);
+  assert.match(doc, /src="https:\/\/aubaineexpress\.voyagefiesta\.ca\/groupes\/"/);
+  assert.match(doc, /event\.origin !== 'https:\/\/aubaineexpress\.voyagefiesta\.ca'/);
+  assert.match(doc, /voyage-fiesta-resize/);
+  assert.doesNotMatch(doc, /codesurmesure\.ca/);
+  const app = read('groupes/js/app.mjs');
+  const home = app.slice(app.indexOf('function renderHome'), app.indexOf('function readFilters'));
+  assert.match(home, /Votre prochaine évasion commence ici/);
+  assert.match(home, /Voyagez vers<br>l’essentiel/);
+  assert.match(home, /Des expériences uniques, des souvenirs inoubliables\./);
+  assert.match(home, /Découvrir nos offres/);
+  assert.match(home, /Voyage en toute sérénité/);
+  assert.match(home, /Meilleurs prix garantis/);
+  assert.match(home, /Conseillers à votre écoute/);
+  assert.match(home, /Des expériences sur mesure/);
+  assert.match(app, /openSearchResult\(url\)/);
+  assert.doesNotMatch(home, /codesurmesure\.ca/);
+});
+
 test('group detail links stay on id and slug', () => {
   const app = read('groupes/js/app.mjs');
   assert.match(app, /groupe\/\?id=\$\{encodeURIComponent\(group\.id\)\}&slug=\$\{encodeURIComponent\(group\.slug \|\| ''\)\}/);
